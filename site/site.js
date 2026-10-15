@@ -1,0 +1,1 @@
+document.querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-node]').forEach(x=>x.setAttribute('aria-pressed',x===b));document.querySelector('#node-source').textContent='---\ntype: '+b.dataset.node.toLowerCase()+'\ntitle: An example '+b.dataset.node.toLowerCase()+'\n---\nConnected to [[Project: Reading space]]'.replaceAll('\\n','\n');});
