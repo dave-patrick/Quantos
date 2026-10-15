@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quantos</title>
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <main id="no-token" class="notice" hidden>
+    <h1>Quantos</h1>
+    <p>This page needs the link the Quantos backend printed when it started (it ends in <code>#token=…</code>), or open Quantos from the Windows app.</p>
+    <p>The link changes every time the backend starts, for security.</p>
+  </main>
+
+  <div id="app" class="shell">
+    <header class="topbar">
+      <div class="brand">Quantos <span id="app-version" class="muted"></span></div>
+      <div class="topbar-actions">
+        <button type="button" data-requires-windows class="ghost" disabled>Quick capture</button>
+        <button type="button" id="exit-app" class="ghost windows-only">Exit</button>
+      </div>
+    </header>
+
+    <div id="warnings" class="banner warn" role="alert" hidden></div>
+
+    <nav class="left" aria-label="Navigation">
+      <div class="stack">
+        <button type="button" id="open-today" class="primary">Today</button>
+        <button type="button" id="new-note">New note</button>
+      </div>
+      <h2>Notes</h2>
+      <ul id="note-list" class="note-list"></ul>
+      <div class="stack bottom">
+        <button type="button" id="show-trash" class="ghost">Trash</button>
+        <button type="button" id="show-diagnostics" class="ghost">Vault diagnostics</button>
+        <button type="button" id="rebuild-cache" class="ghost">Rebuild cache</button>
+      </div>
+    </nav>
+
+    <section class="center" aria-label="Editor">
+      <div id="empty-state" class="empty-state">
+        <p>Open <strong>Today</strong> for your daily note, or pick a note on the left.</p>
+      </div>
+      <form id="editor" hidden autocomplete="off">
+        <div id="conflict" class="banner error" role="alert" hidden>
+          <p><strong>This note changed outside this window</strong> since you opened it. Your edits weren't saved, and nothing has been lost.</p>
+          <div class="row">
+            <button type="button" id="conflict-load">Load the newer version (keep my edits as a copy)</button>
+            <button type="button" id="conflict-copy">Save my version as a new note</button>
+          </div>
+        </div>
+        <input id="title" class="title" aria-label="Title" maxlength="300">
+        <p class="meta"><span id="node-path"></span> · <span id="node-meta"></span></p>
+        <textarea id="body" aria-label="Note text (Markdown)" spellcheck="true"></textarea>
+        <div class="row">
+          <button type="button" id="save" class="primary">Save <kbd>Ctrl+S</kbd></button>
+          <button type="button" id="trash" class="danger">Move to trash</button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="right" aria-label="Inspector">
+      <h2>Properties</h2>
+      <pre id="frontmatter" class="code"></pre>
+      <h2>Earlier versions</h2>
+      <ul id="history-list" class="plain"></ul>
+    </aside>
+
+    <footer class="statusbar">
+      <span id="connection" data-kind="ok">Connecting…</span>
+      <span id="save-status" role="status" aria-live="polite"></span>
+      <span class="muted">Vault: <span id="vault-path"></span></span>
+    </footer>
+  </div>
+
+  <dialog id="trash-dialog">
+    <h2>Trash</h2>
+    <p class="muted">Items stay here until you restore them. Trash never empties itself.</p>
+    <ul id="trash-list" class="plain rows"></ul>
+    <button type="button" data-close>Close</button>
+  </dialog>
+  <dialog id="diag-dialog">
+    <h2>Vault diagnostics</h2>
+    <div id="diag-body"></div>
+    <button type="button" data-close>Close</button>
+  </dialog>
+  <dialog id="history-dialog">
+    <h2>Earlier version (read-only)</h2>
+    <pre id="history-preview" class="code tall"></pre>
+    <button type="button" data-close>Close</button>
+  </dialog>
+</body>
+</html>

@@ -68,7 +68,7 @@ The frontend never writes vault files directly.
 
 ### B. Local backend
 
-**Confirmed:** A .NET 8 web service, published as a self-contained single file.
+**Confirmed:** A .NET 10 web service, published as a self-contained single file.
 
 It handles:
 
@@ -87,7 +87,7 @@ It handles:
 
 ### C. Windows client (no install)
 
-**Confirmed:** A .NET 8 app, published as a self-contained single file, that shows the frontend through WebView2.
+**Confirmed:** A .NET 10 app, published as a self-contained single file, that shows the frontend through WebView2.
 
 It handles:
 
@@ -134,8 +134,8 @@ In the browser, the terminal drawer is hidden. The other three features show a "
 
 | Component | Technology |
 |---|---|
-| Windows client | .NET 8 self-contained single file with WebView2 |
-| Backend | .NET 8 web service, self-contained single file |
+| Windows client | .NET 10 self-contained single file with WebView2 |
+| Backend | .NET 10 web service, self-contained single file |
 | PowerShell | Engine built into .NET |
 | Derived data cache | SQLite |
 | Frontend | TypeScript |
@@ -856,7 +856,7 @@ Don't assign these to a release until there's a separate scope decision.
 | Local, non-containerized Release 1.0 | Confirmed |
 | No-install Windows client; creating local folders and files is OK | Confirmed |
 | Single user, no sign-in | Confirmed |
-| .NET 8 + WebView2 stack, SQLite cache, TypeScript frontend | Confirmed |
+| .NET 10 + WebView2 stack (changed from .NET 8, which ends support Nov 10, 2026), SQLite cache, TypeScript frontend | Confirmed |
 | Cache stored only in `client-data/cache/` | Confirmed |
 | Vault defaults to a non-synced folder, with a OneDrive warning | Confirmed |
 | Access token, origin checks, Windows client approval for shell and permanent delete | Confirmed |

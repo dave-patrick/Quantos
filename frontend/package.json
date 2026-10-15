@@ -1,0 +1,13 @@
+{
+  "name": "quantos-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Shared Quantos frontend (browser and Windows client). Compiles to src/Quantos.Backend/wwwroot/js.",
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -p . --watch"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

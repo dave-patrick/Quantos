@@ -1,2 +1,11 @@
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# .NET / frontend build output
+bin/
+obj/
+artifacts/
+node_modules/
+src/Quantos.Backend/wwwroot/js/
+*.user
+client-data/

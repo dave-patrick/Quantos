@@ -1,0 +1,61 @@
+name: Build and test
+
+# Builds the portable Windows programs and runs the automated tests on every push and pull request.
+# Download the results from the run's "Artifacts" section.
+on:
+  push:
+    branches-ignore: [gh-pages]
+    paths-ignore: ['site/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build the shared frontend (TypeScript)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run automated tests
+        run: dotnet test tests/Quantos.Tests -c Release --logger "console;verbosity=normal"
+
+      - name: Publish portable programs (no install, no admin)
+        shell: pwsh
+        run: |
+          foreach ($p in 'Quantos.Backend','Quantos.Client','Quantos.Probe') {
+            dotnet publish "src/$p" -c Release -r win-x64 -o "publish/$p" -p:DebugType=none
+          }
+          New-Item -ItemType Directory -Force out/Quantos/application, out/laptop-test | Out-Null
+          Copy-Item publish/Quantos.Client/Quantos.exe out/Quantos/application/
+          Copy-Item publish/Quantos.Backend/Quantos.Backend.exe out/Quantos/application/
+          Copy-Item documentation/PORTABLE-README.txt out/Quantos/README.txt
+          Copy-Item publish/Quantos.Probe/Quantos.Probe.exe out/laptop-test/
+          Copy-Item documentation/LAPTOP-TEST.md out/laptop-test/README.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Quantos-laptop-test
+          path: out/laptop-test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Quantos-portable
+          path: out/Quantos
