@@ -1,0 +1,33 @@
+Quantos — locked wordmark
+========================
+Chosen face : Bruno Ace SC
+Letters     : UANTOS
+Built       : 2026-10-15
+
+Files
+-----
+quantos-wordmark.svg        self-contained; text outlined, fill=currentColor
+quantos-wordmark-final.html preview on light/dark at several sizes
+
+Proportions (locked)
+--------------------
+wordmark              QUANTOS
+face                  Bruno Ace SC
+Q size                120u
+Q : cap height        1.993 : 1
+Q : gap               0.150 : 1
+type size             86u
+cap height            60.2u
+x offset (text origin)121.22u
+baseline              200u
+Q centre              169.9u
+Q top                 107.43u
+viewBox               -8 111.08 605.83 117.65
+
+Rules
+-----
+1. The Q is always 1.99x the cap height. Never size it independently.
+2. The gap is always 0.15x the Q, measured ink edge to glyph ink edge.
+   The icon's ink is inset inside its artboard, so box-to-box spacing is wrong.
+3. The Q's optical centre sits on the cap-height band centre.
+4. Set at any size by scaling the whole group; never re-space the parts.

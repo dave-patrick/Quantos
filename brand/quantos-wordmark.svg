@@ -1,0 +1,269 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 111.08 605.83 117.65" width="605.83" height="117.65" role="img" aria-label="Quantos">
+  <title>Quantos</title>
+  <g fill="currentColor">
+    <g transform="translate(0 107.43) scale(0.11764705882352941) translate(-120 -120)">
+      <defs>
+          <!-- Background Squircle Gradient -->
+          <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#282930" />
+            <stop offset="25%" stop-color="#202127" />
+            <stop offset="65%" stop-color="#121317" />
+            <stop offset="100%" stop-color="#090a0d" />
+          </linearGradient>
+      
+          <!-- Squircle Border Highlight -->
+          <linearGradient id="squircleRim" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18" />
+            <stop offset="35%" stop-color="#ffffff" stop-opacity="0.03" />
+            <stop offset="75%" stop-color="#000000" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.75" />
+          </linearGradient>
+      
+          <!-- Ambient Blue Glow Filters -->
+          <filter id="ambientArcGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="28" result="blur1" />
+            <feGaussianBlur stdDeviation="12" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur1" />
+              <feMergeNode in="blur2" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+      
+          <filter id="softOrbGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="22" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+      
+          <!-- Drop Shadows for Cards -->
+          <filter id="cardShadow" x="-25%" y="-20%" width="160%" height="160%">
+            <feDropShadow dx="-6" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.55" />
+          </filter>
+      
+          <filter id="frontCardShadow" x="-30%" y="-20%" width="170%" height="170%">
+            <feDropShadow dx="-6" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.65" />
+            <feDropShadow dx="8" dy="20" stdDeviation="26" flood-color="#000000" flood-opacity="0.5" />
+          </filter>
+      
+          <filter id="pillShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.35" />
+          </filter>
+      
+          <!-- Ambient glow behind dot -->
+          <radialGradient id="dotAmbient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0094ff" stop-opacity="0.75" />
+            <stop offset="35%" stop-color="#0077ff" stop-opacity="0.4" />
+            <stop offset="70%" stop-color="#0055ff" stop-opacity="0.12" />
+            <stop offset="100%" stop-color="#0033ff" stop-opacity="0" />
+          </radialGradient>
+      
+          <!-- Outer Large Arc Gradient -->
+          <linearGradient id="outerArcGrad" x1="80%" y1="5%" x2="20%" y2="95%">
+            <stop offset="0%" stop-color="#00e5ff" />
+            <stop offset="15%" stop-color="#00c0ff" />
+            <stop offset="45%" stop-color="#0088ff" />
+            <stop offset="80%" stop-color="#0072ff" />
+            <stop offset="100%" stop-color="#00a2ff" />
+          </linearGradient>
+      
+          <!-- Outer Arc 3D Tubular Highlight -->
+          <linearGradient id="outerArcTube" x1="75%" y1="10%" x2="25%" y2="90%">
+            <stop offset="0%" stop-color="#8ceeff" stop-opacity="0.85" />
+            <stop offset="25%" stop-color="#38c8ff" stop-opacity="0.6" />
+            <stop offset="60%" stop-color="#0099ff" stop-opacity="0.2" />
+            <stop offset="100%" stop-color="#60d0ff" stop-opacity="0.75" />
+          </linearGradient>
+      
+          <!-- Right Arc Gradient -->
+          <linearGradient id="rightArcGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stop-color="#00e5ff" />
+            <stop offset="35%" stop-color="#00aeff" />
+            <stop offset="70%" stop-color="#007eff" />
+            <stop offset="100%" stop-color="#0066ee" />
+          </linearGradient>
+      
+          <linearGradient id="rightArcTube" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stop-color="#99f0ff" stop-opacity="0.9" />
+            <stop offset="40%" stop-color="#38c8ff" stop-opacity="0.6" />
+            <stop offset="100%" stop-color="#0077ff" stop-opacity="0.2" />
+          </linearGradient>
+      
+          <!-- Inner Arc Gradient -->
+          <linearGradient id="innerArcGrad" x1="80%" y1="0%" x2="20%" y2="100%">
+            <stop offset="0%" stop-color="#00e0ff" />
+            <stop offset="45%" stop-color="#0090ff" />
+            <stop offset="100%" stop-color="#0066ee" />
+          </linearGradient>
+      
+          <linearGradient id="innerArcTube" x1="80%" y1="0%" x2="20%" y2="100%">
+            <stop offset="0%" stop-color="#a0f2ff" stop-opacity="0.85" />
+            <stop offset="40%" stop-color="#40c8ff" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#0077ee" stop-opacity="0.1" />
+          </linearGradient>
+      
+          <!-- 3D Glowing Sphere/Orb Gradient -->
+          <radialGradient id="sphereGrad" cx="33%" cy="28%" r="68%">
+            <stop offset="0%" stop-color="#e6faff" />
+            <stop offset="18%" stop-color="#6be0ff" />
+            <stop offset="48%" stop-color="#0099ff" />
+            <stop offset="78%" stop-color="#005ad4" />
+            <stop offset="92%" stop-color="#003ca0" />
+            <stop offset="100%" stop-color="#002470" />
+          </radialGradient>
+      
+          <!-- Card 3 (Back Card) Gradient -->
+          <linearGradient id="backCardGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+            <stop offset="0%" stop-color="#0066ee" />
+            <stop offset="40%" stop-color="#0050d4" />
+            <stop offset="100%" stop-color="#00359e" />
+          </linearGradient>
+      
+          <!-- Card 2 (Middle Card) Gradient -->
+          <linearGradient id="midCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0099ff" />
+            <stop offset="40%" stop-color="#0080f0" />
+            <stop offset="100%" stop-color="#005ada" />
+          </linearGradient>
+      
+          <!-- Card 1 (Front Dark Card) Face Gradient -->
+          <linearGradient id="frontCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#30323a" />
+            <stop offset="30%" stop-color="#282a31" />
+            <stop offset="70%" stop-color="#202227" />
+            <stop offset="100%" stop-color="#16171b" />
+          </linearGradient>
+      
+          <!-- Front Card Bevel / Top Rim Highlight -->
+          <linearGradient id="cardBevelGrad" x1="0%" y1="0%" x2="100%" y2="25%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+            <stop offset="45%" stop-color="#ffffff" stop-opacity="0.12" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
+          </linearGradient>
+      
+          <!-- Checkbox Blue Gradient -->
+          <linearGradient id="checkboxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00d2ff" />
+            <stop offset="100%" stop-color="#0077ff" />
+          </linearGradient>
+      
+          <!-- White Pill Gradient -->
+          <linearGradient id="pillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="60%" stop-color="#f2f4f7" />
+            <stop offset="100%" stop-color="#dde1e8" />
+          </linearGradient>
+        </defs>
+      
+        <!-- 2. CONCENTRIC CIRCULAR ARCS -->
+        <g id="Arcs">
+          <!-- OUTER LARGE ARC (C-shape from top counter-clockwise to bottom-right) -->
+          <!-- Center (626, 626), R=407, width=108 -->
+          <!-- Ambient glow under arc -->
+          <path d="M 654.4 220 A 407 407 0 1 0 778.5 1003.4" 
+                fill="none" stroke="#0077ff" stroke-width="128" stroke-linecap="round" opacity="0.45" filter="url(#ambientArcGlow)" />
+          <!-- Base solid gradient stroke -->
+          <path d="M 654.4 220 A 407 407 0 1 0 778.5 1003.4" 
+                fill="none" stroke="url(#outerArcGrad)" stroke-width="108" stroke-linecap="round" />
+          <!-- 3D Tubular highlight -->
+          <path d="M 654.4 220 A 407 407 0 1 0 778.5 1003.4" 
+                fill="none" stroke="url(#outerArcTube)" stroke-width="40" stroke-linecap="round" opacity="0.85" />
+      
+          <!-- OUTER RIGHT ARC (Top-right segment) -->
+          <!-- From angle -64 deg (805, 260) to angle +18 deg (1013, 752) -->
+          <!-- Ambient glow -->
+          <path d="M 804.6 260.1 A 407 407 0 0 1 1013.1 751.8" 
+                fill="none" stroke="#0088ff" stroke-width="128" stroke-linecap="round" opacity="0.45" filter="url(#ambientArcGlow)" />
+          <!-- Base stroke -->
+          <path d="M 804.6 260.1 A 407 407 0 0 1 1013.1 751.8" 
+                fill="none" stroke="url(#rightArcGrad)" stroke-width="108" stroke-linecap="round" />
+          <!-- 3D Tubular highlight -->
+          <path d="M 804.6 260.1 A 407 407 0 0 1 1013.1 751.8" 
+                fill="none" stroke="url(#rightArcTube)" stroke-width="40" stroke-linecap="round" opacity="0.85" />
+      
+          <!-- INNER ARC (Left side, R=320, width=58) -->
+          <!-- Ambient glow -->
+          <path d="M 641.0 268.0 A 320 320 0 0 0 380.9 831.7" 
+                fill="none" stroke="#0077ff" stroke-width="74" stroke-linecap="round" opacity="0.4" filter="url(#ambientArcGlow)" />
+          <!-- Base stroke -->
+          <path d="M 641.0 268.0 A 320 320 0 0 0 380.9 831.7" 
+                fill="none" stroke="url(#innerArcGrad)" stroke-width="58" stroke-linecap="round" />
+          <!-- Inner Ridge highlight -->
+          <path d="M 641.0 268.0 A 320 320 0 0 0 380.9 831.7" 
+                fill="none" stroke="url(#innerArcTube)" stroke-width="22" stroke-linecap="round" opacity="0.85" />
+        </g>
+      
+        <!-- 3. DECK OF CARDS (Center) -->
+        <g id="DeckCards">
+          <!-- CARD 3 (Back Card, Royal Blue, tilted ~12.5 deg counter-clockwise) -->
+          <g transform="translate(685, 605) rotate(-12.5) translate(-685, -605)" filter="url(#cardShadow)">
+            <rect x="490" y="355" width="385" height="490" rx="44" ry="44" fill="url(#backCardGrad)" />
+            <!-- Top and edge rim light -->
+            <rect x="490" y="355" width="385" height="490" rx="44" ry="44" fill="none" stroke="#389eff" stroke-width="2.5" opacity="0.5" />
+          </g>
+      
+          <!-- CARD 2 (Middle Card, Cyan-Blue, tilted ~4.5 deg counter-clockwise) -->
+          <g transform="translate(645, 615) rotate(-4.5) translate(-645, -615)" filter="url(#cardShadow)">
+            <rect x="445" y="372" width="395" height="498" rx="46" ry="46" fill="url(#midCardGrad)" />
+            <!-- Top and edge rim light -->
+            <rect x="445" y="372" width="395" height="498" rx="46" ry="46" fill="none" stroke="#80d0ff" stroke-width="2.5" opacity="0.65" />
+          </g>
+      
+          <!-- CARD 1 (Front Dark Card, Charcoal Checklist, tilted ~8.4 deg clockwise) -->
+          <g transform="translate(586, 650) rotate(8.4) translate(-586, -650)" filter="url(#frontCardShadow)">
+            <!-- Main dark face -->
+            <rect x="388" y="418" width="396" height="464" rx="52" ry="52" fill="url(#frontCardGrad)" />
+            
+            <!-- Top / Left Specular Bevel Line -->
+            <rect x="388" y="418" width="396" height="464" rx="52" ry="52" fill="none" stroke="url(#cardBevelGrad)" stroke-width="3" />
+      
+            <!-- CHECKLIST ITEMS (Inside the front card) -->
+            <!-- Row 1: Checkbox + Text Bar -->
+            <g id="Row1">
+              <!-- Checkbox 1 -->
+              <rect x="434" y="498" width="77" height="82" rx="20" ry="20" fill="url(#checkboxGrad)" filter="url(#pillShadow)" />
+              <!-- White Checkmark 1 -->
+              <polyline points="449,539 465,562 496,527" 
+                        fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+              <!-- White Bar 1: pill shape -->
+              <rect x="538" y="534" width="186" height="61" rx="30.5" ry="30.5" fill="url(#pillGrad)" filter="url(#pillShadow)" />
+            </g>
+      
+            <!-- Row 2: Checkbox + Text Bar -->
+            <g id="Row2">
+              <!-- Checkbox 2 -->
+              <rect x="434" y="599" width="77" height="82" rx="20" ry="20" fill="url(#checkboxGrad)" filter="url(#pillShadow)" />
+              <!-- White Checkmark 2 -->
+              <polyline points="448,640 464,663 495,628" 
+                        fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+              <!-- White Bar 2: pill shape -->
+              <rect x="538" y="635" width="187" height="61" rx="30.5" ry="30.5" fill="url(#pillGrad)" filter="url(#pillShadow)" />
+            </g>
+      
+            <!-- Row 3: Bullet Dot + Text Bar -->
+            <g id="Row3">
+              <!-- Bullet Circle: center at (472.5, 742), r=36 -->
+              <circle cx="472.5" cy="742" r="36" fill="url(#checkboxGrad)" filter="url(#pillShadow)" />
+              <!-- White Bar 3: pill shape -->
+              <rect x="537" y="736" width="187" height="62" rx="31" ry="31" fill="url(#pillGrad)" filter="url(#pillShadow)" />
+            </g>
+          </g>
+        </g>
+      
+        <!-- 4. GLOWING BLUE ORB / DOT (Bottom-Right) -->
+        <g id="GlowingOrb">
+          <!-- Ambient outer halo -->
+          <circle cx="897" cy="938" r="145" fill="#0088ff" opacity="0.5" filter="url(#softOrbGlow)" />
+          <!-- Drop shadow onto background -->
+          <circle cx="897" cy="948" r="115" fill="#000000" opacity="0.45" filter="url(#softOrbGlow)" />
+          <!-- 3D Shaded Sphere -->
+          <circle cx="897" cy="938" r="108.5" fill="url(#sphereGrad)" />
+          <!-- Soft secondary rim glow -->
+          <circle cx="897" cy="938" r="108.5" fill="none" stroke="#a0f0ff" stroke-width="2" opacity="0.4" />
+        </g>
+    </g>
+    <path d="M192.94 139.8L192.86 169.9Q192.86 176.18 190.54 181.64Q188.21 187.1 184.09 191.23Q179.96 195.36 174.5 197.68Q169.04 200 162.84 200L156.48 200Q150.29 200 144.83 197.68Q139.37 195.36 135.24 191.19Q131.11 187.01 128.79 181.55Q126.47 176.09 126.47 169.9L126.47 139.8L135.07 139.8L135.07 169.9Q135.07 175.83 137.95 180.69Q140.83 185.55 145.73 188.48Q150.63 191.4 156.48 191.4L162.84 191.4Q168.78 191.4 173.64 188.48Q178.5 185.55 181.38 180.69Q184.26 175.83 184.26 169.9L184.26 139.8ZM273.78 200L265.18 200L265.18 182.8L217.11 182.8L217.11 174.2L265.18 174.2L265.18 148.4L234.31 148.4Q228.46 148.4 223.56 151.28Q218.66 154.16 215.78 159.06Q212.9 163.97 212.9 169.9L212.9 200L204.3 200L204.3 169.9Q204.3 163.71 206.62 158.25Q208.94 152.79 213.07 148.62Q217.2 144.44 222.66 142.12Q228.12 139.8 234.31 139.8L273.78 139.8ZM296.83 200L288.23 200L288.23 139.8L292.53 139.8Q298.81 139.8 306.16 142.21Q313.52 144.62 320.91 149Q328.31 153.39 334.89 159.45Q341.47 165.51 346.2 172.91L346.2 139.8L354.8 139.8L354.8 200L346.2 200Q346.2 192.09 342.97 184.82Q339.75 177.55 334.41 171.41Q329.08 165.26 322.59 160.48Q316.1 155.71 309.39 152.66Q302.68 149.6 296.83 148.74ZM401.92 200L393.32 200L393.32 148.4L362.88 148.4L362.88 139.8L432.37 139.8L432.37 148.4L401.92 148.4ZM512.35 169.9Q512.35 176.18 510.37 181.64Q508.39 187.1 504.74 191.23Q501.08 195.36 496.01 197.68Q490.93 200 484.74 200L464.7 200Q458.43 200 453.35 197.68Q448.28 195.36 444.62 191.23Q440.97 187.1 438.99 181.64Q437.01 176.18 437.01 169.9Q437.01 163.71 438.99 158.25Q440.97 152.79 444.62 148.62Q448.28 144.44 453.35 142.12Q458.43 139.8 464.7 139.8L484.74 139.8Q490.93 139.8 496.01 142.12Q501.08 144.44 504.74 148.62Q508.39 152.79 510.37 158.25Q512.35 163.71 512.35 169.9ZM503.75 169.9Q503.75 163.97 501.47 159.06Q499.19 154.16 494.93 151.28Q490.68 148.4 484.74 148.4L464.7 148.4Q458.77 148.4 454.51 151.28Q450.26 154.16 447.93 159.06Q445.61 163.97 445.61 169.9Q445.61 175.83 447.93 180.69Q450.26 185.55 454.51 188.48Q458.77 191.4 464.7 191.4L484.74 191.4Q490.68 191.4 494.93 188.48Q499.19 185.55 501.47 180.69Q503.75 175.83 503.75 169.9ZM589.83 182.8Q589.83 187.53 587.51 191.44Q585.19 195.36 581.32 197.68Q577.45 200 572.63 200L520.35 200L520.35 191.4L572.63 191.4Q576.25 191.4 578.74 188.86Q581.23 186.33 581.23 182.8Q581.23 179.27 578.74 176.74Q576.25 174.2 572.63 174.2L537.55 174.2Q532.82 174.2 528.9 171.88Q524.99 169.56 522.67 165.64Q520.35 161.73 520.35 157Q520.35 152.27 522.67 148.36Q524.99 144.44 528.9 142.12Q532.82 139.8 537.55 139.8L585.53 139.8L585.53 148.4L537.55 148.4Q534.02 148.4 531.48 150.94Q528.95 153.47 528.95 157Q528.95 160.53 531.48 163.06Q534.02 165.6 537.55 165.6L572.63 165.6Q577.45 165.6 581.32 167.92Q585.19 170.24 587.51 174.16Q589.83 178.07 589.83 182.8Z"/>
+  </g>
+</svg>
