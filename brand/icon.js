@@ -37,11 +37,18 @@ const BACKGROUND = /\s*<!-- 1\. MAIN BACKGROUND SQUIRCLE -->[\s\S]*?<g id="Backg
 // True rendered extent, from a pixel scan at alpha > 8. The alpha 1..7 fringe
 // outside this is far below anything perceptible; clipping it is invisible,
 // while clipping anything stronger is not.
-const FRAME = { x: 104, y: 103, w: 1045, h: 1046 };
+const FRAME_GLOW = { x: 104, y: 103, w: 1045, h: 1046 };
 
-// Ink only - this is what reads as the letterform, and what the wordmark
-// geometry is sized against. The frame is larger because of the glow.
-const INK = { x: 219.09, y: 219.01, w: 822.91, h: 863.99 };
+// Ink is what actually reads as the letterform. Measured by pixel scan, NOT by
+// getBBox: getBBox reports geometry only and excludes stroke, and the arcs
+// carry stroke-width 128, so getBBox understated the mark by 64 units a side
+// (it reported 219..1042 against a true 155..1097). Sizing off that made the Q
+// render at ~131u instead of 120u and pulled the real gap in to ~10u.
+const INK = { x: 155, y: 155, w: 942, h: 942 };
+
+// Flat has no halo, so the frame is the ink itself and the box comes out at
+// exactly MARK - which is the cleanest possible relationship for a wordmark.
+const frameFor = flat => (flat ? INK : FRAME_GLOW);
 
 function loadIcon(file, opts) {
   const flat = !!(opts && opts.flat);
@@ -68,13 +75,14 @@ function loadIcon(file, opts) {
     });
   }
 
-  const viewBox = `${FRAME.x} ${FRAME.y} ${FRAME.w} ${FRAME.h}`;
+  const viewBox = `${FRAME_GLOW.x} ${FRAME_GLOW.y} ${FRAME_GLOW.w} ${FRAME_GLOW.h}`;
   return {
     body, flat,
-    symbol: `<symbol id="mark" viewBox="${viewBox}">${body}</symbol>`,
+    symbol: `<symbol id="mark" viewBox="${flat ? `${INK.x} ${INK.y} ${INK.w} ${INK.h}` : viewBox}">${body}</symbol>`,
     widened, removed,
-    viewBox, frame: FRAME, ink: INK
+    viewBox: flat ? `${INK.x} ${INK.y} ${INK.w} ${INK.h}` : viewBox,
+    frame: frameFor(flat), ink: INK
   };
 }
 
-module.exports = { loadIcon, REGIONS, FRAME, INK };
+module.exports = { loadIcon, REGIONS, FRAME_GLOW, INK, frameFor };

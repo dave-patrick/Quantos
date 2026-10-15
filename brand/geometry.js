@@ -4,7 +4,7 @@
 const path = require('path');
 const cfg = require('./set.js');
 const { fontData } = require('./fontdata.js');
-const { FRAME, INK } = require('./icon.js');
+const { INK, frameFor } = require('./icon.js');
 
 const r2 = n => Math.round(n * 100) / 100;
 
@@ -13,6 +13,8 @@ function compute(opts) {
 
   // The frame is glow-inclusive (so the halo is never sliced) but the size is
   // driven by the ink (so the Q measures against the letterform, not a halo).
+  // Flat has no halo, so its frame is the ink and the box comes out at MARK.
+  const FRAME = frameFor(flat);
   const k = cfg.MARK / INK.h;
   const boxW = FRAME.w * k;
   const boxH = FRAME.h * k;

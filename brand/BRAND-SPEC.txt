@@ -6,28 +6,41 @@ Built       : 2026-10-15
 
 Files
 -----
-quantos-wordmark.svg        self-contained; text outlined, fill=currentColor
-quantos-wordmark-final.html preview on light/dark at several sizes
+quantos-wordmark.svg        glow treatment, self-contained, fill=currentColor
+quantos-wordmark-flat.svg   flat treatment, same geometry
+quantos-wordmark-final.html preview of both, on light and dark
 
-Proportions (locked)
---------------------
-wordmark              QUANTOS
+Proportions (identical in both treatments)
+------------------------------------------
 face                  Bruno Ace SC
 Q ink height          120u
-Q box (glow-inclusive)145.14 x 145.28u
+Q box (incl. glow)    133.12 x 133.25u
 Q : cap height        1.993 : 1
 Q : gap               0.150 : 1
 type size             86u
 cap height            60.2u
-x offset (text origin)127.05u
+text origin x         132.75u
 baseline              200u
 Q ink centre          169.9u
-viewBox               -19.98 89.79 619.65 153.28
+viewBox               -10.5 99.28 615.86 141.25
+
+Two treatments, one geometry
+----------------------------
+glow : the icon as designed - ambient glow plus drop shadows
+flat : the 3D treatment stripped; shapes only
+
+They differ only in treatment. Same ink size, same optical gap, same centring.
 
 Rules
 -----
 1. The Q is always 1.99x the cap height. Never size it independently.
 2. The gap is always 0.15x the Q, measured ink edge to glyph ink edge.
-   The icon's ink is inset inside its artboard, so box-to-box spacing is wrong.
+   The icon's glow is inset, so box-to-box spacing is wrong.
 3. The Q's optical centre sits on the cap-height band centre.
 4. Set at any size by scaling the whole group; never re-space the parts.
+
+Note on measurement
+-------------------
+Ink and glow extents come from pixel scans of the rendered icon, not getBBox.
+getBBox reports geometry only and excludes stroke, and the arcs carry
+stroke-width 128 - it understated the mark by 64 units a side.
