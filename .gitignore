@@ -1,2 +1,13 @@
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# build output
+bin/
+obj/
+/artifacts/
+/publish/
+node_modules/
+/frontend/dist/
+*.user
+.vs/
+TestResults/
