@@ -4,8 +4,16 @@
 
 Published by **Atomic 22 Industries**.
 
-A planned local-first productivity workspace connecting notes, tasks, projects and people through readable Markdown files. The website explains the proposed workflow and architecture; no application build is available yet.
+A local-first productivity workspace, now in early development, connecting notes, tasks, projects and people through readable Markdown files. The website explains the proposed workflow and architecture. There's no release yet, only early test builds.
 
 ## Project status
 
-The repository contains the approved build plan, project documentation, publisher metadata and the public landing-page source in `site/`. GitHub Pages publishes the website automatically when those site files change on `main`.
+**Stage 1 (Foundation) is in progress.** The repository now contains:
+
+- `BUILD-PLAN.md`: the approved build plan (now on .NET 10).
+- `documentation/PLAN-REVIEW.md`: review findings and Stage 1 decisions.
+- `documentation/ARCHITECTURE.md`: how the code fits together.
+- `src/`: the local backend, the shared core, the Windows client and the laptop-test program. `frontend/` holds the shared TypeScript interface. `tests/` holds the automated tests.
+- `site/`: the public landing page, published by GitHub Pages when it changes on `main`.
+
+Test builds (not a release) are produced by the **Build and test** workflow on the Actions tab. Start with the laptop test: see `documentation/LAPTOP-TEST.md`.

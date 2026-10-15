@@ -5,6 +5,7 @@ Software project in Quantos. See existing project documentation for its purpose.
 
 ## Existing guidance
 - Read `README.md` for existing project guidance; follow directory-specific instructions where present.
+- Plan review and Stage 1 decisions: `documentation/PLAN-REVIEW.md`. Architecture: `documentation/ARCHITECTURE.md`.
 
 ## Stack evidence
 - Determine the stack from the source and build files; do not assume one.

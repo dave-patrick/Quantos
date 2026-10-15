@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Quantos.Backend/Quantos.Backend.csproj" />
+    <Project Path="src/Quantos.Client/Quantos.Client.csproj" />
+    <Project Path="src/Quantos.Core/Quantos.Core.csproj" />
+    <Project Path="src/Quantos.Probe/Quantos.Probe.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Quantos.Tests/Quantos.Tests.csproj" />
+  </Folder>
+</Solution>
