@@ -6,8 +6,8 @@ const { compute, cfg } = require('./geometry.js');
 const { INK, frameFor } = require('./icon.js');
 
 const svg = fs.readFileSync(path.join(__dirname, 'quantos-wordmark.svg'), 'utf8');
-const { built, k, boxW, boxH } = compute({ flat: false });
-const FRAME = frameFor(false);
+const { built, k, boxW, boxH } = compute({ flat: cfg.TREATMENT === 'flat' });
+const FRAME = frameFor(cfg.TREATMENT === 'flat');
 const o = built.find(x => x.name === 'Bruno Ace SC');
 
 const fail = [];
@@ -18,6 +18,18 @@ const check = (ok, label, got, want) => {
 
 // 1. no font dependency
 check(!/@font-face|fonts\.googleapis|<text/i.test(svg), 'self-contained', 'no font/text refs', 'none');
+
+// 1b. no mojibake - a PowerShell -Encoding UTF8 rewrite once re-decoded every
+//     em dash and middle dot in the generator, and it reached a shipped asset
+//     unnoticed. Guard every file we publish.
+const published = ['quantos-wordmark.svg', 'quantos-wordmark-flat.svg',
+                   'quantos-wordmark-glow.svg', 'quantos-wordmark-final.html',
+                   'BRAND-SPEC.txt']
+  .filter(f => f !== 'quantos-wordmark-flat.svg' || fs.existsSync(path.join(__dirname, 'quantos-wordmark-flat.svg')))
+  .map(f => [f, fs.readFileSync(path.join(__dirname, f), 'utf8')]);
+const MOJI = /[ÂÃâ][-¿€”]/.exec(published.map(([, s]) => s).join(''));
+check(!MOJI, 'no mojibake in published files',
+  MOJI ? `${MOJI[0]} in ` + published.find(([, s]) => s.includes(MOJI[0]))[0] : 'clean', 'clean');
 
 // 2. icon transform, recomputed
 const tr = (svg.match(/transform="translate\((-?[\d.]+) (-?[\d.]+)\) scale\(([\d.]+)\) translate\(-(\d+) -(\d+)\)"/) || []);
@@ -69,21 +81,32 @@ const vb = svg.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
 const framed = vb[0] <= glowBox.x && vb[1] <= glowBox.y &&
                vb[0] + vb[2] >= glowBox.x + glowBox.w &&
                vb[1] + vb[3] >= glowBox.y + glowBox.h;
-check(framed, 'viewBox contains glow', vb.join(' '),
-  `glow ${glowBox.x.toFixed(1)},${glowBox.y.toFixed(1)} ${glowBox.w.toFixed(1)}x${glowBox.h.toFixed(1)}`);
+check(framed, 'viewBox contains mark', vb.join(' '),
+  `mark ${glowBox.x.toFixed(1)},${glowBox.y.toFixed(1)} ${glowBox.w.toFixed(1)}x${glowBox.h.toFixed(1)}`);
 
-// 6. the flat variant: same geometry, no filters, box is exactly the ink
-const flatSvg = fs.readFileSync(path.join(__dirname, 'quantos-wordmark-flat.svg'), 'utf8');
-const fg = compute({ flat: true });
-check(!/<filter|filter="url\(/.test(flatSvg), 'flat has no filters', 'none', 'none');
-check(Math.abs(fg.boxW - cfg.MARK) < 0.01, 'flat box == ink == MARK', fg.boxW.toFixed(2), String(cfg.MARK));
+// 6. the shipped asset must be the chosen treatment, and the other must exist
+const altName = cfg.TREATMENT === 'flat' ? 'glow' : 'flat';
+const altPath = path.join(__dirname, `quantos-wordmark-${altName}.svg`);
+const altSvg = fs.existsSync(altPath) ? fs.readFileSync(altPath, 'utf8') : '';
+check(!!altSvg, `alternative ${altName} exists`, altSvg ? 'yes' : 'MISSING', 'yes');
+check(cfg.TREATMENT === 'flat'
+  ? !/<filter|filter="url\(/.test(svg)
+  : /<filter/.test(svg), 'primary is ' + cfg.TREATMENT,
+  /<filter/.test(svg) ? 'glow' : 'flat', cfg.TREATMENT);
+
+const fg = compute({ flat: cfg.TREATMENT === 'flat' });
+if (cfg.TREATMENT === 'flat') {
+  check(Math.abs(fg.boxW - cfg.MARK) < 0.01, 'flat box == ink == MARK', fg.boxW.toFixed(2), String(cfg.MARK));
+}
 
 // 7. both variants must share identical type geometry and gap
 const dOf = s => (s.match(/<path d="([^"]+)"\/>/) || [])[1];
-check(dOf(flatSvg) === dOf(svg), 'lettering identical', dOf(flatSvg).length + ' chars', 'same');
+check(!!altSvg && dOf(altSvg) === dOf(svg), 'lettering identical',
+  dOf(svg).length + ' chars', 'same');
 check(Math.abs(fg.inkRight - inkRight) < 0.01, 'gap identical across variants',
   fg.inkRight.toFixed(2), inkRight.toFixed(2));
-check(Math.abs(fg.built.find(x => x.name === 'Bruno Ace SC').textX
-              - o.textX) < 0.01, 'text origin identical', o.textX, o.textX);
+check(Math.abs(compute({ flat: !cfg.TREATMENT.includes('flat') }).built
+        .find(x => x.name === 'Bruno Ace SC').textX - o.textX) < 0.01,
+  'text origin identical', o.textX, o.textX);
 
 console.log('\n' + (fail.length ? 'FAILURES: ' + fail.join(', ') : 'all checks passed'));

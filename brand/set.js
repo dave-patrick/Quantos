@@ -11,6 +11,13 @@ module.exports = {
   // Applied to every face at once, in the SVG's own user units.
   SIZE_DELTA: -10,
 
+  // Which treatment ships as the wordmark.
+  //   'flat' - shapes only; no glow, no drop shadows
+  //   'glow' - the icon as designed, ambient glow plus drop shadows
+  // Flat was chosen: the glow carries a faint grey cast on light grounds and
+  // dissolves at small sizes, which is most of where a wordmark gets used.
+  TREATMENT: 'flat',
+
   options: [
     {
       name: 'Gruppo', file: 'Gruppo.ttf', css: 'Gruppo, sans-serif',

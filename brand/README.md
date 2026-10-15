@@ -2,8 +2,8 @@
 
 The wordmark is the app icon used as the letter **Q**, followed by `uantos`.
 
-**Locked:** Bruno Ace SC, caps, outlined. See [`BRAND-SPEC.txt`](BRAND-SPEC.txt) for
-the ratios and the rules that hold it together.
+**Locked:** Bruno Ace SC, caps, outlined, **flat treatment**. See
+[`BRAND-SPEC.txt`](BRAND-SPEC.txt) for the ratios and the rules that hold it together.
 
 ## Use it
 
@@ -12,10 +12,14 @@ outlined from the font binary, so there is no webfont or font dependency of any
 kind. It fills from `currentColor`, so it inherits whatever colour you set.
 
 ```html
-<svg viewBox="-8 111.08 605.83 117.65" style="color:#F2F6FC"><!-- contents --></svg>
+<svg viewBox="-4 105.9 609.36 128" style="color:#F2F6FC"><!-- contents --></svg>
 ```
 
-`quantos-wordmark-final.html` is a preview: light and dark, plus a scale strip.
+`quantos-wordmark-glow.svg` is the same wordmark with the icon's original 3D
+treatment kept. Identical lettering, gap and centring — only the treatment
+differs. It is not the shipped asset.
+
+`quantos-wordmark-final.html` previews both, on light and dark, at five sizes.
 
 ## The two ratios
 
@@ -24,8 +28,12 @@ kind. It fills from `currentColor`, so it inherits whatever colour you set.
 | Q : cap height | 1.993 : 1 | 120 / 60.2 |
 | gap : Q | 0.150 : 1 | 18 / 120 |
 
-Three things that are easy to get wrong, and are corrected automatically here:
+Four things that are easy to get wrong, and are corrected here:
 
+- **`getBBox` excludes stroke.** It reports geometry only and never sees a
+  filter. The arcs carry `stroke-width: 128`, so it understated the mark by
+  64 units a side — sizing off it made the Q render at ~131u instead of 120u.
+  All extents here come from pixel scans of the rendered icon instead.
 - **The icon's ink is inset inside its artboard** — it sits 21 units below the
   centre of its 1020-unit box. Spacing measured box-to-box is wrong, and
   centring on the box centre puts the Q low.
@@ -35,6 +43,8 @@ Three things that are easy to get wrong, and are corrected automatically here:
   adds 11 units, Turret Road's 5.4. The gap is measured ink-edge to glyph-ink,
   so the bearing is paid off or the faces drift apart.
 
+Flat's frame is its ink, so its box is exactly `MARK` — no hidden margin.
+
 ## Rebuilding
 
 ```sh
@@ -42,25 +52,28 @@ node fetch-fonts.js     # fonts/ is gitignored; third-party binaries
 node render.js          # -> preview.template.html
 node build-preview.js   # -> preview.html          (six-option comparison)
 node build-final.js     # -> quantos-wordmark.svg  (the deliverable)
-                        #    quantos-wordmark-final.html
+                        #    quantos-wordmark-glow.svg  (alternative)
                         #    BRAND-SPEC.txt
+                        #    quantos-wordmark-final.html
 node verify-geom.js     # structure of the comparison page
-node verify-final.js    # re-derives the ratios from the exported SVG itself
+node verify-final.js    # re-derives the ratios from the exported SVGs themselves
 ```
 
-`set.js` holds the tunables — `SIZE_DELTA`, `GAP`, `MARK`, and the per-face
-sizes. Everything downstream is computed from real font metrics read out of the
-binary tables (`fontdata.js`, `outline.js`); nothing is measured in the browser.
+`set.js` holds the tunables — `TREATMENT`, `SIZE_DELTA`, `GAP`, `MARK`, and
+the per-face sizes. Everything downstream is computed from real font metrics
+read out of the binary tables (`fontdata.js`, `outline.js`); nothing is
+measured in the browser.
 
-`verify-final.js` deliberately re-parses the shipped SVG rather than trusting
-the generator, so a drift between the two cannot pass silently.
+`verify-final.js` deliberately re-parses the shipped SVGs rather than trusting
+the generator, and asserts that both treatments share byte-identical lettering.
 
 ## Files
 
 | | |
 |---|---|
-| `quantos-wordmark.svg` | the deliverable |
-| `quantos-wordmark-final.html` | preview of the deliverable |
+| `quantos-wordmark.svg` | **the deliverable** — flat |
+| `quantos-wordmark-glow.svg` | same geometry, glow treatment |
+| `quantos-wordmark-final.html` | preview of both |
 | `quantos-icon.svg` | master icon, background stripped for transparency |
 | `BRAND-SPEC.txt` | locked ratios and rules |
 | `preview.template.html` | generated comparison page template |

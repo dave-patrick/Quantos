@@ -76,51 +76,82 @@ ${icon.body.split('\n').map(l => '      ' + l).join('\n')}
            mono: svg('#F2F6FC'), inverse: svg('#0B0E13') };
 }
 
-const glow = build(false);
-const flat = build(true);
+// Two treatments are built from the same artwork:
+//   flat - the 3D treatment stripped, nothing but the shapes
+//   glow - the icon as designed: ambient glow plus drop shadows
+// They use identical ink sizing and an identical optical gap, so the only
+// difference between them is the treatment. cfg.TREATMENT decides which one
+// ships as the wordmark; the other is kept alongside as a named alternative.
+const chosen = compute({ flat: cfg.TREATMENT === 'flat' });
+const other = compute({ flat: cfg.TREATMENT !== 'flat' });
 
+const primary = build(cfg.TREATMENT === 'flat');
+const alternate = build(cfg.TREATMENT !== 'flat');
+
+// The canonical filename always holds the chosen asset.
 fs.writeFileSync(path.join(dir, 'quantos-wordmark.svg'),
-  glow.mono.replace('#F2F6FC', 'currentColor'));
-fs.writeFileSync(path.join(dir, 'quantos-wordmark-flat.svg'),
-  flat.mono.replace('#F2F6FC', 'currentColor'));
+  primary.mono.replace('#F2F6FC', 'currentColor'));
 
-for (const v of [glow, flat]) {
-  console.log(`${(v.flat ? 'flat' : 'glow').padEnd(5)} viewBox ${v.vb.padEnd(34)} ${v.W}x${v.H}` +
-    `  Q:cap ${(cfg.MARK / v.capBand).toFixed(3)}:1  gap:Q ${(cfg.GAP / cfg.MARK).toFixed(3)}:1`);
+// Clear both alternative names before writing, so switching TREATMENT cannot
+// leave the previously-named file behind.
+const ALT_NAMES = ['flat', 'glow'];
+for (const n of ALT_NAMES) {
+  const p = path.join(dir, `quantos-wordmark-${n}.svg`);
+  if (n !== (alternate.flat ? 'flat' : 'glow') && fs.existsSync(p)) fs.unlinkSync(p);
 }
+fs.writeFileSync(path.join(dir, `quantos-wordmark-${alternate.flat ? 'flat' : 'glow'}.svg`),
+  alternate.mono.replace('#F2F6FC', 'currentColor'));
+
+for (const v of [primary, alternate]) {
+  const file = v === primary ? 'quantos-wordmark.svg'
+    : `quantos-wordmark-${v.flat ? 'flat' : 'glow'}.svg`;
+  console.log(`${(v.flat ? 'flat' : 'glow').padEnd(5)}${v === primary ? ' <- chosen' : ' <- alt   '}  ` +
+    `${file.padEnd(30)} viewBox ${v.vb.padEnd(28)} ${v.W}x${v.H}  ` +
+    `Q:cap ${(cfg.MARK / v.capBand).toFixed(3)}:1  gap:Q ${(cfg.GAP / cfg.MARK).toFixed(3)}:1`);
+}
+console.log('wrote quantos-wordmark.svg, quantos-wordmark-' +
+  (alternate.flat ? 'flat' : 'glow') + '.svg, BRAND-SPEC.txt, quantos-wordmark-final.html');
+
+const glow = primary.flat ? alternate : primary;
+const flat = primary.flat ? primary : alternate;
 
 // ---- the ratio spec ------------------------------------------------------
+const capBand = primary.capBand;
 const readme = `Quantos — locked wordmark
 ========================
 Chosen face : ${CHOICE}
-Letters     : ${glow.o.text}
+Letters     : ${primary.o.text}
+Treatment   : ${cfg.TREATMENT}${primary.flat ? ' (3D treatment removed)' : ' (as designed)'}
 Built       : ${new Date().toISOString().slice(0, 10)}
 
 Files
 -----
-quantos-wordmark.svg        glow treatment, self-contained, fill=currentColor
-quantos-wordmark-flat.svg   flat treatment, same geometry
+quantos-wordmark.svg        THE WORDMARK. Self-contained, fill=currentColor.
+quantos-wordmark-${alternate.flat ? 'flat' : 'glow'}.svg   the other treatment, same geometry
 quantos-wordmark-final.html preview of both, on light and dark
 
-Proportions (identical in both treatments)
-------------------------------------------
-${Object.entries(glow.spec).filter(([k]) => k !== 'treatment')
+Proportions
+-----------
+${Object.entries(primary.spec).filter(([k]) => k !== 'treatment')
   .map(([k, v]) => k.padEnd(22) + v).join('\n')}
 
-Two treatments, one geometry
-----------------------------
-glow : the icon as designed - ambient glow plus drop shadows
-flat : the 3D treatment stripped; shapes only
-
-They differ only in treatment. Same ink size, same optical gap, same centring.
+Identical in both treatments. They differ only in treatment - same ink size,
+same optical gap, same centring, byte-identical lettering.
 
 Rules
 -----
-1. The Q is always ${(cfg.MARK / glow.capBand).toFixed(2)}x the cap height. Never size it independently.
+1. The Q is always ${(cfg.MARK / capBand).toFixed(2)}x the cap height. Never size it independently.
 2. The gap is always ${(cfg.GAP / cfg.MARK).toFixed(2)}x the Q, measured ink edge to glyph ink edge.
    The icon's glow is inset, so box-to-box spacing is wrong.
 3. The Q's optical centre sits on the cap-height band centre.
 4. Set at any size by scaling the whole group; never re-space the parts.
+
+Why flat
+--------
+The glow was drawn for a 1024px app icon. In a wordmark it carries a faint
+grey cast on light grounds and dissolves at small sizes, which is most of
+where a wordmark gets used. Flat's box is also exactly the ink, so there is
+no hidden margin to misjudge.
 
 Note on measurement
 -------------------
@@ -142,6 +173,18 @@ const strip = v => [20, 32, 48, 72, 108].map(h =>
 const table = v => Object.entries(v.spec)
   .map(([k, val]) => `<tr><td class="k">${k}</td><td>${val}</td></tr>`).join('\n        ');
 
+const section = (v, title, note, heading) => `
+  <section>
+    <h2>${heading || title}</h2>
+    <p class="note">${note}</p>
+${card(v, 'dark')}
+${card(v, 'light')}
+    <h3>Scale</h3>
+    <div class="scale">
+        ${strip(v)}
+    </div>
+  </section>`;
+
 const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -160,6 +203,7 @@ const html = `<!doctype html>
   h2{ font-size:23px; font-weight:600; letter-spacing:-.01em; margin-bottom:4px }
   h3{ font-size:15px; font-weight:600; margin:26px 0 10px; color:#38BDF8; letter-spacing:.04em; text-transform:uppercase }
   .note{ color:var(--ink-dim); max-width:62ch; margin-bottom:24px }
+  .locked{ display:inline-block; background:#38BDF81F; color:#38BDF8; font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:3px 9px; border-radius:999px; margin-left:10px; vertical-align:middle }
   .card{ position:relative; border-radius:16px; padding:36px; margin-bottom:14px; background:#0B0E13; border:1px solid var(--line) }
   .card.light{ background:#F7F8FB; border-color:#0B0E1310 }
   .card .tag{ position:absolute; top:12px; right:14px; font-size:11px; color:var(--ink-faint) }
@@ -170,11 +214,14 @@ const html = `<!doctype html>
   .scale figure{ display:flex; flex-direction:column; align-items:center; gap:10px }
   .scale svg{ height:24px; width:auto; color:var(--ink) }
   .scale figcaption{ color:var(--ink-faint); font-size:11px; font-variant-numeric:tabular-nums }
+  .explain{ background:#0B0E13;border:1px solid var(--line);border-radius:16px;padding:24px;color:var(--ink-dim);font-size:14px;font-weight:350 }
+  .explain b{ color:var(--ink); font-weight:600 }
   table{ border-collapse:collapse; width:100%; font-size:14px }
   th,td{ text-align:left; padding:9px 14px 9px 0; border-bottom:1px solid var(--line); vertical-align:top }
   th{ color:var(--ink-faint); font-weight:500; font-size:12px; text-transform:uppercase; letter-spacing:.06em }
   td{ color:var(--ink); font-variant-numeric:tabular-nums }
   td.k{ color:var(--ink-dim) }
+  code{ background:#0B0E13; border:1px solid var(--line); border-radius:6px; padding:2px 7px; font-size:13px; color:#38BDF8 }
   footer{ border-top:1px solid var(--line); margin-top:56px; padding-top:22px; color:var(--ink-faint); font-size:13.5px }
   @media (max-width:820px){ body{padding:34px 18px 28px} h1{font-size:30px} }
 </style>
@@ -184,38 +231,32 @@ const html = `<!doctype html>
   <header>
     <p class="kicker">Quantos · brand</p>
     <h1>Wordmark locked</h1>
-    <p class="lede">${CHOICE}, outlined. Two treatments, one geometry — same ink size, same optical gap, same centring. Only the 3D treatment differs. Pick one.</p>
+    <p class="lede">${CHOICE}, outlined, flat treatment. The SVG is self-contained — no webfont, no font dependency, identical on every machine. Use <code>quantos-wordmark.svg</code>.</p>
   </header>
 
-  <section>
-    <h2>Glow — the icon as designed</h2>
-    <p class="note">Ambient glow and drop shadows, as supplied. Warmer and more dimensional; carries a faint grey cast on light grounds.</p>
-${card(glow, 'dark')}
-${card(glow, 'light')}
-    <h3>Scale</h3>
-    <div class="scale">
-        ${strip(glow)}
-    </div>
-  </section>
-
-  <section>
-    <h2>Flat — 3D treatment removed</h2>
-    <p class="note">Shapes only, no glow and no drop shadows. Cleaner on light grounds, and it holds its edges at small sizes where the glow turns to mush.</p>
-${card(flat, 'dark')}
-${card(flat, 'light')}
-    <h3>Scale</h3>
-    <div class="scale">
-        ${strip(flat)}
-    </div>
-  </section>
+${section(primary, '', `The shipped wordmark: <code>quantos-wordmark.svg</code>. Shapes only — the glow and drop shadows are removed. Its box is exactly the ink, so there is no hidden margin to misjudge.`, 'The wordmark')}
+${section(alternate, '', `Kept as <code>quantos-wordmark-${alternate.flat ? 'flat' : 'glow'}.svg</code>. Identical lettering, gap and centring; only the treatment differs. Not the shipped asset.`, `The other treatment: ${alternate.flat ? 'flat' : 'glow'}`)}
 
   <section>
     <h2>Proportions</h2>
-    <p class="note">Identical in both. These are the numbers; everything else derives from them.</p>
-    <h3>Glow</h3>
-    <table>${table(glow)}</table>
-    <h3>Flat</h3>
-    <table>${table(flat)}</table>
+    <p class="note">Identical in both treatments. These are the numbers; everything else derives from them.</p>
+    <table>
+      <tr><th>Property</th><th>Shipped (${cfg.TREATMENT})</th><th>${alternate.flat ? 'flat' : 'glow'}</th></tr>
+      ${Object.keys(primary.spec).filter(k => k !== 'treatment')
+        .map(k => `<tr><td class="k">${k === 'Q box (incl. glow)'
+            ? (cfg.TREATMENT === 'flat' ? 'Q box' : 'Q box (incl. glow)')
+            : k}</td><td>${primary.spec[k]}</td><td>${alternate.spec[k]}</td></tr>`).join('\n      ')}
+    </table>
+  </section>
+
+  <section>
+    <h2>Rules</h2>
+    <div class="explain">
+      <b>1.</b> The Q is always <b>${(cfg.MARK / capBand).toFixed(2)}x</b> the cap height. Never size it independently.<br><br>
+      <b>2.</b> The gap is always <b>${(cfg.GAP / cfg.MARK).toFixed(2)}x</b> the Q, measured ink edge to glyph ink edge. Measuring box-to-box is wrong.<br><br>
+      <b>3.</b> The Q's optical centre sits on the cap-height band centre.<br><br>
+      <b>4.</b> Scale the whole group at any size. Never re-space the parts.
+    </div>
   </section>
 
   <footer>Quantos · wordmark locked · October 2026</footer>
@@ -224,4 +265,4 @@ ${card(flat, 'light')}
 </html>
 `;
 fs.writeFileSync(path.join(dir, 'quantos-wordmark-final.html'), html);
-console.log('wrote quantos-wordmark.svg, quantos-wordmark-flat.svg, BRAND-SPEC.txt, quantos-wordmark-final.html');
+

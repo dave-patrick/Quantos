@@ -2,19 +2,20 @@ Quantos — locked wordmark
 ========================
 Chosen face : Bruno Ace SC
 Letters     : UANTOS
+Treatment   : flat (3D treatment removed)
 Built       : 2026-10-15
 
 Files
 -----
-quantos-wordmark.svg        glow treatment, self-contained, fill=currentColor
-quantos-wordmark-flat.svg   flat treatment, same geometry
+quantos-wordmark.svg        THE WORDMARK. Self-contained, fill=currentColor.
+quantos-wordmark-glow.svg   the other treatment, same geometry
 quantos-wordmark-final.html preview of both, on light and dark
 
-Proportions (identical in both treatments)
-------------------------------------------
+Proportions
+-----------
 face                  Bruno Ace SC
 Q ink height          120u
-Q box (incl. glow)    133.12 x 133.25u
+Q box (incl. glow)    120.00 x 120.00u
 Q : cap height        1.993 : 1
 Q : gap               0.150 : 1
 type size             86u
@@ -22,14 +23,10 @@ cap height            60.2u
 text origin x         132.75u
 baseline              200u
 Q ink centre          169.9u
-viewBox               -10.5 99.28 615.86 141.25
+viewBox               -4 105.9 609.36 128
 
-Two treatments, one geometry
-----------------------------
-glow : the icon as designed - ambient glow plus drop shadows
-flat : the 3D treatment stripped; shapes only
-
-They differ only in treatment. Same ink size, same optical gap, same centring.
+Identical in both treatments. They differ only in treatment - same ink size,
+same optical gap, same centring, byte-identical lettering.
 
 Rules
 -----
@@ -38,6 +35,13 @@ Rules
    The icon's glow is inset, so box-to-box spacing is wrong.
 3. The Q's optical centre sits on the cap-height band centre.
 4. Set at any size by scaling the whole group; never re-space the parts.
+
+Why flat
+--------
+The glow was drawn for a 1024px app icon. In a wordmark it carries a faint
+grey cast on light grounds and dissolves at small sizes, which is most of
+where a wordmark gets used. Flat's box is also exactly the ink, so there is
+no hidden margin to misjudge.
 
 Note on measurement
 -------------------

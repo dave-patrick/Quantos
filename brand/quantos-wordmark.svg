@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10.5 99.28 615.86 141.25" width="615.86" height="141.25" role="img" aria-label="Quantos">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 105.9 609.36 128" width="609.36" height="128" role="img" aria-label="Quantos">
   <title>Quantos</title>
   <g fill="currentColor">
-    <g transform="translate(-6.5 103.28) scale(0.12738853503184713) translate(-104 -103)">
+    <g transform="translate(0 109.9) scale(0.12738853503184713) translate(-155 -155)">
       
         <defs>
           <!-- Background Squircle Gradient -->
@@ -21,37 +21,8 @@
           </linearGradient>
       
           <!-- Ambient Blue Glow Filters -->
-          <filter id="ambientArcGlow" x="-70%" y="-70%" width="240%" height="240%">
-            <feGaussianBlur stdDeviation="28" result="blur1" />
-            <feGaussianBlur stdDeviation="12" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur1" />
-              <feMergeNode in="blur2" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-      
-          <filter id="softOrbGlow" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="22" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
       
           <!-- Drop Shadows for Cards -->
-          <filter id="cardShadow" x="-70%" y="-70%" width="240%" height="240%">
-            <feDropShadow dx="-6" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.55" />
-          </filter>
-      
-          <filter id="frontCardShadow" x="-90%" y="-90%" width="280%" height="280%">
-            <feDropShadow dx="-6" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.65" />
-            <feDropShadow dx="8" dy="20" stdDeviation="26" flood-color="#000000" flood-opacity="0.5" />
-          </filter>
-      
-          <filter id="pillShadow" x="-70%" y="-70%" width="240%" height="240%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.35" />
-          </filter>
       
           <!-- Ambient glow behind dot -->
           <radialGradient id="dotAmbient" cx="50%" cy="50%" r="50%">
@@ -164,7 +135,7 @@
           <!-- Center (626, 626), R=407, width=108 -->
           <!-- Ambient glow under arc -->
           <path d="M 654.4 220 A 407 407 0 1 0 778.5 1003.4" 
-                fill="none" stroke="#0077ff" stroke-width="128" stroke-linecap="round" opacity="0.45" filter="url(#ambientArcGlow)" />
+                fill="none" stroke="#0077ff" stroke-width="128" stroke-linecap="round" opacity="0.45" />
           <!-- Base solid gradient stroke -->
           <path d="M 654.4 220 A 407 407 0 1 0 778.5 1003.4" 
                 fill="none" stroke="url(#outerArcGrad)" stroke-width="108" stroke-linecap="round" />
@@ -176,7 +147,7 @@
           <!-- From angle -64 deg (805, 260) to angle +18 deg (1013, 752) -->
           <!-- Ambient glow -->
           <path d="M 804.6 260.1 A 407 407 0 0 1 1013.1 751.8" 
-                fill="none" stroke="#0088ff" stroke-width="128" stroke-linecap="round" opacity="0.45" filter="url(#ambientArcGlow)" />
+                fill="none" stroke="#0088ff" stroke-width="128" stroke-linecap="round" opacity="0.45" />
           <!-- Base stroke -->
           <path d="M 804.6 260.1 A 407 407 0 0 1 1013.1 751.8" 
                 fill="none" stroke="url(#rightArcGrad)" stroke-width="108" stroke-linecap="round" />
@@ -187,7 +158,7 @@
           <!-- INNER ARC (Left side, R=320, width=58) -->
           <!-- Ambient glow -->
           <path d="M 641.0 268.0 A 320 320 0 0 0 380.9 831.7" 
-                fill="none" stroke="#0077ff" stroke-width="74" stroke-linecap="round" opacity="0.4" filter="url(#ambientArcGlow)" />
+                fill="none" stroke="#0077ff" stroke-width="74" stroke-linecap="round" opacity="0.4" />
           <!-- Base stroke -->
           <path d="M 641.0 268.0 A 320 320 0 0 0 380.9 831.7" 
                 fill="none" stroke="url(#innerArcGrad)" stroke-width="58" stroke-linecap="round" />
@@ -199,21 +170,21 @@
         <!-- 3. DECK OF CARDS (Center) -->
         <g id="DeckCards">
           <!-- CARD 3 (Back Card, Royal Blue, tilted ~12.5 deg counter-clockwise) -->
-          <g transform="translate(685, 605) rotate(-12.5) translate(-685, -605)" filter="url(#cardShadow)">
+          <g transform="translate(685, 605) rotate(-12.5) translate(-685, -605)">
             <rect x="490" y="355" width="385" height="490" rx="44" ry="44" fill="url(#backCardGrad)" />
             <!-- Top and edge rim light -->
             <rect x="490" y="355" width="385" height="490" rx="44" ry="44" fill="none" stroke="#389eff" stroke-width="2.5" opacity="0.5" />
           </g>
       
           <!-- CARD 2 (Middle Card, Cyan-Blue, tilted ~4.5 deg counter-clockwise) -->
-          <g transform="translate(645, 615) rotate(-4.5) translate(-645, -615)" filter="url(#cardShadow)">
+          <g transform="translate(645, 615) rotate(-4.5) translate(-645, -615)">
             <rect x="445" y="372" width="395" height="498" rx="46" ry="46" fill="url(#midCardGrad)" />
             <!-- Top and edge rim light -->
             <rect x="445" y="372" width="395" height="498" rx="46" ry="46" fill="none" stroke="#80d0ff" stroke-width="2.5" opacity="0.65" />
           </g>
       
           <!-- CARD 1 (Front Dark Card, Charcoal Checklist, tilted ~8.4 deg clockwise) -->
-          <g transform="translate(586, 650) rotate(8.4) translate(-586, -650)" filter="url(#frontCardShadow)">
+          <g transform="translate(586, 650) rotate(8.4) translate(-586, -650)">
             <!-- Main dark face -->
             <rect x="388" y="418" width="396" height="464" rx="52" ry="52" fill="url(#frontCardGrad)" />
             
@@ -224,31 +195,31 @@
             <!-- Row 1: Checkbox + Text Bar -->
             <g id="Row1">
               <!-- Checkbox 1 -->
-              <rect x="434" y="498" width="77" height="82" rx="20" ry="20" fill="url(#checkboxGrad)" filter="url(#pillShadow)" />
+              <rect x="434" y="498" width="77" height="82" rx="20" ry="20" fill="url(#checkboxGrad)" />
               <!-- White Checkmark 1 -->
               <polyline points="449,539 465,562 496,527" 
                         fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
               <!-- White Bar 1: pill shape -->
-              <rect x="538" y="534" width="186" height="61" rx="30.5" ry="30.5" fill="url(#pillGrad)" filter="url(#pillShadow)" />
+              <rect x="538" y="534" width="186" height="61" rx="30.5" ry="30.5" fill="url(#pillGrad)" />
             </g>
       
             <!-- Row 2: Checkbox + Text Bar -->
             <g id="Row2">
               <!-- Checkbox 2 -->
-              <rect x="434" y="599" width="77" height="82" rx="20" ry="20" fill="url(#checkboxGrad)" filter="url(#pillShadow)" />
+              <rect x="434" y="599" width="77" height="82" rx="20" ry="20" fill="url(#checkboxGrad)" />
               <!-- White Checkmark 2 -->
               <polyline points="448,640 464,663 495,628" 
                         fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
               <!-- White Bar 2: pill shape -->
-              <rect x="538" y="635" width="187" height="61" rx="30.5" ry="30.5" fill="url(#pillGrad)" filter="url(#pillShadow)" />
+              <rect x="538" y="635" width="187" height="61" rx="30.5" ry="30.5" fill="url(#pillGrad)" />
             </g>
       
             <!-- Row 3: Bullet Dot + Text Bar -->
             <g id="Row3">
               <!-- Bullet Circle: center at (472.5, 742), r=36 -->
-              <circle cx="472.5" cy="742" r="36" fill="url(#checkboxGrad)" filter="url(#pillShadow)" />
+              <circle cx="472.5" cy="742" r="36" fill="url(#checkboxGrad)" />
               <!-- White Bar 3: pill shape -->
-              <rect x="537" y="736" width="187" height="62" rx="31" ry="31" fill="url(#pillGrad)" filter="url(#pillShadow)" />
+              <rect x="537" y="736" width="187" height="62" rx="31" ry="31" fill="url(#pillGrad)" />
             </g>
           </g>
         </g>
@@ -256,9 +227,9 @@
         <!-- 4. GLOWING BLUE ORB / DOT (Bottom-Right) -->
         <g id="GlowingOrb">
           <!-- Ambient outer halo -->
-          <circle cx="897" cy="938" r="145" fill="#0088ff" opacity="0.5" filter="url(#softOrbGlow)" />
+          <circle cx="897" cy="938" r="145" fill="#0088ff" opacity="0.5" />
           <!-- Drop shadow onto background -->
-          <circle cx="897" cy="948" r="115" fill="#000000" opacity="0.45" filter="url(#softOrbGlow)" />
+          <circle cx="897" cy="948" r="115" fill="#000000" opacity="0.45" />
           <!-- 3D Shaded Sphere -->
           <circle cx="897" cy="938" r="108.5" fill="url(#sphereGrad)" />
           <!-- Soft secondary rim glow -->
