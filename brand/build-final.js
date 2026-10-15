@@ -13,10 +13,10 @@ const { built, scale } = compute();
 const o = built.find(x => x.name === CHOICE);
 if (!o) throw new Error('locked option not found: ' + CHOICE);
 
-// ---- icon, background stripped (same treatment as the preview) ----------
-const raw = fs.readFileSync(path.join(dir, 'quantos-icon.svg'), 'utf8');
-const stripped = raw.replace(/\s*<!-- 1\. MAIN BACKGROUND SQUIRCLE -->[\s\S]*?<g id="Background">[\s\S]*?<\/g>/, '');
-const iconBody = stripped.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').trim();
+// ---- icon, background stripped and filter regions widened --------------
+const { loadIcon } = require('./icon.js');
+const icon = loadIcon(path.join(dir, 'quantos-icon.svg'));
+const iconBody = icon.body;
 
 // ---- outlined text ------------------------------------------------------
 const font = load(path.join(dir, 'fonts', o.file));
