@@ -54,6 +54,8 @@ Build a personal productivity app where:
 
 **Recommended design:** One frontend codebase, written in TypeScript, used by both clients.
 
+**Confirmed:** Built with Vite and Svelte. The editor engine is CodeMirror 6, because it edits the Markdown source directly and leaves untouched text exactly as written, instead of rebuilding the Markdown from a document model on save.
+
 It handles:
 
 - Editing and reading.
@@ -68,7 +70,7 @@ The frontend never writes vault files directly.
 
 ### B. Local backend
 
-**Confirmed:** A .NET 8 web service, published as a self-contained single file.
+**Confirmed:** A .NET 10 web service, published as a self-contained single file.
 
 It handles:
 
@@ -87,7 +89,7 @@ It handles:
 
 ### C. Windows client (no install)
 
-**Confirmed:** A .NET 8 app, published as a self-contained single file, that shows the frontend through WebView2.
+**Confirmed:** A .NET 10 app, published as a self-contained single file, that shows the frontend through WebView2.
 
 It handles:
 
@@ -129,13 +131,15 @@ In the browser, the terminal drawer is hidden. The other three features show a "
 2. Extra windows, browser sessions, CLI commands, and capture windows all connect to that process.
 3. A second client never becomes a second independent writer.
 4. Exit warns you about pending saves and stops the backend only after a safe shutdown.
+5. The backend holds an exclusive lock file in the vault (`Vault/.state/backend.lock`) for as long as it runs. A second backend that can't get the lock refuses to start.
+6. The running backend writes a discovery file to `client-data/settings/backend.json` with its port, process ID, and access token. Only the current user can read it. Clients, the CLI, and capture windows read this file to find and connect to the running backend, and treat a file whose process ID is no longer running as stale.
 
 ### F. Technology stack (confirmed)
 
 | Component | Technology |
 |---|---|
-| Windows client | .NET 8 self-contained single file with WebView2 |
-| Backend | .NET 8 web service, self-contained single file |
+| Windows client | .NET 10 self-contained single file with WebView2 |
+| Backend | .NET 10 web service, self-contained single file |
 | PowerShell | Engine built into .NET |
 | Derived data cache | SQLite |
 | Frontend | TypeScript |
@@ -242,7 +246,7 @@ Vault/
 
 ### Universal node fields
 
-1. Permanent identifier that never changes.
+1. Permanent identifier that never changes. **Confirmed:** a ULID, stored in the frontmatter `id` field.
 2. Title.
 3. Workspace.
 4. Supertag assignments.
@@ -322,6 +326,14 @@ Every write in the app goes through one service:
 6. Update the derived indexes.
 7. Notify connected clients.
 8. Report success only after the save has finished.
+
+**Confirmed for step 5:** Write to a temporary file in the same folder, flush it to disk, then swap it into place with `File.Replace` (or a move, for new files). A save that is interrupted leaves either the old file or the new one, never a partial file.
+
+**Confirmed for step 2:** The permission check exists from the first version of the write service. The local interface is allowed everything, but every write still passes through the check, so agents, plugins, and the CLI can be restricted later without adding new write paths.
+
+### Startup reconciliation
+
+**Confirmed:** On every start, before accepting writes, the backend scans the vault for files that were added, changed, or removed while it was stopped (by comparing modification times and content hashes against the cache). It finishes or rolls back any interrupted journal operations, records history for files that were changed outside the app, and updates the derived indexes. The file watcher (Stage 2) covers changes made while the backend is running.
 
 ### Changes that touch several files
 
@@ -579,6 +591,16 @@ These use a recoverable operation journal:
 9. The backend rejects requests from web pages it doesn't expect (origin checks).
 10. Shell execution and permanent deletion always require approval in the Windows client. A browser request alone can never trigger them.
 
+### Access token handoff and request checks
+
+**Confirmed:**
+
+1. The backend listens on 127.0.0.1 only.
+2. The Windows client passes the access token to its WebView2 frontend directly through the native bridge.
+3. To open the app in a browser, the Windows client or the CLI opens a URL containing a one-time code that expires after a short time. The backend exchanges the code for an `HttpOnly`, `SameSite=Strict` session cookie and then redirects to a clean URL, so the token never stays in the address bar or history.
+4. The backend rejects any request whose `Host` header isn't the expected local address and port. This blocks DNS-rebinding attacks that would otherwise get around origin checks.
+5. The backend rejects any request whose `Origin` header is present and isn't the backend's own origin or the Windows client's origin.
+
 ---
 
 ## 11. Implementation stages
@@ -587,19 +609,35 @@ These stages set the build order for Release 1.0. They don't cut any features.
 
 ### Stage 1: Foundation
 
-1. Build a portable "hello world" version and test it on your KPMG laptop without admin rights. Confirm that app controls and security tools don't block it.
-2. Project structure.
-3. Shared frontend shell.
-4. Starting and stopping the local backend.
-5. Local access token and origin checks.
-6. Vault selection, including the warning for synced folders.
-7. Node identity, the schema version, and the Markdown reader.
-8. The single write service.
-9. History and trash.
-10. Cache rebuild.
-11. Basic communication between client and backend.
+1. Build a portable "hello world" version and test it on your KPMG laptop without admin rights. It is a .NET 10 Windows client showing a page through WebView2, a .NET 10 backend on 127.0.0.1 that reads and writes a SQLite file, and a PowerShell engine check. Check each of these:
+   - The executables run after being copied or downloaded onto the laptop (Mark-of-the-Web and SmartScreen), unsigned.
+   - AppLocker or WDAC doesn't block the executables or the native libraries that single-file builds unpack, including SQLite's `e_sqlite3.dll`.
+   - The WebView2 Evergreen runtime is installed, and its user-data folder under `client-data/` is writable.
+   - The backend can listen on 127.0.0.1 with no firewall prompt, and the corporate proxy doesn't interfere with local requests.
+   - Which language mode the built-in PowerShell engine runs in. WDAC forces ConstrainedLanguage mode, which limits the Stage 6 terminal.
+   - Antivirus doesn't quarantine either executable.
 
-**Done when:** You can create, edit, restart, restore, and rebuild without losing any authoritative content.
+   Choose a fallback before running the test, in case something is blocked: browser-only use, a framework-dependent build, or code signing.
+2. Write the storage and schema document: node frontmatter keys, ULID identifiers, the schema version, file naming, and the folder layout. Changing these is cheap only before any vault exists.
+3. Project structure: a solution for the backend, the Windows client, the shared library, and the tests, plus the Vite and Svelte frontend.
+4. Automated test harness, running the storage and recovery acceptance tests against a temporary vault.
+5. Shared frontend shell.
+6. Starting and stopping the local backend: vault lock file, discovery file, connecting to a backend that's already running, close-to-minimize, and a safe Exit.
+7. Security: a random access token at each launch, the token handoff to WebView2 and the browser, and `Host` and `Origin` checks.
+8. Vault selection, including the warning for synced folders.
+9. Node identity, the schema version, and the Markdown reader.
+10. The single write service, with atomic writes, the permission check in place, and the operation journal.
+11. History and trash.
+12. Startup reconciliation and cache rebuild.
+13. Communication between client and backend, including a push channel that notifies connected clients of changes.
+
+**Done when:**
+
+1. The portable build runs on the KPMG laptop without admin rights, or a fallback is chosen and documented.
+2. You can create, edit, restart, restore, and rebuild without losing any authoritative content.
+3. Edits made outside the app while the backend is stopped are picked up at the next start.
+4. Requests without the access token, from an unexpected origin, or with an unexpected `Host` header are rejected.
+5. The Storage and recovery acceptance tests in Section 13 pass automatically.
 
 ### Stage 2: Core writing workflow
 
@@ -856,7 +894,15 @@ Don't assign these to a release until there's a separate scope decision.
 | Local, non-containerized Release 1.0 | Confirmed |
 | No-install Windows client; creating local folders and files is OK | Confirmed |
 | Single user, no sign-in | Confirmed |
-| .NET 8 + WebView2 stack, SQLite cache, TypeScript frontend | Confirmed |
+| .NET 10 + WebView2 stack, SQLite cache, TypeScript frontend | Confirmed |
+| Frontend built with Vite and Svelte | Confirmed |
+| CodeMirror 6 as the editor engine | Confirmed |
+| ULID node identifiers in frontmatter `id` | Confirmed |
+| Storage and schema document written before Stage 1 code | Confirmed |
+| Vault lock file and discovery file for one backend per vault | Confirmed |
+| One-time code exchanged for a session cookie for browser access; `Host` header checks | Confirmed |
+| Atomic writes, startup reconciliation, and the permission check in Stage 1 | Confirmed |
+| Hello-world laptop test has explicit checks and a fallback chosen in advance | Confirmed |
 | Cache stored only in `client-data/cache/` | Confirmed |
 | Vault defaults to a non-synced folder, with a OneDrive warning | Confirmed |
 | Access token, origin checks, Windows client approval for shell and permanent delete | Confirmed |
