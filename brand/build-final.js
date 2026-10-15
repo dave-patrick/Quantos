@@ -3,18 +3,19 @@
 // no webfont and no font dependency of any kind.
 const fs = require('fs');
 const path = require('path');
-const { compute, ICON, cfg } = require('./geometry.js');
+const { compute, cfg } = require('./geometry.js');
 const { load, outline } = require('./outline.js');
 
 const dir = __dirname;
 const CHOICE = 'Bruno Ace SC';
 
-const { built, scale } = compute();
+const G = compute();
+const { built, k, boxW, boxH } = G;
 const o = built.find(x => x.name === CHOICE);
 if (!o) throw new Error('locked option not found: ' + CHOICE);
 
 // ---- icon, background stripped and filter regions widened --------------
-const { loadIcon } = require('./icon.js');
+const { loadIcon, FRAME } = require('./icon.js');
 const icon = loadIcon(path.join(dir, 'quantos-icon.svg'));
 const iconBody = icon.body;
 
@@ -23,14 +24,17 @@ const font = load(path.join(dir, 'fonts', o.file));
 const word = outline(font, o.text, o.size, o.textX, cfg.BASE);
 
 // ---- assemble -----------------------------------------------------------
-// Icon: content coords 120..1140 -> 0..120, offset down by useY.
-const iconTransform = `translate(0 ${o.useY}) scale(${scale}) translate(-${ICON.vbX} -${ICON.vbY})`;
+// Icon content coords FRAME -> the box placed so its ink sits at x=0 and its
+// ink centre lands on the letter body band.
+const iconTransform = `translate(${o.glowX} ${o.glowY}) scale(${k}) translate(-${FRAME.x} -${FRAME.y})`;
 
-const pad = 8;
-const x0 = 0;
-const x1 = Math.max(word.bbox.xMax, cfg.MARK);
-const y0 = Math.min(word.bbox.yMin, o.inkTop);
-const y1 = Math.max(word.bbox.yMax, o.inkBot);
+// Frame on the glow, not the ink — otherwise the halo gets sliced and leaves
+// hard straight edges on whichever ground the mark is placed on.
+const pad = 4;
+const x0 = Math.min(0, o.glowX);
+const x1 = Math.max(word.bbox.xMax, o.glowX + boxW);
+const y0 = Math.min(word.bbox.yMin, o.glowY);
+const y1 = Math.max(word.bbox.yMax, o.glowBot);
 const r1 = n => Math.round(n * 100) / 100;
 const vb = `${r1(x0 - pad)} ${r1(y0 - pad)} ${r1(x1 - x0 + pad * 2)} ${r1(y1 - y0 + pad * 2)}`;
 const W = r1(x1 - x0 + pad * 2);
@@ -58,15 +62,15 @@ const capBand = o.body;
 const spec = {
   wordmark: 'Q' + o.text,
   face: 'Bruno Ace SC',
-  'Q size': cfg.MARK + 'u',
+  'Q ink height': cfg.MARK + 'u',
+  'Q box (glow-inclusive)': boxW.toFixed(2) + ' x ' + boxH.toFixed(2) + 'u',
   'Q : cap height': (cfg.MARK / capBand).toFixed(3) + ' : 1',
   'Q : gap': (cfg.GAP / cfg.MARK).toFixed(3) + ' : 1',
   'type size': o.size + 'u',
   'cap height': capBand.toFixed(1) + 'u',
   'x offset (text origin)': o.textX + 'u',
   'baseline': cfg.BASE + 'u',
-  'Q centre': o.bodyMid.toFixed(1) + 'u',
-  'Q top': o.useY + 'u',
+  'Q ink centre': o.bodyMid.toFixed(1) + 'u',
   'viewBox': vb
 };
 

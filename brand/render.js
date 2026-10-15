@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const cfg = require('./set.js');
 const { fontData } = require('./fontdata.js');
+const G = require('./geometry.js').compute();
 
 const dir = __dirname;
 
@@ -28,55 +29,10 @@ function metrics(file) {
   };
 }
 
-// ---- icon ink, measured once (see notes in place.js) --------------------
-const ICON = { vbX: 120, vbY: 120, vbH: 1020, inkX: 219.09, inkY: 219.01, inkW: 822.91, inkH: 863.99 };
-const scale = cfg.MARK / ICON.vbH;
-const inkTopOff = (ICON.inkY - ICON.vbY) * scale;
-const inkCentreOff = (ICON.inkY + ICON.inkH / 2 - ICON.vbY) * scale;
-// The ink is inset inside its artboard, so the gap between the Q's box and
-// the text is not the gap you actually see between the two shapes.
-const inkRight = (ICON.inkX + ICON.inkW - ICON.vbX) * scale;
-
 // ---- build each option --------------------------------------------------
 const r2 = n => Math.round(n * 100) / 100;
-const built = cfg.options.map(o => {
-  const m = metrics(path.join(dir, 'fonts', o.file));
-  const size = o.size + cfg.SIZE_DELTA;
-  // Scale the fake-bold stroke with the type so the weight ratio is preserved.
-  const stroke = o.stroke ? r2(o.stroke * size / o.size) : 0;
-  const ratio = o.caps ? m.cap : m.x;
-  return { ...o, size, stroke, ratio, darkStroke: r2(stroke * cfg.DARK_FACTOR), ascRatio: m.asc };
-});
-
-// A face flagged matchBody is sized so its body band equals the mean of the
-// others. Caps measured against everyone else's x-height read ~25% too large;
-// this keeps them honest automatically instead of hand-nudging them again.
-const fixed = built.filter(o => !o.matchBody);
-const target = fixed.reduce((s, o) => s + o.size * o.ratio, 0) / fixed.length;
-for (const o of built.filter(o => o.matchBody)) {
-  o.size = Math.round(target / o.ratio);
-}
-
-// Every position and label now follows from the resolved sizes.
-for (const o of built) {
-  o.body = o.size * o.ratio;
-  o.bodyMid = cfg.BASE - o.body / 2;
-  o.useY = r2(o.bodyMid - inkCentreOff);
-  o.inkTop = o.useY + inkTopOff;
-  o.inkBot = o.useY + inkTopOff + ICON.inkH * scale;
-  o.ascTop = cfg.BASE - o.size * o.ascRatio;
-  // GAP is measured from the icon's ink to the first glyph's ink, so each
-  // face's own side bearing gets paid off — otherwise the faces drift apart.
-  o.lsb = fontData(path.join(dir, 'fonts', o.file), o.text[0]).lsb * o.size;
-  o.textX = r2(inkRight + cfg.GAP - o.lsb);
-  o.spec = `${o.size}pt${o.caps ? ' caps' : ''}` +
-    (o.stroke ? ` · stroke +${o.stroke.toFixed(1)} light / +${(o.darkStroke).toFixed(1)} dark` : ' · no stroke');
-}
-
-// ---- frame the wordmark so it sits centred in its card ------------------
-const top = Math.min(...built.map(o => Math.min(o.inkTop, o.ascTop)));
-const bot = Math.max(...built.map(o => Math.max(o.inkBot, cfg.BASE)));
-const viewBox = `0 ${Math.round((top + bot) / 2 - cfg.FRAME_H / 2)} 900 ${cfg.FRAME_H}`;
+const built = G.built;
+const { k, boxW, boxH, inkXInBox, inkCentreOff, inkRight, viewBox } = G;
 
 // ---- render -------------------------------------------------------------
 function stage(o, light) {
@@ -85,7 +41,7 @@ function stage(o, light) {
     ? ` stroke="currentColor" stroke-width="${sw}" stroke-linejoin="round" paint-order="stroke"`
     : '';
   return `<div class="stage${light ? ' light' : ''}"><span class="tag">${light ? 'light' : 'dark'}</span>\n` +
-    `          <svg viewBox="${viewBox}"><use href="#mark" x="0" y="${o.useY}" width="${cfg.MARK}" height="${cfg.MARK}"/>` +
+    `          <svg viewBox="${viewBox}"><use href="#mark" x="${o.glowX}" y="${o.glowY}" width="${boxW.toFixed(2)}" height="${boxH.toFixed(2)}"/>` +
     `<text x="${o.textX}" y="${cfg.BASE}" fill="currentColor"${painted} font-family="${o.css}" font-size="${o.size}">${o.text}</text></svg>\n` +
     `        </div>`;
 }

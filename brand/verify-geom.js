@@ -6,10 +6,10 @@ const { fontData } = require('./fontdata.js');
 
 const h = fs.readFileSync(path.join(__dirname, 'preview.html'), 'utf8');
 
-// Same constants render.js uses.
-const ICON = { vbX: 120, inkX: 219.09, inkW: 822.91 };
-const scale = 120 / 1020;
-const inkRight = (ICON.inkX + ICON.inkW - ICON.vbX) * scale;
+// Placement comes from geometry.js; re-deriving it here was a third copy of
+// the same maths and had already drifted once. verify-final.js is the check
+// that works independently - it re-parses the exported SVG.
+const { inkRight } = require('./geometry.js').compute();
 
 const opts = h.split('<div class="opt">').slice(1);
 let bad = 0;

@@ -2,10 +2,11 @@
 // file's own contents and check it against the locked ratios.
 const fs = require('fs');
 const path = require('path');
-const { compute, ICON, cfg } = require('./geometry.js');
+const { compute, cfg } = require('./geometry.js');
+const { FRAME, INK } = require('./icon.js');
 
 const svg = fs.readFileSync(path.join(__dirname, 'quantos-wordmark.svg'), 'utf8');
-const { built } = compute();
+const { built, k, boxW, boxH } = compute();
 const o = built.find(x => x.name === 'Bruno Ace SC');
 
 const fail = [];
@@ -18,17 +19,20 @@ const check = (ok, label, got, want) => {
 check(!/@font-face|fonts\.googleapis|<text/i.test(svg), 'self-contained', 'no font/text refs', 'none');
 
 // 2. icon transform, recomputed
-const tr = (svg.match(/transform="translate\(0 ([\d.]+)\) scale\(([\d.]+)\) translate\(-120 -120\)"/) || []);
-const useY = parseFloat(tr[1]), k = parseFloat(tr[2]);
-check(Math.abs(useY - o.useY) < 0.01, 'icon y offset', useY, o.useY.toFixed(2));
-check(Math.abs(k - cfg.MARK / ICON.vbH) < 1e-9, 'icon scale', k.toFixed(6), (cfg.MARK / ICON.vbH).toFixed(6));
+const tr = (svg.match(/transform="translate\((-?[\d.]+) (-?[\d.]+)\) scale\(([\d.]+)\) translate\(-(\d+) -(\d+)\)"/) || []);
+const tx = parseFloat(tr[1]), ty = parseFloat(tr[2]), kk = parseFloat(tr[3]);
+check(Math.abs(kk - k) < 1e-9, 'icon scale', kk.toFixed(6), k.toFixed(6));
+check(Math.abs(ty - o.glowY) < 0.01, 'icon y offset', ty, o.glowY.toFixed(2));
+check(Math.abs(tx - o.glowX) < 0.01, 'icon x offset', tx, o.glowX.toFixed(2));
 
-// icon ink centre under that transform, vs the letter body band centre
-const inkCentre = (ICON.inkY + ICON.inkH / 2 - ICON.vbY) * k + useY;
-check(Math.abs(inkCentre - o.bodyMid) < 0.01, 'Q ink centre on band', inkCentre.toFixed(2), o.bodyMid.toFixed(2));
+// ink left edge must land exactly on 0, ink centre on the body band
+const inkLeft = tx + (INK.x - FRAME.x) * kk;
+const inkCentre = ty + (INK.y + INK.h / 2 - FRAME.y) * kk;
+check(Math.abs(inkLeft) < 0.01, 'ink left at x=0', inkLeft.toFixed(2), '0.00');
+check(Math.abs(inkCentre - o.bodyMid) < 0.01, 'ink centre on band', inkCentre.toFixed(2), o.bodyMid.toFixed(2));
 
-const inkRight = (ICON.inkX + ICON.inkW - ICON.vbX) * k;
-const inkTop = (ICON.inkY - ICON.vbY) * k + useY;
+const inkRight = tx + (INK.x + INK.w - FRAME.x) * kk;
+const glowBox = { x: tx, y: ty, w: boxW, h: boxH };
 
 // 3. parse the outlined path and measure it
 const d = svg.match(/<path d="([^"]+)"\/>/)[1];
@@ -59,11 +63,12 @@ check(Math.abs(gapToQ - 0.15) < 0.001, 'gap : Q', gapToQ.toFixed(3), '0.150');
 check(Math.abs(qToCap - 2) < 0.01, 'Q : cap height', qToCap.toFixed(3), '~2.000');
 check(Math.abs(gap - cfg.GAP) < 0.05, 'measured ink gap', gap.toFixed(2), cfg.GAP);
 
-// 5. viewBox frames everything
+// 5. viewBox must contain the glow, not just the ink
 const vb = svg.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
-const framed = vb[0] <= Math.min(bb.xMin, 0) && vb[1] <= Math.min(bb.yMin, inkTop) &&
-               vb[0] + vb[2] >= Math.max(bb.xMax, cfg.MARK) &&
-               vb[1] + vb[3] >= Math.max(bb.yMax, o.inkBot);
-check(framed, 'viewBox frames all ink', vb.join(' '), 'contains everything');
+const framed = vb[0] <= glowBox.x && vb[1] <= glowBox.y &&
+               vb[0] + vb[2] >= glowBox.x + glowBox.w &&
+               vb[1] + vb[3] >= glowBox.y + glowBox.h;
+check(framed, 'viewBox contains glow', vb.join(' '),
+  `glow ${glowBox.x.toFixed(1)},${glowBox.y.toFixed(1)} ${glowBox.w.toFixed(1)}x${glowBox.h.toFixed(1)}`);
 
 console.log('\n' + (fail.length ? 'FAILURES: ' + fail.join(', ') : 'all checks passed'));
