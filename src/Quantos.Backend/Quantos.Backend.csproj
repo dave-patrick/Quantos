@@ -1,13 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <ItemGroup>
-    <ProjectReference Include="..\Quantos.Core\Quantos.Core.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Quantos.Backend</AssemblyName>
+    <RootNamespace>Quantos.Backend</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <Product>Quantos</Product>
+    <Company>Atomic 22 Industries</Company>
+    <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Quantos.Core\Quantos.Core.csproj" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.13" />
+  </ItemGroup>
+
+  <!-- The built frontend is embedded so the backend stays a single file. -->
+  <ItemGroup>
+    <Content Remove="wwwroot\**" />
+    <EmbeddedResource Include="wwwroot\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Quantos.Tests" />
+  </ItemGroup>
 
 </Project>
