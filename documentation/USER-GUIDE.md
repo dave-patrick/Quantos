@@ -49,11 +49,12 @@ Windows-only features (below) works the same.
 ## 2. Writing
 
 - **New note:** `Ctrl+N`. Type a title, press Enter, write.
-- **Links:** type `[[` and pick a note. Links keep working when notes are renamed or moved. If two
+- **Links:** type `[[` and pick a note. Links keep working when notes are renamed or moved, and a
+  rename updates the link text everywhere, including links in properties like *Owner*. If two
   notes share a title, Quantos asks which one you mean; it never guesses.
 - **Shift-click** a link to open it in the other pane. `Ctrl`-click opens a new tab.
 - **Tasks:** type `- [ ] Something to do` in any note. It becomes a real task, kept in sync both
-  ways: tick it in the note or in the task list and both change.
+  ways: tick it in the note or in the task list and both change. Enter on an empty item ends the list.
 - **Embeds:** `![[Note]]` shows another note (or `![[Note#Heading]]`, `![[Note#^block]]`) inline.
 - **Synced blocks:** select text, open the command palette (`Ctrl+Shift+P`) and choose
   *Make selection a synced block*. Insert it elsewhere with *Insert synced block*. Editing any copy
@@ -106,8 +107,9 @@ own tabs, splits and scroll positions.
 - **Subtasks, dependencies, effort:** in a task's panel. Effort rolls up from subtasks; a task
   waiting on unfinished dependencies shows *blocked*.
 - **Reminders:** add a date and time in the task panel. The Windows client shows a notification
-  (once, however many windows are open); every reminder is kept under Notifications. Snooze from
-  the task panel.
+  (once, however many windows are open). Without it, the browser shows the reminder in the page, or
+  as a system notification if you allow them under Notifications. Every reminder is kept under
+  Notifications. Snooze from the task panel.
 - **Timeline:** drag tasks onto the day to block time.
 - **Stale tasks:** a review of open tasks untouched for a while.
 - **Calendar file:** the calendar button in Tasks saves a `.ics` file to the vault's `exports` folder.
