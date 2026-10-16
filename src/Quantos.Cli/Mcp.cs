@@ -122,7 +122,8 @@ public static class Mcp
         return $"Appended to {node["title"]}.";
     }
 
-    private static string Json(JsonNode? n) => n?.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) ?? "null";
+    // Compact: tool results go into an agent's context, where indentation only costs tokens.
+    private static string Json(JsonNode? n) => n?.ToJsonString(Compact) ?? "null";
 
     private static JsonObject Error(JsonNode? id, int code, string message) =>
         new() { ["jsonrpc"] = "2.0", ["id"] = id, ["error"] = new JsonObject { ["code"] = code, ["message"] = message } };
