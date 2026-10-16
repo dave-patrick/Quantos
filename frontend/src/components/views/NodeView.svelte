@@ -17,6 +17,9 @@
   import ConflictView from '../ConflictView.svelte';
   import NodeMenu from '../NodeMenu.svelte';
   import TaskPanel from '../TaskPanel.svelte';
+  import { activeEditor } from '../../lib/activeEditor';
+  import { recent } from '../../lib/recent.svelte';
+  import { openByTitle } from '../../lib/links.svelte';
 
   let { tab, id, paneIndex }: { tab: Tab; id: string; paneIndex: number } = $props();
 
@@ -77,7 +80,11 @@
 
   onMount(() => {
     if (tab.title === 'Note' && doc.node) layout.retitle(id, doc.node.title);
+    recent.touch(id);
   });
+
+  // Namespaced titles (Projects/Apollo/Budget) get clickable parents.
+  const namespace = $derived(doc.node?.title.includes('/') ? doc.node.title.split('/').slice(0, -1) : []);
 
   // A fresh note gets the cursor: the title if it is still "Untitled", otherwise the body.
   let focused = false;
@@ -167,6 +174,7 @@
           <input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle}
             onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); view?.focus(); } if (e.key === 'Escape') { titleDraft = doc.node?.title ?? ''; (e.target as HTMLInputElement).blur(); } }}
             aria-label="Title" spellcheck="false" />
+          {#if namespace.length}<nav class="ns">{#each namespace as part, i (i)}<button onclick={(e) => openByTitle(namespace.slice(0, i + 1).join('/'), e.shiftKey ? 'other' : 'current')}>{part}</button><span>/</span>{/each}</nav>{/if}
           <div class="meta faint">
             <span class="badge">{doc.node.type}</span>
             {#if doc.node.archived}<span class="badge warn">archived</span>{/if}
@@ -179,7 +187,7 @@
               <Editor text={zoomedBody.text} onchange={editZoomed} onsave={() => doc.save()} bind:view />
             {/key}
           {:else}
-            <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc.edit(t)} onsave={() => doc.save()} bind:view
+            <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc.edit(t)} onsave={() => doc.save()} bind:view onfocus={() => { activeEditor.view = view; activeEditor.docId = id; }}
               readOnly={doc.node.readOnly} placeholder="Start writing. Type [[ to link a note, - [ ] for a task." />
           {/if}
         {:else}
@@ -231,6 +239,8 @@
   .page { max-width: calc(var(--editor-width) + 4px); margin: 0 auto; }
   .title { width: 100%; border: 0; background: transparent; color: var(--text); font: 700 32px/1.25 var(--font-display); letter-spacing: .005em; padding: 18px 0 4px; }
   .title:focus { outline: none; box-shadow: none; }
+  .ns { display: flex; gap: 4px; font: 12.5px var(--font-mono); color: var(--text-faint); margin-top: 14px; }
+  .ns button { border: 0; background: none; color: var(--accent); padding: 0; font: inherit; }
   .meta { display: flex; gap: 10px; align-items: center; font-size: 12.5px; margin-bottom: 10px; }
   .notice { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); font-size: 14px; margin: 14px 0; }
   .notice.warn { background: var(--warn-wash); color: var(--warn); }

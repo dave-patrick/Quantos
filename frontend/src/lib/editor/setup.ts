@@ -14,6 +14,7 @@ import { linkCompletion, wikiLinks, type LinkHooks } from './wikilinks';
 import { taskLines, type TaskHooks } from './tasks';
 import { writingExtras } from './writing';
 import { queryBlocks } from './queryblocks';
+import { blockExtras, blockTheme } from './blocks';
 
 export interface EditorOptions {
   text: string;
@@ -78,7 +79,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     })
   ];
   if (!options.raw) {
-    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, autocompletion({ override: [linkCompletion(hooks)], icons: false }));
+    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, blockExtras, blockTheme, autocompletion({ override: [linkCompletion(hooks)], icons: false }));
   }
   if (options.placeholder) extensions.push(placeholderExt(options.placeholder));
   if (options.extra) extensions.push(...options.extra);

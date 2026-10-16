@@ -5,6 +5,7 @@
   import { openNode, searchTitles } from '../lib/links.svelte';
   import type { Where } from '../lib/layout.svelte';
   import Icon from './Icon.svelte';
+  import { recent } from '../lib/recent.svelte';
 
   let query = $state('');
   let index = $state(0);
@@ -30,7 +31,8 @@
         .slice(0, 60)
         .map((c) => ({ key: c.id, label: c.title, detail: c.group, icon: c.icon ?? 'zap', keys: displayKeys(keysFor(c.id)), run: () => c.run() }));
     }
-    const nodes = searchTitles(query, 40).map((n): Item => ({
+    const source = query.trim() ? searchTitles(query, 40) : recent.ids.map((id) => app.titleIndex.get(id)).filter((n) => !!n).slice(0, 15).concat(searchTitles('', 25).filter((n) => !recent.ids.includes(n.id))).slice(0, 40);
+    const nodes = source.map((n): Item => ({
       key: n.id, label: n.title, detail: `${n.type}${n.workspace !== app.workspace ? ' · ' + n.workspace : ''}${n.archived ? ' · archived' : ''}`,
       icon: n.type === 'task' ? 'check-square' : n.type === 'daily' ? 'calendar' : n.type === 'person' ? 'user' : 'file-text',
       run: (where) => openNode(n.id, where, n.title)

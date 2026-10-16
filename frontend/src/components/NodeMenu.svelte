@@ -18,6 +18,17 @@
     try { await fn(); } catch (e) { app.error(e); }
   }
 
+  const merge = () => act(async () => {
+    const title = prompt('Merge which note into this one? Type its exact title. It will move to the trash; links to it will point here.');
+    if (!title?.trim()) return;
+    const other = app.titles.find((t) => t.title.toLowerCase() === title.trim().toLowerCase() && t.id !== doc.id);
+    if (!other) { app.toast('No other note has that title.', 'warn'); return; }
+    await doc.flush();
+    await api.post(`nodes/${doc.id}/merge`, { other: other.id });
+    await doc.refresh();
+    app.toast(`Merged “${other.title}”. It's in the trash if you need it back.`, 'ok');
+  });
+
   const archive = () => act(async () => {
     const node = await api.post<NodeDto>(`nodes/${doc.id}/archive`, { archived: !doc.node?.archived });
     app.toast(node.archived ? 'Archived.' : 'Moved out of the archive.', 'ok');
@@ -75,6 +86,7 @@
         <button role="menuitem" onclick={setTarget}><Icon name="target" size={14} /> Writing target…</button>
         <button role="menuitem" onclick={() => (applying = true)}><Icon name="copy" size={14} /> Apply template…</button>
         <button role="menuitem" onclick={() => (moving = true)}><Icon name="layers" size={14} /> Move to workspace…</button>
+        <button role="menuitem" onclick={merge}><Icon name="layers" size={14} /> Merge another note into this…</button>
         <button role="menuitem" onclick={archive}><Icon name="archive" size={14} /> {doc.node?.archived ? 'Unarchive' : 'Archive'}</button>
         <div class="sep"></div>
         <button role="menuitem" onclick={() => exportDoc('md')}><Icon name="download" size={14} /> Export Markdown</button>

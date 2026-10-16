@@ -105,6 +105,12 @@
       {/if}
     </div>
 
+    <div class="aliases">
+      <span class="faint">Also known as</span>
+      <input class="cell" value={node.aliases.join(', ')} placeholder="other names for links and search"
+        onchange={(e) => doc.setProperties({ aliases: (e.target as HTMLInputElement).value.split(',').map((s) => s.trim()).filter(Boolean) })} />
+    </div>
+
     {#if fields.length || freeKeys.length || adding}
       <dl class="grid">
         {#each fields as field (field.key)}
@@ -175,6 +181,8 @@
   .add-tag, .add { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; color: var(--text-faint); font-size: 12.5px; padding: 3px 6px; border-radius: 5px; }
   .add-tag:hover, .add:hover { color: var(--accent); background: var(--bg-hover); }
   .tag-input { height: 24px; border-radius: 999px; border: 1px solid var(--accent); background: var(--bg-input); padding: 0 10px; font: 12px var(--font-mono); width: 140px; }
+  .aliases { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin-bottom: 6px; }
+  .aliases .cell { font-size: 13px; }
   .grid { display: grid; grid-template-columns: minmax(110px, 180px) 1fr; gap: 2px 14px; margin: 0; align-items: center; }
   dt { font: 12.5px/1.3 var(--font-mono); color: var(--text-muted); padding: 5px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   dd { margin: 0; display: flex; align-items: center; gap: 6px; min-width: 0; }

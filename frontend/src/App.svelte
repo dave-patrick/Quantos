@@ -10,6 +10,7 @@
   import { supertags } from './lib/supertags.svelte';
   import { views } from './lib/views.svelte';
   import { templatesStore } from './lib/templates.svelte';
+  import './lib/editorCommands';
   import Shell from './components/Shell.svelte';
   import Setup from './components/Setup.svelte';
   import Splash from './components/Splash.svelte';
