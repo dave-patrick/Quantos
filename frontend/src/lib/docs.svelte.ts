@@ -277,6 +277,14 @@ function replaceBody(content: string, body: string, newBody: string) {
 
 class DocStore {
   private docs = new Map<string, Doc>();
+  /** Work that will produce a document soon (e.g. today's note being created by the first keystroke). */
+  private pending = new Set<Promise<unknown>>();
+
+  track<T>(work: Promise<T>): Promise<T> {
+    this.pending.add(work);
+    work.finally(() => this.pending.delete(work));
+    return work;
+  }
 
   get(id: string): Doc {
     let doc = this.docs.get(id);
@@ -306,11 +314,13 @@ class DocStore {
   }
 
   async flushAll() {
+    // Let in-flight creations finish first, so their text is in a document before saving.
+    while (this.pending.size) await Promise.allSettled([...this.pending]);
     await Promise.all([...this.docs.values()].map((d) => d.flush()));
   }
 
   pendingCount() {
-    return [...this.docs.values()].filter((d) => d.dirty || d.status === 'saving').length;
+    return this.pending.size + [...this.docs.values()].filter((d) => d.dirty || d.status === 'saving').length;
   }
 
   handle(event: ChangeEvent) {

@@ -19,7 +19,7 @@ public sealed class PopupForm : Form
         _hideOnDeactivate = hideOnDeactivate;
         Text = title;
         Icon = MainForm.LoadIcon();
-        Size = size;
+        Size = LogicalToDeviceUnits(size);
         TopMost = topMost;
         ShowInTaskbar = !hideOnDeactivate;
         FormBorderStyle = hideOnDeactivate ? FormBorderStyle.FixedToolWindow : FormBorderStyle.SizableToolWindow;

@@ -31,7 +31,7 @@
     if (doc) { doc.edit(text); return; }
     pending = text;
     if (!creating) {
-      creating = (async () => {
+      creating = docs.track((async () => {
         try {
           const created = await api.post<NodeDto>(`daily/${workspace}/${date}`);
           oncreated(created);
@@ -41,9 +41,10 @@
             wait();
           });
           doc.edit(pending);
+          await doc.flush();
         } catch (e) { app.error(e); }
         finally { creating = null; }
-      })();
+      })());
     }
   }
 </script>

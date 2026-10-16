@@ -36,9 +36,22 @@ public sealed class MainForm : Form
         Text = "Quantos";
         Icon = LoadIcon();
         BackColor = Color.FromArgb(12, 19, 29);
-        MinimumSize = new Size(720, 480);
-        StartPosition = prefs.X is null ? FormStartPosition.CenterScreen : FormStartPosition.Manual;
-        Bounds = new Rectangle(prefs.X ?? 100, prefs.Y ?? 100, prefs.Width, prefs.Height);
+        MinimumSize = LogicalToDeviceUnits(new Size(720, 480));
+        if (prefs.X is null)
+        {
+            // First run: size relative to the screen, so high-DPI displays don't get a cramped window.
+            var area = Screen.FromPoint(Cursor.Position).WorkingArea;
+            StartPosition = FormStartPosition.Manual;
+            var size = new Size((int)(area.Width * 0.82), (int)(area.Height * 0.86));
+            Bounds = new Rectangle(area.Left + (area.Width - size.Width) / 2, area.Top + (area.Height - size.Height) / 2, size.Width, size.Height);
+        }
+        else
+        {
+            StartPosition = FormStartPosition.Manual;
+            var saved = new Rectangle(prefs.X.Value, prefs.Y ?? 100, prefs.Width, prefs.Height);
+            // A saved position on a monitor that's no longer attached falls back to the primary screen.
+            Bounds = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)) ? saved : new Rectangle(100, 100, prefs.Width, prefs.Height);
+        }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
         Controls.Add(_web);
         Controls.Add(_status);
@@ -307,6 +320,7 @@ public sealed class MainForm : Form
     private void ShowBalloon(string title, string body, string? nodeId)
     {
         _lastNotificationNode = nodeId;
+        _paths.Log($"Notification: {title}");
         BeginInvoke(() => _tray.ShowBalloonTip(8000, title, string.IsNullOrWhiteSpace(body) ? " " : body, ToolTipIcon.Info));
     }
 

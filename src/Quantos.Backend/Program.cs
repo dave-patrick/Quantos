@@ -64,6 +64,7 @@ public static class Program
             o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
             o.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
         });
+        builder.Services.Configure<HostOptions>(o => o.ShutdownTimeout = TimeSpan.FromSeconds(5));
         builder.Services.AddSingleton(paths);
         builder.Services.AddSingleton(settings);
         builder.Services.AddSingleton(tokens ?? new AccessTokens());
