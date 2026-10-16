@@ -30,7 +30,8 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
     {
         writes.Permissions.Demand(actor, Permission.Read, $"Export {id}");
         var node = writes.Require(id);
-        var markdown = Prepare(node, freeze: format != ExportFormat.Markdown || true, depth: 0);
+        // Exports sit in Vault/exports, so attachment paths point one folder up.
+        var markdown = PropertyList(node) + Prepare(node, freeze: true, depth: 0, attachmentBase: "../");
         Directory.CreateDirectory(writes.Vault.Exports);
         var stem = Storage.Vault.Slug(node.Title) + "-" + writes.Clock.Now.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture);
         switch (format)
@@ -69,27 +70,37 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
         Directory.CreateDirectory(writes.Vault.Exports);
         var zipPath = Unique(Path.Combine(writes.Vault.Exports, Storage.Vault.Slug(Path.GetFileName(folder)) + "-" + writes.Clock.Now.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture) + ".zip"));
         var count = 0;
+        var attachments = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
         using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
         {
             foreach (var file in Directory.EnumerateFiles(folder, "*.md", SearchOption.AllDirectories).Order())
             {
                 var node = Node.FromText(writes.Vault.Relative(file), AtomicFile.ReadAllText(file));
-                var md = Prepare(node, freeze: true, depth: 0);
                 var rel = Path.GetRelativePath(folder, file);
+                // The zip carries its notes' attachments at its root; point each note at them.
+                var up = string.Concat(Enumerable.Repeat("../", rel.Count(ch => ch is '\\' or '/')));
+                var md = PropertyList(node) + Prepare(node, freeze: true, depth: 0, attachmentBase: up);
+                foreach (var a in Attachments.Find(node.Body)) attachments.Add(a);
                 var entryName = format == ExportFormat.Html ? Path.ChangeExtension(rel, ".html") : rel;
                 var entry = zip.CreateEntry(entryName.Replace('\\', '/'));
                 using var w = new StreamWriter(entry.Open(), new UTF8Encoding(false));
                 w.Write(format == ExportFormat.Html ? Html(node.Title, md) : $"# {node.Title}\n\n{md}");
                 count++;
             }
+            foreach (var a in attachments)
+            {
+                var source = writes.Vault.Absolute(a);
+                if (File.Exists(source)) zip.CreateEntryFromFile(source, a.Replace('\\', '/'), CompressionLevel.Optimal);
+            }
         }
         return new ExportResult(writes.Vault.Relative(zipPath), format, $"{count} note(s)");
     }
 
     /// <summary>The body made self-contained: readable links, inlined embeds, frozen queries, no hidden markers.</summary>
-    public string Prepare(Node node, bool freeze, int depth)
+    public string Prepare(Node node, bool freeze, int depth, string attachmentBase = "")
     {
         var body = node.Body;
+        if (attachmentBase.Length > 0) body = AttachmentRef().Replace(body, m => m.Groups["open"].Value + attachmentBase + "attachments/");
         body = SyncMarker().Replace(body, "");
         body = TaskMarker().Replace(body, "");
         if (freeze) body = QueryFence().Replace(body, m => Freeze(m.Groups["q"].Value, node.Workspace));
@@ -99,12 +110,34 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
             var target = writes.Get(m.Groups["id"].Value);
             if (target is null) return "> *(embedded note not found)*";
             var frag = m.Groups["frag"].Success ? m.Groups["frag"].Value : null;
-            var text = frag is null ? Prepare(target, freeze, depth + 1) : Links.Fragment(target.Body, frag) ?? "";
+            var text = frag is null ? Prepare(target, freeze, depth + 1, attachmentBase) : Links.Fragment(target.Body, frag) ?? "";
             var quoted = string.Join("\n", text.TrimEnd().Split('\n').Select(l => "> " + l));
             return $"> **{target.Title}**\n>\n{quoted}";
         });
         body = Links.Rewrite(body, l => l.Display ?? (l.IsResolved ? writes.Cache.Get(l.Target)?.Title : l.TitleTarget.Title) ?? l.Target);
         return body.Trim() + "\n";
+    }
+
+    // Bookkeeping that means nothing outside Quantos.
+    private static readonly HashSet<string> Internal = new(StringComparer.OrdinalIgnoreCase)
+        { "series", "occurrence", "reminders", "source", "tz", "my_day", "my_day_order", "time_block", "completed", "parent", "cover" };
+
+    /// <summary>The note's supertags and properties as a short list under the title, with links shown as titles.</summary>
+    public static string PropertyList(Node node)
+    {
+        var lines = new List<string>();
+        if (node.Tags.Count > 0) lines.Add("- **Tags:** " + string.Join(", ", node.Tags.Select(t => "#" + t)));
+        foreach (var (key, value) in node.Properties)
+        {
+            if (Internal.Contains(key) || value is null || value is IDictionary<object, object> || value is IDictionary<string, object?>) continue;
+            var list = Props.List(node.Properties, key);
+            var text = list.Count > 1 ? string.Join(", ", list) : Props.Str(value) ?? "";
+            text = LinkText().Replace(text, "$1").Trim();
+            if (text.Length == 0) continue;
+            var label = key.Replace('_', ' ');
+            lines.Add($"- **{char.ToUpperInvariant(label[0]) + label[1..]}:** {text}");
+        }
+        return lines.Count == 0 ? "" : string.Join("\n", lines) + "\n\n";
     }
 
     private string Freeze(string query, string workspace)
@@ -210,4 +243,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
 
     [GeneratedRegex(@"\[\[[0-9A-HJKMNP-TV-Z]{26}(?:#[^\]|]+)?\|([^\]]+)\]\]")]
     private static partial Regex LinkText();
+
+    [GeneratedRegex(@"(?<open>\]\(<?)attachments/", RegexOptions.IgnoreCase)]
+    private static partial Regex AttachmentRef();
 }

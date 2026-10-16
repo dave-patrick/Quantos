@@ -145,7 +145,9 @@ own tabs, splits and scroll positions.
 - **Vault diagnostics** shows what the last start-up check found, and can check integrity or
   rebuild the cache.
 - **Export:** Markdown, HTML or PDF from a note's menu, or a zip of a whole workspace from the file
-  tree. Queries are frozen into tables and embeds are included, so exports read the same anywhere.
+  tree. Queries are frozen into tables, embeds are included and properties are listed under the title,
+  so exports read the same anywhere. A workspace zip carries the images and files its notes use.
+  Exports go to the vault's `exports` folder.
 
 ### Manual backup (Release 1.0)
 

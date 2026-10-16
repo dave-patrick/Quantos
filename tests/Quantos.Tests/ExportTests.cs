@@ -45,6 +45,30 @@ public class ExportTests
         Assert.Equal(["one.md", "two.md"], zip.Entries.Select(e => e.FullName).Order());
     }
 
+    [Fact]
+    public void Exports_keep_properties_and_images()
+    {
+        using var v = new TestVault();
+        var (image, _) = v.Session.Attachments.Add(new MemoryStream([1, 2, 3]), "chart.png", Actor.User);
+        var sam = v.Writes.Create(new CreateNodeRequest { Title = "Sam" }, Actor.User);
+        var note = v.Writes.Create(new CreateNodeRequest
+        {
+            Title = "Plan", Body = $"![chart]({image})\n",
+            Properties = new Dictionary<string, object?> { ["status"] = "Active", ["owner"] = $"[[{sam.Id}|Sam]]", ["series"] = "internal" }
+        }, Actor.User);
+
+        var single = File.ReadAllText(v.Abs(v.Session.Exports.ExportNode(note.Id, ExportFormat.Markdown, Actor.User).Path));
+        Assert.Contains("- **Status:** Active", single);
+        Assert.Contains("- **Owner:** Sam", single);
+        Assert.DoesNotContain("Series", single);
+        Assert.Contains($"](../{image})", single);   // exports/ sits beside attachments/
+
+        var result = v.Session.Exports.ExportFolder("workspaces/default", ExportFormat.Markdown, Actor.User);
+        using var zip = ZipFile.OpenRead(v.Abs(result.Path));
+        Assert.NotNull(zip.GetEntry(image));
+        using var reader = new StreamReader(zip.GetEntry("nodes/plan.md")!.Open());
+        Assert.Contains($"](../{image})", reader.ReadToEnd());
+    }
     [Fact] // 8D.6 and 8D.9
     public void Attachments_are_stored_once_and_orphans_go_to_the_trash()
     {
