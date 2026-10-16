@@ -79,6 +79,15 @@
     if (tab.title === 'Note' && doc.node) layout.retitle(id, doc.node.title);
   });
 
+  // A fresh note gets the cursor: the title if it is still "Untitled", otherwise the body.
+  let focused = false;
+  let titleInput = $state<HTMLInputElement | null>(null);
+  $effect(() => {
+    if (focused || !doc.node || doc.node.body.trim() !== '') return;
+    if (doc.node.title === 'Untitled' && titleInput) { focused = true; const el = titleInput; setTimeout(() => { el.focus(); el.select(); }, 0); }
+    else if (view) { focused = true; view.focus(); }
+  });
+
   /** Outline zoom: show only one heading's section; breadcrumbs lead back out. */
   const zoomedBody = $derived.by(() => {
     if (!zoom) return null;
@@ -155,7 +164,7 @@
         {#if doc.error && doc.status === 'error'}<div class="notice error"><Icon name="alert" size={15} /> {doc.error}</div>{/if}
 
         {#if !doc.raw}
-          <input class="title" bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle}
+          <input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle}
             onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); view?.focus(); } if (e.key === 'Escape') { titleDraft = doc.node?.title ?? ''; (e.target as HTMLInputElement).blur(); } }}
             aria-label="Title" spellcheck="false" />
           <div class="meta faint">

@@ -54,7 +54,7 @@ public sealed class VaultHost : IDisposable
             if (_session is not null && Vault.PathEquals(_session.Vault.Root, check.Path)) return _session.LastReconcile ?? _session.Start();
             var session = new VaultSession(check.Path, Paths);
             ReconcileReport report;
-            try { report = session.Start(); }
+            try { report = session.Start(); session.StartWatching(); }
             catch { session.Dispose(); throw; }
             var old = _session;
             if (old is not null) old.Changes.Changed -= Forward;

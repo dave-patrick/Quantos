@@ -135,7 +135,21 @@ public sealed class WriteService
 
             var node = WriteFile(abs, id, null, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Created, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
+            ResolveWaitingLinks(node, actor);
             return node;
+        }
+    }
+
+    /// <summary>Links typed before their target existed resolve as soon as it is created (unless still ambiguous).</summary>
+    private void ResolveWaitingLinks(Node created, Actor actor)
+    {
+        foreach (var title in created.Aliases.Prepend(created.Title))
+        foreach (var referrer in Cache.UnresolvedReferrers(title).Where(r => r != created.Id))
+        {
+            var note = Get(referrer);
+            if (note is null || note.ReadOnly) continue;
+            var resolved = ResolveLinks(note.Body, note.Workspace).Body;
+            if (resolved != note.Body) UpdateFields(referrer, null, null, null, Actor.System with { Instance = actor.Instance }, resolved);
         }
     }
 

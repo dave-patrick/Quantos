@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/Quantos.Backend",
+        "--",
+        "--vault",
+        "C:\\Users\\davem\\AppData\\Local\\Temp\\claude\\C--Users-davem-repos-Quantos\\bcef5942-7ccf-4ade-bdc9-a16ea43db752\\scratchpad\\Vault",
+        "--client-data",
+        "C:\\Users\\davem\\AppData\\Local\\Temp\\claude\\C--Users-davem-repos-Quantos\\bcef5942-7ccf-4ade-bdc9-a16ea43db752\\scratchpad\\client-data",
+        "--port",
+        "47821"
+      ],
+      "port": 47821
+    },
+    {
+      "name": "frontend-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev"
+      ],
+      "port": 5173
+    }
+  ]
+}

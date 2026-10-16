@@ -90,6 +90,8 @@ public static class Program
 
         NodeEndpoints.Map(app);
         SystemEndpoints.Map(app);
+        TaskEndpoints.Map(app);
+        VaultEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {
@@ -124,6 +126,7 @@ public static class Program
         });
 
         if (options.ParentPid is { } parent) WatchParent(parent, app.Lifetime);
+        StartReminderLoop(host, log, app.Lifetime.ApplicationStopping);
         return app;
     }
 
@@ -149,6 +152,20 @@ public static class Program
             ctx.Response.StatusCode = status;
             await ctx.Response.WriteAsJsonAsync(body);
         }
+    }
+
+    /// <summary>Checks reminders every 20 seconds. A missed reminder (sleep, restart) fires on the next tick.</summary>
+    private static void StartReminderLoop(VaultHost host, ILogger log, CancellationToken stopping)
+    {
+        _ = Task.Run(async () =>
+        {
+            while (!stopping.IsCancellationRequested)
+            {
+                try { host.Session?.Reminders.Tick(); }
+                catch (Exception ex) { log.LogWarning(ex, "Reminder check failed"); }
+                try { await Task.Delay(TimeSpan.FromSeconds(20), stopping); } catch (OperationCanceledException) { }
+            }
+        }, stopping);
     }
 
     private static int PickPort(int preferred)

@@ -310,6 +310,19 @@ public sealed class CacheIndex : IDisposable
         }
     }
 
+    /// <summary>Notes holding a typed, unresolved [[Title]] link (optionally [[ws:Title]]).</summary>
+    public IReadOnlyList<string> UnresolvedReferrers(string title)
+    {
+        lock (_gate)
+        {
+            using var cmd = Command(_db, "SELECT DISTINCT src FROM links WHERE target = $t COLLATE NOCASE OR target LIKE $w COLLATE NOCASE", ("$t", "?" + title), ("$w", "?%:" + title));
+            using var r = cmd.ExecuteReader();
+            var list = new List<string>();
+            while (r.Read()) list.Add(r.GetString(0));
+            return list;
+        }
+    }
+
     public IReadOnlyList<(string NoteId, bool Checked, string Text)> InlineTaskRefs(string taskId)
     {
         lock (_gate)

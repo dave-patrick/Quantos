@@ -78,12 +78,12 @@ function fuzzyScore(title: string, query: string): number {
   if (t.startsWith(q)) return 500 - t.length;
   const idx = t.indexOf(q);
   if (idx >= 0) return 300 - idx;
-  let ti = 0, score = 0;
-  for (const ch of q) {
-    const found = t.indexOf(ch, ti);
-    if (found < 0) return -1;
-    score += found === ti ? 3 : 1;
-    ti = found + 1;
+  // Every word must appear; words matching at a word start score higher.
+  let score = 100;
+  for (const word of q.split(/\s+/).filter(Boolean)) {
+    const at = t.indexOf(word);
+    if (at < 0) return -1;
+    score += at === 0 || /[\s\-_/(]/.test(t[at - 1]) ? 20 : 5;
   }
   return score;
 }
@@ -94,9 +94,9 @@ export function searchTitles(query: string, limit = 50): NodeSummary[] {
     .map((n) => {
       let best = fuzzyScore(n.title, query);
       for (const alias of (n.properties?.aliases as string[] | undefined) ?? []) best = Math.max(best, fuzzyScore(String(alias), query) - 1);
-      return { n, s: best + (n.workspace === ws ? 50 : 0) - (n.archived ? 100 : 0) };
+      return { n, raw: best, s: best + (n.workspace === ws ? 50 : 0) - (n.archived ? 100 : 0) };
     })
-    .filter((x) => x.s >= 0)
+    .filter((x) => x.raw >= 0)
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)
     .map((x) => x.n);

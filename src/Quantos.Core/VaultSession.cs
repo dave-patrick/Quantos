@@ -24,6 +24,24 @@ public sealed class VaultSession : IDisposable
         Changes = new ChangeHub();
         Writes = new WriteService(Vault, Cache, Permissions, Changes, Clock);
         Reconciler = new Reconciler(Writes);
+        Config = new ConfigStore(Vault, Permissions, Changes);
+        Tasks = new Tasks.TaskService(Writes);
+        Capture = new CaptureService(Writes, Tasks);
+        Notifications = new NotificationStore(Vault);
+        Reminders = new ReminderService(Writes, Tasks, Notifications);
+    }
+
+    public ConfigStore Config { get; }
+    public Tasks.TaskService Tasks { get; }
+    public CaptureService Capture { get; }
+    public NotificationStore Notifications { get; }
+    public ReminderService Reminders { get; }
+    public VaultWatcher? Watcher { get; private set; }
+
+    /// <summary>Starts watching for outside edits (after the startup scan).</summary>
+    public void StartWatching()
+    {
+        Watcher ??= new VaultWatcher(Writes, Reconciler);
     }
 
     public QuantosPaths Paths { get; }
@@ -58,6 +76,7 @@ public sealed class VaultSession : IDisposable
 
     public void Dispose()
     {
+        Watcher?.Dispose();
         Cache.Dispose();
         _lock?.Dispose();
     }
