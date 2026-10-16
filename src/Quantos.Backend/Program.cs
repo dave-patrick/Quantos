@@ -54,6 +54,7 @@ public static class Program
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = [], ContentRootPath = AppContext.BaseDirectory });
         builder.WebHost.UseKestrel(k =>
         {
+            k.Limits.MaxRequestBodySize = 210L * 1024 * 1024;
             k.Listen(IPAddress.Loopback, port); // local machine only (BUILD-PLAN section 10.6)
             k.AddServerHeader = false;
         });

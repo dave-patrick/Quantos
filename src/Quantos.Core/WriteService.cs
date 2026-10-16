@@ -409,6 +409,7 @@ public sealed class WriteService
             var entry = TrashBin.Read(entryId) ?? throw new QuantosException("That item is no longer in the trash.", 404);
             var file = TrashBin.EntryFile(entry);
             if (!File.Exists(file)) throw new QuantosException("The trashed file is missing.", 404);
+            if (entry.Type == "attachment") return RestoreAttachment(entry, file, actor);
             if (Cache.PathOf(entry.Id) is { } live) throw new QuantosException($"A node with the same identity already exists at {live}.", 409);
 
             var target = Vault.Absolute(entry.OriginalPath);
@@ -428,6 +429,20 @@ public sealed class WriteService
             Changes.Publish(new ChangeEvent(ChangeKind.Restored, node.Id, node.Path, entry.OriginalPath, node.Hash, actor.ToString(), entry));
             return node;
         }
+    }
+
+    private Node RestoreAttachment(TrashEntry entry, string file, Actor actor)
+    {
+        var target = Vault.Absolute(entry.OriginalPath);
+        var manifest = Path.Combine(TrashBin.EntryDir(entry.EntryId), "manifest.json");
+        var op = new JournalOperation { Description = $"Restore attachment {entry.OriginalPath}" };
+        if (!File.Exists(target)) op.Steps.Add(JournalStep.Move(Vault.Relative(file), entry.OriginalPath));
+        op.Steps.Add(JournalStep.Delete(Vault.Relative(manifest), AtomicFile.ReadAllText(manifest)));
+        Journal.Execute(op);
+        if (File.Exists(file)) File.Delete(file); // identical content already back in place
+        TryDeleteEmptyDir(TrashBin.EntryDir(entry.EntryId));
+        Changes.Publish(new ChangeEvent(ChangeKind.Restored, null, entry.OriginalPath, Origin: actor.ToString(), Data: entry));
+        return new Node { Id = entry.Id, Path = entry.OriginalPath, Content = "", Hash = "", Title = entry.Title, Type = "attachment" };
     }
 
     public void DeletePermanently(string entryId, Actor actor, string? approvalId)

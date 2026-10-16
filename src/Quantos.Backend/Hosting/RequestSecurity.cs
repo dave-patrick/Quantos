@@ -109,10 +109,10 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
             return;
         }
         ctx.Response.Headers.XContentTypeOptions = "nosniff";
-        ctx.Response.Headers["X-Frame-Options"] = "DENY";
+        ctx.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
         ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
         ctx.Response.Headers.ContentSecurityPolicy =
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'";
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'";
         await next(ctx);
     }
 

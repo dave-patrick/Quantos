@@ -34,7 +34,13 @@ public sealed class VaultSession : IDisposable
         Queries = new Structure.QueryService(Writes, Supertags);
         SyncedBlocks = new Structure.SyncedBlockService(Writes);
         Automations = new Extensibility.AutomationService(Writes, Tasks, Notifications);
+        Exports = new Export.ExportService(Writes, Queries);
+        Attachments = new AttachmentStore(Writes);
     }
+
+    public AttachmentStore Attachments { get; }
+
+    public Export.ExportService Exports { get; }
 
     public Extensibility.AutomationService Automations { get; }
 

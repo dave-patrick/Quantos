@@ -8,9 +8,23 @@ public sealed record CaptureBody(string Text, string? Workspace, string? Target)
 public sealed record PreserveBody(string Content, string? Label);
 public sealed record ReadBody(List<string>? Ids);
 public sealed record LayoutBody(JsonNode? Layout);
+public sealed record ExportBody(string? Format, string? Path);
 
 public static class VaultEndpoints
 {
+    private static async Task<Stream> Buffer(Stream s)
+    {
+        var ms = new MemoryStream();
+        await s.CopyToAsync(ms);
+        ms.Position = 0;
+        return ms;
+    }
+
+    private static Core.Export.ExportFormat Format(string? f) => f?.ToLowerInvariant() switch
+    {
+        "html" => Core.Export.ExportFormat.Html, "pdf" => Core.Export.ExportFormat.Pdf, _ => Core.Export.ExportFormat.Markdown
+    };
+
     public static void Map(WebApplication app)
     {
         var api = app.MapGroup("/api");
@@ -48,6 +62,36 @@ public static class VaultEndpoints
             var (diagnostics, checkedFiles) = Integrity.Check(host.Require().Writes);
             return new { diagnostics, @checked = checkedFiles };
         });
+
+        api.MapPost("/export/node/{id}", (VaultHost host, HttpContext ctx, string id, ExportBody b) =>
+            host.Require().Exports.ExportNode(id, Format(b.Format), ctx.Actor()));
+
+        api.MapPost("/export/folder", (VaultHost host, HttpContext ctx, ExportBody b) =>
+            host.Require().Exports.ExportFolder(b.Path ?? throw new QuantosException("Choose a folder."), Format(b.Format), ctx.Actor()));
+
+        // Attachments (images in notes, PDFs): served read-only from the vault's attachments folder.
+        api.MapGet("/files/{**path}", (VaultHost host, string path) =>
+        {
+            var session = host.Require();
+            var abs = session.Vault.Absolute(path);
+            if (!abs.StartsWith(session.Vault.Attachments, StringComparison.OrdinalIgnoreCase) || !File.Exists(abs)) return Results.NotFound();
+            var type = Path.GetExtension(abs).ToLowerInvariant() switch
+            {
+                ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", ".gif" => "image/gif", ".webp" => "image/webp", ".svg" => "image/svg+xml",
+                ".pdf" => "application/pdf", ".txt" or ".md" => "text/plain; charset=utf-8", _ => "application/octet-stream"
+            };
+            return Results.File(abs, type, enableRangeProcessing: true);
+        });
+
+        api.MapPost("/attachments", async (VaultHost host, HttpContext ctx, string name) =>
+        {
+            var (path, existed) = host.Require().Attachments.Add(ctx.Request.Body is { } s ? await Buffer(s) : Stream.Null, name, ctx.Actor());
+            var isImage = Path.GetExtension(path) is ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" or ".svg";
+            return new { path, existed, markdown = (isImage ? "!" : "") + $"[{name.Replace("]", "")}]({path})" };
+        });
+        api.MapGet("/attachments/audit", (VaultHost host) => host.Require().Attachments.Audit());
+        api.MapPost("/attachments/trash", (VaultHost host, HttpContext ctx, ExportBody b) =>
+            host.Require().Attachments.TrashOrphan(b.Path ?? "", ctx.Actor()));
 
         api.MapGet("/notifications", (VaultHost host) => host.Require().Notifications.List());
 
