@@ -4,7 +4,7 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { bracketMatching, foldGutter, foldKeymap, foldService, indentOnInput, indentUnit } from '@codemirror/language';
 import { languages } from '@codemirror/language-data';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
-import { Compartment, EditorState, type Extension } from '@codemirror/state';
+import { Compartment, EditorState, Prec, type Extension } from '@codemirror/state';
 import {
   crosshairCursor, drawSelection, dropCursor, EditorView, highlightSpecialChars, keymap, placeholder as placeholderExt,
   rectangularSelection
@@ -44,6 +44,27 @@ const listFolding = foldService.of((state, lineStart) => {
   return end > line.to ? { from: line.to, to: end } : null;
 });
 
+/**
+ * Enter on an empty list item, task item or quote line ends it (an indented item steps out one level),
+ * as in most editors. CodeMirror's own Markdown Enter would first insert a blank line and keep the list.
+ */
+function exitEmptyItem(view: EditorView): boolean {
+  const { state } = view;
+  const sel = state.selection.main;
+  if (state.selection.ranges.length > 1 || !sel.empty) return false;
+  const line = state.doc.lineAt(sel.head);
+  const m = /^(\s*)(?:(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s*)?|>\s*)$/.exec(line.text);
+  if (!m || sel.head !== line.to) return false;
+  const indent = m[1];
+  if (indent.length && !line.text.trimStart().startsWith('>')) {
+    const drop = indent.endsWith('\t') ? 1 : Math.min(2, indent.length);
+    view.dispatch({ changes: { from: line.from, to: line.from + drop }, userEvent: 'input' });
+  } else {
+    view.dispatch({ changes: { from: line.from, to: line.to }, selection: { anchor: line.from }, userEvent: 'input' });
+  }
+  return true;
+}
+
 export const typewriter = new Compartment();
 export const editable = new Compartment();
 
@@ -66,6 +87,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     foldGutter({ openText: '▾', closedText: '▸' }),
     listFolding,
     EditorView.lineWrapping,
+    Prec.high(keymap.of([{ key: 'Enter', run: exitEmptyItem }])),
     markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true }),
     quantosTheme,
     quantosHighlight,

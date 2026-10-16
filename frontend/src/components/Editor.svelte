@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import type { EditorView } from '@codemirror/view';
   import { createEditor, syncText, typewriter, editable } from '../lib/editor/setup';
+  import { refreshTasks } from '../lib/editor/tasks';
   import { typewriterScrolling } from '../lib/editor/writing';
   import { EditorState } from '@codemirror/state';
   import { EditorView as View } from '@codemirror/view';
@@ -69,7 +70,7 @@
   // Re-render task chips when task data changes.
   $effect(() => {
     void tasksVersion.value;
-    view?.dispatch({ effects: [] });
+    view?.dispatch({ effects: refreshTasks.of(null) });
   });
 </script>
 

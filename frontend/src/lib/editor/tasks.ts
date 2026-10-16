@@ -1,4 +1,4 @@
-import { RangeSetBuilder, type Extension } from '@codemirror/state';
+import { RangeSetBuilder, StateEffect, type Extension } from '@codemirror/state';
 import { Decoration, EditorView, ViewPlugin, WidgetType, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 
 export interface TaskHooks {
@@ -69,13 +69,16 @@ function build(view: EditorView, hooks: TaskHooks) {
   return builder.finish();
 }
 
+/** Dispatched when task data changes (status, dates, trash) so chips and strike-through redraw. */
+export const refreshTasks = StateEffect.define<null>();
+
 export function taskLines(hooks: TaskHooks): Extension {
   const plugin = ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
       constructor(view: EditorView) { this.decorations = build(view, hooks); }
       update(u: ViewUpdate) {
-        if (u.docChanged || u.viewportChanged || u.transactions.some((t) => t.reconfigured || t.effects.length)) this.decorations = build(u.view, hooks);
+        if (u.docChanged || u.viewportChanged || u.transactions.some((t) => t.reconfigured || t.effects.some((e) => e.is(refreshTasks)))) this.decorations = build(u.view, hooks);
       }
     },
     { decorations: (v) => v.decorations }
@@ -107,5 +110,5 @@ export function taskLines(hooks: TaskHooks): Extension {
 
 /** Forces task decorations to refresh after task data changes. */
 export function refreshDecorations(view: EditorView) {
-  view.dispatch({ effects: [] , userEvent: 'refresh' });
+  view.dispatch({ effects: refreshTasks.of(null) });
 }
