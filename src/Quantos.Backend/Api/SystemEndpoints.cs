@@ -65,6 +65,7 @@ public static class SystemEndpoints
         {
             vault = host.Session?.Vault.Root,
             defaultVault = QuantosPaths.DefaultVault,
+            exampleVault = QuantosPaths.ExampleVault,
             recent = host.Settings.RecentVaults,
             defaultCheck = VaultHost.Check(QuantosPaths.DefaultVault)
         });

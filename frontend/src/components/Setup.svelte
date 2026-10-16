@@ -9,6 +9,7 @@
 
   let path = $state('');
   let recent = $state<string[]>([]);
+  let example = $state<string | null>(null);
   let check = $state<VaultCheck | null>(null);
   let acceptSynced = $state(false);
   let busy = $state(false);
@@ -16,8 +17,9 @@
   let timer: ReturnType<typeof setTimeout>;
 
   onMount(async () => {
-    const setup = await api.get<{ vault: string | null; defaultVault: string; recent: string[]; defaultCheck: VaultCheck }>('setup');
+    const setup = await api.get<{ vault: string | null; defaultVault: string; exampleVault?: string | null; recent: string[]; defaultCheck: VaultCheck }>('setup');
     recent = setup.recent;
+    example = setup.exampleVault ?? null;
     path = switching ? '' : setup.vault ?? setup.defaultVault;
     if (path) runCheck();
   });
@@ -93,6 +95,9 @@
       <button class="btn primary" disabled={!canOpen} onclick={() => open()}>
         {busy ? 'Opening…' : check?.looksLikeVault ? 'Open vault' : 'Create vault'}
       </button>
+      {#if example && !switching}
+        <button class="btn ghost" disabled={busy} onclick={() => open(example!)} title={example}>Explore the example vault first</button>
+      {/if}
     </div>
 
     {#if recent.length}
@@ -121,7 +126,7 @@
   .warning strong { color: var(--text); }
   .accept { display: flex; gap: 8px; align-items: center; color: var(--text); font-size: 14px; cursor: pointer; }
   .error { color: var(--danger); margin: 0; }
-  .actions { margin-top: 6px; }
+  .actions { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
   .recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
   .link { display: flex; gap: 8px; align-items: center; background: none; border: 0; color: var(--text-soft); padding: 6px 8px; border-radius: 6px; width: 100%; text-align: left; font-size: 13px; }
   .link:hover { background: var(--bg-hover); color: var(--text); }

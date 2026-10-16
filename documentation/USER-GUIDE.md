@@ -27,6 +27,8 @@ Quantos\
 - **Browser:** double-click `Open in browser.cmd`. The browser and the Windows client can be open at
   the same time; both edit the same vault through the same backend.
 - **First start:** choose where your vault lives. The default is `C:\Users\<you>\Quantos\Vault`.
+  To look around first, choose **Explore the example vault first**; open your own vault later from
+  *Settings › Vault*.
   If you pick a folder inside OneDrive, Dropbox or another sync service, Quantos warns you: sync
   tools can lock files while Quantos saves, create conflict copies, and occasionally corrupt files.
   A folder that isn't synced is safer.

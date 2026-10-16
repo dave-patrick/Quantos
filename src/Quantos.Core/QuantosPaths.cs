@@ -46,6 +46,20 @@ public sealed class QuantosPaths
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Quantos", "client-data"));
     }
 
+    /// <summary>The example vault shipped beside <c>application\</c> in the package, when it's there.</summary>
+    public static string? ExampleVault
+    {
+        get
+        {
+            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
+            if (string.IsNullOrEmpty(exeDir)) return null;
+            var dir = new DirectoryInfo(exeDir);
+            if (!string.Equals(dir.Name, "application", StringComparison.OrdinalIgnoreCase) || dir.Parent is null) return null;
+            var path = Path.Combine(dir.Parent.FullName, "Example Vault");
+            return Directory.Exists(path) ? path : null;
+        }
+    }
+
     public static string DefaultVault =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Quantos", "Vault");
 }
