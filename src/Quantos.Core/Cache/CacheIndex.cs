@@ -118,11 +118,33 @@ public sealed class CacheIndex : IDisposable
 
     // ---- writes -----------------------------------------------------------------------------
 
+    private SqliteTransaction? _batch;
+
+    /// <summary>Groups many index writes into one transaction (start-up scans and rebuilds).</summary>
+    public IDisposable Batch()
+    {
+        lock (_gate) _batch ??= _db.BeginTransaction();
+        return new BatchScope(this);
+    }
+
+    private sealed class BatchScope(CacheIndex owner) : IDisposable
+    {
+        public void Dispose()
+        {
+            lock (owner._gate)
+            {
+                owner._batch?.Commit();
+                owner._batch?.Dispose();
+                owner._batch = null;
+            }
+        }
+    }
+
     public void Upsert(Node node, long mtime, long size)
     {
         lock (_gate)
         {
-            using var tx = _db.BeginTransaction();
+            using var tx = _batch is null ? _db.BeginTransaction() : null;
             RemoveInternal(node.Path, node.Id);
             Exec(_db, "INSERT INTO files(path, id, hash, mtime, size) VALUES($p, $id, $h, $m, $s)",
                 ("$p", node.Path), ("$id", node.Id), ("$h", node.Hash), ("$m", mtime), ("$s", size));
@@ -146,7 +168,7 @@ public sealed class CacheIndex : IDisposable
                     Exec(_db, "INSERT INTO attachment_refs VALUES($n, $p)", ("$n", node.Id), ("$p", attachment));
                 Exec(_db, "INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", node.Body));
             }
-            tx.Commit();
+            tx?.Commit();
         }
     }
 
@@ -154,9 +176,9 @@ public sealed class CacheIndex : IDisposable
     {
         lock (_gate)
         {
-            using var tx = _db.BeginTransaction();
+            using var tx = _batch is null ? _db.BeginTransaction() : null;
             RemoveInternal(path, null);
-            tx.Commit();
+            tx?.Commit();
         }
     }
 

@@ -14,3 +14,6 @@ TestResults/
 
 # frontend build output, embedded into the backend at build time
 /src/Quantos.Backend/wwwroot/
+
+# release output
+/publish/

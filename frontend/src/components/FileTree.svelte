@@ -83,6 +83,11 @@
     } catch (e) { app.error(e); }
   }
 
+  async function exportFolder(path: string) {
+    try { const r = await api.post<{ path: string; note: string | null }>('export/folder', { path, format: 'md' }); app.toast(`Exported ${r.note ?? ''} to ${r.path}`, 'ok'); }
+    catch (e) { app.error(e); }
+  }
+
   async function newFolder(parent: string) {
     const name = prompt('Folder name');
     if (!name?.trim()) return;
@@ -96,6 +101,7 @@
     <input class="input filter" placeholder="Filter files" bind:value={filter} aria-label="Filter files" />
     <button class="icon-btn" title="New note" onclick={() => newNote()}><Icon name="plus" size={15} /></button>
     <button class="icon-btn" title="New folder" onclick={() => tree && newFolder(tree.path + '/nodes')}><Icon name="folder" size={15} /></button>
+    <button class="icon-btn" title="Export this workspace's notes as a zip" onclick={() => tree && exportFolder(tree.path)}><Icon name="download" size={15} /></button>
     <button class="icon-btn" title="Show archive" aria-pressed={showArchive} onclick={() => (showArchive = !showArchive)}><Icon name="archive" size={15} /></button>
   </div>
   {#if selected.size}

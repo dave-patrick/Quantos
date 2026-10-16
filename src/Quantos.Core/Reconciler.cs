@@ -30,6 +30,7 @@ public sealed class Reconciler(WriteService writes)
             foreach (var problem in r.Problems) diagnostics.Add(new Diagnostic("warning", "journal", $"{r.Description}: {problem}"));
 
         if (fullRebuild) writes.Cache.Clear();
+        using var batch = writes.Cache.Batch();
         var cached = writes.Cache.AllFiles().ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var pending = new List<(string Abs, string Rel, Node Node, bool IsNew)>();
@@ -92,8 +93,10 @@ public sealed class Reconciler(WriteService writes)
             }
             ids[node.Id] = rel;
             if (isNew) added++; else changed++;
-            // Edited (or created) outside the app: keep the version so it's recoverable.
-            writes.History.Record(node.Id, Encoding.UTF8.GetBytes(node.Content), HistoryStore.External);
+            // Edited outside the app: keep the version so it's recoverable. A file seen for the first time is
+            // its own only version, so there's nothing to copy yet.
+            if (!isNew || Directory.Exists(Path.Combine(Vault.History, node.Id)))
+                writes.History.Record(node.Id, Encoding.UTF8.GetBytes(node.Content), HistoryStore.External);
             writes.Index(abs, node.Content);
             if (node.Workspace.Length > 0 && Vault.WorkspaceOf(rel) is { Length: > 0 } folderWs && folderWs != node.Workspace)
                 diagnostics.Add(new Diagnostic("warning", "workspace-mismatch", $"Frontmatter says workspace '{node.Workspace}' but the file is in '{folderWs}'. The folder wins.", rel, node.Id));

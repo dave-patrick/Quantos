@@ -1,0 +1,13 @@
+{
+  "automations": [
+    {
+      "name": "Stamp finished projects",
+      "when": { "tag": "project", "property": "status", "to": "Done" },
+      "then": [
+        { "set": { "finished_on": "{{today}}" } },
+        { "createTask": { "title": "Write a retro for {{title}}", "due": "{{today+7}}" } },
+        { "notify": "{{title}} is finished" }
+      ]
+    }
+  ]
+}
