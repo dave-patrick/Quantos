@@ -33,6 +33,8 @@
   }
 </script>
 
+<!-- Tracks which pane is active; focus changes already cover keyboard users. -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <section class="pane" class:focused onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
   <div class="tabs" role="tablist">
     {#each pane.tabs as tab (tab.key)}

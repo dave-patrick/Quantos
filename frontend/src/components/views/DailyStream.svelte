@@ -14,7 +14,7 @@
   let days = $state<{ date: string; node: NodeDto | null }[]>([]);
   let loading = $state(false);
   let sentinel = $state<HTMLDivElement | null>(null);
-  let currentToday = isoDate();
+  let currentToday = $state(isoDate());
   const workspace = app.workspace;
 
   async function load(from: string, to: string, append: boolean) {

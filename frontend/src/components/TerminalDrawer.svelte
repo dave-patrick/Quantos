@@ -61,6 +61,8 @@
     <button class="icon-btn" title="Hide terminal" onclick={() => (terminal.open = false)}><Icon name="chevron-down" size={14} /></button>
   </header>
   {#if session}
+    <!-- Clicking the output focuses the command line; the input itself stays keyboard-reachable. -->
+    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
     <pre bind:this={out} class="out" onclick={() => field?.focus()} role="log">{session.output}</pre>
     <div class="line">
       <span class="prompt">PS {session.cwd}&gt;</span>
