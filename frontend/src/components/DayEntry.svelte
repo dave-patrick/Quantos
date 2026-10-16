@@ -62,7 +62,7 @@
   </header>
   {#if expanded}
     <div class="body">
-      {#if !isFuture}<DayTasks {date} {isToday} />{/if}
+      {#if !isFuture}<DayTasks {date} {isToday} noteId={node?.id ?? null} />{/if}
       {#if doc && doc.status !== 'loading'}
         <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc!.edit(t)} onsave={() => doc!.save()}
           placeholder={isToday ? 'What happened today? Type [[ to link, - [ ] for a task.' : ''} />

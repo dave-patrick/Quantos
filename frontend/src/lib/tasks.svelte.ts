@@ -35,6 +35,9 @@ export interface TaskDto {
   subtasksDone: number;
   effortRollup: number | null;
   stage: string | null;
+  myDay: string | null;
+  myDayOrder: number | null;
+  rolledOver: number;
 }
 
 export interface TaskInfo { status: string; due?: string | null; planned?: string | null; priority?: number | null; deleted?: boolean }
