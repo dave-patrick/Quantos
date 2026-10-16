@@ -925,6 +925,25 @@ Don't assign these to a release until there's a separate scope decision.
 | Containerization, server hosting, multiuser, importing | Roadmap, release not assigned |
 | Configurable backups | Release 1.1 |
 
+### Implementation decisions (made during the Release 1.0 build)
+
+These were chosen while building, following the recommendations above. They are implemented but not
+separately approved; review them during the daily-use checkpoint.
+
+| Decision | Status |
+|---|---|
+| Laptop-test fallback: if only the Windows client is blocked, use the browser (`Open in browser.cmd`); if the executables themselves are blocked, request a signed build through IT | Implemented |
+| `client-data` sits beside `application\`; falls back to `%LOCALAPPDATA%\Quantos\client-data` when run from elsewhere | Implemented |
+| Links stored as `[[id\|Title]]`; typed `[[Title]]` resolves on save when exactly one note matches, and when the note is created later | Implemented |
+| Unbound `- [ ] text` lines in notes become task nodes automatically (`inlineTasks: false` in settings.json turns this off); bound by an invisible `<!--task:id-->` marker | Implemented |
+| Synced blocks keep a readable copy in each note between `<!--sync:id-->` markers; the canonical text is in `synced_blocks/` | Implemented |
+| History keeps every saved version, coalescing autosaves within two minutes; external edits are always kept | Implemented |
+| Browser sessions use one-time codes exchanged for an HttpOnly cookie; the Windows client uses the same flow | Implemented |
+| Changing agent, plugin or automation permissions needs approval in the Windows client, like shell execution and permanent deletion | Implemented |
+| Agents connect through an MCP server (`quantos-cli mcp --agent name`), read-only until granted more | Implemented |
+| Plugins run in sandboxed frames with no direct API access; safe mode stops them | Implemented |
+| PDF export uses Microsoft Edge in headless mode; falls back to HTML when Edge is missing | Implemented |
+| Global shortcut defaults: capture `Ctrl+Alt+Q`, scratchpad `Ctrl+Alt+J` | Implemented |
 ---
 
 ## Final build direction
