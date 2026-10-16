@@ -72,6 +72,8 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
                 await Reject(ctx, StatusCodes.Status403Forbidden, "Missing request header.");
                 return;
             }
+            var instance = ctx.Request.Headers["X-Quantos-Instance"].ToString();
+            if (instance.Length is > 0 and <= 64) actor = actor with { Instance = instance };
             ctx.Items[ActorKey] = actor;
             ctx.Items[NativeKey] = native;
         }

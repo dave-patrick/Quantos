@@ -12,14 +12,14 @@ public enum Permission { Read, CreateEdit, MoveArchive, TrashRestore, PermanentD
 public enum ActorKind { User, Cli, Agent, Plugin, Automation, System }
 
 /// <summary>Who is asking. <see cref="ViaBrowser"/> marks requests that arrived from a browser session.</summary>
-public sealed record Actor(ActorKind Kind, string Name, bool ViaBrowser = false)
+public sealed record Actor(ActorKind Kind, string Name, bool ViaBrowser = false, string? Instance = null)
 {
     public static readonly Actor User = new(ActorKind.User, "app");
     public static readonly Actor Browser = new(ActorKind.User, "browser", ViaBrowser: true);
     public static readonly Actor System = new(ActorKind.System, "quantos");
     public static readonly Actor Cli = new(ActorKind.Cli, "cli");
 
-    public override string ToString() => $"{Kind}:{Name}";
+    public override string ToString() => $"{Kind}:{Name}" + (Instance is null ? "" : "#" + Instance);
 }
 
 public sealed class PermissionDeniedException(Actor actor, Permission permission, string reason)

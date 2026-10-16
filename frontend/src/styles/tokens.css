@@ -1,0 +1,73 @@
+/* Quantos design tokens: the brand's dark charcoal, off-white and blue (DESIGN.md, site/style.css). */
+@font-face { font-family: 'Source Sans 3'; src: url('/fonts/SourceSans3.ttf') format('truetype'); font-weight: 200 900; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('/fonts/IBMPlexMono.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Chakra Petch'; src: url('/fonts/ChakraPetch-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+
+:root {
+  --font-body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Cascadia Mono', Consolas, monospace;
+  --font-display: 'Chakra Petch', 'Source Sans 3', sans-serif;
+
+  --bg: #0c131d;
+  --bg-raised: #101824;
+  --bg-panel: #111d2b;
+  --bg-hover: #17263b;
+  --bg-active: #1c2e42;
+  --bg-select: #254a70;
+  --bg-input: #0e1621;
+  --line: #2c394a;
+  --line-strong: #334258;
+  --line-focus: #78b6ff;
+  --text: #edf2fa;
+  --text-soft: #c5d0df;
+  --text-muted: #9fb0c6;
+  --text-faint: #6f819a;
+  --accent: #78b6ff;
+  --accent-strong: #a3ccff;
+  --accent-ink: #091321;
+  --accent-wash: #142338;
+  --danger: #ff8a8a;
+  --danger-wash: #3a1c22;
+  --warn: #f4c46a;
+  --warn-wash: #33291a;
+  --ok: #7fd8a6;
+  --ok-wash: #16302a;
+
+  --p1: #ff7b7b; --p2: #f4b35e; --p3: #78b6ff; --p4: #7d8ea6;
+
+  --radius: 7px;
+  --radius-sm: 4px;
+  --shadow: 0 12px 36px rgb(0 0 0 / 0.45);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+  --sidebar-w: 248px;
+  --rightbar-w: 296px;
+  --statusbar-h: 26px;
+  --tab-h: 34px;
+  --editor-size: 17px;
+  --editor-width: 760px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+:root[data-theme='light'] {
+  --bg: #f5f7fb;
+  --bg-raised: #ffffff;
+  --bg-panel: #eef2f8;
+  --bg-hover: #e4eaf3;
+  --bg-active: #d9e4f2;
+  --bg-select: #bcd6f5;
+  --bg-input: #ffffff;
+  --line: #d6dde8;
+  --line-strong: #c3cddc;
+  --text: #0c131d;
+  --text-soft: #26364a;
+  --text-muted: #4f6078;
+  --text-faint: #7d8ba0;
+  --accent: #1f6fd1;
+  --accent-strong: #1559ad;
+  --accent-ink: #ffffff;
+  --accent-wash: #e3eefc;
+  --danger: #c43a3a; --danger-wash: #fbe7e7;
+  --warn: #9a6a00; --warn-wash: #fbf1dc;
+  --ok: #1f8a55; --ok-wash: #e2f5eb;
+  --shadow: 0 12px 32px rgb(12 19 29 / 0.16);
+}

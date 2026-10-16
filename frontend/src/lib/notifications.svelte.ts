@@ -1,0 +1,34 @@
+import { api } from './api';
+import { onChange } from './events';
+import { bridge, isWindowsClient } from './platform';
+
+export interface NotificationRecord { id: string; at: string; title: string; body: string; kind: string; nodeId?: string | null; read: boolean; occurrence?: string | null }
+
+/** Notification history (BUILD-PLAN 8E.5), recorded in the vault's .state/notifications.jsonl. */
+class Notifications {
+  list = $state<NotificationRecord[]>([]);
+  get unread() { return this.list.filter((n) => !n.read).length; }
+
+  constructor() {
+    onChange((e) => {
+      if (e.kind !== 'Notification' || !e.data?.notification) return;
+      const n = e.data.notification as NotificationRecord;
+      this.list = [n, ...this.list.filter((x) => x.id !== n.id)];
+      if (!isWindowsClient && 'Notification' in window && Notification.permission === 'granted' && document.hidden) {
+        new Notification(n.title, { body: n.body, tag: n.id });
+      }
+      void bridge;
+    });
+  }
+
+  async load() {
+    try { this.list = await api.get<NotificationRecord[]>('notifications'); } catch { this.list = []; }
+  }
+
+  async markRead(ids?: string[]) {
+    await api.post('notifications/read', { ids: ids ?? this.list.filter((n) => !n.read).map((n) => n.id) });
+    this.list = this.list.map((n) => (!ids || ids.includes(n.id) ? { ...n, read: true } : n));
+  }
+}
+
+export const notifications = new Notifications();

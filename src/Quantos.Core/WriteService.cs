@@ -63,6 +63,9 @@ public sealed class WriteService
     public TrashStore TrashBin { get; }
     public Journal Journal { get; }
 
+    /// <summary>Set by the task service so inline task lines bind to task nodes and stay in sync.</summary>
+    public Tasks.ITaskHooks? TaskHooks { get; set; }
+
     /// <summary>Runs <paramref name="action"/> while holding the vault write lock (used by reconciliation and the watcher).</summary>
     public T Exclusive<T>(Func<T> action) { lock (_gate) return action(); }
 
@@ -127,7 +130,8 @@ public sealed class WriteService
                 if (NodeKeys.Reserved.Contains(key)) continue;
                 doc.Set(key, value);
             }
-            doc.SetBody(ResolveLinks(request.Body, workspace).Body);
+            var body = ResolveLinks(request.Body, workspace).Body;
+            doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor) ?? body);
 
             var node = WriteFile(abs, id, null, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Created, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
@@ -170,14 +174,15 @@ public sealed class WriteService
             if (doc.GetString(NodeKeys.Id) != id) doc.Set(NodeKeys.Id, id);
 
             var (body, ambiguous) = ResolveLinks(doc.Body, current.Workspace);
-            doc.SetBody(body);
+            doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor) ?? body);
             var candidate = doc.ToString();
             if (candidate == disk) return new SaveResult(SaveStatus.Unchanged, current, Ambiguous: ambiguous);
             doc.Set(NodeKeys.Modified, Clock.Stamp());
 
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
-            return new SaveResult(SaveStatus.Saved, node, Ambiguous: ambiguous);
+            TaskHooks?.AfterNoteWritten(node, actor);
+            return new SaveResult(SaveStatus.Saved, Get(id) ?? node, Ambiguous: ambiguous);
         }
     }
 
@@ -209,13 +214,15 @@ public sealed class WriteService
             if (body is not null)
             {
                 var workspace = doc.GetString(NodeKeys.Workspace) ?? "";
-                doc.SetBody(ResolveLinks(body, workspace).Body);
+                var resolved = ResolveLinks(body, workspace).Body;
+                doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor) ?? resolved);
             }
             if (doc.ToString() == disk) return new SaveResult(SaveStatus.Unchanged, Node.FromText(Vault.Relative(abs), disk, diskHash));
             doc.Set(NodeKeys.Modified, Clock.Stamp());
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
-            return new SaveResult(SaveStatus.Saved, node);
+            if (body is not null) TaskHooks?.AfterNoteWritten(node, actor);
+            return new SaveResult(SaveStatus.Saved, Get(id) ?? node);
         }
     }
 
@@ -274,8 +281,9 @@ public sealed class WriteService
         }
     }
 
-    /// <summary>Moves a node to another folder inside its workspace (file tree drag and drop).</summary>
-    public Node MoveToFolder(string id, string folderRelative, Actor actor)
+    /// <summary>Moves a node to another folder inside its workspace (file tree drag and drop).
+    /// A name collision is refused (409) unless <paramref name="allowRename"/> picks a numbered name.</summary>
+    public Node MoveToFolder(string id, string folderRelative, Actor actor, bool allowRename = false)
     {
         Permissions.Demand(actor, Permission.MoveArchive, $"Move {id} to {folderRelative}");
         lock (_gate)
@@ -286,6 +294,8 @@ public sealed class WriteService
                 throw new QuantosException("Use a workspace move to move between workspaces.");
             var abs = Vault.Absolute(node.Path);
             if (Vault.PathEquals(Path.GetDirectoryName(abs), folder)) return node;
+            if (!allowRename && File.Exists(Path.Combine(folder, Path.GetFileName(abs))))
+                throw new QuantosException($"A file named {Path.GetFileName(abs)} already exists in {folderRelative}.", 409);
             var newAbs = Vault.UniquePath(folder, Path.GetFileNameWithoutExtension(abs));
             return MoveWithFields(node, newAbs, _ => { }, $"Move '{node.Title}' to {folderRelative}", actor, ChangeKind.Moved);
         }
@@ -413,6 +423,38 @@ public sealed class WriteService
             var doc = FrontmatterDocument.Parse(content);
             if (doc.YamlError is null && doc.GetString(NodeKeys.Id) != id) doc.Set(NodeKeys.Id, id);
             var node = WriteFile(abs, id, disk, doc.ToString(), HistoryStore.Restore);
+            Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
+            return node;
+        }
+    }
+
+    /// <summary>Keeps a version in history without changing the file (the losing side of a conflict).</summary>
+    public string? PreserveCopy(string id, string content, Actor actor)
+    {
+        Permissions.Demand(actor, Permission.CreateEdit, $"Keep a copy of {id}");
+        if (Cache.PathOf(id) is null && History.List(id).Count == 0) throw new QuantosException("Unknown node.", 404);
+        return History.Record(id, Encoding.UTF8.GetBytes(content), "conflict");
+    }
+
+    /// <summary>Appends text to a node's body, merging on the server so open editors aren't overwritten.</summary>
+    public Node AppendToBody(string id, string text, Actor actor, string? underHeading = null)
+    {
+        Permissions.Demand(actor, Permission.CreateEdit, $"Append to {id}");
+        lock (_gate)
+        {
+            var (abs, disk) = ReadCurrent(id);
+            if (abs is null || disk is null) throw new QuantosException("The node no longer exists.", 404);
+            var doc = FrontmatterDocument.Parse(disk);
+            var body = doc.Body;
+            var nl = doc.Newline;
+            if (underHeading is not null && !body.Contains(underHeading))
+                body = body.TrimEnd() + (body.Trim().Length > 0 ? nl + nl : "") + underHeading + nl;
+            else if (body.Length > 0 && !body.EndsWith('\n')) body += nl;
+            body += text.Replace("\r\n", "\n").Replace("\n", nl) + nl;
+            var (resolved, _) = ResolveLinks(body, doc.GetString(NodeKeys.Workspace) ?? "");
+            doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor) ?? resolved);
+            doc.Set(NodeKeys.Modified, Clock.Stamp());
+            var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             return node;
         }
