@@ -96,7 +96,7 @@ public static class Mcp
                     tags = a["tags"]?.AsArray().Select(t => t!.ToString()).ToList()
                 })),
                 "append_to_note" => await AppendNote(c, S("note"), S("text")),
-                "list_tasks" => Json(await c.Get($"tasks?include={(a["include_done"]?.GetValue<bool>() == true ? "all" : "open")}{(a["workspace"] is null ? "" : "&workspace=" + S("workspace"))}")),
+                "list_tasks" => Json(await c.Get($"tasks?include={(a["include_done"]?.GetValue<bool>() == true ? "all" : "open")}{(a["workspace"] is null ? "" : "&workspace=" + Uri.EscapeDataString(S("workspace")))}")),
                 "create_task" => Json(await c.Post("tasks", new
                 {
                     title = S("title"), due = a["due"]?.ToString(), priority = a["priority"]?.GetValue<int?>(), workspace = a["workspace"]?.ToString() ?? "default"

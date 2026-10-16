@@ -120,7 +120,7 @@ public static class Program
     public static async Task<string> Resolve(Client c, string titleOrId, string? workspace)
     {
         if (titleOrId.Length == 26 && titleOrId.All(char.IsLetterOrDigit)) return titleOrId;
-        var hits = (await c.Get($"resolve?title={Uri.EscapeDataString(titleOrId)}{(workspace is null ? "" : "&workspace=" + workspace)}"))!.AsArray();
+        var hits = (await c.Get($"resolve?title={Uri.EscapeDataString(titleOrId)}{(workspace is null ? "" : "&workspace=" + Uri.EscapeDataString(workspace))}"))!.AsArray();
         if (hits.Count == 0 && workspace is not null) hits = (await c.Get($"resolve?title={Uri.EscapeDataString(titleOrId)}"))!.AsArray();
         return hits.Count switch
         {
@@ -175,7 +175,7 @@ public static class Program
         var date = o.Positional.Count > 1 ? o.Positional[1] : DateTime.Now.ToString("yyyy-MM-dd");
         try
         {
-            var node = await c.Get($"daily/{o.Workspace ?? "default"}/{date}");
+            var node = await c.Get($"daily/{Uri.EscapeDataString(o.Workspace ?? "default")}/{date}");
             if (o.Json) return Print(node);
             Console.Write(node!["body"]!.ToString());
         }
@@ -343,7 +343,7 @@ public sealed class Options
     public string? Get(string name) => _named.TryGetValue(name, out var v) ? v[^1] : null;
     public List<string> All(string name) => _named.TryGetValue(name, out var v) ? v : [];
     public bool Flag(string name) => _named.ContainsKey(name);
-    public string WorkspaceQuery(string sep) => Workspace is null ? "" : $"{sep}workspace={Workspace}";
+    public string WorkspaceQuery(string sep) => Workspace is null ? "" : $"{sep}workspace={Uri.EscapeDataString(Workspace)}";
 }
 
 public sealed class Client
