@@ -61,7 +61,8 @@ Authentication and headers: see [SECURITY-MODEL.md](SECURITY-MODEL.md).
 `{ kind, id, path, oldPath, hash, origin, data }`. Kinds: Created, Updated, Moved, Trashed, Restored,
 Deleted, Archived, Unarchived, Conflict, Reindexed, Notification, Approval, ShellJob. `origin` ends
 with `#<instance>` for writes made by a page that sent `X-Quantos-Instance`, so a page can ignore its
-own changes. A comment line is sent every 20 seconds.
+own changes. A comment line is sent every 20 seconds. The bundled frontend opens one stream per browser, not per tab: the
+tab holding the `quantos-events` Web Lock relays events to the others over a `BroadcastChannel`.
 
 ## Native bridge (WebView2 `postMessage`)
 

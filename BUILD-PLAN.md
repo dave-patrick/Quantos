@@ -944,6 +944,9 @@ separately approved; review them during the daily-use checkpoint.
 | Plugins run in sandboxed frames with no direct API access; safe mode stops them | Implemented |
 | PDF export uses Microsoft Edge in headless mode; falls back to HTML when Edge is missing | Implemented |
 | Global shortcut defaults: capture `Ctrl+Alt+Q`, scratchpad `Ctrl+Alt+J` | Implemented |
+| Browser tabs share one push channel: one tab holds it and relays changes to the others (browsers allow six connections per host); a tab that stops hearing from it opens its own | Implemented |
+| Search indexes the text as you read it: link titles instead of ids, without task, sync and block markers | Implemented |
+| Views with no type filter leave out supertag, template and synced-block records; choose the type to list them | Implemented |
 ---
 
 ## Final build direction
