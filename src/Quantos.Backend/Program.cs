@@ -92,6 +92,7 @@ public static class Program
         SystemEndpoints.Map(app);
         TaskEndpoints.Map(app);
         VaultEndpoints.Map(app);
+        StructureEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

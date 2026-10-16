@@ -29,7 +29,14 @@ public sealed class VaultSession : IDisposable
         Capture = new CaptureService(Writes, Tasks);
         Notifications = new NotificationStore(Vault);
         Reminders = new ReminderService(Writes, Tasks, Notifications);
+        Supertags = new Structure.SupertagService(Writes);
+        Templates = new Structure.TemplateService(Writes, Supertags);
+        Queries = new Structure.QueryService(Writes, Supertags);
     }
+
+    public Structure.SupertagService Supertags { get; }
+    public Structure.TemplateService Templates { get; }
+    public Structure.QueryService Queries { get; }
 
     public ConfigStore Config { get; }
     public Tasks.TaskService Tasks { get; }

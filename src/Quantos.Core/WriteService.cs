@@ -66,6 +66,15 @@ public sealed class WriteService
     /// <summary>Set by the task service so inline task lines bind to task nodes and stay in sync.</summary>
     public Tasks.ITaskHooks? TaskHooks { get; set; }
 
+    /// <summary>Raised after tags are added to a node (linked templates apply automatically).</summary>
+    public event Action<Node, IReadOnlyList<string>, Actor>? TagsAdded;
+
+    private void RaiseTagsAdded(Node node, IEnumerable<string> before, Actor actor)
+    {
+        var added = node.Tags.Where(t => !before.Contains(t, StringComparer.OrdinalIgnoreCase)).ToList();
+        if (added.Count > 0) TagsAdded?.Invoke(node, added, actor);
+    }
+
     /// <summary>Runs <paramref name="action"/> while holding the vault write lock (used by reconciliation and the watcher).</summary>
     public T Exclusive<T>(Func<T> action) { lock (_gate) return action(); }
 
@@ -136,7 +145,8 @@ public sealed class WriteService
             var node = WriteFile(abs, id, null, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Created, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             ResolveWaitingLinks(node, actor);
-            return node;
+            RaiseTagsAdded(node, [], actor);
+            return Get(id) ?? node;
         }
     }
 
@@ -236,6 +246,7 @@ public sealed class WriteService
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             if (body is not null) TaskHooks?.AfterNoteWritten(node, actor);
+            if (set?.ContainsKey(NodeKeys.Tags) == true) RaiseTagsAdded(node, Node.FromText(node.Path, disk).Tags, actor);
             return new SaveResult(SaveStatus.Saved, Get(id) ?? node);
         }
     }
