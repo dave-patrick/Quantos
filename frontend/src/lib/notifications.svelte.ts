@@ -24,9 +24,10 @@ class Notifications {
       if (status?.windowsClientConnected) return;
       if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
         new Notification(n.title, { body: n.body, tag: n.id });
-      } else if (n.kind === 'reminder') {
+      } else {
         const id = n.nodeId;
-        app.toast(`Reminder: ${n.title}${n.body && n.body !== 'Reminder' ? ` · ${n.body}` : ''}`, 'info', id ? { label: 'Open', run: () => openNode(id, 'current') } : undefined);
+        const text = n.kind === 'reminder' ? `Reminder: ${n.title}${n.body && n.body !== 'Reminder' ? ` · ${n.body}` : ''}` : n.body ? `${n.title}: ${n.body}` : n.title;
+        app.toast(text, 'info', id ? { label: 'Open', run: () => openNode(id, 'current') } : undefined);
       }
     });
   }
