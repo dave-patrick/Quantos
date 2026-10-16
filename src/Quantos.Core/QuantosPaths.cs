@@ -35,7 +35,10 @@ public sealed class QuantosPaths
         var configured = overridePath ?? Environment.GetEnvironmentVariable("QUANTOS_CLIENT_DATA");
         if (!string.IsNullOrWhiteSpace(configured)) return new QuantosPaths(configured);
 
-        var appDir = new DirectoryInfo(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        // The executable's own folder (single-file builds may report an extraction folder as the base directory).
+        var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
+        var appDir = new DirectoryInfo(!string.IsNullOrEmpty(exeDir) && !Path.GetFileName(Environment.ProcessPath!).StartsWith("dotnet", StringComparison.OrdinalIgnoreCase)
+            ? exeDir : AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         if (string.Equals(appDir.Name, "application", StringComparison.OrdinalIgnoreCase) && appDir.Parent is not null)
             return new QuantosPaths(Path.Combine(appDir.Parent.FullName, "client-data"));
 

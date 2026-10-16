@@ -14,11 +14,18 @@ public sealed class ClientPaths
     public string DiscoveryFile => Path.Combine(Settings, "backend.json");
     public string WindowFile => Path.Combine(Settings, "client-window.json");
 
+    /// <summary>
+    /// The folder holding Quantos.exe. Single-file builds that extract their content (needed by
+    /// PowerShell) report a temporary folder as AppContext.BaseDirectory, so use the process path.
+    /// </summary>
+    public static string AppDirectory =>
+        Path.GetDirectoryName(Environment.ProcessPath) is { Length: > 0 } dir ? dir : AppContext.BaseDirectory.TrimEnd('\\', '/');
+
     public static ClientPaths Resolve(string? overridePath = null)
     {
         var configured = overridePath ?? Environment.GetEnvironmentVariable("QUANTOS_CLIENT_DATA");
         if (!string.IsNullOrWhiteSpace(configured)) return new ClientPaths(configured);
-        var appDir = new DirectoryInfo(AppContext.BaseDirectory.TrimEnd('\\', '/'));
+        var appDir = new DirectoryInfo(AppDirectory);
         if (string.Equals(appDir.Name, "application", StringComparison.OrdinalIgnoreCase) && appDir.Parent is not null)
             return new ClientPaths(Path.Combine(appDir.Parent.FullName, "client-data"));
         return new ClientPaths(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Quantos", "client-data"));

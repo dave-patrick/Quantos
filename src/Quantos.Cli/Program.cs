@@ -363,7 +363,7 @@ public sealed class Client
         var clientData = o.Get("client-data") ?? Environment.GetEnvironmentVariable("QUANTOS_CLIENT_DATA");
         if (clientData is null)
         {
-            var appDir = new DirectoryInfo(AppContext.BaseDirectory.TrimEnd('\\', '/'));
+            var appDir = new DirectoryInfo(Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory.TrimEnd('\\', '/'));
             clientData = string.Equals(appDir.Name, "application", StringComparison.OrdinalIgnoreCase) && appDir.Parent is not null
                 ? Path.Combine(appDir.Parent.FullName, "client-data")
                 : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Quantos", "client-data");

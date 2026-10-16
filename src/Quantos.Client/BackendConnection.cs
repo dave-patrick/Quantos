@@ -67,7 +67,7 @@ public sealed class BackendConnection : IDisposable
     {
         var overridePath = Environment.GetEnvironmentVariable("QUANTOS_BACKEND_EXE");
         if (!string.IsNullOrEmpty(overridePath) && File.Exists(overridePath)) return overridePath;
-        var dir = AppContext.BaseDirectory;
+        var dir = ClientPaths.AppDirectory;
         var sibling = Path.Combine(dir, "Quantos.Backend.exe");
         if (File.Exists(sibling)) return sibling;
         // Development layout: src/Quantos.Client/bin/... next to src/Quantos.Backend/bin/...

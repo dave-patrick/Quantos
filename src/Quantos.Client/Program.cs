@@ -6,10 +6,31 @@ internal static class Program
     private static int Main(string[] args)
     {
         var paths = ClientPaths.Resolve(Arg(args, "--client-data"));
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => paths.Log("Fatal: " + e.ExceptionObject);
         ApplicationConfiguration.Initialize();
 
         if (args.Contains("--selfcheck"))
         {
+            if (args.Contains("--quiet"))
+            {
+                // Writes the report to client-data\logs and exits; for scripted or IT-run checks.
+                // WebView2 needs the UI thread, so run the checks inside a hidden window's message loop.
+                var exit = 2;
+                var host = new Form { ShowInTaskbar = false, WindowState = FormWindowState.Minimized, Opacity = 0 };
+                host.Load += async (_, _) =>
+                {
+                    try
+                    {
+                        var report = await SelfCheck.RunAsync(paths);
+                        exit = report.Contains("[FAIL]") ? 1 : 0;
+                        paths.Log("Self-check finished" + (exit == 1 ? " with failures" : ""));
+                    }
+                    catch (Exception ex) { paths.Log("Self-check crashed: " + ex); }
+                    host.Close();
+                };
+                Application.Run(host);
+                return exit;
+            }
             SelfCheck.RunAndShow(paths, null).GetAwaiter().GetResult();
             return 0;
         }

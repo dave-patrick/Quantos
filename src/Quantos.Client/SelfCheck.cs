@@ -18,7 +18,7 @@ public static class SelfCheck
         sb.AppendLine("Quantos Windows client self-check");
         sb.AppendLine(new string('=', 60));
 
-        var backend = Path.Combine(AppContext.BaseDirectory, "Quantos.Backend.exe");
+        var backend = Path.Combine(ClientPaths.AppDirectory, "Quantos.Backend.exe");
         if (File.Exists(backend))
         {
             var psi = new ProcessStartInfo(backend) { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true };
