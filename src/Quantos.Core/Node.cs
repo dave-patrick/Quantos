@@ -46,6 +46,14 @@ public sealed record Node
     {
         var doc = FrontmatterDocument.Parse(content);
         var values = doc.Values();
+        if (doc.YamlError is not null)
+        {
+            // A mistake elsewhere in the frontmatter (often an edit made outside Quantos) mustn't cost the
+            // note its identity: recover each entry on its own, so the note stays listed, linked and
+            // openable (read-only, in source mode) until the YAML is fixed.
+            values = new Dictionary<string, object?>();
+            foreach (var key in doc.Keys) if (doc.Get(key) is { } value) values[key] = value;
+        }
         string? Str(string key) => values.TryGetValue(key, out var v) && v is not null ? Convert.ToString(v, CultureInfo.InvariantCulture) : null;
         var props = values.Where(kv => !NodeKeys.Reserved.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
         _ = int.TryParse(Str(NodeKeys.Schema), out var schema);

@@ -22,8 +22,8 @@ public static class Integrity
             try { node = Node.FromText(rel, AtomicFile.ReadAllText(abs)); }
             catch (IOException ex) { list.Add(new Diagnostic("error", "unreadable", ex.Message, rel)); continue; }
 
-            if (node.YamlError is not null) list.Add(new Diagnostic("warning", "yaml", $"Frontmatter isn't valid YAML: {node.YamlError}", rel, node.Id));
-            if (!Ulid.IsValid(node.Id)) list.Add(new Diagnostic("warning", "no-id", "File has no identity yet; it will be adopted on the next rescan.", rel));
+            if (node.YamlError is not null) list.Add(new Diagnostic("warning", "yaml", $"Frontmatter isn't valid YAML, so Quantos leaves this file alone. Fix it in a text editor and it will appear. ({node.YamlError})", rel, node.Id));
+            else if (!Ulid.IsValid(node.Id)) list.Add(new Diagnostic("warning", "no-id", "File has no identity yet; it will be adopted on the next rescan.", rel));
             else if (!ids.TryAdd(node.Id, rel)) list.Add(new Diagnostic("error", "duplicate-id", $"Same identity as {ids[node.Id]}.", rel, node.Id));
             if (node.Schema > Node.CurrentSchema) list.Add(new Diagnostic("warning", "schema", $"Schema {node.Schema} is newer than this app; the file is read-only.", rel, node.Id));
             var folderWs = Vault.WorkspaceOf(rel);

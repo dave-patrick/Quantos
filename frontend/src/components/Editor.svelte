@@ -80,4 +80,6 @@
   .editor { min-height: 100%; }
   .editor.raw :global(.cm-scroller) { font-family: var(--font-mono); font-size: 13.5px; }
   .editor.raw :global(.cm-content) { max-width: 980px; }
+  /* Source view shows the file as it is: no heading sizes (a line above --- would otherwise read as a heading). */
+  .editor.raw :global(.cm-line), .editor.raw :global(.cm-line *) { font-size: inherit !important; font-family: var(--font-mono) !important; font-weight: 400 !important; line-height: 1.6; }
 </style>

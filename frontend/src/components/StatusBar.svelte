@@ -17,7 +17,7 @@
   </span>
   {#if activeDoc}
     <span class="item" class:warn={activeDoc.status === 'conflict' || activeDoc.status === 'error'}>
-      {#if activeDoc.status === 'saving'}Saving…{:else if activeDoc.status === 'dirty'}Unsaved changes{:else if activeDoc.status === 'conflict'}Conflict: choose a version{:else if activeDoc.status === 'error'}Save failed{:else if activeDoc.status === 'saved'}All changes saved{:else}{activeDoc.status}{/if}
+      {#if activeDoc.status === 'saving'}Saving…{:else if activeDoc.status === 'dirty'}Unsaved changes{:else if activeDoc.status === 'conflict'}Conflict: choose a version{:else if activeDoc.status === 'error'}Save failed{:else if activeDoc.status === 'saved'}All changes saved{:else if activeDoc.status === 'readonly'}Read-only{:else if activeDoc.status === 'missing'}Note not found{:else if activeDoc.status === 'trashed'}In the trash{/if}
     </span>
   {/if}
   <span class="spacer"></span>

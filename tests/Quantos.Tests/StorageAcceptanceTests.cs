@@ -291,4 +291,29 @@ public class StorageAcceptanceTests
             File.Copy(file, file.Replace(from, to));
         }
     }
+
+    [Fact] // Broken YAML from an outside edit keeps the note visible, read-only, and fixable in source mode
+    public void A_typo_in_frontmatter_keeps_the_note_and_its_links()
+    {
+        using var v = new TestVault();
+        var target = v.Writes.Create(new CreateNodeRequest { Title = "Target", Body = "Body stays.\n" }, Actor.User);
+        var linker = v.Writes.Create(new CreateNodeRequest { Title = "Linker", Body = $"See [[{target.Id}|Target]].\n" }, Actor.User);
+        var broken = target.Content.Replace("type: note", "type: note\ntags: [unclosed");
+        File.WriteAllText(v.Abs(target.Path), broken);
+
+        var report = v.Restart();
+        var node = v.Writes.Require(target.Id);
+        Assert.True(node.ReadOnly);
+        Assert.Equal("Target", node.Title);
+        Assert.Contains(report.Diagnostics, d => d.Code == "yaml" && d.Id == target.Id);
+        Assert.Single(v.Session.Cache.Backlinks(target.Id));
+
+        // Fixing it in source mode saves and lifts read-only.
+        var fixedText = broken.Replace("tags: [unclosed", "tags: [fixed]");
+        var result = v.Writes.Save(target.Id, fixedText, node.Hash, Actor.User);
+        Assert.Equal(SaveStatus.Saved, result.Status);
+        Assert.False(v.Writes.Require(target.Id).ReadOnly);
+        Assert.Equal(["fixed"], v.Writes.Require(target.Id).Tags);
+        Assert.NotNull(linker);
+    }
 }
