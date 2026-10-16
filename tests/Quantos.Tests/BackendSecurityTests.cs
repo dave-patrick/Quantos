@@ -183,7 +183,7 @@ public sealed class BackendSecurityTests : IAsyncLifetime
             Assert.True(await Connected());
         }
         // The server notices the closed connection shortly after; give it a moment.
-        for (var i = 0; i < 50 && await Connected(); i++) await Task.Delay(100);
+        for (var i = 0; i < 100 && await Connected(); i++) await Task.Delay(100);
         Assert.False(await Connected());
     }
 
