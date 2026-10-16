@@ -122,7 +122,9 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 - Tasks: `tasks/<slug>.md` with the same rules.
 - Attachments: `attachments/<first 2 hex of SHA-256>/<sha256>.<ext>`, so identical files are
   stored once. The original filename is kept in the node that references it.
-- Renaming a node renames its file and rewrites the display text of every `[[id|…]]` link.
+- Renaming a node renames its file and rewrites the display text of every `[[id|…]]` link, in note
+  bodies and in property values (an `owner:` or `attendees:` link). Links in properties count as
+  backlinks too.
 
 ## 5. History, trash and journal
 

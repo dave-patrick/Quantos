@@ -80,4 +80,25 @@ public class RelationTests
         Assert.Contains($"[[{keep.Id}|Apollo project]]", v.Writes.Require(linker.Id).Body);
         Assert.Single(v.Writes.TrashBin.List(), e => e.Id == dupe.Id);
     }
+
+    [Fact] // BUILD-PLAN 4: renaming updates every reference, including links held in properties
+    public void Links_in_properties_are_backlinks_and_follow_renames()
+    {
+        using var v = new TestVault();
+        var sam = v.Writes.Create(new CreateNodeRequest { Title = "Sam" }, Actor.User);
+        var meeting = v.Writes.Create(new CreateNodeRequest
+        {
+            Title = "Kickoff",
+            Properties = new Dictionary<string, object?> { ["owner"] = $"[[{sam.Id}|Sam]]", ["attendees"] = new List<object?> { $"[[{sam.Id}|Sam]]", "Visitor" } }
+        }, Actor.User);
+
+        var back = v.Session.Cache.Backlinks(sam.Id);
+        Assert.Equal(2, back.Count);
+        Assert.All(back, b => Assert.Equal(meeting.Id, b.SourceId));
+
+        v.Writes.Rename(sam.Id, "Samantha", Actor.User);
+        var after = v.Writes.Require(meeting.Id);
+        Assert.Equal($"[[{sam.Id}|Samantha]]", after.Properties["owner"]);
+        Assert.Equal(new object?[] { $"[[{sam.Id}|Samantha]]", "Visitor" }, ((IEnumerable<object?>)after.Properties["attendees"]!).ToArray());
+    }
 }

@@ -658,12 +658,27 @@ public sealed class WriteService
             var refNode = Get(referrer);
             if (refNode is null || refNode.ReadOnly) continue;
             var doc = FrontmatterDocument.Parse(refNode.Content);
-            var body = Links.Rewrite(doc.Body, link =>
+            string Retitle(string text) => Links.Rewrite(text, link =>
                 link.Target == id && link.Display is not null && string.Equals(link.Display.Trim(), oldTitle, StringComparison.OrdinalIgnoreCase)
                     ? Links.Format(link.Kind, id, link.Fragment, newTitle)
                     : null);
-            if (body == doc.Body) continue;
-            doc.SetBody(body);
+            var body = Retitle(doc.Body);
+            // Links in properties (owner, attendees) carry the title too.
+            var propsChanged = false;
+            foreach (var key in doc.Keys.Where(k => !NodeKeys.Reserved.Contains(k)).ToList())
+            {
+                switch (doc.Get(key))
+                {
+                    case string s when s.Contains("[[" + id, StringComparison.Ordinal) && Retitle(s) is var t && t != s:
+                        doc.Set(key, t); propsChanged = true; break;
+                    case List<object?> list when list.OfType<string>().Any(x => x.Contains("[[" + id, StringComparison.Ordinal)):
+                        var mapped = list.Select(x => x is string xs ? Retitle(xs) : x).ToList();
+                        if (!mapped.SequenceEqual(list)) { doc.Set(key, mapped); propsChanged = true; }
+                        break;
+                }
+            }
+            if (body == doc.Body && !propsChanged) continue;
+            if (body != doc.Body) doc.SetBody(body);
             doc.Set(NodeKeys.Modified, Clock.Stamp());
             op.Steps.Add(JournalStep.Write(refNode.Path, refNode.Content, doc.ToString()));
             touched.Add(refNode.Path);

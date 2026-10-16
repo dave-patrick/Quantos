@@ -20,7 +20,7 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// </summary>
 public sealed class CacheIndex : IDisposable
 {
-    public const int Version = 6;
+    public const int Version = 7;
     private readonly SqliteConnection _db;
     private readonly Lock _gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -160,6 +160,11 @@ public sealed class CacheIndex : IDisposable
                     Exec(_db, "INSERT INTO links VALUES($s, $t, $k, $f, $c)", ("$s", node.Id),
                         ("$t", link.IsResolved ? link.Target : "?" + link.Target), ("$k", link.Kind == LinkKind.Embed ? "embed" : "link"),
                         ("$f", link.Fragment), ("$c", ContextLine(node.Body, link.Start)));
+                // Links held in properties (an owner, attendees) count as links too: backlinks, graph, renames.
+                foreach (var (key, value) in node.Properties)
+                    foreach (var text in PropertyStrings(value))
+                        foreach (var link in Links.Find(text).Where(l => l.IsResolved))
+                            Exec(_db, "INSERT INTO links VALUES($s, $t, 'link', $f, $c)", ("$s", node.Id), ("$t", link.Target), ("$f", link.Fragment), ("$c", $"{key}: {text}"));
                 foreach (var region in Links.SyncRegions(node.Body))
                     Exec(_db, "INSERT INTO links VALUES($s, $t, $k, NULL, $c)", ("$s", node.Id), ("$t", region.Id), ("$k", "sync"), ("$c", ContextLine(region.Content, 0)));
                 foreach (var task in Links.InlineTasks(node.Body))
@@ -370,6 +375,14 @@ public sealed class CacheIndex : IDisposable
             return list;
         }
     }
+
+    /// <summary>The text values of a property: a string, or the strings in a list.</summary>
+    public static IEnumerable<string> PropertyStrings(object? value) => value switch
+    {
+        string s => [s],
+        System.Collections.IEnumerable list and not IDictionary<string, object?> and not IDictionary<object, object> => list.OfType<string>(),
+        _ => []
+    };
 
     /// <summary>The first image each node references, in body order: the default cover on cards.</summary>
     public IReadOnlyDictionary<string, string> FirstImages()
