@@ -123,7 +123,7 @@
         <label>Inherits from
           <select class="input" bind:value={draft.parent}><option value="">Nothing</option>
             {#each supertags.list.filter((t) => t.name !== selected.name) as t (t.id)}<option value={t.name}>#{t.name}</option>{/each}</select></label>
-        <label>Colour <input class="input" type="color" bind:value={draft.color} /></label>
+        <label>Colour <input class="input color" type="color" bind:value={draft.color} /></label>
         <label>Layout
           <select class="input" bind:value={draft.layout}><option value="">Default</option><option value="table">Table</option><option value="kanban">Board</option><option value="gallery">Gallery</option><option value="list">List</option></select></label>
         <label>Template
@@ -140,12 +140,11 @@
       {/each}
       {#each draft.fields as f, i (i)}
         <div class="field">
-          <input class="input" bind:value={f.name} placeholder="Field name" />
-          <select class="input" bind:value={f.type}>{#each types as t (t)}<option value={t}>{t}</option>{/each}</select>
-          {#if f.type === 'select' || f.type === 'multiselect' || f.type === 'status'}<input class="input" bind:value={f.options} placeholder="Options, comma separated" />{/if}
+          <input class="input name" bind:value={f.name} placeholder="Field name" title={selected.fields[i] ? `Stored as “${selected.allFields.find((x) => x.name === selected.fields[i].name)?.key}” in each note` : ''} />
+          <select class="input type" bind:value={f.type}>{#each types as t (t)}<option value={t}>{t}</option>{/each}</select>
+          {#if f.type === 'select' || f.type === 'multiselect' || f.type === 'status'}<input class="input opts" bind:value={f.options} placeholder="Options, comma separated" />{:else}<span class="opts"></span>{/if}
           <label class="check"><input type="checkbox" bind:checked={f.required} /> required</label>
           {#if selected.fields[i]}
-            <code class="faint">{selected.allFields.find((x) => x.name === selected.fields[i].name)?.key}</code>
             <button class="btn ghost" title="Convert existing values" onclick={() => (migrate = { field: selected.allFields.find((x) => x.name === selected.fields[i].name)?.key ?? '', toType: f.type, toKey: '' })}>Migrate…</button>
           {/if}
           <button class="icon-btn" aria-label="Remove field" onclick={() => (draft!.fields = draft!.fields.filter((_, j) => j !== i))}><Icon name="x" size={13} /></button>
@@ -197,11 +196,17 @@
   .grid label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-muted); }
   .grid .wide { grid-column: 1 / -1; }
   .grid .input { height: 30px; }
+  .grid .color { width: 56px; padding: 2px; }
   .inline { display: flex; gap: 6px; }
   .check { display: flex !important; grid-auto-flow: column; gap: 6px; align-items: center; color: var(--text-soft); font-size: 13px; }
   h2 { margin: 22px 0 8px; }
-  .field { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
-  .field .input { width: auto; height: 30px; min-width: 120px; }
+  .field { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .field .input { height: 30px; min-width: 0; }
+  .field .name { width: 190px; flex: none; }
+  .field .type { width: 125px; flex: none; }
+  .field .opts { flex: 1; min-width: 0; }
+  .field .check { white-space: nowrap; }
+  .field .btn { flex: none; }
   .field.inherited { color: var(--text-soft); font-size: 13.5px; gap: 14px; padding: 4px 2px; }
   .small { font-size: 12.5px; }
   .migrate { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg-raised); margin: 10px 0; }

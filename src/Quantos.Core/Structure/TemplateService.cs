@@ -36,7 +36,7 @@ public sealed partial class TemplateService
             if (!File.Exists(path)) return null;
             try
             {
-                using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+                using var doc = System.Text.Json.JsonDocument.Parse(Storage.AtomicFile.ReadAllText(path));
                 return doc.RootElement.TryGetProperty("dailyTemplate", out var t) && t.ValueKind == System.Text.Json.JsonValueKind.String ? t.GetString() : null;
             }
             catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException) { return null; }

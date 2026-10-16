@@ -63,19 +63,31 @@ public sealed partial class AutomationService : IDisposable
 
     public IReadOnlyList<AutomationRun> Recent => _log.Reverse().Take(100).ToList();
 
+    private (DateTime Stamp, long Size, List<AutomationRule> Rules)? _cache;
+
+    /// <summary>Rules from automations.json, re-read only when the file changes.</summary>
     public List<AutomationRule> Rules()
     {
         var path = Path.Combine(_writes.Vault.Root, "automations.json");
         if (!File.Exists(path)) return [];
-        try
+        var info = new FileInfo(path);
+        if (_cache is { } c && c.Stamp == info.LastWriteTimeUtc && c.Size == info.Length) return c.Rules;
+        for (var attempt = 0; attempt < 5; attempt++)
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(path));
-            var list = doc.RootElement.ValueKind == JsonValueKind.Array ? doc.RootElement : doc.RootElement.TryGetProperty("automations", out var a) ? a : default;
-            return list.ValueKind == JsonValueKind.Array ? list.Deserialize<List<AutomationRule>>(Json) ?? [] : [];
+            try
+            {
+                // Shared read: antivirus or sync tools may briefly hold the file open.
+                using var doc = JsonDocument.Parse(Storage.AtomicFile.ReadAllText(path));
+                var list = doc.RootElement.ValueKind == JsonValueKind.Array ? doc.RootElement : doc.RootElement.TryGetProperty("automations", out var a) ? a : default;
+                var rules = list.ValueKind == JsonValueKind.Array ? list.Deserialize<List<AutomationRule>>(Json) ?? [] : [];
+                _cache = (info.LastWriteTimeUtc, info.Length, rules);
+                return rules;
+            }
+            catch (IOException) { Thread.Sleep(30 * (attempt + 1)); }
+            catch (JsonException) { return []; }
         }
-        catch (Exception ex) when (ex is JsonException or IOException) { return []; }
+        return _cache?.Rules ?? [];
     }
-
     private static Dictionary<string, string?> Flatten(IReadOnlyDictionary<string, object?> props, IReadOnlyList<string> tags)
     {
         var d = props.ToDictionary(kv => kv.Key, kv => Props.List(props, kv.Key) is { Count: > 1 } l ? string.Join(",", l) : Props.Str(kv.Value));

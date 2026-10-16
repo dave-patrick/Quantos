@@ -37,7 +37,23 @@ public static class NodeEndpoints
             ToResult(host.Require().Writes.Save(id, body.Content, body.BaseHash, ctx.Actor())));
 
         api.MapPatch("/nodes/{id}", (VaultHost host, HttpContext ctx, string id, PatchBody body) =>
-            ToResult(host.Require().Writes.UpdateFields(id, body.BaseHash, Json.ToClr(body.Set), body.Remove, ctx.Actor(), body.Body)));
+        {
+            var session = host.Require();
+            var set = Json.ToClr(body.Set);
+            var baseHash = body.BaseHash;
+            // A task's status always goes through the task service: completion time, recurrence and
+            // inline checkboxes stay consistent however the change is made (board, table, form).
+            if (set is not null && set.TryGetValue("status", out var status) && session.Writes.Get(id) is { Type: NodeTypes.Task } task)
+            {
+                if (baseHash is not null && baseHash != task.Hash) return ToResult(new SaveResult(SaveStatus.Conflict, null, task.Content, task.Hash, "The file changed on disk since you opened it."));
+                session.Tasks.SetStatus(id, Core.Tasks.Props.Str(status) ?? "todo", ctx.Actor());
+                set.Remove("status");
+                baseHash = null;
+                if (set.Count == 0 && (body.Remove?.Count ?? 0) == 0 && body.Body is null)
+                    return ToResult(new SaveResult(SaveStatus.Saved, session.Writes.Require(id)));
+            }
+            return ToResult(session.Writes.UpdateFields(id, baseHash, set, body.Remove, ctx.Actor(), body.Body));
+        });
 
         api.MapPost("/nodes/{id}/rename", (VaultHost host, HttpContext ctx, string id, RenameBody body) =>
             NodeDto.From(host.Require().Writes.Rename(id, body.Title, ctx.Actor())));

@@ -35,13 +35,27 @@ class AppState {
         this.theme = ui.theme ?? 'dark';
       }
     } catch { /* storage unavailable */ }
-    // Small windows start with the sidebars closed; they open as overlays.
-    if (typeof innerWidth === 'number' && innerWidth <= 700) { this.leftOpen = false; this.rightOpen = false; }
+    // Small windows start with the sidebars closed (they open as overlays). That isn't saved, and
+    // the saved layout comes back when the window is wide again.
+    const saved = { left: this.leftOpen, right: this.rightOpen };
+    const narrow = () => typeof innerWidth === 'number' && innerWidth <= 700;
+    if (narrow()) { this.leftOpen = false; this.rightOpen = false; }
+    if (typeof window !== 'undefined') {
+      let wasNarrow = narrow();
+      addEventListener('resize', () => {
+        const now = narrow();
+        if (wasNarrow && !now) { this.leftOpen = saved.left; this.rightOpen = saved.right; }
+        if (!wasNarrow && now) { saved.left = this.leftOpen; saved.right = this.rightOpen; this.leftOpen = false; this.rightOpen = false; }
+        wasNarrow = now;
+      });
+    }
     $effect.root(() => {
       $effect(() => {
         document.documentElement.dataset.theme = this.theme;
         try {
-          localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: this.leftOpen, rightOpen: this.rightOpen, rightTab: this.rightTab, theme: this.theme }));
+          const wide = typeof innerWidth !== 'number' || innerWidth > 700;
+          const prev = JSON.parse(localStorage.getItem('quantos.ui') ?? '{}');
+          localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, theme: this.theme }));
         } catch { /* ignore */ }
       });
     });

@@ -379,8 +379,12 @@ public sealed partial class TaskService : ITaskHooks
     {
         var settings = Path.Combine(_writes.Vault.Root, "settings.json");
         if (!File.Exists(settings)) return true;
-        try { return !File.ReadAllText(settings).Contains("\"inlineTasks\": false", StringComparison.OrdinalIgnoreCase) && !File.ReadAllText(settings).Contains("\"inlineTasks\":false", StringComparison.OrdinalIgnoreCase); }
-        catch (IOException) { return true; }
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(Storage.AtomicFile.ReadAllText(settings));
+            return !(doc.RootElement.TryGetProperty("inlineTasks", out var v) && v.ValueKind == System.Text.Json.JsonValueKind.False);
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException) { return true; }
     }
 
     /// <summary>After a note is saved: a checkbox toggled in the text completes or reopens its task; editing the line in the task's source note renames it.</summary>

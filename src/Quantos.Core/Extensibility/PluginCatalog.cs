@@ -27,7 +27,7 @@ public static partial class PluginCatalog
             var manifestPath = Path.Combine(dir, "plugin.json");
             try
             {
-                using var doc = JsonDocument.Parse(File.ReadAllText(manifestPath));
+                using var doc = JsonDocument.Parse(Storage.AtomicFile.ReadAllText(manifestPath));
                 var root = doc.RootElement;
                 string? Str(string key) => root.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
                 var commands = root.TryGetProperty("commands", out var c) && c.ValueKind == JsonValueKind.Array
@@ -49,7 +49,7 @@ public static partial class PluginCatalog
     {
         var manifest = List(vault).FirstOrDefault(p => p.Name == name);
         if (manifest is null || manifest.Error is not null) return null;
-        return File.ReadAllText(Path.Combine(vault.Plugins, name, manifest.Main));
+        return Storage.AtomicFile.ReadAllText(Path.Combine(vault.Plugins, name, manifest.Main));
     }
 
     [GeneratedRegex("^[a-z0-9][a-z0-9_-]{0,63}$")]

@@ -142,6 +142,21 @@ public sealed class BackendSecurityTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Changing_a_task_status_as_a_property_still_completes_it_properly()
+    {
+        using var native = Client(token: true);
+        var task = await (await native.PostAsJsonAsync("api/tasks", new { title = "Board card", recurrence = "daily", planned = "2026-10-16" })).Content.ReadFromJsonAsync<JsonElement>();
+        var id = task.GetProperty("id").GetString();
+        var r = await native.PatchAsJsonAsync($"api/nodes/{id}", new { set = new { status = "done" } });
+        Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+        var after = await native.GetFromJsonAsync<JsonElement>($"api/tasks/{id}");
+        Assert.Equal("done", after.GetProperty("status").GetString());
+        Assert.NotEqual(JsonValueKind.Null, after.GetProperty("completed").ValueKind);
+        var all = await native.GetFromJsonAsync<JsonElement>("api/tasks?include=all");
+        Assert.Equal(2, all.EnumerateArray().Count(t => t.GetProperty("title").GetString() == "Board card")); // next occurrence created
+    }
+
+    [Fact]
     public async Task The_discovery_file_names_the_running_backend()
     {
         var info = Discovery.Read(new QuantosPaths(Path.Combine(_root, "client-data")));

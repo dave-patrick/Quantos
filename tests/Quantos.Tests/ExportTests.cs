@@ -76,9 +76,12 @@ public class ExportTests
         using var v = new TestVault();
         var note = v.Writes.Create(new CreateNodeRequest { Title = "Printable", Body = "Hello PDF\n" }, Actor.User);
         var result = v.Session.Exports.ExportNode(note.Id, ExportFormat.Pdf, Actor.User);
-        if (result.Format == ExportFormat.Pdf)
-            Assert.True(new FileInfo(v.Abs(result.Path)).Length > 500);
-        else
-            Assert.NotNull(result.Note); // falls back to HTML and says why
+        var edgeInstalled = File.Exists(Environment.ExpandEnvironmentVariables(@"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"))
+            || File.Exists(Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"));
+        if (!edgeInstalled) { Assert.NotNull(result.Note); return; } // falls back to HTML and says why
+        Assert.Equal(ExportFormat.Pdf, result.Format);
+        var bytes = File.ReadAllBytes(v.Abs(result.Path));
+        Assert.StartsWith("%PDF", System.Text.Encoding.ASCII.GetString(bytes, 0, 4));
+        Assert.Contains("%%EOF", System.Text.Encoding.ASCII.GetString(bytes, Math.Max(0, bytes.Length - 64), Math.Min(64, bytes.Length)));
     }
 }

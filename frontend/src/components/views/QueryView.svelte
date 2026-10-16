@@ -80,8 +80,11 @@
   const kanbanField = $derived(view.kanbanField || view.group?.[0] || 'status');
   const kanbanColumns = $derived.by(() => {
     const values = new Map<string, QueryRow[]>();
-    const def = supertags.list.flatMap((t) => t.allFields).find((f) => f.key === kanbanField);
-    for (const o of def?.options ?? []) values.set(o, []);
+    // Predefined columns come only from this view's own supertags, or task statuses for task views.
+    const tags = (view.query.tags ?? []).map((t) => t.toLowerCase());
+    const def = supertags.list.filter((t) => tags.includes(t.name.toLowerCase())).flatMap((t) => t.allFields).find((f) => f.key === kanbanField);
+    const preset = def?.options ?? (kanbanField === 'status' && view.query.types?.length === 1 && view.query.types[0] === 'task' ? ['todo', 'doing', 'waiting', 'done', 'cancelled'] : []);
+    for (const o of preset) values.set(o, []);
     for (const r of rows) {
       const v = display(cellValue(r, kanbanField)) || '—';
       values.set(v, [...(values.get(v) ?? []), r]);
