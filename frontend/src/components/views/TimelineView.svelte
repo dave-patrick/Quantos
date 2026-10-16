@@ -44,6 +44,16 @@
     catch (err) { app.error(err); }
   }
 
+  /** Keyboard alternative to dragging: schedule at a typed start time (HH:MM). */
+  async function scheduleAt(t: TaskDto, value: string) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(value);
+    if (!m) return;
+    const start = Number(m[1]) * 60 + Number(m[2]);
+    const length = Math.max(15, Math.min(240, t.effort ?? 30));
+    try { await tasks.update(t.id, { time_block: { start: stamp(day, start), end: stamp(day, start + length) } }); }
+    catch (err) { app.error(err); }
+  }
+
   async function resize(t: TaskDto, delta: number) {
     const s = minutesOf(t.timeBlock!.start), e = minutesOf(t.timeBlock!.end);
     const end = Math.max(s + slot, e + delta);
@@ -62,9 +72,13 @@
 <div class="timeline">
   <aside class="scroll side">
     <h2 class="label">To schedule</h2>
-    <p class="faint small">Drag a task onto the day to block time for it.</p>
+    <p class="faint small">Drag a task onto the day to block time for it, or type a start time.</p>
     {#each unscheduled as t (t.id)}
-      <div class="drag"><TaskRow task={t} compact draggable ondragstart={(e) => { dragId = t.id; dragOffset = 0; e.dataTransfer?.setData('text/plain', t.title); }} /></div>
+      <div class="drag">
+        <TaskRow task={t} compact draggable ondragstart={(e) => { dragId = t.id; dragOffset = 0; e.dataTransfer?.setData('text/plain', t.title); }} />
+        <input class="input at" type="time" step="900" aria-label="Start time for {t.title}" title="Start time"
+          onchange={(e) => scheduleAt(t, (e.target as HTMLInputElement).value)} />
+      </div>
     {:else}
       <p class="faint small">Nothing waiting. Tasks planned or due this day, and My Day picks, appear here.</p>
     {/each}
@@ -102,11 +116,13 @@
   .timeline { flex: 1; display: grid; grid-template-columns: 300px 1fr; min-height: 0; }
   .side { border-right: 1px solid var(--line); padding: 16px 10px; }
   .small { font-size: 12.5px; margin: 4px 0 10px; }
-  .drag { cursor: grab; }
+  .drag { cursor: grab; display: flex; align-items: center; gap: 4px; }
+  .drag > :global(.task) { flex: 1; min-width: 0; }
+  .at { width: 92px; height: 28px; flex: none; padding: 0 6px; font-size: 12.5px; }
   .main { padding: 0 24px 40px; }
   header { display: flex; align-items: center; gap: 8px; padding: 16px 0; position: sticky; top: 0; background: var(--bg); z-index: 2; }
   h1 { font: 700 20px/1.2 var(--font-display); }
-  .grid { position: relative; margin-left: 56px; border-left: 1px solid var(--line); }
+  .grid { position: relative; margin: 10px 0 0 56px; border-left: 1px solid var(--line); }
   .hour { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line); }
   .hour span { position: absolute; left: -54px; top: -8px; font: 11px var(--font-mono); color: var(--text-faint); }
   .now { position: absolute; left: -4px; right: 0; border-top: 2px solid var(--danger); z-index: 1; }
