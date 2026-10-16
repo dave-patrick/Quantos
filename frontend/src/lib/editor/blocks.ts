@@ -1,6 +1,6 @@
 import { foldEffect, foldService, syntaxTree } from '@codemirror/language';
 import type { StateEffect } from '@codemirror/state';
-import { RangeSetBuilder, StateField, type EditorState, type Extension } from '@codemirror/state';
+import { StateField, type EditorState, type Extension } from '@codemirror/state';
 import { Decoration, EditorView, hoverTooltip, ViewPlugin, WidgetType, type DecorationSet } from '@codemirror/view';
 import { api } from '../api';
 import { app } from '../state.svelte';
@@ -76,7 +76,9 @@ class SyncLabel extends WidgetType {
 }
 
 function build(state: EditorState): DecorationSet {
-  const builder = new RangeSetBuilder<Decoration>();
+  // Collected and sorted by CodeMirror: line decorations and replacements can share a position.
+  const ranges: import('@codemirror/state').Range<Decoration>[] = [];
+  const builder = { add: (from: number, to: number, deco: Decoration) => ranges.push(deco.range(from, to)) };
   const sel = state.selection.main;
   const touching = (from: number, to: number) => sel.from <= to && sel.to >= from;
   let fence = false;
@@ -119,7 +121,7 @@ function build(state: EditorState): DecorationSet {
       builder.add(line.from, line.to, Decoration.replace({ widget: new EmbedWidget(m[1], m[2]?.slice(1) ?? null, line.from), block: true }));
     }
   }
-  return builder.finish();
+  return Decoration.set(ranges, true);
 }
 
 export const embedBlocks = StateField.define<DecorationSet>({

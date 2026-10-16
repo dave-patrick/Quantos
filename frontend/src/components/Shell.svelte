@@ -59,7 +59,15 @@
   .shell.right { grid-template-columns: 0 minmax(0, 1fr) var(--rightbar-w); }
   .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--rightbar-w); }
   .center { grid-area: center; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg); }
-  @media (max-width: 900px) {
+  @media (max-width: 700px) {
+    .shell, .shell.left, .shell.right, .shell.left.right { grid-template-columns: 0 minmax(0, 1fr) 0; }
+    .shell.left :global(.sidebar), .shell.right :global(.rightbar) {
+      position: fixed; top: 44px; bottom: var(--statusbar-h); width: min(300px, 86vw); z-index: 50; box-shadow: var(--shadow); display: flex;
+    }
+    .shell.left :global(.sidebar) { left: 0; }
+    .shell.right :global(.rightbar) { right: 0; }
+  }
+  @media (min-width: 701px) and (max-width: 900px) {
     .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0; }
     .shell.left.right :global(.rightbar) { display: none; }
   }

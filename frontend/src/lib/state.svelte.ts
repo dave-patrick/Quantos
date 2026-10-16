@@ -35,6 +35,8 @@ class AppState {
         this.theme = ui.theme ?? 'dark';
       }
     } catch { /* storage unavailable */ }
+    // Small windows start with the sidebars closed; they open as overlays.
+    if (typeof innerWidth === 'number' && innerWidth <= 700) { this.leftOpen = false; this.rightOpen = false; }
     $effect.root(() => {
       $effect(() => {
         document.documentElement.dataset.theme = this.theme;
