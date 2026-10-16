@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,10 +6,24 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Quantos</AssemblyName>
+    <RootNamespace>Quantos.Client</RootNamespace>
+    <ApplicationIcon>Assets\quantos.ico</ApplicationIcon>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <Product>Quantos</Product>
+    <Company>Atomic 22 Industries</Company>
+    <Version>0.1.0</Version>
+    <!-- PowerShell looks up its assemblies on disk; single-file builds extract everything. -->
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\quantos.ico" LogicalName="quantos.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.6.7" />
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ namespace Quantos.Core.Security;
 
 /// <summary>Permission categories (BUILD-PLAN section 10).</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<Permission>))]
-public enum Permission { Read, CreateEdit, MoveArchive, TrashRestore, PermanentDelete, RunCommands, OutsideFiles, Network }
+public enum Permission { Read, CreateEdit, MoveArchive, TrashRestore, PermanentDelete, RunCommands, OutsideFiles, Network, ManagePermissions }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ActorKind>))]
 public enum ActorKind { User, Cli, Agent, Plugin, Automation, System }
@@ -57,7 +57,7 @@ public sealed class PermissionService
     public ApprovalService Approvals { get; }
     public bool SafeMode { get; set; }
 
-    public static readonly Permission[] AlwaysApprove = [Permission.PermanentDelete, Permission.RunCommands];
+    public static readonly Permission[] AlwaysApprove = [Permission.PermanentDelete, Permission.RunCommands, Permission.ManagePermissions];
 
     public void Demand(Actor actor, Permission permission, string description, string? approvalId = null)
     {
@@ -81,7 +81,7 @@ public sealed class PermissionService
         ActorKind.System => true,
         // The local user, through the app or a browser session, can do everything (subject to approvals).
         ActorKind.User => true,
-        ActorKind.Cli => permission is not Permission.OutsideFiles and not Permission.Network,
+        ActorKind.Cli => permission is not Permission.OutsideFiles and not Permission.Network and not Permission.ManagePermissions,
         _ => Lookup(actor).Contains(permission)
     };
 

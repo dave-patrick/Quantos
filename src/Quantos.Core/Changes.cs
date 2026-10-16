@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Quantos.Core;
 
 [JsonConverter(typeof(JsonStringEnumConverter<ChangeKind>))]
-public enum ChangeKind { Created, Updated, Moved, Trashed, Restored, Deleted, Archived, Unarchived, Conflict, Reindexed, Notification, Approval }
+public enum ChangeKind { Created, Updated, Moved, Trashed, Restored, Deleted, Archived, Unarchived, Conflict, Reindexed, Notification, Approval, ShellJob }
 
 public sealed record ChangeEvent(ChangeKind Kind, string? Id, string? Path, string? OldPath = null, string? Hash = null, string? Origin = null, object? Data = null);
 

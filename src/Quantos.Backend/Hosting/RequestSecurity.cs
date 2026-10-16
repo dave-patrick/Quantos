@@ -76,8 +76,38 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
             if (instance.Length is > 0 and <= 64) actor = actor with { Instance = instance };
             ctx.Items[ActorKey] = actor;
             ctx.Items[NativeKey] = native;
+
+            // Agents and plugins act only within their grants: reading needs Read, and the app's own
+            // controls (vault choice, safe mode, plugin switches, sign-in) are for the user alone.
+            if (actor.Kind is ActorKind.Agent or ActorKind.Plugin or ActorKind.Automation)
+            {
+                var path = request.Path;
+                if (path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/system") || path.StartsWithSegments("/api/auth")
+                    || path.StartsWithSegments("/api/plugins") || path.StartsWithSegments("/api/approvals"))
+                {
+                    await Reject(ctx, StatusCodes.Status403Forbidden, "Only you can do that, not an agent or plugin.");
+                    return;
+                }
+                var permissions = ctx.RequestServices.GetService<VaultHost>()?.Session?.Permissions;
+                if (permissions is not null && (HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method)) && !path.StartsWithSegments("/api/ping"))
+                {
+                    try { permissions.Demand(actor, Permission.Read, "Read vault content"); }
+                    catch (PermissionDeniedException ex)
+                    {
+                        await Reject(ctx, StatusCodes.Status403Forbidden, ex.Message);
+                        return;
+                    }
+                }
+            }
         }
 
+        if (request.Path.StartsWithSegments("/plugin-host"))
+        {
+            // The plugin host endpoint sets its own strict CSP with a per-response nonce.
+            ctx.Response.Headers.XContentTypeOptions = "nosniff";
+            await next(ctx);
+            return;
+        }
         ctx.Response.Headers.XContentTypeOptions = "nosniff";
         ctx.Response.Headers["X-Frame-Options"] = "DENY";
         ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
@@ -104,6 +134,9 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
         }
         var session = tokens.Session(ctx.Request.Cookies[AccessTokens.CookieName]);
         if (session is null) return null;
+        // Requests the app makes on a plugin's behalf carry its name and get only that plugin's grants.
+        var plugin = ctx.Request.Headers["X-Quantos-Plugin"].ToString();
+        if (plugin.Length > 0) return new Actor(ActorKind.Plugin, plugin, ViaBrowser: true);
         return session.Kind == SessionKind.App ? Actor.User with { ViaBrowser = true, Name = "app" } : Actor.Browser;
     }
 

@@ -33,7 +33,10 @@ public sealed class VaultSession : IDisposable
         Templates = new Structure.TemplateService(Writes, Supertags);
         Queries = new Structure.QueryService(Writes, Supertags);
         SyncedBlocks = new Structure.SyncedBlockService(Writes);
+        Automations = new Extensibility.AutomationService(Writes, Tasks, Notifications);
     }
+
+    public Extensibility.AutomationService Automations { get; }
 
     public Structure.SyncedBlockService SyncedBlocks { get; }
 
@@ -87,6 +90,7 @@ public sealed class VaultSession : IDisposable
     public void Dispose()
     {
         Watcher?.Dispose();
+        Automations.Dispose();
         Cache.Dispose();
         _lock?.Dispose();
     }
