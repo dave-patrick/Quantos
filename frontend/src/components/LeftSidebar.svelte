@@ -8,6 +8,27 @@
   import { terminal } from '../lib/terminal.svelte';
   import { capture } from '../lib/capture.svelte';
   import Icon from './Icon.svelte';
+  import { api } from '../lib/api';
+  import { onChange } from '../lib/events';
+  import type { TreeFolder } from '../lib/types';
+
+  // Folder navigation (BUILD-PLAN section 7): the workspace's own folders, plus saved views marked as folders.
+  let folders = $state<{ name: string; path: string; depth: number }[]>([]);
+  async function loadFolders() {
+    try {
+      const tree = await api.get<TreeFolder>(`tree?workspace=${app.workspace}`);
+      const out: { name: string; path: string; depth: number }[] = [];
+      const builtIn = ['daily', 'tasks', 'archive', 'supertags'];
+      const add = (f: TreeFolder, depth: number) => { out.push({ name: f.name, path: f.path, depth }); f.folders.forEach((c) => add(c, depth + 1)); };
+      for (const top of tree.folders) {
+        if (top.name === 'nodes') top.folders.forEach((c) => add(c, 0));   // folders inside Notes
+        else if (!builtIn.includes(top.name)) add(top, 0);                // custom top-level folders
+      }
+      folders = out;
+    } catch { folders = []; }
+  }
+  $effect(() => { void app.workspace; loadFolders(); });
+  onChange((e) => { if (e.kind === 'Moved' || e.kind === 'Created') loadFolders(); });
 
   const nav: { kind: TabKind; label: string; icon: string }[] = [
     { kind: 'daily', label: 'Daily stream', icon: 'calendar' },
@@ -66,12 +87,33 @@
       </section>
     {/if}
 
+    {#if folders.length || views.saved.some((v) => v.virtualFolder)}
+      <section>
+        <button class="heading" onclick={() => (collapsed.folders = !collapsed.folders)}>
+          <Icon name={collapsed.folders ? 'chevron-right' : 'chevron-down'} size={12} /> Folders
+        </button>
+        {#if !collapsed.folders}
+          {#each folders as f (f.path)}
+            <button class="item" style="padding-left:{12 + f.depth * 14}px" class:active={isActive('view', 'folder:' + f.path)}
+              onclick={(e) => open(e, 'view', f.name, 'folder:' + f.path)}>
+              <Icon name="folder" size={15} /> <span>{f.name}</span>
+            </button>
+          {/each}
+          {#each views.saved.filter((v) => v.virtualFolder && !v.pinned) as v (v.id)}
+            <button class="item" class:active={isActive('view', v.id)} onclick={(e) => open(e, 'view', v.name, v.id)} title="Virtual folder">
+              <Icon name="folder-open" size={15} /> <span>{v.name}</span>
+            </button>
+          {/each}
+        {/if}
+      </section>
+    {/if}
+
     <section>
       <button class="heading" onclick={() => (collapsed.queries = !collapsed.queries)}>
         <Icon name={collapsed.queries ? 'chevron-right' : 'chevron-down'} size={12} /> Saved queries
       </button>
       {#if !collapsed.queries}
-        {#each views.saved.filter((v) => !v.pinned) as v (v.id)}
+        {#each views.saved.filter((v) => !v.pinned && !v.virtualFolder) as v (v.id)}
           <button class="item" class:active={isActive('view', v.id)} onclick={(e) => open(e, 'view', v.name, v.id)}>
             <Icon name={v.virtualFolder ? 'folder' : 'filter'} size={15} /> <span>{v.name}</span>
           </button>
