@@ -16,7 +16,9 @@ export function renderMarkdown(body: string, options: { links?: boolean } = {}):
       const label = (bang ? '↳ ' : '') + text + (frag && !frag.startsWith('#^') ? ' › ' + frag.slice(1) : '');
       return options.links === false ? label : `<a class="wikilink" data-target="${escapeAttr(t)}" href="#">${escapeHtml(label)}</a>`;
     });
-  const html = marked.parse(prepared, { async: false }) as string;
+  const html = (marked.parse(prepared, { async: false }) as string)
+    // Callouts: a quote that starts with [!type] gets a label instead of showing the marker.
+    .replace(/<blockquote>\s*<p>\[!(\w+)\][+-]?\s*/g, '<blockquote class="callout"><p><span class="callout-label">$1</span> ');
   return DOMPurify.sanitize(html, { ADD_ATTR: ['data-target'], FORBID_TAGS: ['style', 'iframe', 'form', 'input', 'object', 'embed'] });
 }
 

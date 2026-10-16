@@ -73,3 +73,8 @@ kbd {
 
 .cm-content:focus-visible, .cm-editor:focus-visible { box-shadow: none; }
 .quick input:focus-visible, .q:focus-visible, .field input:focus-visible, .box input:focus-visible { box-shadow: none; }
+
+/* Rendered Markdown (embeds, columns, previews): quotes and callouts. */
+.cm-editor blockquote, .preview .body blockquote { margin: 6px 0; padding: 2px 10px; border-left: 3px solid var(--line-strong); color: var(--text-soft); }
+blockquote.callout { border-left-color: var(--accent); background: var(--accent-wash); border-radius: 0 6px 6px 0; }
+.callout-label { font: 600 11px/1 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-right: 4px; }
