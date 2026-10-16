@@ -4,7 +4,10 @@
   import { app } from '../../lib/state.svelte';
   import { layout } from '../../lib/layout.svelte';
   import { views } from '../../lib/views.svelte';
+  import { display } from '../../lib/query';
 
+  /** Samples are stored as text; lists arrive as JSON. Show both the way tables do, with link titles. */
+  const sample = (s: string) => { if (s.startsWith('[')) { try { return display(JSON.parse(s)); } catch { /* plain text */ } } return display(s); };
   interface Entry { key: string; count: number; kinds: string[]; nodeTypes: string[]; definedBy: string[]; samples: string[] }
   let entries = $state<Entry[]>([]);
   let scope = $state<'workspace' | 'all'>('workspace');
@@ -41,7 +44,7 @@
             <td>{#each e.kinds as k (k)}<span class="badge" class:warn={e.kinds.length > 1}>{k}</span> {/each}</td>
             <td class="faint">{e.nodeTypes.join(', ')}</td>
             <td>{#each e.definedBy as t (t)}<span class="badge accent">#{t}</span> {/each}</td>
-            <td class="faint samples">{e.samples.join(' · ')}</td>
+            <td class="faint samples">{e.samples.map(sample).join(' · ')}</td>
             <td><button class="btn ghost" onclick={() => explore(e.key)}>Explore</button></td>
           </tr>
         {/each}

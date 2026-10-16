@@ -57,15 +57,17 @@ public static class AtomicFile
         for (var attempt = 0; ; attempt++)
         {
             try { action(); return; }
-            catch (IOException ex) when (attempt < 5 && IsTransient(ex)) { Thread.Sleep(50 * (attempt + 1)); }
-            catch (UnauthorizedAccessException) when (attempt < 5) { Thread.Sleep(50 * (attempt + 1)); }
+            catch (IOException ex) when (attempt < 7 && IsTransient(ex)) { Thread.Sleep(50 * (attempt + 1)); }
+            catch (UnauthorizedAccessException) when (attempt < 7) { Thread.Sleep(50 * (attempt + 1)); }
         }
     }
 
     private static bool IsTransient(IOException ex)
     {
         var code = ex.HResult & 0xFFFF;
-        return code is 32 or 33 or 1224; // sharing violation, lock violation, user-mapped section
+        // Sharing and lock violations, a user-mapped section, and File.Replace failing because another
+        // process briefly holds the target open (unable to remove the replaced file / move the replacement).
+        return code is 32 or 33 or 1224 or 1175 or 1176 or 1177;
     }
 
     /// <summary>Removes temp files left behind by an interrupted write.</summary>

@@ -203,7 +203,7 @@
   .props { margin: 4px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
   .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 9px; border-radius: 999px; font: 600 12px/18px var(--font-mono);
-    color: var(--tag); background: color-mix(in srgb, var(--tag) 14%, transparent); border: 1px solid color-mix(in srgb, var(--tag) 40%, transparent); }
+    color: color-mix(in srgb, var(--tag) 70%, var(--text)); background: color-mix(in srgb, var(--tag) 14%, transparent); border: 1px solid color-mix(in srgb, var(--tag) 40%, transparent); }
   .tag button { border: 0; background: none; color: inherit; padding: 2px; border-radius: 50%; display: grid; opacity: .6; }
   .tag button:hover { opacity: 1; }
   .add-tag, .add { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; color: var(--text-faint); font-size: 12.5px; padding: 3px 6px; border-radius: 5px; }

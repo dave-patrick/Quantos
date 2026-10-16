@@ -44,6 +44,8 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
         var workspaces = WorkspaceList(spec.Workspaces, activeWorkspace);
         if (workspaces is not null) nodes = nodes.Where(n => workspaces.Contains(n.Workspace) || (n.Workspace.Length == 0 && n.Type is "template" or "supertag"));
         if (spec.Types is { Count: > 0 }) nodes = nodes.Where(n => spec.Types.Contains(n.Type, StringComparer.OrdinalIgnoreCase));
+        // Schema records (supertags, templates, synced block sources) appear only when asked for by type or browsed by folder.
+        else if (spec.Folder is not { Length: > 0 }) nodes = nodes.Where(n => n.Type is not (NodeTypes.Supertag or NodeTypes.Template or NodeTypes.SyncedBlock));
         if (spec.Tags is { Count: > 0 })
         {
             var wanted = spec.Tags.Select(t => tags.WithDescendants(t)).ToList();

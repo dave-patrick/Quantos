@@ -116,7 +116,9 @@ public sealed class BackendSecurityTests : IAsyncLifetime
         browser.DefaultRequestHeaders.Add(RequestSecurity.CsrfHeader, "1");
 
         var node = await (await browser.PostAsJsonAsync("api/nodes", new { title = "Doomed" })).Content.ReadFromJsonAsync<JsonElement>();
-        var entry = await (await browser.PostAsync($"api/nodes/{node.GetProperty("id").GetString()}/trash", null)).Content.ReadFromJsonAsync<JsonElement>();
+        var trashed = await browser.PostAsync($"api/nodes/{node.GetProperty("id").GetString()}/trash", null);
+        Assert.True(trashed.IsSuccessStatusCode, $"{(int)trashed.StatusCode}: {await trashed.Content.ReadAsStringAsync()}");
+        var entry = await trashed.Content.ReadFromJsonAsync<JsonElement>();
         var entryId = entry.GetProperty("entryId").GetString();
 
         var attempt = await browser.DeleteAsync($"api/trash/{entryId}");

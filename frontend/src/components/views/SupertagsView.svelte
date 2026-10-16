@@ -200,11 +200,13 @@
   .inline { display: flex; gap: 6px; }
   .check { display: flex !important; grid-auto-flow: column; gap: 6px; align-items: center; color: var(--text-soft); font-size: 13px; }
   h2 { margin: 22px 0 8px; }
-  .field { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .field { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
   .field .input { height: 30px; min-width: 0; }
   .field .name { width: 190px; flex: none; }
   .field .type { width: 125px; flex: none; }
-  .field .opts { flex: 1; min-width: 0; }
+  /* The options box wraps to its own line rather than shrinking to nothing in a narrow pane. */
+  .field input.opts { flex: 1 1 220px; min-width: 0; }
+  .field span.opts { flex: 1 1 0; }
   .field .check { white-space: nowrap; }
   .field .btn { flex: none; }
   .field.inherited { color: var(--text-soft); font-size: 13.5px; gap: 14px; padding: 4px 2px; }

@@ -50,7 +50,8 @@ public static class Discovery
         catch (ArgumentException) { return false; }
         try
         {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            // Generous: a slow answer from a busy machine must not look like a dead backend and start a second one.
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             using var request = new HttpRequestMessage(HttpMethod.Get, info.Url + "api/ping");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", info.Token);
             using var response = await http.SendAsync(request, ct);
