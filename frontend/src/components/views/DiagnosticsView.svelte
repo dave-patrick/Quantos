@@ -49,7 +49,11 @@
       <section>
         <h2>Last startup check</h2>
         {#if report}
-          <p class="muted">Scanned {report.scanned} files: {report.changed} changed and {report.added} added outside Quantos, {report.removed} removed, {report.adopted} given a new identity, {report.tempFilesRemoved} leftover temporary files cleaned up.</p>
+          {#if report.rebuilt}
+            <p class="muted">Indexed {report.scanned} files from scratch (the cache was new or rebuilt){report.adopted ? `, ${report.adopted} given a new identity` : ''}{report.tempFilesRemoved ? `, ${report.tempFilesRemoved} leftover temporary files cleaned up` : ''}.</p>
+          {:else}
+            <p class="muted">Scanned {report.scanned} files: {report.changed} changed and {report.added} added outside Quantos, {report.removed} removed, {report.adopted} given a new identity, {report.tempFilesRemoved} leftover temporary files cleaned up.</p>
+          {/if}
           {#each report.recovered as r (r.opId)}
             <div class="notice {r.outcome === 'completed' ? 'ok' : 'warn'}"><Icon name="refresh" size={16} /> Interrupted “{r.description}” was {r.outcome}. {r.problems.join(' ')}</div>
           {/each}

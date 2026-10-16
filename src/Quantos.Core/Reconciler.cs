@@ -7,7 +7,8 @@ public sealed record Diagnostic(string Severity, string Code, string Message, st
 
 public sealed record ReconcileReport(
     int Scanned, int Changed, int Added, int Removed, int Adopted, int TempFilesRemoved,
-    IReadOnlyList<RecoveryResult> Recovered, IReadOnlyList<Diagnostic> Diagnostics, TimeSpan Elapsed);
+    IReadOnlyList<RecoveryResult> Recovered, IReadOnlyList<Diagnostic> Diagnostics, TimeSpan Elapsed,
+    bool Rebuilt = false); // the cache started empty (first open, new cache version, or a rebuild): every file counts as added
 
 /// <summary>
 /// Startup reconciliation (BUILD-PLAN section 6): before accepting writes, finish or roll back
@@ -32,6 +33,7 @@ public sealed class Reconciler(WriteService writes)
         if (fullRebuild) writes.Cache.Clear();
         using var batch = writes.Cache.Batch();
         var cached = writes.Cache.AllFiles().ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
+        var rebuilt = cached.Count == 0;
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var pending = new List<(string Abs, string Rel, Node Node, bool IsNew)>();
         int scanned = 0, changed = 0, added = 0, adopted = 0;
@@ -117,6 +119,6 @@ public sealed class Reconciler(WriteService writes)
             }
         }
 
-        return new ReconcileReport(scanned, changed, added, removed, adopted, temps, recovered, diagnostics, started.Elapsed);
+        return new ReconcileReport(scanned, changed, added, removed, adopted, temps, recovered, diagnostics, started.Elapsed, rebuilt);
     }
 }

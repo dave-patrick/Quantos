@@ -58,7 +58,7 @@ export interface Diagnostic { severity: string; code: string; message: string; p
 export interface ReconcileReport {
   scanned: number; changed: number; added: number; removed: number; adopted: number; tempFilesRemoved: number;
   recovered: { opId: string; description: string; outcome: string; problems: string[] }[];
-  diagnostics: Diagnostic[]; elapsed: string;
+  diagnostics: Diagnostic[]; elapsed: string; rebuilt?: boolean;
 }
 
 export interface Status {
