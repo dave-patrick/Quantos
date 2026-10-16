@@ -7,6 +7,9 @@
   import { tasks } from './lib/tasks.svelte';
   import { bridge, isWindowsClient } from './lib/platform';
   import { docs } from './lib/docs.svelte';
+  import { supertags } from './lib/supertags.svelte';
+  import { views } from './lib/views.svelte';
+  import { templatesStore } from './lib/templates.svelte';
   import Shell from './components/Shell.svelte';
   import Setup from './components/Setup.svelte';
   import Splash from './components/Splash.svelte';
@@ -20,7 +23,7 @@
       if (!status.vault) { phase = 'setup'; return; }
       const workspaces = status.workspaces ?? [];
       app.workspace = status.lastWorkspace && workspaces.includes(status.lastWorkspace) ? status.lastWorkspace : workspaces.includes('default') ? 'default' : workspaces[0] ?? 'default';
-      await Promise.all([app.loadTitles(), tasks.load().catch(() => {}), layout.load(app.workspace)]);
+      await Promise.all([app.loadTitles(), tasks.load().catch(() => {}), layout.load(app.workspace), supertags.load(), views.load(), templatesStore.load()]);
       if (layout.panes.every((p) => p.tabs.length === 0)) await layout.open({ kind: 'daily', title: 'Daily' });
       startEvents();
       phase = 'ready';

@@ -6,10 +6,12 @@
   import { prefs } from '../lib/prefs.svelte';
   import type { NodeDto } from '../lib/types';
   import Icon from './Icon.svelte';
+  import { templatesStore } from '../lib/templates.svelte';
 
   let { doc, paneIndex, oncopymd, oncopyrich }: { doc: Doc; paneIndex: number; oncopymd: () => void; oncopyrich: () => void } = $props();
   let open = $state(false);
   let moving = $state(false);
+  let applying = $state(false);
 
   async function act(fn: () => Promise<unknown>) {
     open = false;
@@ -54,9 +56,14 @@
 <div class="wrap">
   <button class="icon-btn" aria-label="More actions" aria-expanded={open} onclick={() => (open = !open)}><Icon name="more" /></button>
   {#if open}
-    <button class="backdrop" aria-label="Close" onclick={() => { open = false; moving = false; }}></button>
+    <button class="backdrop" aria-label="Close" onclick={() => { open = false; moving = false; applying = false; }}></button>
     <div class="menu" role="menu">
-      {#if moving}
+      {#if applying}
+        <div class="label">Apply template</div>
+        {#each templatesStore.list as t (t.id)}
+          <button role="menuitem" onclick={() => act(async () => { await doc.flush(); await api.post(`nodes/${doc.id}/apply-template`, { templateId: t.id }); applying = false; })}><Icon name="copy" size={14} /> {t.title}</button>
+        {:else}<div class="label">No templates yet</div>{/each}
+      {:else if moving}
         <div class="label">Move to workspace</div>
         {#each app.workspaces.filter((w) => w !== doc.node?.workspace) as ws (ws)}
           <button role="menuitem" onclick={() => moveTo(ws)}><Icon name="layers" size={14} /> {ws}</button>
@@ -66,6 +73,7 @@
         <button role="menuitem" onclick={() => { open = false; oncopymd(); }}><Icon name="copy" size={14} /> Copy as Markdown</button>
         <button role="menuitem" onclick={() => { open = false; oncopyrich(); }}><Icon name="copy" size={14} /> Copy as rich text</button>
         <button role="menuitem" onclick={setTarget}><Icon name="target" size={14} /> Writing target…</button>
+        <button role="menuitem" onclick={() => (applying = true)}><Icon name="copy" size={14} /> Apply template…</button>
         <button role="menuitem" onclick={() => (moving = true)}><Icon name="layers" size={14} /> Move to workspace…</button>
         <button role="menuitem" onclick={archive}><Icon name="archive" size={14} /> {doc.node?.archived ? 'Unarchive' : 'Archive'}</button>
         <div class="sep"></div>
