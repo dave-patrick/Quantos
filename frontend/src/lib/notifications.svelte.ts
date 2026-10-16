@@ -1,6 +1,8 @@
 import { api } from './api';
 import { onChange } from './events';
-import { bridge, isWindowsClient } from './platform';
+import { isWindowsClient } from './platform';
+import { app } from './state.svelte';
+import { openNode } from './links.svelte';
 
 export interface NotificationRecord { id: string; at: string; title: string; body: string; kind: string; nodeId?: string | null; read: boolean; occurrence?: string | null }
 
@@ -14,10 +16,15 @@ class Notifications {
       if (e.kind !== 'Notification' || !e.data?.notification) return;
       const n = e.data.notification as NotificationRecord;
       this.list = [n, ...this.list.filter((x) => x.id !== n.id)];
-      if (!isWindowsClient && 'Notification' in window && Notification.permission === 'granted' && document.hidden) {
+      // The Windows client shows reminders natively. In a browser, use a system notification when the
+      // page is in the background and allowed to; otherwise show it in the page so it isn't missed.
+      if (isWindowsClient) return;
+      if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
         new Notification(n.title, { body: n.body, tag: n.id });
+      } else if (n.kind === 'reminder') {
+        const id = n.nodeId;
+        app.toast(`Reminder: ${n.title}${n.body && n.body !== 'Reminder' ? ` · ${n.body}` : ''}`, 'info', id ? { label: 'Open', run: () => openNode(id, 'current') } : undefined);
       }
-      void bridge;
     });
   }
 
