@@ -9,10 +9,9 @@ schema: 1
 ---
 This is an example vault. Every note is a Markdown file you can open in any editor.
 
-Start with the [[01JQEXAMP0E000000000000030|Apollo launch]] project, which has a meeting with
-[[01JQEXAMP0E000000000000040|Sam Rivera]].
+Start with the [[01JQEXAMP0E000000000000030|Apollo launch]] project, which has a meeting with [[01JQEXAMP0E000000000000040|Sam Rivera]].
 
-> [!tip]- Things to try (click the arrow)
+> [!tip]- Things to try (click the arrow on the left)
 > - Press Ctrl+P and type "apollo".
 > - Type `[[` to link a note.
 > - Type `- [ ] something` to create a task.

@@ -84,7 +84,16 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     closeBrackets(),
     highlightSelectionMatches(),
     search({ top: true }),
-    foldGutter({ openText: '▾', closedText: '▸' }),
+    // Open sections show their arrow on hover; folded ones always do, so hidden text is never lost from view.
+    foldGutter({
+      markerDOM(open) {
+        const el = document.createElement('span');
+        el.className = open ? 'cm-fold-open' : 'cm-fold-closed';
+        el.textContent = open ? '▾' : '▸';
+        el.title = open ? 'Fold' : 'Unfold';
+        return el;
+      }
+    }),
     listFolding,
     EditorView.lineWrapping,
     Prec.high(keymap.of([{ key: 'Enter', run: exitEmptyItem }])),
