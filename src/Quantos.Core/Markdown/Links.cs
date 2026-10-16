@@ -58,6 +58,17 @@ public static partial class Links
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Body text as a reader sees it, for search: links become their display text, and Quantos markers
+    /// (task and sync comments, block anchors) are removed.
+    /// </summary>
+    public static string PlainText(string body)
+    {
+        var text = Rewrite(body, l => l.Display ?? (l.IsResolved ? l.Fragment ?? "" : l.TitleTarget.Title));
+        text = CommentPattern().Replace(text, "");
+        return AnchorPattern().Replace(text, "");
+    }
+
     /// <summary>Ids of task nodes bound to inline task lines (<c>&lt;!--task:ID--&gt;</c>).</summary>
     public static IEnumerable<(string Id, bool Checked, string Text, int LineStart)> InlineTasks(string body)
     {
@@ -124,6 +135,12 @@ public static partial class Links
         for (var i = lineStart; i < index; i++) if (text[i] == '`') ticks++;
         return ticks % 2 == 1;
     }
+
+    [GeneratedRegex(@"<!--(?:task|sync|/sync)[^>]*-->")]
+    private static partial Regex CommentPattern();
+
+    [GeneratedRegex(@"[ \t]+\^[A-Za-z0-9-]+[ \t]*$", RegexOptions.Multiline)]
+    private static partial Regex AnchorPattern();
 
     [GeneratedRegex(@"<!--sync:(?<id>[0-9A-HJKMNP-TV-Z]{26})-->\r?\n?(?<content>[\s\S]*?)\r?\n?<!--/sync-->")]
     private static partial Regex SyncPattern();

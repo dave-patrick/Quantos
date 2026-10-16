@@ -20,7 +20,7 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// </summary>
 public sealed class CacheIndex : IDisposable
 {
-    public const int Version = 4;
+    public const int Version = 5;
     private readonly SqliteConnection _db;
     private readonly Lock _gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -166,7 +166,7 @@ public sealed class CacheIndex : IDisposable
                     Exec(_db, "INSERT INTO inline_tasks VALUES($n, $t, $c, $x)", ("$n", node.Id), ("$t", task.Id), ("$c", task.Checked ? 1 : 0), ("$x", task.Text));
                 foreach (var attachment in Attachments.Find(node.Body))
                     Exec(_db, "INSERT INTO attachment_refs VALUES($n, $p)", ("$n", node.Id), ("$p", attachment));
-                Exec(_db, "INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", node.Body));
+                Exec(_db, "INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", Links.PlainText(node.Body)));
             }
             tx?.Commit();
         }

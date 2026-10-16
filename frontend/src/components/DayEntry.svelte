@@ -54,7 +54,8 @@
     <button class="toggle" aria-expanded={expanded} onclick={() => (expanded = !expanded)}>
       <Icon name={expanded ? 'chevron-down' : 'chevron-right'} size={14} />
       <span class="when">{dayLabel(date)}</span>
-      <span class="date faint">{longDate(date)}</span>
+      <!-- Relative labels get the full date; dated labels already say it, so show the note's file date. -->
+      <span class="date faint">{['Today', 'Yesterday', 'Tomorrow'].includes(dayLabel(date)) ? longDate(date) : date}</span>
       {#if !expanded && empty}<span class="faint empty">empty</span>{/if}
     </button>
     {#if node}
@@ -90,5 +91,7 @@
   .date { font-size: 12.5px; }
   .empty { font-size: 12px; font-family: var(--font-mono); }
   .body { padding-left: 4px; }
+  /* Entries stack in one scrolling stream, so the note editor's scroll-past-end space would leave gaps. */
+  .body :global(.cm-content) { padding-bottom: 14px; }
   .warn { color: var(--warn); font-size: 13.5px; display: flex; gap: 10px; align-items: center; }
 </style>

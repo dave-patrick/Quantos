@@ -66,6 +66,13 @@ public class FrontmatterTests
     }
 
     [Fact]
+    public void Plain_text_shows_link_titles_without_markers()
+    {
+        var body = "Met [[01JABCDEF0123456789XYZABCD|Sam]] about [[Budget]].\n- [ ] Call back <!--task:01JABCDEF0123456789XYZABCE-->\n<!--sync:01JABCDEF0123456789XYZABCF-->\nShared line ^b1\n<!--/sync-->";
+        Assert.Equal("Met Sam about Budget.\n- [ ] Call back \n\nShared line\n", Links.PlainText(body));
+    }
+
+    [Fact]
     public void Ulids_are_valid_and_increase()
     {
         var a = Ulid.New();

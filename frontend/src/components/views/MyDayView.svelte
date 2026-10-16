@@ -71,7 +71,7 @@
           <TaskRow task={t} draggable ondragstart={() => (dragId = t.id)} />
         </div>
       {:else}
-        <div class="empty-state"><h3>Nothing picked for today yet</h3><p>Choose from the suggestions below, or press the sun on any task.</p></div>
+        <div class="empty-state"><h3>Nothing picked for today yet</h3><p>{overdue.length || dueToday.length || plannedToday.length ? 'Choose from the suggestions below, add a task above, or press the sun on any task.' : 'Add a task above, or press the sun on any task to pick it for today.'}</p></div>
       {/each}
     </section>
 

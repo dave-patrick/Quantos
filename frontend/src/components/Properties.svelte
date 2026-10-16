@@ -82,6 +82,7 @@
     await doc.setProperties({ tags: node.tags.filter((t) => t !== tag) });
   }
 
+  const listOf = (value: unknown): string[] => Array.isArray(value) ? value.map(String) : value === null || value === undefined || value === '' ? [] : [String(value)];
   const linkCandidates = (q: string) => searchTitles(q, 8);
   const linked = (value: unknown) => (typeof value === 'string' ? /^\[\[([0-9A-HJKMNP-TV-Z]{26})\|([^\]]+)\]\]$/.exec(value) : null);
 </script>
@@ -129,6 +130,33 @@
               <input class="cell" type="date" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).value)} />
             {:else if field.type === 'number'}
               <input class="cell" type="number" value={display(value)} onchange={(e) => setValue(field.key, Number((e.target as HTMLInputElement).value))} />
+            {:else if field.type === 'datetime'}
+              <input class="cell" type="datetime-local" value={display(value).slice(0, 16)} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).value)} />
+            {:else if field.type === 'nodes' || field.type === 'multiselect'}
+              {@const items = listOf(value)}
+              <div class="chips">
+                {#each items as item, i (item + i)}
+                  {@const m = linked(item)}
+                  <span class="chip">
+                    {#if m}<button class="node-link" onclick={(e) => openNode(m[1], e.shiftKey ? 'other' : 'current')}>{m[2]}</button>
+                    {:else}<span class="chip-text">{item}</span>{/if}
+                    <button class="chip-x" aria-label="Remove {m ? m[2] : item}" onclick={() => setValue(field.key, items.filter((_, j) => j !== i))}><Icon name="x" size={10} /></button>
+                  </span>
+                {/each}
+                {#if field.type === 'multiselect' && field.options?.length}
+                  <select class="cell add-item" value="" aria-label="Add {field.name}" onchange={(e) => {
+                    const v = (e.target as HTMLSelectElement).value; if (v && !items.includes(v)) setValue(field.key, [...items, v]); (e.target as HTMLSelectElement).value = ''; }}>
+                    <option value="">Add…</option>
+                    {#each field.options.filter((o) => !items.includes(o)) as o (o)}<option value={o}>{o}</option>{/each}
+                  </select>
+                {:else}
+                  <input class="cell add-item" list="items-{field.key}" placeholder={field.type === 'nodes' ? 'Link a note…' : 'Add…'} onchange={(e) => {
+                    const input = e.target as HTMLInputElement; const v = input.value.trim(); if (!v) return;
+                    const hit = field.type === 'nodes' ? linkCandidates(v).find((n) => n.title === v) : null;
+                    setValue(field.key, [...items, hit ? `[[${hit.id}|${hit.title}]]` : v]); input.value = ''; }} />
+                  {#if field.type === 'nodes'}<datalist id="items-{field.key}">{#each app.titles.slice(0, 200) as n (n.id)}<option value={n.title}></option>{/each}</datalist>{/if}
+                {/if}
+              </div>
             {:else if (field.type === 'node' || field.type === 'person') && linked(value)}
               {@const m = linked(value)!}
               <button class="node-link" onclick={(e) => openNode(m[1], e.shiftKey ? 'other' : 'current')}>{m[2]}</button>
@@ -195,5 +223,12 @@
   dd:hover .clear { opacity: 1; }
   .problem { font-size: 11.5px; color: var(--warn); white-space: nowrap; }
   .node-link { border: 0; background: none; color: var(--accent); padding: 4px 8px; text-decoration: underline; text-underline-offset: 3px; }
+  .chips { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+  .chip { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-raised); }
+  .chip .node-link { padding: 2px 4px 2px 8px; }
+  .chip-text { padding: 2px 4px 2px 8px; font-size: 13.5px; }
+  .chip-x { border: 0; background: none; color: var(--text-faint); padding: 4px 6px 4px 2px; display: grid; }
+  .chip-x:hover { color: var(--text); }
+  .add-item { flex: 1 1 120px; }
   .compact .grid { grid-template-columns: 110px 1fr; }
 </style>

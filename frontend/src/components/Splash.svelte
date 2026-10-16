@@ -5,7 +5,7 @@
 </script>
 
 <main class="splash">
-  <div class="card">
+  <div class="card" class:loading>
     <Wordmark height={44} />
     {#if loading}
       <div class="bar" aria-label="Loading"><span></span></div>
@@ -20,6 +20,8 @@
   .splash { height: 100%; display: grid; place-items: center; padding: 24px;
     background: radial-gradient(1200px 600px at 70% -10%, #15263c 0%, transparent 60%), var(--bg); }
   .card { width: min(520px, 100%); display: grid; gap: 18px; justify-items: start; }
+  /* While loading there's no text to align with, so the mark sits in the middle. */
+  .card.loading { width: auto; justify-items: center; }
   h1 { font: 700 26px/1.25 var(--font-display); letter-spacing: .01em; }
   .card :global(p) { color: var(--text-soft); margin: 0; }
   .card :global(code) { color: var(--accent); }

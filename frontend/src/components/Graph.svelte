@@ -32,6 +32,7 @@
       simulate(placed, data.edges);
       nodes = placed;
       edges = data.edges;
+      if (fitNext) { fitNext = false; fit(); }
     } catch { nodes = []; edges = []; }
   }
 
@@ -60,13 +61,22 @@
         a.vx += (dx / d) * f; a.vy += (dy / d) * f; b.vx -= (dx / d) * f; b.vy -= (dy / d) * f;
       }
       for (const n of ns) {
-        n.vx -= n.x * 0.004; n.vy -= n.y * 0.004;
+        n.vx -= n.x * 0.03; n.vy -= n.y * 0.03;
         if (n.id === centerId) { n.x = 0; n.y = 0; n.vx = 0; n.vy = 0; continue; }
         n.x += Math.max(-20, Math.min(20, n.vx)) * cool;
         n.y += Math.max(-20, Math.min(20, n.vy)) * cool;
         n.vx *= 0.6; n.vy *= 0.6;
       }
     }
+  }
+
+  /** Frames every node (with room for labels), never zooming in past 1.5×. */
+  function fit() {
+    if (!nodes.length) { view = { x: 0, y: 0, k: 1 }; return; }
+    const xs = nodes.map((n) => n.x), ys = nodes.map((n) => n.y);
+    const [minX, maxX, minY, maxY] = [Math.min(...xs) - 90, Math.max(...xs) + 90, Math.min(...ys) - 30, Math.max(...ys) + 20];
+    const k = Math.max(0.15, Math.min(1.5, width / (maxX - minX), height / (maxY - minY)));
+    view = { x: -((minX + maxX) / 2) * k, y: -((minY + maxY) / 2) * k, k };
   }
 
   onMount(() => {
@@ -76,7 +86,8 @@
     return () => { ro.disconnect(); off(); };
   });
 
-  $effect(() => { void centerId; void hops; void workspace; view = { x: 0, y: 0, k: 1 }; load(); });
+  let fitNext = true;
+  $effect(() => { void centerId; void hops; void workspace; fitNext = true; load(); });
 
   const byId = $derived(new Map(nodes.map((n) => [n.id, n])));
   const neighbours = $derived(hovered ? new Set(edges.filter((e) => e.from === hovered || e.to === hovered).flatMap((e) => [e.from, e.to])) : null);
