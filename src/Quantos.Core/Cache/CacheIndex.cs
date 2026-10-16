@@ -371,6 +371,20 @@ public sealed class CacheIndex : IDisposable
         }
     }
 
+    /// <summary>The first image each node references, in body order: the default cover on cards.</summary>
+    public IReadOnlyDictionary<string, string> FirstImages()
+    {
+        lock (_gate)
+        {
+            using var cmd = Command(_db, "SELECT node_id, path FROM attachment_refs WHERE lower(path) GLOB '*.png' OR lower(path) GLOB '*.jpg' OR lower(path) GLOB '*.jpeg' " +
+                "OR lower(path) GLOB '*.gif' OR lower(path) GLOB '*.webp' OR lower(path) GLOB '*.svg' ORDER BY rowid");
+            using var r = cmd.ExecuteReader();
+            var map = new Dictionary<string, string>();
+            while (r.Read()) map.TryAdd(r.GetString(0), r.GetString(1));
+            return map;
+        }
+    }
+
     public IReadOnlyList<(string Key, int Count)> PropertyCounts(string? workspace = null)
     {
         lock (_gate)

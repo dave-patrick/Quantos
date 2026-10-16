@@ -4,7 +4,7 @@ import type { ViewQuery } from './views.svelte';
 
 export interface QueryRow {
   id: string; title: string; type: string; workspace: string; path: string; tags: string[];
-  created: string | null; modified: string | null; archived: boolean; properties: Record<string, unknown>;
+  created: string | null; modified: string | null; archived: boolean; properties: Record<string, unknown>; cover?: string | null;
 }
 
 export interface QueryResult { rows: QueryRow[]; total: number; columns: string[]; error: string | null }

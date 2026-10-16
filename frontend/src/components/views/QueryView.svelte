@@ -134,7 +134,8 @@
     { key: 'grid', icon: 'grid', label: 'Grid' }, { key: 'gallery', icon: 'layers', label: 'Gallery' }
   ];
   const ops: [Filter['op'], string][] = [['eq', 'is'], ['neq', 'is not'], ['contains', 'contains'], ['lt', '<'], ['lte', '≤'], ['gt', '>'], ['gte', '≥'], ['empty', 'is empty'], ['notempty', 'has a value'], ['in', 'is one of']];
-  const cover = (r: QueryRow) => { const c = r.properties.cover; return typeof c === 'string' && /^attachments\//.test(c) ? '/api/files/' + c : typeof c === 'string' && /^https?:/.test(c) ? null : null; };
+  // The backend picks the cover: an attachment named in the cover property, or the note's first image.
+  const cover = (r: QueryRow) => (r.cover ? '/api/files/' + r.cover.split('/').map(encodeURIComponent).join('/') : null);
 </script>
 
 <div class="scroll query" class:embedded>

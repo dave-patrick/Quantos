@@ -26,7 +26,7 @@ public sealed record QuerySpec
 }
 
 public sealed record QueryRow(string Id, string Title, string Type, string Workspace, string Path, IReadOnlyList<string> Tags,
-    string? Created, string? Modified, bool Archived, IReadOnlyDictionary<string, object?> Properties);
+    string? Created, string? Modified, bool Archived, IReadOnlyDictionary<string, object?> Properties, string? Cover = null);
 
 public sealed record QueryResult(IReadOnlyList<QueryRow> Rows, int Total, IReadOnlyList<string> Columns, string? Error);
 
@@ -71,7 +71,10 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
         }
         var sorted = (ordered ?? list.OrderBy(n => n.Title)).ToList();
         var limit = Math.Clamp(spec.Limit ?? 500, 1, 5000);
-        var rows = sorted.Take(limit).Select(n => new QueryRow(n.Id, n.Title, n.Type, n.Workspace, n.Path, n.Tags, n.Created, n.Modified, n.Archived, n.Properties)).ToList();
+        // Cards show the cover property when it names an attachment, otherwise the first image in the note.
+        var images = writes.Cache.FirstImages();
+        var rows = sorted.Take(limit).Select(n => new QueryRow(n.Id, n.Title, n.Type, n.Workspace, n.Path, n.Tags, n.Created, n.Modified, n.Archived, n.Properties,
+            n.Properties.TryGetValue("cover", out var c) && c is string s && s.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase) ? s : images.GetValueOrDefault(n.Id))).ToList();
         var columns = spec.Columns is { Count: > 0 } ? spec.Columns : DefaultColumns(rows);
         return new QueryResult(rows, sorted.Count, columns, null);
     }
