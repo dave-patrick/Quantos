@@ -6,6 +6,11 @@
   import ShortcutSettings from '../ShortcutSettings.svelte';
   import ToolbarSettings from '../ToolbarSettings.svelte';
   import PluginSettings from '../PluginSettings.svelte';
+  import { vaultSettings } from '../../lib/vaultSettings.svelte';
+  import { templatesStore } from '../../lib/templates.svelte';
+  import { onMount } from 'svelte';
+
+  onMount(() => { vaultSettings.load(); templatesStore.load(); });
 
   let section = $state<'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins'>('general');
   let switching = $state(false);
@@ -40,6 +45,15 @@
       {:else}
         <button class="btn" onclick={() => (switching = true)}>Open another vault…</button>
       {/if}
+      <h3>Notes and tasks</h3>
+      <div class="field"><span>Daily note template</span>
+        <select class="input narrow" value={vaultSettings.data.dailyTemplate ?? ''} onchange={(e) => vaultSettings.set('dailyTemplate', (e.target as HTMLSelectElement).value)}>
+          <option value="">None</option>
+          {#each templatesStore.list as t (t.id)}<option value={t.id}>{t.title}</option>{/each}
+        </select></div>
+      <label class="check"><input type="checkbox" checked={vaultSettings.data.inlineTasks !== false}
+        onchange={(e) => vaultSettings.set('inlineTasks', (e.target as HTMLInputElement).checked ? null : false)} />
+        Turn “- [ ] …” lines in notes into tasks automatically</label>
       <h3>Backups</h3>
       <p class="muted">Until configurable backups arrive in Release 1.1: {isWindowsClient ? 'use Exit in this window' : 'use Exit in the Windows client'} so the backend shuts down safely, then copy the whole Vault folder somewhere safe. You don't need the cache in client-data; it's rebuilt from the vault.</p>
     {:else if section === 'shortcuts'}

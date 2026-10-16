@@ -12,11 +12,11 @@
   import DataTable from '../DataTable.svelte';
   import Icon from '../Icon.svelte';
 
-  let { tab, presetTags = null, embedded = false }: { tab: Tab; presetTags?: string[] | null; embedded?: boolean } = $props();
+  let { tab, presetTags = null, presetLayout = null, embedded = false }: { tab: Tab; presetTags?: string[] | null; presetLayout?: ViewLayout | null; embedded?: boolean } = $props();
 
   const blank = (): SavedView => ({
     id: crypto.randomUUID(), name: 'New view', query: { types: [], tags: presetTags ?? [], workspaces: 'active', filters: [] },
-    layout: 'table', sort: [{ field: 'modified', dir: 'desc' }], group: [], columns: []
+    layout: presetLayout ?? 'table', sort: [{ field: 'modified', dir: 'desc' }], group: [], columns: []
   });
 
   let view = $state<SavedView>(blank());

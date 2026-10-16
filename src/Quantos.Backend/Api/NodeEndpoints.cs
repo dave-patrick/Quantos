@@ -46,7 +46,7 @@ public static class NodeEndpoints
         {
             var writes = host.Require().Writes;
             var node = body.Workspace is { Length: > 0 } ws ? writes.MoveToWorkspace(id, ws, ctx.Actor())
-                : body.Folder is { Length: > 0 } folder ? writes.MoveToFolder(id, folder, ctx.Actor())
+                : body.Folder is { Length: > 0 } folder ? writes.MoveToFolder(id, folder, ctx.Actor(), body.Rename ?? false)
                 : throw new QuantosException("Give a workspace or a folder.");
             return NodeDto.From(node);
         });

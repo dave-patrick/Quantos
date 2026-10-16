@@ -166,7 +166,7 @@
 
       <h2 class="label">Tagged notes</h2>
       {#key selected.name}
-        <QueryView tab={{ ...tab, arg: 'new' }} presetTags={[selected.name]} embedded />
+        <QueryView tab={{ ...tab, arg: 'new' }} presetTags={[selected.name]} presetLayout={(selected.layout || null) as never} embedded />
       {/key}
       {#if formOpen}<FormDialog tag={selected} onclose={() => (formOpen = false)} />{/if}
     {:else}

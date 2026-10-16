@@ -26,7 +26,7 @@ public sealed record PatchBody(string? BaseHash, Dictionary<string, System.Text.
 
 public sealed record RenameBody(string Title);
 
-public sealed record MoveBody(string? Workspace, string? Folder);
+public sealed record MoveBody(string? Workspace, string? Folder, bool? Rename);
 
 public sealed record ArchiveBody(bool Archived);
 

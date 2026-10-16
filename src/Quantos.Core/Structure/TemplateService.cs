@@ -24,6 +24,35 @@ public sealed partial class TemplateService
         _writes = writes;
         _tags = tags;
         writes.TagsAdded += OnTagsAdded;
+        writes.Changes.Changed += OnChanged;
+    }
+
+    /// <summary>The template applied to new daily notes, from Vault/settings.json ("dailyTemplate": template id).</summary>
+    public string? DailyTemplateId
+    {
+        get
+        {
+            var path = Path.Combine(_writes.Vault.Root, "settings.json");
+            if (!File.Exists(path)) return null;
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+                return doc.RootElement.TryGetProperty("dailyTemplate", out var t) && t.ValueKind == System.Text.Json.JsonValueKind.String ? t.GetString() : null;
+            }
+            catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException) { return null; }
+        }
+    }
+
+    private void OnChanged(ChangeEvent e)
+    {
+        // Only daily notes the app itself creates; files adopted from outside keep their content.
+        if (e.Kind != ChangeKind.Created || e.Id is null || _depth > 0 || e.Origin is null || e.Origin.StartsWith("adopt") || e.Origin == "external") return;
+        if (e.Path is null || !e.Path.Contains("/daily/")) return;
+        if (DailyTemplateId is not { } templateId || _writes.Get(templateId) is not { Type: NodeTypes.Template }) return;
+        var node = _writes.Get(e.Id);
+        if (node is null || node.Type != NodeTypes.Daily || node.Body.Trim().Length > 0) return;
+        try { Apply(e.Id, templateId, Actor.System); }
+        catch (QuantosException) { }
     }
 
     public IReadOnlyList<TemplateDto> List() =>

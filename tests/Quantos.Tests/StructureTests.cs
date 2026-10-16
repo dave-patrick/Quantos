@@ -96,6 +96,17 @@ public class StructureTests
     }
 
     [Fact]
+    public void New_daily_notes_use_the_daily_template()
+    {
+        using var v = new TestVault();
+        var template = v.Session.Templates.Create("Daily", "## Plan for {{weekday}}\n\n## Log\n", Actor.User);
+        File.WriteAllText(Path.Combine(v.VaultPath, "settings.json"), $"{{ \"dailyTemplate\": \"{template.Id}\" }}");
+        var daily = v.Writes.GetOrCreateDaily("default", new DateOnly(2026, 10, 16), Actor.User);
+        Assert.Contains("## Plan for", v.Writes.Require(daily.Id).Body);
+        Assert.Contains("## Log", v.Writes.Require(daily.Id).Body);
+    }
+
+    [Fact]
     public void Freeform_edits_warn_but_are_never_blocked()
     {
         using var v = new TestVault();

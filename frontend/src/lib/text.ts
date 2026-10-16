@@ -29,7 +29,11 @@ export function merge3(base: string, mine: string, theirs: string): string | nul
 }
 
 export function wordCount(text: string): number {
-  const stripped = text.replace(/```[\s\S]*?```/g, ' ').replace(/[#>*_`~\-\[\]()|!]/g, ' ');
+  const stripped = text
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')                                   // task and sync markers
+    .replace(/!?\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, '$1')                 // links count as their display text
+    .replace(/[#>*_`~\-\[\]()|!]/g, ' ');
   const words = stripped.match(/[\p{L}\p{N}'’]+/gu);
   return words ? words.length : 0;
 }

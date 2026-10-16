@@ -3,12 +3,17 @@
   import { notifications } from '../lib/notifications.svelte';
   import { openNode } from '../lib/links.svelte';
   import { relativeTime } from '../lib/dates';
+  import { isWindowsClient } from '../lib/platform';
+  let permission = $state(typeof Notification === 'undefined' ? 'unsupported' : Notification.permission);
   onMount(() => notifications.load());
 </script>
 
 <div class="scroll notes">
   <div class="head"><h3 class="label">Notification history</h3>
     {#if notifications.unread}<button class="btn ghost" onclick={() => notifications.markRead()}>Mark all read</button>{/if}</div>
+  {#if !isWindowsClient && permission === 'default'}
+    <button class="btn" onclick={async () => (permission = await Notification.requestPermission())}>Show reminders as browser notifications</button>
+  {/if}
   {#each notifications.list as n (n.id)}
     <button class="note" class:unread={!n.read} onclick={() => { notifications.markRead([n.id]); if (n.nodeId) openNode(n.nodeId, 'new'); }}>
       <strong>{n.title}</strong><span>{n.body}</span><span class="faint">{relativeTime(n.at)}</span>

@@ -59,6 +59,8 @@ export function parsePasted(text: string): { headers: string[]; rows: string[][]
   } else {
     cells = lines.map(parseCsvLine);
   }
+  // A single column without a title/name header is just a list of titles.
+  if (cells.every((r) => r.length === 1) && !/^(title|name)$/i.test(cells[0][0])) return { headers: ['title'], rows: cells };
   const [headers, ...rows] = cells;
   if (rows.length === 0) return { headers: ['title'], rows: cells.map((r) => [r.join(' ')]) };
   return { headers: headers.map((h) => h.trim()), rows };
