@@ -12,13 +12,16 @@ class Notifications {
   get unread() { return this.list.filter((n) => !n.read).length; }
 
   constructor() {
-    onChange((e) => {
+    onChange(async (e) => {
       if (e.kind !== 'Notification' || !e.data?.notification) return;
       const n = e.data.notification as NotificationRecord;
       this.list = [n, ...this.list.filter((x) => x.id !== n.id)];
-      // The Windows client shows reminders natively. In a browser, use a system notification when the
-      // page is in the background and allowed to; otherwise show it in the page so it isn't missed.
+      // The Windows client shows reminders natively, so a browser stays quiet while it's running.
+      // Otherwise use a system notification when the page is in the background and allowed to,
+      // or show it in the page so it isn't missed.
       if (isWindowsClient) return;
+      const status = await api.get<{ windowsClientConnected?: boolean }>('status').catch(() => null);
+      if (status?.windowsClientConnected) return;
       if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
         new Notification(n.title, { body: n.body, tag: n.id });
       } else if (n.kind === 'reminder') {

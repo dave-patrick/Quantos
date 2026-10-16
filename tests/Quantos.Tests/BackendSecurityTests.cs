@@ -168,6 +168,26 @@ public sealed class BackendSecurityTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Status_reports_whether_the_windows_client_is_listening()
+    {
+        using var native = Client(token: true);
+        async Task<bool> Connected() => (await native.GetFromJsonAsync<JsonElement>("api/status")).GetProperty("windowsClientConnected").GetBoolean();
+        Assert.False(await Connected());
+
+        using var windows = Client(token: true, client: "windows");
+        windows.Timeout = TimeSpan.FromSeconds(10);
+        using (var stream = await windows.GetStreamAsync("api/events"))
+        using (var reader = new StreamReader(stream))
+        {
+            Assert.Equal("event: hello", await reader.ReadLineAsync());
+            Assert.True(await Connected());
+        }
+        // The server notices the closed connection shortly after; give it a moment.
+        for (var i = 0; i < 50 && await Connected(); i++) await Task.Delay(100);
+        Assert.False(await Connected());
+    }
+
+    [Fact]
     public async Task Events_stream_announces_changes()
     {
         using var native = Client(token: true);

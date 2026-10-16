@@ -70,6 +70,7 @@ public static class Program
         builder.Services.AddSingleton(tokens ?? new AccessTokens());
         builder.Services.AddSingleton(new ServerAddress { Port = port });
         builder.Services.AddSingleton<VaultHost>();
+        builder.Services.AddSingleton<ClientPresence>();
 
         var app = builder.Build();
         var log = app.Services.GetRequiredService<ILogger<VaultHost>>();

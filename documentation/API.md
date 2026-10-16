@@ -64,6 +64,9 @@ with `#<instance>` for writes made by a page that sent `X-Quantos-Instance`, so 
 own changes. A comment line is sent every 20 seconds. The bundled frontend opens one stream per browser, not per tab: the
 tab holding the `quantos-events` Web Lock relays events to the others over a `BroadcastChannel`.
 
+`GET /api/status` includes `windowsClientConnected`: true while the Windows client has its push
+channel open. It shows reminders natively, so browser pages then stay quiet instead of alerting twice.
+
 ## Native bridge (WebView2 `postMessage`)
 
 Page → client: `ready`, `notify {title, body}`, `open-external {url}`, `open-scratchpad`,

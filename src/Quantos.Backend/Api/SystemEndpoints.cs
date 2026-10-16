@@ -16,7 +16,7 @@ public static class SystemEndpoints
 
         api.MapGet("/ping", () => new { ok = true, version = Version });
 
-        api.MapGet("/status", (VaultHost host, ServerAddress address, HttpContext ctx) =>
+        api.MapGet("/status", (VaultHost host, ServerAddress address, ClientPresence presence, HttpContext ctx) =>
         {
             var session = host.Session;
             return new
@@ -32,6 +32,7 @@ public static class SystemEndpoints
                 syncedFolderWarning = session?.SyncedFolderWarning,
                 reconcile = session?.LastReconcile,
                 safeMode = session?.Permissions.SafeMode ?? false,
+                windowsClientConnected = presence.WindowsClientConnected,
                 timeZone = TimeZoneInfo.Local.Id,
                 utcOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).ToString(),
                 actor = new { kind = ctx.Actor().Kind, name = ctx.Actor().Name, native = ctx.IsNative(), windowsClient = ctx.IsWindowsClient() }
@@ -98,11 +99,12 @@ public static class SystemEndpoints
         api.MapGet("/permissions", (VaultHost host) => new { grants = host.Require().Permissions.Current, safeMode = host.Require().Permissions.SafeMode });
 
         // Push channel (write step 7): server-sent events.
-        api.MapGet("/events", async (HttpContext ctx, VaultHost host, IHostApplicationLifetime lifetime, CancellationToken requestAborted) =>
+        api.MapGet("/events", async (HttpContext ctx, VaultHost host, ClientPresence presence, IHostApplicationLifetime lifetime, CancellationToken requestAborted) =>
         {
             // End the stream when the backend shuts down, so open pages don't hold up a safe exit.
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(requestAborted, lifetime.ApplicationStopping);
             var ct = linked.Token;
+            using var present = ctx.IsWindowsClient() ? presence.WindowsClient() : null;
             ctx.Response.Headers.ContentType = "text/event-stream";
             ctx.Response.Headers.CacheControl = "no-cache";
             ctx.Response.Headers["X-Accel-Buffering"] = "no";
