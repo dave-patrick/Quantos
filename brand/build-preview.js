@@ -1,5 +1,5 @@
 const fs = require('fs');
-const dir = 'C:/Users/davem/repos/Quantos/brand';
+const dir = __dirname;
 const { loadIcon } = require('./icon.js');
 
 // Strips the squircle background and widens the glow's filter regions.
