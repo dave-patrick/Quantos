@@ -214,4 +214,8 @@
   .migrate { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg-raised); margin: 10px 0; }
   .migrate label { display: grid; gap: 4px; font-size: 12px; color: var(--text-muted); }
   .migrate .input { height: 30px; width: auto; }
+  @container pane (max-width: 760px) {
+    .tags { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 220px; }
+  }
 </style>

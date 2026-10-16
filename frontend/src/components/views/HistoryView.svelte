@@ -95,4 +95,8 @@
   .new { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--text); }
   .plain { padding: 8px; }
   .warn { color: var(--warn); font-size: 13px; padding: 0 6px; }
+  @container pane (max-width: 760px) {
+    .history { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 200px; }
+  }
 </style>

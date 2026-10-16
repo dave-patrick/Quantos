@@ -83,4 +83,10 @@
   .check { display: flex; gap: 8px; align-items: center; margin: 10px 0; color: var(--text-soft); }
   .narrow { width: auto; }
   .mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+  @container pane (max-width: 760px) {
+    .settings { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    nav { display: flex; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--line); padding: 8px; }
+    nav button { width: auto; padding: 6px 10px; }
+    .body { padding: 18px 18px 60px; }
+  }
 </style>

@@ -119,4 +119,8 @@
   .tools { display: none; gap: 2px; }
   .block:hover .tools { display: flex; }
   .tools button { border: 0; background: var(--bg-raised); color: var(--text-soft); width: 18px; height: 18px; border-radius: 4px; font-size: 12px; line-height: 1; }
+  @container pane (max-width: 760px) {
+    .timeline { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .side { border-right: 0; border-bottom: 1px solid var(--line); max-height: 200px; }
+  }
 </style>
