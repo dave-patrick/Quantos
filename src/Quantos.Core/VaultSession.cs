@@ -32,7 +32,10 @@ public sealed class VaultSession : IDisposable
         Supertags = new Structure.SupertagService(Writes);
         Templates = new Structure.TemplateService(Writes, Supertags);
         Queries = new Structure.QueryService(Writes, Supertags);
+        SyncedBlocks = new Structure.SyncedBlockService(Writes);
     }
+
+    public Structure.SyncedBlockService SyncedBlocks { get; }
 
     public Structure.SupertagService Supertags { get; }
     public Structure.TemplateService Templates { get; }

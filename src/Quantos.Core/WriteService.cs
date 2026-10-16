@@ -66,6 +66,9 @@ public sealed class WriteService
     /// <summary>Set by the task service so inline task lines bind to task nodes and stay in sync.</summary>
     public Tasks.ITaskHooks? TaskHooks { get; set; }
 
+    /// <summary>Raised after a node's body was written (synced blocks propagate from here).</summary>
+    public event Action<Node, Actor>? BodyWritten;
+
     /// <summary>Raised after tags are added to a node (linked templates apply automatically).</summary>
     public event Action<Node, IReadOnlyList<string>, Actor>? TagsAdded;
 
@@ -206,6 +209,7 @@ public sealed class WriteService
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             TaskHooks?.AfterNoteWritten(node, actor);
+            BodyWritten?.Invoke(node, actor);
             return new SaveResult(SaveStatus.Saved, Get(id) ?? node, Ambiguous: ambiguous);
         }
     }
@@ -245,7 +249,7 @@ public sealed class WriteService
             doc.Set(NodeKeys.Modified, Clock.Stamp());
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
-            if (body is not null) TaskHooks?.AfterNoteWritten(node, actor);
+            if (body is not null) { TaskHooks?.AfterNoteWritten(node, actor); BodyWritten?.Invoke(node, actor); }
             if (set?.ContainsKey(NodeKeys.Tags) == true) RaiseTagsAdded(node, Node.FromText(node.Path, disk).Tags, actor);
             return new SaveResult(SaveStatus.Saved, Get(id) ?? node);
         }
@@ -482,6 +486,110 @@ public sealed class WriteService
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             return node;
+        }
+    }
+
+    /// <summary>
+    /// Extracts text from a node into a new note and leaves a link (or embed) in its place
+    /// (BUILD-PLAN 8A.15). Both files change in one journaled operation.
+    /// </summary>
+    public (Node Source, Node Extracted) Extract(string id, string text, string title, bool embed, Actor actor)
+    {
+        Permissions.Demand(actor, Permission.CreateEdit, $"Extract from {id}");
+        title = title.Trim();
+        if (title.Length == 0 || text.Trim().Length == 0) throw new QuantosException("Choose some text and a title.");
+        lock (_gate)
+        {
+            var source = Require(id);
+            var doc = FrontmatterDocument.Parse(source.Content);
+            var at = doc.Body.IndexOf(text, StringComparison.Ordinal);
+            if (at < 0) throw new QuantosException("That text isn't in the note any more; it may have changed.", 409);
+            var workspace = source.Workspace.Length > 0 ? source.Workspace : Vault.DefaultWorkspace;
+            var newId = Ulid.New();
+            var now = Clock.Stamp();
+            var created = FrontmatterDocument.Create();
+            created.Set(NodeKeys.Id, newId);
+            created.Set(NodeKeys.Title, title);
+            created.Set(NodeKeys.Type, NodeTypes.Note);
+            created.Set(NodeKeys.Workspace, workspace);
+            created.Set(NodeKeys.Created, now);
+            created.Set(NodeKeys.Modified, now);
+            created.Set(NodeKeys.Schema, Node.CurrentSchema);
+            created.Set("extracted_from", $"[[{source.Id}|{source.Title}]]");
+            created.SetBody(text.Trim() + "\n");
+            var newAbs = Vault.UniquePath(Vault.FolderFor(workspace, NodeTypes.Note), Vault.Slug(title));
+            var link = (embed ? "!" : "") + $"[[{newId}|{title}]]";
+            doc.SetBody(doc.Body[..at] + link + doc.Body[(at + text.Length)..]);
+            doc.Set(NodeKeys.Modified, now);
+
+            var op = new JournalOperation { Description = $"Extract '{title}' from '{source.Title}'" };
+            op.Steps.Add(JournalStep.Write(Vault.Relative(newAbs), null, created.ToString()));
+            op.Steps.Add(JournalStep.Write(source.Path, source.Content, doc.ToString()));
+            Journal.Execute(op);
+            var extracted = AfterJournal(newAbs);
+            var updated = AfterJournal(Vault.Absolute(source.Path));
+            Changes.Publish(new ChangeEvent(ChangeKind.Created, extracted.Id, extracted.Path, Hash: extracted.Hash, Origin: actor.ToString()));
+            Changes.Publish(new ChangeEvent(ChangeKind.Updated, updated.Id, updated.Path, Hash: updated.Hash, Origin: actor.ToString()));
+            return (updated, extracted);
+        }
+    }
+
+    /// <summary>
+    /// Merges <paramref name="otherId"/> into <paramref name="id"/>: bodies are joined, missing
+    /// properties and tags copied, links to the other node re-pointed, and the other node goes to
+    /// the trash (restorable). One journaled operation.
+    /// </summary>
+    public Node Merge(string id, string otherId, Actor actor)
+    {
+        if (id == otherId) throw new QuantosException("A note can't be merged into itself.");
+        Permissions.Demand(actor, Permission.CreateEdit, $"Merge {otherId} into {id}");
+        Permissions.Demand(actor, Permission.TrashRestore, $"Merge {otherId} into {id}");
+        lock (_gate)
+        {
+            var target = Require(id);
+            var other = Require(otherId);
+            var doc = FrontmatterDocument.Parse(target.Content);
+            foreach (var (key, value) in other.Properties)
+                if (!target.Properties.ContainsKey(key)) doc.Set(key, value);
+            var tags = target.Tags.Union(other.Tags, StringComparer.OrdinalIgnoreCase).ToList();
+            if (tags.Count != target.Tags.Count) doc.Set(NodeKeys.Tags, tags);
+            var aliases = target.Aliases.Union([other.Title, .. other.Aliases], StringComparer.OrdinalIgnoreCase).Where(a => !a.Equals(target.Title, StringComparison.OrdinalIgnoreCase)).ToList();
+            doc.Set(NodeKeys.Aliases, aliases);
+            doc.SetBody(target.Body.TrimEnd() + "\n\n## " + other.Title + "\n\n" + other.Body.Trim() + "\n");
+            doc.Set(NodeKeys.Modified, Clock.Stamp());
+
+            var op = new JournalOperation { Description = $"Merge '{other.Title}' into '{target.Title}'" };
+            op.Steps.Add(JournalStep.Write(target.Path, target.Content, doc.ToString()));
+            var touched = new List<string>();
+            foreach (var referrer in Cache.Referrers(otherId).Where(r => r != id && r != otherId))
+            {
+                var refNode = Get(referrer);
+                if (refNode is null || refNode.ReadOnly) continue;
+                var refDoc = FrontmatterDocument.Parse(refNode.Content);
+                var body = Links.Rewrite(refDoc.Body, l => l.Target == otherId ? Links.Format(l.Kind, id, l.Fragment, l.Display ?? other.Title) : null);
+                if (body == refDoc.Body) continue;
+                refDoc.SetBody(body);
+                op.Steps.Add(JournalStep.Write(refNode.Path, refNode.Content, refDoc.ToString()));
+                touched.Add(refNode.Path);
+            }
+            var otherAbs = Vault.Absolute(other.Path);
+            History.Record(otherId, Encoding.UTF8.GetBytes(other.Content), HistoryStore.Before);
+            var (entryDir, destination) = TrashBin.Plan(otherId, otherAbs);
+            var entry = new TrashEntry
+            {
+                EntryId = Path.GetFileName(entryDir), Id = otherId, Title = other.Title, Type = other.Type, OriginalPath = other.Path,
+                FileName = Path.GetFileName(otherAbs), TrashedAt = Clock.Now, Referrers = []
+            };
+            op.Steps.Add(JournalStep.Write(Vault.Relative(Path.Combine(entryDir, "manifest.json")), null, JsonSerializer.Serialize(entry, Json)));
+            op.Steps.Add(JournalStep.Move(other.Path, Vault.Relative(destination)));
+            Journal.Execute(op);
+
+            Cache.Remove(other.Path);
+            var merged = AfterJournal(Vault.Absolute(target.Path));
+            foreach (var path in touched) { AfterJournal(Vault.Absolute(path)); PublishUpdated(path, actor); }
+            Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, merged.Path, Hash: merged.Hash, Origin: actor.ToString()));
+            Changes.Publish(new ChangeEvent(ChangeKind.Trashed, otherId, null, other.Path, Origin: actor.ToString(), Data: entry));
+            return merged;
         }
     }
 

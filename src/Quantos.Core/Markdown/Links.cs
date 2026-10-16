@@ -65,6 +65,46 @@ public static partial class Links
             yield return (m.Groups["id"].Value, m.Groups["check"].Value is "x" or "X", m.Groups["text"].Value.Trim(), m.Index);
     }
 
+    /// <summary>Synced block regions: &lt;!--sync:ID--&gt; content &lt;!--/sync--&gt;. Content offsets exclude the markers.</summary>
+    public static IEnumerable<(string Id, int ContentStart, int ContentEnd, string Content)> SyncRegions(string body)
+    {
+        foreach (Match m in SyncPattern().Matches(body))
+        {
+            var g = m.Groups["content"];
+            yield return (m.Groups["id"].Value, g.Index, g.Index + g.Length, g.Value);
+        }
+    }
+
+    /// <summary>Text of a block anchored with ^id, or of a heading section, for embeds like ![[id#^b1]] or ![[id#Heading]].</summary>
+    public static string? Fragment(string body, string fragment)
+    {
+        var lines = body.Replace("\r\n", "\n").Split('\n');
+        if (fragment.StartsWith('^'))
+        {
+            var anchor = " " + fragment;
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (!lines[i].TrimEnd().EndsWith(anchor, StringComparison.Ordinal) && lines[i].Trim() != fragment) continue;
+                // A paragraph: walk back to its start.
+                var start = i;
+                while (start > 0 && lines[start - 1].Trim().Length > 0 && !lines[start - 1].TrimStart().StartsWith('#') && !lines[i].TrimStart().StartsWith("- ")) start--;
+                var text = string.Join("\n", lines[start..(i + 1)]);
+                return text[..text.LastIndexOf(fragment, StringComparison.Ordinal)].TrimEnd();
+            }
+            return null;
+        }
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var h = Regex.Match(lines[i], @"^(#{1,6})\s+(.*?)\s*#*\s*$");
+            if (!h.Success || !h.Groups[2].Value.Equals(fragment, StringComparison.OrdinalIgnoreCase)) continue;
+            var level = h.Groups[1].Length;
+            var end = i + 1;
+            while (end < lines.Length && !(Regex.Match(lines[end], @"^(#{1,6})\s") is { Success: true } n && n.Groups[1].Length <= level)) end++;
+            return string.Join("\n", lines[i..end]).TrimEnd();
+        }
+        return null;
+    }
+
     /// <summary>True when <paramref name="index"/> is inside a fenced code block or inline code span.</summary>
     public static bool InCode(string text, int index)
     {
@@ -84,6 +124,9 @@ public static partial class Links
         for (var i = lineStart; i < index; i++) if (text[i] == '`') ticks++;
         return ticks % 2 == 1;
     }
+
+    [GeneratedRegex(@"<!--sync:(?<id>[0-9A-HJKMNP-TV-Z]{26})-->\r?\n?(?<content>[\s\S]*?)\r?\n?<!--/sync-->")]
+    private static partial Regex SyncPattern();
 
     [GeneratedRegex(@"(?<bang>!)?\[\[(?<target>[^\[\]\|#\n]+?)(?:#(?<frag>[^\[\]\|\n]+))?(?:\|(?<display>[^\[\]\n]+))?\]\]")]
     private static partial Regex WikiPattern();
