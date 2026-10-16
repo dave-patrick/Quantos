@@ -17,15 +17,16 @@
       v.dispatch({ changes: { from: v.state.selection.main.head, insert: md } });
       app.toast('Citation inserted into the last note you edited.', 'ok');
     } else {
-      navigator.clipboard.writeText(md);
-      app.toast('Citation copied. Paste it into a note.', 'ok');
+      navigator.clipboard.writeText(md).then(
+        () => app.toast('Citation copied. Paste it into a note.', 'ok'),
+        () => app.toast(`Couldn't copy. The citation is: ${md}`, 'warn'));
     }
   }
 </script>
 
 <div class="pdf">
   <div class="bar">
-    <span class="mono faint">{path}</span>
+    <span class="name" title={path}>{name}</span>
     <label>Page <input class="input" type="number" min="1" bind:value={page} /></label>
     <button class="btn" onclick={cite}>Cite this page</button>
   </div>
@@ -35,7 +36,7 @@
 <style>
   .pdf { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .bar { display: flex; gap: 12px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); }
-  .bar .mono { flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .name { flex: 1; font-size: 13.5px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bar label { display: flex; gap: 6px; align-items: center; font-size: 13px; }
   .bar .input { width: 70px; height: 28px; }
   iframe { flex: 1; border: 0; background: #525659; }
