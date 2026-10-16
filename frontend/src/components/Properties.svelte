@@ -25,6 +25,9 @@
   let newValue = $state('');
   let tagInput = $state('');
   let showTagInput = $state(false);
+  let tagEl = $state<HTMLInputElement | null>(null);
+  // autofocus only applies on page load; focus the supertag box when it appears.
+  $effect(() => { if (showTagInput) tagEl?.focus(); });
 
   function display(value: unknown): string {
     if (value === null || value === undefined) return '';
@@ -98,7 +101,7 @@
       {#if showTagInput}
         <form onsubmit={(e) => { e.preventDefault(); addTag(); }}>
           <!-- svelte-ignore a11y_autofocus -->
-          <input class="tag-input" list="tag-options" bind:value={tagInput} placeholder="supertag" autofocus onblur={() => { if (!tagInput) showTagInput = false; }} />
+          <input class="tag-input" list="tag-options" bind:this={tagEl} bind:value={tagInput} placeholder="supertag" autofocus onblur={() => { if (!tagInput) showTagInput = false; }} />
           <datalist id="tag-options">{#each supertags.list as t (t.id)}<option value={t.name}></option>{/each}</datalist>
         </form>
       {:else}
