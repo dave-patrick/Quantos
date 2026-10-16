@@ -20,7 +20,7 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// </summary>
 public sealed class CacheIndex : IDisposable
 {
-    public const int Version = 5;
+    public const int Version = 6;
     private readonly SqliteConnection _db;
     private readonly Lock _gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);

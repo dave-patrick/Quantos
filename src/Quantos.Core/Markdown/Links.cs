@@ -59,12 +59,13 @@ public static partial class Links
     }
 
     /// <summary>
-    /// Body text as a reader sees it, for search: links become their display text, and Quantos markers
+    /// Body text as a reader sees it, for search: wiki and Markdown links become their text, and Quantos markers
     /// (task and sync comments, block anchors) are removed.
     /// </summary>
     public static string PlainText(string body)
     {
         var text = Rewrite(body, l => l.Display ?? (l.IsResolved ? l.Fragment ?? "" : l.TitleTarget.Title));
+        text = MarkdownLinkPattern().Replace(text, "${text}");
         text = CommentPattern().Replace(text, "");
         return AnchorPattern().Replace(text, "");
     }
@@ -138,6 +139,9 @@ public static partial class Links
 
     [GeneratedRegex(@"<!--(?:task|sync|/sync)[^>]*-->")]
     private static partial Regex CommentPattern();
+
+    [GeneratedRegex(@"!?\[(?<text>[^\]\n]*)\]\([^)\s]+(?:\s+""[^""]*"")?\)")]
+    private static partial Regex MarkdownLinkPattern();
 
     [GeneratedRegex(@"[ \t]+\^[A-Za-z0-9-]+[ \t]*$", RegexOptions.Multiline)]
     private static partial Regex AnchorPattern();
