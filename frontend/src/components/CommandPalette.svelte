@@ -76,7 +76,7 @@
           <li role="option" aria-selected={i === index}>
             <button class:on={i === index} onmouseenter={() => (index = i)} onclick={(e) => choose(item, e)}>
               <Icon name={item.icon} size={15} />
-              <span class="label">{item.label}</span>
+              <span class="name">{item.label}</span>
               {#if item.detail}<span class="detail">{item.detail}</span>{/if}
               {#if item.keys}<kbd>{item.keys}</kbd>{/if}
             </button>
@@ -99,7 +99,7 @@
   ul { list-style: none; margin: 0; padding: 6px; max-height: 50vh; overflow: auto; }
   li button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 7px; background: none; text-align: left; color: var(--text-soft); }
   li button.on { background: var(--bg-select); color: var(--text); }
-  .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .detail { font: 11.5px var(--font-mono); color: var(--text-faint); }
   .none { padding: 14px; color: var(--text-faint); text-align: center; }
   .hint { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12px; }

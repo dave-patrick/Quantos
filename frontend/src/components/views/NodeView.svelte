@@ -213,7 +213,7 @@
     <footer class="counts">
       <span>{words.toLocaleString()} words</span>
       <span>{doc.body.length.toLocaleString()} characters</span>
-      <span>{readingMinutes(words)} min read</span>
+      {#if words}<span>{readingMinutes(words)} min read</span>{/if}
       {#if target > 0}
         <span class="target" title="Writing target">
           <span class="meter"><span style="width:{Math.min(100, (words / target) * 100)}%"></span></span>

@@ -165,6 +165,10 @@
   .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 1fr); gap: 12px; margin-top: 14px; overflow-x: auto; align-items: start; }
   .column { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-height: 200px; }
   .column h2 { text-transform: uppercase; }
+  /* Board cards are narrow: the title gets the whole first line and the chips move below it. */
+  .card :global(.task) { flex-wrap: wrap; row-gap: 4px; }
+  .card :global(.task .title) { flex: 1 1 0; white-space: normal; }
+  .card :global(.task .chips) { order: 1; flex-basis: 100%; flex-wrap: wrap; padding-left: 26px; }
   .card { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; }
   code { color: var(--accent); }
 </style>
