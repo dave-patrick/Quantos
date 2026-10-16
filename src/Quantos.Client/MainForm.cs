@@ -86,7 +86,17 @@ public sealed class MainForm : Form
             await _web.EnsureCoreWebView2Async(_env);
             ConfigureWebView(_web.CoreWebView2, main: true);
             _web.CoreWebView2.Navigate(await _backend.SignInUrlAsync("app"));
-            _web.NavigationCompleted += (_, _) => _status.Visible = false;
+            _web.NavigationCompleted += async (_, args) =>
+            {
+                _status.Visible = false;
+                _paths.Log($"Page loaded: {_web.Source?.GetLeftPart(UriPartial.Path)} (success: {args.IsSuccess}, status: {args.HttpStatusCode})");
+                if (Environment.GetEnvironmentVariable("QUANTOS_CLIENT_DIAG") == "1")
+                {
+                    await Task.Delay(2500);
+                    var text = await _web.CoreWebView2.ExecuteScriptAsync("document.body.innerText.slice(0, 400)");
+                    _paths.Log("Page text: " + text);
+                }
+            };
             _terminal = new TerminalHost(Post);
             _backend.Listen(OnBackendEvent);
             RegisterHotkeys();

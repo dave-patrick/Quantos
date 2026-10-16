@@ -23,6 +23,9 @@
       <div class="field"><span>Theme</span>
         <div class="seg"><button class:on={app.theme === 'dark'} onclick={() => (app.theme = 'dark')}>Dark</button><button class:on={app.theme === 'light'} onclick={() => (app.theme = 'light')}>Light</button></div></div>
       <div class="field"><span>Editor text size</span><input type="range" min="14" max="22" bind:value={prefs.editorSize} /> <span class="mono">{prefs.editorSize}px</span></div>
+      <div class="field"><span>Typeface</span>
+        <select class="input narrow" bind:value={prefs.fontFamily}><option value="sans">Source Sans 3</option><option value="serif">Serif</option><option value="mono">IBM Plex Mono</option><option value="system">System</option></select></div>
+      <div class="field"><span>Line spacing</span><input type="range" min="1.3" max="2" step="0.05" bind:value={prefs.lineHeight} /> <span class="mono">{prefs.lineHeight}</span></div>
       <div class="field"><span>Line width</span><input type="range" min="560" max="1100" step="20" bind:value={prefs.editorWidth} /> <span class="mono">{prefs.editorWidth}px</span></div>
     {:else if section === 'editor'}
       <h2>Writing</h2>
@@ -64,5 +67,6 @@
   .seg button { border: 0; background: none; padding: 6px 14px; color: var(--text-muted); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
   .check { display: flex; gap: 8px; align-items: center; margin: 10px 0; color: var(--text-soft); }
+  .narrow { width: auto; }
   .mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
 </style>

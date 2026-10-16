@@ -5,7 +5,7 @@ import { tags as t } from '@lezer/highlight';
 export const quantosTheme = EditorView.theme({
   '&': { color: 'var(--text)', backgroundColor: 'transparent', fontSize: 'var(--editor-size)', height: '100%' },
   '&.cm-focused': { outline: 'none' },
-  '.cm-scroller': { fontFamily: 'var(--font-body)', lineHeight: '1.65', overflow: 'visible' },
+  '.cm-scroller': { fontFamily: 'var(--font-editor, var(--font-body))', lineHeight: 'var(--editor-line, 1.65)', overflow: 'visible' },
   '.cm-content': { caretColor: 'var(--accent)', padding: '6px 0 40vh', maxWidth: 'var(--editor-width)', margin: '0 auto' },
   '.cm-line': { padding: '0 2px' },
   '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--accent)', borderLeftWidth: '2px' },

@@ -43,8 +43,8 @@ public sealed class ClientPrefs
     public int Width { get; set; } = 1400;
     public int Height { get; set; } = 900;
     public bool Maximized { get; set; }
-    public string CaptureHotkey { get; set; } = "Ctrl+Shift+Space";
-    public string ScratchpadHotkey { get; set; } = "Ctrl+Shift+J";
+    public string CaptureHotkey { get; set; } = "Ctrl+Alt+Q";
+    public string ScratchpadHotkey { get; set; } = "Ctrl+Alt+J";
     public bool ScratchpadOnTop { get; set; } = true;
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
