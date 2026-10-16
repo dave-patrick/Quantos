@@ -44,7 +44,9 @@ public static class Program
 
     public static async Task<int> Main(string[] args)
     {
-        Console.OutputEncoding = Encoding.UTF8;
+        // UTF-8 without a byte-order mark: a BOM at the start of stdout breaks MCP clients and JSON parsers.
+        Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        Console.InputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         var opts = Options.Parse(args);
         if (opts.Positional.Count == 0 || opts.Positional[0] is "help" or "--help" or "-h") { Console.WriteLine(Usage); return 0; }
 

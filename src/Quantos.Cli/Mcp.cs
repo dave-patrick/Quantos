@@ -10,7 +10,8 @@ namespace Quantos.Cli;
 /// </summary>
 public static class Mcp
 {
-    private static readonly JsonSerializerOptions Compact = new() { WriteIndented = false };
+    // Relaxed escaping: this goes to an agent over stdin/stdout, never into HTML, so \u0022-style escapes only waste tokens.
+    private static readonly JsonSerializerOptions Compact = new() { WriteIndented = false, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     private static readonly JsonArray Tools =
     [
@@ -86,7 +87,8 @@ public static class Mcp
         {
             string text = name switch
             {
-                "search_notes" => Json(await c.Get($"search?q={Uri.EscapeDataString(S("query"))}{(a["workspace"] is null ? "" : "&workspace=" + S("workspace"))}")),
+                // Snippets mark hits with [[[ ]]] for the interface; agents would read those as wiki links.
+                "search_notes" => Json(await c.Get($"search?q={Uri.EscapeDataString(S("query"))}{(a["workspace"] is null ? "" : "&workspace=" + Uri.EscapeDataString(S("workspace")))}")).Replace("[[[", "").Replace("]]]", ""),
                 "read_note" => (await c.Get($"nodes/{await Program.Resolve(c, S("note"), null)}"))!["content"]!.ToString(),
                 "create_note" => Json(await c.Post("nodes", new
                 {
