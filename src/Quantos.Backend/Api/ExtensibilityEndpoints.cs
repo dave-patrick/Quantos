@@ -59,7 +59,8 @@ public static class ExtensibilityEndpoints
         api.MapPut("/permissions", (VaultHost host, HttpContext ctx, GrantBody b) =>
         {
             var session = host.Require();
-            var description = $"Allow {b.Kind} “{b.Name}” to: {(b.Permissions.Count == 0 ? "nothing" : string.Join(", ", b.Permissions))}";
+            var who = $"the {b.Kind.ToString().ToLowerInvariant()} “{b.Name}”";
+            var description = b.Permissions.Count == 0 ? $"Remove all permissions from {who}" : $"Allow {who} to {string.Join(", ", b.Permissions.Select(PermissionText.Describe))}";
             session.Permissions.Demand(ctx.Actor(), Permission.ManagePermissions, description, b.Approval);
             session.Permissions.Set(b.Kind, b.Name, b.Permissions);
             return Results.Ok(new { grants = session.Permissions.Current });

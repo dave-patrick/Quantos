@@ -27,7 +27,8 @@ export default defineConfig({
           proxy.on('proxyReq', (req) => req.removeHeader('origin'));
         }
       },
-      '/auth': { target: backend, changeOrigin: true }
+      '/auth': { target: backend, changeOrigin: true },
+      '/plugin-host': { target: backend, changeOrigin: true }
     }
   }
 });

@@ -199,7 +199,8 @@ approval in the Windows client.
 ## 8. Plugins and automations
 
 - **Plugins** go in the vault's `plugins` folder (`plugin.json` + `main.js`). They run in a sandbox
-  and get only the permissions you grant. **Safe mode** (Settings) turns all plugins off.
+  and get only the permissions you grant. **Safe mode** (Settings) turns all plugins off. To write one,
+  see `PLUGINS.md`.
 - **Automations** react to property changes, e.g. when a `#project` note's status becomes *Done*,
   stamp the date and create a follow-up task. Edit them in *Settings › Plugins & permissions*.
 

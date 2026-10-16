@@ -51,6 +51,7 @@ Step 'Documents and example vault'
 Copy-Item documentation/USER-GUIDE.md $pkg
 Copy-Item documentation/TROUBLESHOOTING.md $pkg
 Copy-Item documentation/CLI-REFERENCE.md $pkg
+Copy-Item documentation/PLUGINS.md $pkg
 Copy-Item LICENSE $pkg -ErrorAction SilentlyContinue
 Copy-Item -Recurse 'examples/Example Vault' (Join-Path $pkg 'Example Vault')
 Set-Content (Join-Path $pkg 'Start Quantos.cmd') -Encoding ascii -Value "@echo off`r`nstart `"`" `"%~dp0application\Quantos.exe`""

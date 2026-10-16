@@ -23,8 +23,19 @@ public sealed record Actor(ActorKind Kind, string Name, bool ViaBrowser = false,
 }
 
 public sealed class PermissionDeniedException(Actor actor, Permission permission, string reason)
-    : Exception($"{actor} is not allowed to {permission}: {reason}")
+    : Exception($"{Who(actor)} isn't allowed to {PermissionText.Describe(permission)}: {reason}")
 {
+    private static string Who(Actor a) => a.Kind switch
+    {
+        ActorKind.Plugin => $"The plugin “{a.Name}”",
+        ActorKind.Agent => $"The agent “{a.Name}”",
+        ActorKind.Automation => $"The automation “{a.Name}”",
+        ActorKind.Cli => "The command line",
+        ActorKind.System => "Quantos",
+        _ => a.ViaBrowser ? "A browser session" : "This window"
+    };
+
+
     public Actor Actor { get; } = actor;
     public Permission Permission { get; } = permission;
     public string Reason { get; } = reason;
@@ -206,4 +217,22 @@ public sealed class ApprovalService(TimeProvider? time = null)
         foreach (var a in _approvals.Values)
             if (a.State is ApprovalState.Pending or ApprovalState.Approved && now - a.Requested > Lifetime) a.State = ApprovalState.Expired;
     }
+}
+
+/// <summary>Plain-language names for permissions, for messages and approval requests.</summary>
+public static class PermissionText
+{
+    public static string Describe(Permission p) => p switch
+    {
+        Permission.Read => "read content",
+        Permission.CreateEdit => "create or edit content",
+        Permission.MoveArchive => "move or archive notes",
+        Permission.TrashRestore => "move notes to the trash or restore them",
+        Permission.PermanentDelete => "delete permanently",
+        Permission.RunCommands => "run commands",
+        Permission.OutsideFiles => "use files outside the vault",
+        Permission.Network => "make network requests",
+        Permission.ManagePermissions => "change permissions",
+        _ => p.ToString()
+    };
 }

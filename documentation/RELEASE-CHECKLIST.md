@@ -7,7 +7,7 @@ Work through this for every release build. Tick items in a copy of this file kep
 - [ ] `pwsh build/build.ps1` completes; all automated tests pass (it stops on a failure).
 - [ ] `publish/Quantos/application/` holds exactly `Quantos.exe`, `Quantos.Backend.exe`, `quantos-cli.exe`.
 - [ ] Version number set (`-Version`) and matches the user guide and release notes.
-- [ ] The zip unpacks to `Quantos\` with the user guide, troubleshooting guide, CLI reference,
+- [ ] The zip unpacks to `Quantos\` with the user guide, troubleshooting guide, CLI reference, plugin guide,
       example vault and the three `.cmd` launchers.
 
 ## Automated acceptance tests (BUILD-PLAN section 13)
