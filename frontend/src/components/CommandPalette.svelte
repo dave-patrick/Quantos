@@ -13,8 +13,12 @@
 
   type Item = { key: string; label: string; detail?: string; icon: string; keys?: string; run: (where: Where) => void };
 
+  // Where focus was before the palette opened (usually an editor), so typing can carry on after a command.
+  let returnTo: HTMLElement | null = null;
+
   $effect(() => {
     if (app.paletteOpen) {
+      returnTo = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
       query = app.paletteMode === 'commands' ? '>' : '';
       index = 0;
       tick().then(() => input?.focus());
@@ -43,7 +47,16 @@
     return nodes;
   });
 
-  function close() { app.paletteOpen = false; }
+  function close() {
+    app.paletteOpen = false;
+    const target = returnTo;
+    returnTo = null;
+    // Give focus back unless the command moved it somewhere (a new note's title, a dialog).
+    tick().then(() => {
+      const now = document.activeElement;
+      if (target?.isConnected && (!now || now === document.body)) target.focus();
+    });
+  }
 
   function choose(item: Item | undefined, e?: KeyboardEvent | MouseEvent) {
     if (!item) return;

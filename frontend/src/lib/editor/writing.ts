@@ -14,6 +14,12 @@ function build(view: EditorView) {
       if (CALLOUT.test(line.text)) inCallout = true;
       else if (!line.text.startsWith('>')) inCallout = false;
       if (inCallout) builder.add(line.from, line.from, Decoration.line({ class: 'cm-callout' }));
+      // The [!type] marker reads as a label, not a link.
+      const head = CALLOUT.exec(line.text);
+      if (head) {
+        const start = line.from + line.text.indexOf('[!');
+        builder.add(start, line.from + head[0].length, Decoration.mark({ class: 'cm-callout-label' }));
+      }
       pos = line.to + 1;
     }
   }

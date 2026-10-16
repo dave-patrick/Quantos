@@ -41,6 +41,7 @@ export const quantosTheme = EditorView.theme({
   '.cm-task-chip:hover': { color: 'var(--accent)', borderColor: 'var(--accent)' },
   '.cm-task-deleted': { color: 'var(--danger)', textDecoration: 'line-through' },
   '.cm-callout': { borderLeft: '3px solid var(--accent)', background: 'var(--accent-wash)', paddingLeft: '10px !important' },
+  '.cm-callout-label, .cm-callout-label *': { font: '600 11.5px var(--font-mono)', letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--accent) !important', textDecoration: 'none !important' },
   '.cm-typewriter .cm-content': { paddingTop: '40vh' }
 });
 

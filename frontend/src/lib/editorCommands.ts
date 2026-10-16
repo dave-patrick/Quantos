@@ -5,6 +5,20 @@ import { docs } from './docs.svelte';
 import { openNode } from './links.svelte';
 import { app } from './state.svelte';
 import type { NodeDto } from './types';
+import type { EditorView } from '@codemirror/view';
+
+/**
+ * Puts a block on its own lines after the cursor's line, selects `placeholder` inside it so typing
+ * replaces it (or puts the cursor after the block), and gives the editor focus back.
+ */
+function insertBlock(view: EditorView, block: string, placeholder?: string) {
+  const line = view.state.doc.lineAt(view.state.selection.main.head);
+  const insert = (line.text.trim() ? '\n' : '') + block;
+  const at = placeholder ? insert.indexOf(placeholder) : -1;
+  const anchor = line.to + (at >= 0 ? at : insert.length);
+  view.dispatch({ changes: { from: line.to, insert }, selection: { anchor, head: at >= 0 ? anchor + placeholder!.length : anchor }, scrollIntoView: true });
+  view.focus();
+}
 
 function selection() {
   const view = activeEditor.view;
@@ -50,10 +64,7 @@ async function insertSynced() {
         label: `${b.title} (${b.uses} use${b.uses === 1 ? '' : 's'})`,
         run: () => {
           app.dialog = null;
-          const pos = view.state.selection.main.head;
-          const line = view.state.doc.lineAt(pos);
-          const insert = (line.text.trim() ? '\n' : '') + `<!--sync:${b.id}-->\n${b.content}\n<!--/sync-->\n`;
-          view.dispatch({ changes: { from: line.to, insert } });
+          insertBlock(view, `<!--sync:${b.id}-->\n${b.content}\n<!--/sync-->\n`);
         }
       })),
       { label: 'Cancel', run: () => (app.dialog = null) }
@@ -68,8 +79,7 @@ async function embedSelection() {
   if (!id) return;
   const hit = app.titles.find((t) => t.title.toLowerCase() === id.trim().toLowerCase());
   if (!hit) { app.toast('No note with that title.', 'warn'); return; }
-  const pos = view.state.selection.main.head;
-  view.dispatch({ changes: { from: pos, insert: `\n![[${hit.id}|${hit.title}]]\n` } });
+  insertBlock(view, `![[${hit.id}|${hit.title}]]\n`);
 }
 
 register(
@@ -80,12 +90,10 @@ register(
   { id: 'edit.embed', title: 'Embed a note…', group: 'Edit', icon: 'layers', run: embedSelection },
   { id: 'edit.columns', title: 'Insert two columns', group: 'Edit', icon: 'split', run: () => {
     const view = activeEditor.view; if (!view) return;
-    const pos = view.state.selection.main.head;
-    view.dispatch({ changes: { from: pos, insert: '\n:::columns\nLeft column\n+++\nRight column\n:::\n' } });
+    insertBlock(view, ':::columns\nLeft column\n+++\nRight column\n:::\n', 'Left column');
   } },
   { id: 'edit.callout', title: 'Insert collapsible callout', group: 'Edit', icon: 'info', run: () => {
     const view = activeEditor.view; if (!view) return;
-    const pos = view.state.selection.main.head;
-    view.dispatch({ changes: { from: pos, insert: '\n> [!note]- Click the arrow to expand\n> Hidden detail.\n' } });
+    insertBlock(view, '> [!note]- Title\n> Hidden detail.\n', 'Title');
   } }
 );
