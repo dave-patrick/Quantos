@@ -13,6 +13,13 @@ describe('three-way merge (keeps unsaved edits when the file changes elsewhere)'
   it('reports a conflict when both sides change the same line', () => {
     expect(merge3(base, 'line 1\nmine\nline 3\n', 'line 1\ntheirs\nline 3\n')).toBeNull();
   });
+  it('keeps both when each side only added lines at the end (capture while typing)', () => {
+    expect(merge3(base, 'line 1\nline 2\nline 3\nTyped while capturing', 'line 1\nline 2\nline 3\n- 18:30 captured\n'))
+      .toBe('line 1\nline 2\nline 3\n- 18:30 captured\nTyped while capturing\n');
+  });
+  it('still asks when an addition on one side meets a change on the other', () => {
+    expect(merge3(base, 'line 1\nline 2\nline 3 changed\n', 'line 1\nline 2\nline 3 also changed\n')).toBeNull();
+  });
   it('accepts identical changes on both sides', () => {
     expect(merge3(base, 'same\nline 2\nline 3\n', 'same\nline 2\nline 3\n')).toBe('same\nline 2\nline 3\n');
   });

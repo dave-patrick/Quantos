@@ -22,8 +22,18 @@ export function merge3(base: string, mine: string, theirs: string): string | nul
   const result = diff3Merge(split(mine), split(base), split(theirs), { excludeFalseConflicts: true });
   const out: string[] = [];
   for (const block of result) {
-    if (block.ok) out.push(...block.ok);
-    else return null;
+    if (block.ok) { out.push(...block.ok); continue; }
+    const { a, o, b } = block.conflict!;
+    // Both sides only added lines at the same place (say, a capture appended to today's note while you
+    // were typing at the end): keep both, the other side's first, instead of asking which to keep.
+    if (o.every((line) => line.trim() === '')) {
+      const trimEnd = (lines: string[]) => { const copy = [...lines]; while (copy.length && copy[copy.length - 1].trim() === '') copy.pop(); return copy; };
+      const trailing = (b.length && b[b.length - 1].trim() === '') || (a.length && a[a.length - 1].trim() === '');
+      out.push(...trimEnd(b), ...trimEnd(a));
+      if (trailing) out.push('');
+      continue;
+    }
+    return null;
   }
   return out.join('\n');
 }
