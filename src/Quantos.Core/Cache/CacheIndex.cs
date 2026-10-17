@@ -8,7 +8,7 @@ public sealed record CachedFile(string Path, string Id, string Hash, long MTime,
 
 public sealed record NodeSummary(
     string Id, string Path, string Title, string Type, string Workspace, IReadOnlyList<string> Tags,
-    string? Created, string? Modified, bool Archived, bool ReadOnly, Dictionary<string, object?> Properties);
+    string? Created, string? Modified, bool Archived, bool ReadOnly, Dictionary<string, object?> Properties, IReadOnlyList<string> Aliases);
 
 public sealed record SearchHit(string Id, string Title, string Type, string Workspace, string Path, string Snippet);
 
@@ -439,7 +439,7 @@ public sealed class CacheIndex : IDisposable
 
     private List<NodeSummary> QueryNodes(string clause, params (string, object?)[] args)
     {
-        using var cmd = Command(_db, "SELECT id, path, title, type, workspace, tags, created, modified, archived, readonly, props FROM nodes " + clause, args);
+        using var cmd = Command(_db, "SELECT id, path, title, type, workspace, tags, created, modified, archived, readonly, props, (SELECT group_concat(alias, char(31)) FROM aliases a WHERE a.id = nodes.id) FROM nodes " + clause, args);
         using var r = cmd.ExecuteReader();
         var list = new List<NodeSummary>();
         while (r.Read())
@@ -447,7 +447,8 @@ public sealed class CacheIndex : IDisposable
             list.Add(new NodeSummary(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4),
                 JsonSerializer.Deserialize<List<string>>(r.GetString(5), Json) ?? [],
                 r.IsDBNull(6) ? null : r.GetString(6), r.IsDBNull(7) ? null : r.GetString(7), r.GetInt64(8) == 1, r.GetInt64(9) == 1,
-                JsonSerializer.Deserialize<Dictionary<string, object?>>(r.GetString(10), Json) ?? new()));
+                JsonSerializer.Deserialize<Dictionary<string, object?>>(r.GetString(10), Json) ?? new(),
+                r.IsDBNull(11) ? [] : r.GetString(11).Split('\u001f')));
         }
         return list;
     }

@@ -93,7 +93,7 @@ export function searchTitles(query: string, limit = 50): NodeSummary[] {
   return app.titles
     .map((n) => {
       let best = fuzzyScore(n.title, query);
-      for (const alias of (n.properties?.aliases as string[] | undefined) ?? []) best = Math.max(best, fuzzyScore(String(alias), query) - 1);
+      for (const alias of n.aliases ?? []) best = Math.max(best, fuzzyScore(String(alias), query) - 1);
       return { n, raw: best, s: best + (n.workspace === ws ? 50 : 0) - (n.archived ? 100 : 0) };
     })
     .filter((x) => x.raw >= 0)

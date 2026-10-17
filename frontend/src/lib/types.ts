@@ -30,6 +30,7 @@ export interface NodeSummary {
   archived: boolean;
   readOnly: boolean;
   properties: Record<string, unknown>;
+  aliases?: string[];
 }
 
 export interface AmbiguousLink { text: string; candidates: NodeSummary[] }

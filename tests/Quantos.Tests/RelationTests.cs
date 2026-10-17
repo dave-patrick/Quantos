@@ -77,6 +77,8 @@ public class RelationTests
         Assert.Equal(["project", "client"], merged.Tags);
         Assert.Equal("Sam", merged.Properties["owner"]);
         Assert.Contains("Apollo project", merged.Aliases);
+        // Summaries carry aliases, so quick open and link suggestions find the old name.
+        Assert.Contains("Apollo project", v.Session.Cache.List().Single(n => n.Id == keep.Id).Aliases);
         Assert.Contains($"[[{keep.Id}|Apollo project]]", v.Writes.Require(linker.Id).Body);
         Assert.Single(v.Writes.TrashBin.List(), e => e.Id == dupe.Id);
     }

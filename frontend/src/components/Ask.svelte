@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from '../lib/state.svelte';
   import { modal } from '../lib/modal';
+  import { searchTitles } from '../lib/links.svelte';
   import type { NodeSummary } from '../lib/types';
 
   /** The text question and note picker behind app.ask and app.pickNote. */
@@ -22,9 +23,9 @@
     const q = value.trim().toLowerCase();
     const list = app.titles.filter((t) => t.id !== spec.exclude && t.type !== 'supertag' && t.type !== 'template');
     if (!q) return list.slice(0, 8);
-    const starts = list.filter((t) => t.title.toLowerCase().startsWith(q));
-    const contains = list.filter((t) => !t.title.toLowerCase().startsWith(q) && t.title.toLowerCase().includes(q));
-    return [...starts, ...contains].slice(0, 8);
+    // Same ranking as quick open: fuzzy, aliases count, this workspace first.
+    const allowed = new Set(list.map((t) => t.id));
+    return searchTitles(q, 40).filter((t) => allowed.has(t.id)).slice(0, 8);
   });
 
   function where(n: NodeSummary) {
