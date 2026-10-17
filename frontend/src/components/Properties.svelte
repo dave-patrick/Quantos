@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fieldProblem } from '../lib/fields';
   import type { Doc } from '../lib/docs.svelte';
   import { supertags, type FieldDef } from '../lib/supertags.svelte';
   import { app } from '../lib/state.svelte';
@@ -45,17 +46,7 @@
   }
 
   /** Forms validate strictly; freeform properties warn but never block (BUILD-PLAN 8C.4-5). */
-  function validate(field: FieldDef, value: unknown): string | null {
-    const empty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
-    if (field.required && empty) return 'Required';
-    if (empty) return null;
-    if (field.type === 'number' && Number.isNaN(Number(value))) return 'Expected a number';
-    if ((field.type === 'date') && !/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return 'Expected a date (YYYY-MM-DD)';
-    if (field.type === 'select' && field.options?.length && !field.options.includes(String(value))) return `Expected one of: ${field.options.join(', ')}`;
-    if (field.type === 'url' && !/^https?:\/\//.test(String(value))) return 'Expected a web address';
-    if (field.type === 'email' && !/^[^@\s]+@[^@\s]+$/.test(String(value))) return 'Expected an email address';
-    return null;
-  }
+  const validate = fieldProblem;
 
   async function setValue(key: string, value: unknown) {
     await doc.setProperties({ [key]: value });

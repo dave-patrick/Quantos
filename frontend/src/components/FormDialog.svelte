@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fieldProblem } from '../lib/fields';
   import { api } from '../lib/api';
   import { app } from '../lib/state.svelte';
   import { openNode } from '../lib/links.svelte';
@@ -14,17 +15,7 @@
   let tried = $state(false);
   let busy = $state(false);
 
-  function problem(f: FieldDef): string | null {
-    const v = values[f.key];
-    const empty = v === '' || v === null || v === undefined || (Array.isArray(v) && !v.length);
-    if (f.required && empty) return 'Required';
-    if (empty) return null;
-    if (f.type === 'number' && Number.isNaN(Number(v))) return 'Enter a number';
-    if (f.type === 'url' && !/^https?:\/\/\S+$/.test(String(v))) return 'Enter a web address starting with http';
-    if (f.type === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v))) return 'Enter an email address';
-    if ((f.type === 'select' || f.type === 'status') && f.options?.length && !f.options.includes(String(v))) return 'Choose an option';
-    return null;
-  }
+  const problem = (f: FieldDef) => fieldProblem(f, values[f.key]);
 
   const errors = $derived(tag.allFields.map((f) => [f.key, problem(f)] as const).filter(([, p]) => p));
   const valid = $derived(title.trim().length > 0 && errors.length === 0);
