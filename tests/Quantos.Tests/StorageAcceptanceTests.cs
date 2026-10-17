@@ -316,4 +316,21 @@ public class StorageAcceptanceTests
         Assert.Equal(["fixed"], v.Writes.Require(target.Id).Tags);
         Assert.NotNull(linker);
     }
+
+    [Fact] // Files saved by other editors in other encodings keep their accented letters when adopted
+    public void Legacy_encodings_survive_adoption()
+    {
+        using var v = new TestVault();
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        var dir = v.Abs("workspaces/default/nodes");
+        Directory.CreateDirectory(dir);
+        File.WriteAllBytes(Path.Combine(dir, "cafe.md"), System.Text.Encoding.GetEncoding(1252).GetBytes("Café crème brûlée €5\n"));
+        File.WriteAllText(Path.Combine(dir, "unicode.md"), "Notepad “Unicode” – naïve\n", System.Text.Encoding.Unicode);
+
+        v.Restart();
+        Assert.Contains("Café crème brûlée €5", File.ReadAllText(Path.Combine(dir, "cafe.md")));
+        Assert.Contains("Notepad “Unicode” – naïve", File.ReadAllText(Path.Combine(dir, "unicode.md")));
+        Assert.Single(v.Session.Cache.Search("brûlée"));
+        Assert.Single(v.Session.Cache.Search("naïve"));
+    }
 }

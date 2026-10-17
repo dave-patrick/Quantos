@@ -29,11 +29,32 @@ public static class AtomicFile
         });
     }
 
-    public static string ReadAllText(string path)
+    public static string ReadAllText(string path) => Decode(ReadAllBytes(path));
+
+    private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+    /// <summary>
+    /// Text from a file someone may have written with another editor: UTF-8 (with or without a BOM),
+    /// UTF-16 with a BOM (Notepad's "Unicode"), or, when the bytes aren't valid UTF-8, the legacy
+    /// Windows code page. Guessing beats replacing accented letters with "�", because Quantos
+    /// writes the text back as UTF-8.
+    /// </summary>
+    public static string Decode(byte[] bytes)
     {
-        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-        using var reader = new StreamReader(stream, Utf8, detectEncodingFromByteOrderMarks: false);
-        return reader.ReadToEnd();
+        if (bytes is [0xEF, 0xBB, 0xBF, ..]) return Utf8.GetString(bytes); // keeps the BOM character, so it is preserved on save
+        if (bytes is [0xFF, 0xFE, ..]) return Encoding.Unicode.GetString(bytes, 2, bytes.Length - 2);
+        if (bytes is [0xFE, 0xFF, ..]) return Encoding.BigEndianUnicode.GetString(bytes, 2, bytes.Length - 2);
+        try { return StrictUtf8.GetString(bytes); }
+        catch (DecoderFallbackException) { return Windows1252.GetString(bytes); }
+    }
+
+    private static Encoding Windows1252
+    {
+        get
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            return Encoding.GetEncoding(1252);
+        }
     }
 
     public static byte[] ReadAllBytes(string path)

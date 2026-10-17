@@ -36,7 +36,8 @@ The vault layout is the one in BUILD-PLAN.md section 4. Folders are created on d
 ## 2. Node files
 
 A node is a UTF-8 Markdown file (no BOM written; a BOM on read is accepted and preserved)
-with a YAML frontmatter block delimited by `---` lines.
+with a YAML frontmatter block delimited by `---` lines. Files another editor saved as UTF-16 (with a
+BOM) or in the Windows-1252 code page are read correctly and written back as UTF-8 when they next change.
 
 ```markdown
 ---
