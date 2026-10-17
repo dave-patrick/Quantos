@@ -13,7 +13,6 @@ public sealed class VaultWatcher : IDisposable
     public static readonly TimeSpan Debounce = TimeSpan.FromMilliseconds(300);
 
     private readonly WriteService _writes;
-    private readonly Reconciler _reconciler;
     private readonly FileSystemWatcher _fsw;
     private readonly Lock _gate = new();
     private readonly HashSet<string> _pending = new(StringComparer.OrdinalIgnoreCase);
@@ -23,10 +22,9 @@ public sealed class VaultWatcher : IDisposable
 
     private static readonly string[] Ignored = [".history", ".trash", ".state", "exports", "plugins", "themes", "attachments", ".git", ".obsidian"];
 
-    public VaultWatcher(WriteService writes, Reconciler reconciler)
+    public VaultWatcher(WriteService writes)
     {
         _writes = writes;
-        _reconciler = reconciler;
         _timer = new Timer(_ => Flush(), null, Timeout.Infinite, Timeout.Infinite);
         _fsw = new FileSystemWatcher(writes.Vault.Root)
         {
@@ -78,10 +76,40 @@ public sealed class VaultWatcher : IDisposable
         if (paths.Length == 0 && !full) return;
         try
         {
-            if (full) { _reconciler.Run(); return; }
-            _writes.Exclusive(() => { foreach (var p in paths) Process(p); return 0; });
+            if (full) paths = [.. ChangedSinceIndexed()];
+            // Small chunks, each holding the write lock briefly: a big import (a copied folder of
+            // thousands of notes) mustn't hold up the user's own saves until it finishes.
+            var first = true;
+            foreach (var chunk in paths.Chunk(ChunkSize))
+            {
+                // The lock isn't fair: pause between chunks so a waiting save gets its turn.
+                if (!first) Thread.Sleep(15);
+                first = false;
+                _writes.Exclusive(() => { foreach (var p in chunk) Process(p); return 0; });
+            }
         }
         catch (Exception ex) { Failed?.Invoke(ex); }
+    }
+
+    private const int ChunkSize = 10;
+
+    /// <summary>
+    /// Files that differ from the index, found by comparing timestamps and sizes (cheap): changed and
+    /// new files first, then ones that disappeared, so a moved folder reads as a move, not a delete.
+    /// </summary>
+    private IEnumerable<string> ChangedSinceIndexed()
+    {
+        var vault = _writes.Vault;
+        var cached = _writes.Cache.AllFiles().ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var abs in vault.EnumerateNodeFiles())
+        {
+            var rel = vault.Relative(abs);
+            seen.Add(rel);
+            var info = new FileInfo(abs);
+            if (!cached.TryGetValue(rel, out var hit) || hit.MTime != info.LastWriteTimeUtc.Ticks || hit.Size != info.Length) yield return abs;
+        }
+        foreach (var gone in cached.Keys.Where(p => !seen.Contains(p))) yield return vault.Absolute(gone);
     }
 
     private void Process(string abs)

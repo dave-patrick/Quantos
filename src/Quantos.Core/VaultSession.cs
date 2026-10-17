@@ -60,7 +60,7 @@ public sealed class VaultSession : IDisposable
     /// <summary>Starts watching for outside edits (after the startup scan).</summary>
     public void StartWatching()
     {
-        Watcher ??= new VaultWatcher(Writes, Reconciler);
+        Watcher ??= new VaultWatcher(Writes);
     }
 
     public QuantosPaths Paths { get; }
