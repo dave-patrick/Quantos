@@ -90,6 +90,9 @@
   $effect(() => { void centerId; void hops; void workspace; fitNext = true; load(); });
 
   const byId = $derived(new Map(nodes.map((n) => [n.id, n])));
+  // Labels keep the same size on screen at any zoom; dots shrink and grow only a little.
+  const inv = $derived(1 / view.k);
+  const dot = $derived(1 / Math.sqrt(view.k));
   const neighbours = $derived(hovered ? new Set(edges.filter((e) => e.from === hovered || e.to === hovered).flatMap((e) => [e.from, e.to])) : null);
 
   let drag: { x: number; y: number } | null = null;
@@ -118,9 +121,9 @@
           onclick={(e) => openNode(n.id, e.shiftKey ? 'other' : e.ctrlKey || e.metaKey ? 'new' : 'current', n.title)}
           onkeydown={(e) => { if (e.key === 'Enter') openNode(n.id, 'current', n.title); }}
           onmouseenter={() => (hovered = n.id)} onmouseleave={() => (hovered = null)}>
-          <circle r={n.id === centerId ? 9 : n.depth === 1 ? 6 : 4.5} style="fill:{colors[n.type] ?? 'var(--accent)'}" />
+          <circle r={(n.id === centerId ? 9 : n.depth === 1 ? 6 : 4.5) * dot} style="fill:{colors[n.type] ?? 'var(--accent)'}" />
           {#if labels || n.id === hovered || n.id === centerId || n.depth <= 1}
-            <text y={-12} text-anchor="middle">{n.title.length > 28 ? n.title.slice(0, 27) + '…' : n.title}</text>
+            <text y={-12 * dot} text-anchor="middle" style="font-size:{(n.id === centerId ? 12.5 : 11.5) * inv}px">{n.title.length > 28 ? n.title.slice(0, 27) + '…' : n.title}</text>
           {/if}
         </g>
       {/each}
@@ -136,8 +139,8 @@
   .edge.embed { stroke-dasharray: 4 3; }
   .edge.sync { stroke: var(--ok); }
   .node { cursor: pointer; }
-  .node text { font: 11px var(--font-body); fill: var(--text-soft); pointer-events: none; }
-  .node.center text { fill: var(--text); font-weight: 700; font-size: 12.5px; }
+  .node text { font-family: var(--font-body); fill: var(--text-soft); pointer-events: none; }
+  .node.center text { fill: var(--text); font-weight: 700; }
   .node.center circle { stroke: var(--text); stroke-width: 2; }
   .node:hover circle, .node:focus circle { stroke: var(--text); stroke-width: 2; }
   .dim { opacity: .18; }
