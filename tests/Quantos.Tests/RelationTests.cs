@@ -101,4 +101,20 @@ public class RelationTests
         Assert.Equal($"[[{sam.Id}|Samantha]]", after.Properties["owner"]);
         Assert.Equal(new object?[] { $"[[{sam.Id}|Samantha]]", "Visitor" }, ((IEnumerable<object?>)after.Properties["attendees"]!).ToArray());
     }
+
+    [Fact]
+    public void Vault_diagnostics_report_broken_links_in_properties()
+    {
+        using var v = new TestVault();
+        var meeting = v.Writes.Create(new CreateNodeRequest
+        {
+            Title = "Kickoff",
+            Body = "Notes.\n",
+            Properties = new Dictionary<string, object?> { ["owner"] = "[[01ARZ3NDEKTSV4RRFFQ69G5FAV|Ghost]]" }
+        }, Actor.User);
+        var (diagnostics, _) = Integrity.Check(v.Writes);
+        var broken = Assert.Single(diagnostics, d => d.Code == "broken-link");
+        Assert.Equal(meeting.Id, broken.Id);
+        Assert.Contains("Ghost", broken.Message);
+    }
 }

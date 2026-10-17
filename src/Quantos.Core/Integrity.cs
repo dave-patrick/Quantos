@@ -32,7 +32,8 @@ public static class Integrity
             if (node.Archived != Vault.IsArchivedPath(rel) && folderWs.Length > 0)
                 list.Add(new Diagnostic("info", "archive-mismatch", node.Archived ? "Marked archived but not in the archive folder." : "In the archive folder but not marked archived.", rel, node.Id));
 
-            foreach (var link in Links.Find(node.Body).Where(l => l.IsResolved && !known.ContainsKey(l.Target)))
+            var propertyLinks = node.Properties.Values.SelectMany(Cache.CacheIndex.PropertyStrings).SelectMany(Links.Find);
+            foreach (var link in Links.Find(node.Body).Concat(propertyLinks).Where(l => l.IsResolved && !known.ContainsKey(l.Target)).DistinctBy(l => l.Target))
             {
                 var trashed = writes.TrashBin.FindById(link.Target);
                 list.Add(new Diagnostic(trashed is null ? "warning" : "info", "broken-link",
