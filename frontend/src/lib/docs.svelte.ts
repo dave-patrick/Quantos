@@ -15,7 +15,7 @@ const SAVE_DELAY = 700;
 // restarting, a lost sign-in or a closed window. It's restored (through the normal save and merge
 // steps) the next time the note opens.
 const DRAFT = 'quantos-draft:';
-interface Draft { raw: boolean; text: string; base: string; baseHash: string }
+interface Draft { raw: boolean; text: string; base: string; baseHash: string; at?: number }
 function readDraft(id: string): Draft | null {
   try { const s = localStorage.getItem(DRAFT + id); return s ? (JSON.parse(s) as Draft) : null; } catch { return null; }
 }
@@ -104,8 +104,8 @@ export class Doc {
       this.draftTimer = null;
       if (!this.dirty) { clearDraft(this.id); return; }
       const draft: Draft = this.raw
-        ? { raw: true, text: this.rawText, base: this.node?.content ?? '', baseHash: this.rawBaseHash }
-        : { raw: false, text: this.body, base: this.base, baseHash: this.hash };
+        ? { raw: true, text: this.rawText, base: this.node?.content ?? '', baseHash: this.rawBaseHash, at: Date.now() }
+        : { raw: false, text: this.body, base: this.base, baseHash: this.hash, at: Date.now() };
       try { const s = JSON.stringify(draft); if (s.length < 4_000_000) localStorage.setItem(DRAFT + this.id, s); } catch { /* full or unavailable */ }
     }, 400);
   }
@@ -342,6 +342,13 @@ class DocStore {
   constructor() {
     // Back online: retry saves that failed while the backend was away.
     connection.listeners.add((connected) => { if (connected) for (const d of this.docs.values()) d.retryNow(); });
+    // Drafts of notes that never reopened (deleted meanwhile, say) don't pile up: drop ones older than 30 days.
+    try {
+      for (const key of Object.keys(localStorage).filter((k) => k.startsWith(DRAFT))) {
+        const at = (JSON.parse(localStorage.getItem(key) ?? '{}') as Draft).at ?? 0;
+        if (Date.now() - at > 30 * 86_400_000) localStorage.removeItem(key);
+      }
+    } catch { /* storage unavailable */ }
   }
   /** Work that will produce a document soon (e.g. today's note being created by the first keystroke). */
   private pending = new Set<Promise<unknown>>();
