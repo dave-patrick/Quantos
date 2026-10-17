@@ -69,7 +69,9 @@ public class FrontmatterTests
     public void Plain_text_shows_link_titles_without_markers()
     {
         var body = "![Cover](attachments/0c/abc.png)Met [[01JABCDEF0123456789XYZABCD|Sam]] about [[Budget]] ([brief](attachments/b.pdf)).\n- [ ] Call back <!--task:01JABCDEF0123456789XYZABCE-->\n<!--sync:01JABCDEF0123456789XYZABCF-->\nShared line ^b1\n<!--/sync-->";
-        Assert.Equal("CoverMet Sam about Budget (brief).\n- [ ] Call back \n\nShared line\n", Links.PlainText(body));
+        Assert.Equal("CoverMet Sam about Budget (brief).\nCall back \n\nShared line\n", Links.PlainText(body));
+        Assert.Equal("Agenda\nScope for Apollo\nNote\nquoted\nFirst\ncode line\n",
+            Links.PlainText("## Agenda\n- Scope for **Apollo**\n> [!note]+ Note\n> > quoted\n1. First\n```js\ncode line\n```\n").Replace("\n\n", "\n"));
     }
 
     [Fact] // A long note with many links must not take quadratic time to scan (it once took ~30 s to save)

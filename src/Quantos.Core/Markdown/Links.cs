@@ -68,8 +68,20 @@ public static partial class Links
         var text = Rewrite(body, l => l.Display ?? (l.IsResolved ? l.Fragment ?? "" : l.TitleTarget.Title));
         text = MarkdownLinkPattern().Replace(text, "${text}");
         text = CommentPattern().Replace(text, "");
-        return AnchorPattern().Replace(text, "");
+        text = AnchorPattern().Replace(text, "");
+        // Structure, not words: heading hashes, quote and callout markers, bullets and checkboxes,
+        // fences, bold/strike/highlight markers and backticks. Single * and _ stay (snake_case, maths).
+        text = FenceLinePattern().Replace(text, "");
+        text = LineMarkerPattern().Replace(text, "");
+        return InlineMarkerPattern().Replace(text, "");
     }
+
+    [GeneratedRegex(@"^[ \t]*(?:```|~~~).*$", RegexOptions.Multiline)]
+    private static partial Regex FenceLinePattern();
+    [GeneratedRegex(@"^[ \t]*(?:(?:>[ \t]?)+(?:\[![\w-]+\][+-]?[ \t]*)?)?(?:#{1,6}[ \t]+|[-*+][ \t]+(?:\[[ xX]\][ \t]+)?|\d{1,3}[.)][ \t]+)?", RegexOptions.Multiline)]
+    private static partial Regex LineMarkerPattern();
+    [GeneratedRegex(@"\*\*|__|~~|==|`")]
+    private static partial Regex InlineMarkerPattern();
 
     /// <summary>Ids of task nodes bound to inline task lines (<c>&lt;!--task:ID--&gt;</c>).</summary>
     public static IEnumerable<(string Id, bool Checked, string Text, int LineStart)> InlineTasks(string body)
