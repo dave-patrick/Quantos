@@ -376,6 +376,19 @@ public sealed class CacheIndex : IDisposable
         }
     }
 
+    /// <summary>How connected each node is: resolved links out plus links in, in one query (for the graph overview).</summary>
+    public IReadOnlyDictionary<string, int> LinkDegrees()
+    {
+        lock (_gate)
+        {
+            using var cmd = Command(_db, "SELECT id, COUNT(*) FROM (SELECT src AS id FROM links WHERE target NOT LIKE '?%' UNION ALL SELECT target FROM links) GROUP BY id");
+            using var r = cmd.ExecuteReader();
+            var map = new Dictionary<string, int>();
+            while (r.Read()) map[r.GetString(0)] = r.GetInt32(1);
+            return map;
+        }
+    }
+
     /// <summary>The text values of a property: a string, or the strings in a list.</summary>
     public static IEnumerable<string> PropertyStrings(object? value) => value switch
     {

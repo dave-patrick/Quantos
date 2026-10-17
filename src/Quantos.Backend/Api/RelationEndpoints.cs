@@ -47,10 +47,10 @@ public static class RelationEndpoints
             var edges = new HashSet<(string From, string To, string Kind)>();
             if (id is null)
             {
-                // Workspace overview: the most connected notes.
+                // Workspace overview: the most connected notes (notes with no links would only be scattered dots).
                 var all = cache.List(workspace, includeArchived: false, limit: 100_000);
-                var degree = all.ToDictionary(n => n.Id, n => cache.Backlinks(n.Id).Count + cache.OutLinks(n.Id).Count(o => !o.Target.StartsWith('?')));
-                foreach (var n in all.OrderByDescending(n => degree[n.Id]).Take(150)) nodes[n.Id] = (n.Title, n.Type, n.Workspace, 0);
+                var degree = cache.LinkDegrees();
+                foreach (var n in all.Where(n => degree.GetValueOrDefault(n.Id) > 0).OrderByDescending(n => degree[n.Id]).Take(150)) nodes[n.Id] = (n.Title, n.Type, n.Workspace, 0);
                 foreach (var n in nodes.Keys.ToList())
                     foreach (var o in cache.OutLinks(n).Where(o => nodes.ContainsKey(o.Target))) edges.Add((n, o.Target, o.Kind));
             }
