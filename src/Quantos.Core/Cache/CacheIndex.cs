@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using Quantos.Core.Markdown;
@@ -18,7 +19,7 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// Derived data in client-data/cache/cache.sqlite. Nothing here is authoritative; it can be deleted
 /// and rebuilt from the vault at any time (BUILD-PLAN section 4).
 /// </summary>
-public sealed class CacheIndex : IDisposable
+public sealed partial class CacheIndex : IDisposable
 {
     public const int Version = 8;
     private readonly SqliteConnection _db;
@@ -278,6 +279,14 @@ public sealed class CacheIndex : IDisposable
     {
         var fts = ToFtsQuery(query);
         if (fts.Length == 0) return [];
+        var hits = RunSearch(fts, workspace, limit);
+        // Nothing found: try again with each word's ending trimmed, so a typo ("lauch") still finds "launch".
+        if (hits.Count == 0 && ToFtsQuery(query, loose: true) is { Length: > 0 } loose && loose != fts) hits = RunSearch(loose, workspace, limit);
+        return hits;
+    }
+
+    private List<SearchHit> RunSearch(string fts, string? workspace, int limit)
+    {
         lock (_gate)
         {
             var sql = """
@@ -293,14 +302,41 @@ public sealed class CacheIndex : IDisposable
         }
     }
 
-    private static string ToFtsQuery(string query)
+    /// <summary>
+    /// Search words to an FTS5 query. Every word matches as a prefix; "quoted words" match as a phrase;
+    /// OR between words means either; a leading minus excludes a word. Nothing typed can break the syntax.
+    /// </summary>
+    public static string ToFtsQuery(string query, bool loose = false)
     {
-        var terms = query.Split([' ', '\t', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(t => new string(t.Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '\'').ToArray()).Replace("\"", ""))
-            .Where(t => t.Length > 0)
-            .Select(t => "\"" + t + "\"*");
-        return string.Join(" ", terms);
+        static string Clean(string t) => new string(t.Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '\'' or ' ').ToArray()).Trim();
+        string Trim(string t) => loose && t.Length >= 5 ? t[..Math.Max(3, t.Length - 2)] : t;
+        var parts = new List<string>();
+        var excluded = new List<string>();
+        var pendingOr = false;
+        foreach (Match m in SearchToken().Matches(query))
+        {
+            if (m.Groups["phrase"].Success)
+            {
+                var phrase = Clean(m.Groups["phrase"].Value);
+                if (phrase.Length > 0) { parts.Add((pendingOr && parts.Count > 0 ? "OR " : "") + "\"" + phrase + "\""); pendingOr = false; }
+                continue;
+            }
+            var word = m.Groups["word"].Value;
+            if (word == "OR") { pendingOr = true; continue; }
+            var negative = word.Length > 1 && word[0] == '-';
+            var term = Clean(negative ? word[1..] : word);
+            if (term.Length == 0) continue;
+            if (negative) { excluded.Add("\"" + term + "\""); continue; }
+            parts.Add((pendingOr && parts.Count > 0 ? "OR " : "") + "\"" + Trim(term) + "\"*");
+            pendingOr = false;
+        }
+        if (parts.Count == 0) return "";
+        var include = string.Join(" ", parts);
+        return excluded.Count == 0 ? include : $"({include}) NOT ({string.Join(" OR ", excluded)})";
     }
+
+    [GeneratedRegex("\"(?<phrase>[^\"]*)\"|(?<word>\\S+)")]
+    private static partial Regex SearchToken();
 
     public IReadOnlyList<LinkRef> Backlinks(string id)
     {

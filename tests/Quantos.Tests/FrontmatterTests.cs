@@ -1,3 +1,5 @@
+using Quantos.Core.Security;
+using Quantos.Core.Cache;
 using Quantos.Core;
 using Quantos.Core.Markdown;
 
@@ -65,6 +67,24 @@ public class FrontmatterTests
         Assert.Equal("^b1", links[2].Fragment);
     }
 
+    [Fact]
+    public void Search_understands_phrases_or_exclusions_and_typos()
+    {
+        Assert.Equal("\"launch plan\" \"apollo\"*", CacheIndex.ToFtsQuery("\"launch plan\" apollo"));
+        Assert.Equal("\"sam\"* OR \"budget\"*", CacheIndex.ToFtsQuery("sam OR budget"));
+        Assert.Equal("(\"apollo\"*) NOT (\"draft\")", CacheIndex.ToFtsQuery("apollo -draft"));
+        Assert.Equal("", CacheIndex.ToFtsQuery("-draft \"\" ( ) *"));
+        Assert.Equal("\"lau\"*", CacheIndex.ToFtsQuery("lauch", loose: true));
+
+        using var v = new TestVault();
+        var plan = v.Writes.Create(new CreateNodeRequest { Title = "Launch plan", Body = "Draft for the board.\n" }, Actor.User);
+        var budget = v.Writes.Create(new CreateNodeRequest { Title = "Budget", Body = "Numbers for the launch.\n" }, Actor.User);
+        Assert.Equal([plan.Id], v.Session.Cache.Search("\"launch plan\"").Select(h => h.Id));
+        Assert.Equal(2, v.Session.Cache.Search("board OR numbers").Count);
+        Assert.Equal([budget.Id], v.Session.Cache.Search("launch -draft").Select(h => h.Id));
+        Assert.Contains(v.Session.Cache.Search("lauch"), h => h.Id == plan.Id); // typo still finds it
+        Assert.Empty(v.Session.Cache.Search("zzzzzz"));
+    }
     [Fact]
     public void Plain_text_shows_link_titles_without_markers()
     {

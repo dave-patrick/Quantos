@@ -144,6 +144,9 @@ own tabs, splits and scroll positions.
   multi-level sorting and grouping. Tables edit like a spreadsheet (arrow keys, Enter, Tab, Escape).
   On a board, drag a card to another column, or focus it and press Alt+Left / Alt+Right.
   Paste rows from Excel into *Paste rows* to create notes in bulk.
+- **Search** (`Ctrl+Shift+F`) matches the start of words, across every workspace or just one.
+  `"exact phrase"` matches words together, `budget OR forecast` either word, `launch -draft`
+  leaves out notes with *draft*. A small typo still finds close matches when nothing else does.
 - **Metadata dictionary** lists every property, how it's used and which supertags define it.
 
 ---
