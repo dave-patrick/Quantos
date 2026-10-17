@@ -77,6 +77,8 @@ Windows-only features (below) works the same.
   ```
   ````
 
+- **Saving** is automatic. If a save fails (the backend restarting, say), Quantos keeps trying, and keeps
+  a copy of the unsaved text in the browser until it's saved, restoring it the next time the note opens.
 - **Source view:** the `</>` button edits the raw Markdown, frontmatter included.
 - **Writing tools:** table of contents and outline zoom (list button), typewriter scrolling,
   word count and reading time, writing targets (note menu), multiple cursors (`Alt`-drag for a

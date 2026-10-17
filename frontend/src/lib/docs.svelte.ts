@@ -1,5 +1,5 @@
 import { api, ApiError } from './api';
-import { onChange } from './events';
+import { connection, onChange } from './events';
 import { layout, setTabFlusher } from './layout.svelte';
 import { app } from './state.svelte';
 import { merge3 } from './text';
@@ -10,6 +10,16 @@ export type DocStatus = 'loading' | 'saved' | 'dirty' | 'saving' | 'conflict' | 
 export interface Conflict { mine: string; disk: NodeDto; reason: string }
 
 const SAVE_DELAY = 700;
+
+// Unsaved text is also kept in this browser's storage until it's saved, so it survives the backend
+// restarting, a lost sign-in or a closed window. It's restored (through the normal save and merge
+// steps) the next time the note opens.
+const DRAFT = 'quantos-draft:';
+interface Draft { raw: boolean; text: string; base: string; baseHash: string }
+function readDraft(id: string): Draft | null {
+  try { const s = localStorage.getItem(DRAFT + id); return s ? (JSON.parse(s) as Draft) : null; } catch { return null; }
+}
+function clearDraft(id: string) { try { localStorage.removeItem(DRAFT + id); } catch { /* storage unavailable */ } }
 
 /**
  * One open node. Edits are saved through the backend's single write path with the hash the editor
@@ -33,6 +43,9 @@ export class Doc {
   refs = 0;
 
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private draftTimer: ReturnType<typeof setTimeout> | null = null;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private retryDelay = 2000;
   private chain: Promise<unknown> = Promise.resolve();
 
   constructor(public id: string) {}
@@ -47,6 +60,7 @@ export class Doc {
       if (node.readOnly) this.raw = true;
       this.rawText = node.content;
       this.rawBaseHash = node.hash;
+      this.restoreDraft(node);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) this.status = 'missing';
       else { this.status = 'error'; this.error = (err as Error).message; }
@@ -80,6 +94,49 @@ export class Doc {
   private schedule() {
     if (this.timer) clearTimeout(this.timer);
     this.timer = setTimeout(() => this.save(), SAVE_DELAY);
+    this.scheduleDraft();
+  }
+
+  /** Keeps a copy of unsaved text in browser storage (a moment after typing pauses). */
+  private scheduleDraft() {
+    if (this.draftTimer) clearTimeout(this.draftTimer);
+    this.draftTimer = setTimeout(() => {
+      this.draftTimer = null;
+      if (!this.dirty) { clearDraft(this.id); return; }
+      const draft: Draft = this.raw
+        ? { raw: true, text: this.rawText, base: this.node?.content ?? '', baseHash: this.rawBaseHash }
+        : { raw: false, text: this.body, base: this.base, baseHash: this.hash };
+      try { const s = JSON.stringify(draft); if (s.length < 4_000_000) localStorage.setItem(DRAFT + this.id, s); } catch { /* full or unavailable */ }
+    }, 400);
+  }
+
+  /** Text left unsaved last time goes back in and is saved the usual way (merging if the file changed). */
+  private restoreDraft(node: NodeDto) {
+    const draft = readDraft(this.id);
+    if (!draft || node.readOnly) return;
+    if (draft.text === (draft.raw ? node.content : node.body)) { clearDraft(this.id); return; }
+    if (draft.raw) { this.raw = true; this.rawText = draft.text; this.rawBaseHash = draft.baseHash; }
+    else { this.base = draft.base; this.body = draft.text; this.hash = draft.baseHash; this.externalVersion++; }
+    this.status = 'dirty';
+    app.toast(`Restored changes to “${node.title}” that hadn't been saved.`, 'info');
+    this.save();
+  }
+
+  /** A save that failed (backend restarting, connection lost) is tried again, backing off to a minute. */
+  private scheduleRetry() {
+    if (this.retryTimer) return;
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
+      if (this.dirty && this.status === 'error') this.save();
+    }, this.retryDelay);
+    this.retryDelay = Math.min(this.retryDelay * 2, 60_000);
+  }
+
+  /** Called when the connection to the backend comes back. */
+  retryNow() {
+    if (this.status !== 'error' || !this.dirty) return;
+    if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
+    this.save();
   }
 
   /** Saves now (used before closing a tab, switching workspace or exiting). */
@@ -91,9 +148,13 @@ export class Doc {
 
   save(): Promise<unknown> {
     if (this.timer) { clearTimeout(this.timer); this.timer = null; }
-    this.chain = this.chain.then(() => (this.raw ? this.doSaveRaw() : this.doSave())).catch((err) => {
+    this.chain = this.chain.then(() => (this.raw ? this.doSaveRaw() : this.doSave())).then(() => {
+      if (this.status !== 'error') this.retryDelay = 2000;
+      if (!this.dirty) clearDraft(this.id);
+    }, (err) => {
       this.status = 'error';
       this.error = (err as Error).message;
+      this.scheduleRetry();
     });
     return this.chain;
   }
@@ -277,6 +338,11 @@ function replaceBody(content: string, body: string, newBody: string) {
 
 class DocStore {
   private docs = new Map<string, Doc>();
+
+  constructor() {
+    // Back online: retry saves that failed while the backend was away.
+    connection.listeners.add((connected) => { if (connected) for (const d of this.docs.values()) d.retryNow(); });
+  }
   /** Work that will produce a document soon (e.g. today's note being created by the first keystroke). */
   private pending = new Set<Promise<unknown>>();
 
