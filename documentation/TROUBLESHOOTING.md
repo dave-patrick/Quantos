@@ -12,6 +12,7 @@ Logs: `client-data\logs\backend-YYYYMMDD.log` and `client-YYYYMMDD.log`.
 | "Another Quantos backend already owns the vault" | A backend is still running. Use Exit in the Windows client, or end `Quantos.Backend.exe` in Task Manager. The lock is released automatically if the process ended. |
 | Browser shows "Open Quantos from the app" | Sign-in links work once and for a minute. Use `Open in browser.cmd` or the tray menu again. |
 | Quick-capture shortcut does nothing | Another program uses it. Pick another in Settings › Shortcuts; Quantos reports conflicts. |
+| The window reloads by itself | The backend stopped and the Windows client started it again. Unsaved text comes back with the window. If it happens three times in ten minutes the client stops trying and says so; the reason is in `backend-YYYYMMDD.log`. |
 | Terminal says ConstrainedLanguage | App control is enforced on this machine. Commands still run, with PowerShell's restrictions. |
 
 ## Something looks wrong in my notes

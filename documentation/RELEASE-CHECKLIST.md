@@ -30,6 +30,7 @@ Packaging
 - [ ] Move the whole `Quantos\` folder elsewhere; settings and the vault still open.
 - [ ] Close the window: it minimizes. Reopen from the taskbar or tray.
 - [ ] Exit from the tray: open notes save first; the backend process ends.
+- [ ] End `Quantos.Backend.exe` in Task Manager while typing; within seconds the window is back and the text is still there.
 - [ ] Upgrade: unzip the new version over `application\` only; settings, vault and history are kept.
 
 Interface
