@@ -10,7 +10,7 @@ public static class TaskKeys
 {
     public const string Status = "status", Priority = "priority", Due = "due", Planned = "planned", Effort = "effort",
         Assignees = "assignees", Project = "project", WaitingOn = "waiting_on", Parent = "parent", DependsOn = "depends_on",
-        Recurrence = "recurrence", Series = "series", Occurrence = "occurrence", Reminders = "reminders", Completed = "completed",
+        Recurrence = "recurrence", Series = "series", Occurrence = "occurrence", SeriesDay = "series_day", Reminders = "reminders", Completed = "completed",
         Source = "source", TimeBlock = "time_block", Tz = "tz", Stage = "stage", MyDay = "my_day", MyDayOrder = "my_day_order",
         RolledOver = "rolled_over";
 }
@@ -96,7 +96,9 @@ public sealed partial class TaskService : ITaskHooks
         {
             props[TaskKeys.Recurrence] = r.Recurrence;
             props[TaskKeys.Series] = Ulid.New();
-            props[TaskKeys.Occurrence] = (Props.Date(r.Planned) ?? Props.Date(r.Due) ?? _writes.Clock.Today).ToString("yyyy-MM-dd");
+            var first = Props.Date(r.Planned) ?? Props.Date(r.Due) ?? _writes.Clock.Today;
+            props[TaskKeys.Occurrence] = first.ToString("yyyy-MM-dd");
+            props[TaskKeys.SeriesDay] = first.Day;
         }
         if (r.Reminders is { Count: > 0 })
             props[TaskKeys.Reminders] = r.Reminders.Select(at => (object?)new Dictionary<string, object?> { ["at"] = ValidDateTime(at) }).ToList();
@@ -213,7 +215,9 @@ public sealed partial class TaskService : ITaskHooks
         if (clean.ContainsKey(TaskKeys.Recurrence) && Props.Str(clean[TaskKeys.Recurrence]) is not null && current.Series is null)
         {
             clean[TaskKeys.Series] = Ulid.New();
-            clean[TaskKeys.Occurrence] = (Props.Date(current.Planned) ?? Props.Date(current.Due) ?? _writes.Clock.Today).ToString("yyyy-MM-dd");
+            var first = Props.Date(current.Planned) ?? Props.Date(current.Due) ?? _writes.Clock.Today;
+            clean[TaskKeys.Occurrence] = first.ToString("yyyy-MM-dd");
+            clean[TaskKeys.SeriesDay] = first.Day;
         }
         var nulls = clean.Where(kv => kv.Value is null).Select(kv => kv.Key).ToList();
         foreach (var k in nulls) clean.Remove(k);
@@ -268,9 +272,12 @@ public sealed partial class TaskService : ITaskHooks
         if (series is null)
         {
             series = Ulid.New();
-            _writes.UpdateFields(task.Id, null, new Dictionary<string, object?> { [TaskKeys.Series] = series, [TaskKeys.Occurrence] = scheduled.ToString("yyyy-MM-dd") }, null, Actor.System);
+            _writes.UpdateFields(task.Id, null, new Dictionary<string, object?> { [TaskKeys.Series] = series, [TaskKeys.Occurrence] = scheduled.ToString("yyyy-MM-dd"), [TaskKeys.SeriesDay] = scheduled.Day }, null, Actor.System);
         }
-        var next = rule.Next(scheduled);
+        // Monthly and yearly series aim for the day they started on: a task on the 31st falls on the
+        // 30th or 28th in shorter months and goes back to the 31st after, instead of drifting earlier.
+        var anchorDay = int.TryParse(Props.Str(_writes.Require(task.Id).Properties.GetValueOrDefault(TaskKeys.SeriesDay)), out var ad) && ad is >= 1 and <= 31 ? ad : scheduled.Day;
+        var next = rule.Next(scheduled, anchorDay);
         var nextKey = next.ToString("yyyy-MM-dd");
         var existing = Cache.Query("WHERE type='task' AND json_extract(props, '$.series') = $s AND json_extract(props, '$.occurrence') = $o",
             ("$s", series), ("$o", nextKey));
@@ -288,7 +295,7 @@ public sealed partial class TaskService : ITaskHooks
         }, actor);
         _writes.UpdateFields(created.Id, null, new Dictionary<string, object?>
         {
-            [TaskKeys.Recurrence] = task.Recurrence, [TaskKeys.Series] = series, [TaskKeys.Occurrence] = nextKey
+            [TaskKeys.Recurrence] = task.Recurrence, [TaskKeys.Series] = series, [TaskKeys.Occurrence] = nextKey, [TaskKeys.SeriesDay] = anchorDay
         }, null, Actor.System);
         return _writes.Require(created.Id);
     }

@@ -8,7 +8,7 @@
   let { doc, compact = false }: { doc: Doc; compact?: boolean } = $props();
 
   const hiddenKeys = new Set(['status', 'priority', 'due', 'planned', 'effort', 'assignees', 'project', 'waiting_on', 'parent', 'depends_on',
-    'recurrence', 'series', 'occurrence', 'reminders', 'completed', 'source', 'time_block', 'tz', 'date', 'stage']);
+    'recurrence', 'series', 'series_day', 'occurrence', 'reminders', 'completed', 'source', 'time_block', 'tz', 'date', 'stage']);
 
   const node = $derived(doc.node);
   const tagDefs = $derived((node?.tags ?? []).map((t) => supertags.byName(t)).filter((t) => !!t));

@@ -33,7 +33,8 @@ public sealed record Recurrence(string Freq, int Interval, IReadOnlyList<DayOfWe
         return new Recurrence(freq, interval, days, monthDay);
     }
 
-    public DateOnly Next(DateOnly scheduled)
+    /// <param name="anchorDay">The day of the month the series started on; monthly and yearly occurrences aim for it.</param>
+    public DateOnly Next(DateOnly scheduled, int? anchorDay = null)
     {
         switch (Freq)
         {
@@ -52,13 +53,13 @@ public sealed record Recurrence(string Freq, int Interval, IReadOnlyList<DayOfWe
             case "MONTHLY":
             {
                 var target = scheduled.AddMonths(Interval);
-                var day = ByMonthDay ?? scheduled.Day;
+                var day = ByMonthDay ?? anchorDay ?? scheduled.Day;
                 return new DateOnly(target.Year, target.Month, Math.Min(day, DateTime.DaysInMonth(target.Year, target.Month)));
             }
             default:
             {
                 var year = scheduled.Year + Interval;
-                return new DateOnly(year, scheduled.Month, Math.Min(scheduled.Day, DateTime.DaysInMonth(year, scheduled.Month)));
+                return new DateOnly(year, scheduled.Month, Math.Min(ByMonthDay ?? anchorDay ?? scheduled.Day, DateTime.DaysInMonth(year, scheduled.Month)));
             }
         }
     }

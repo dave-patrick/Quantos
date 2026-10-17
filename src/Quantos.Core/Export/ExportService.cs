@@ -120,7 +120,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
 
     // Bookkeeping that means nothing outside Quantos.
     private static readonly HashSet<string> Internal = new(StringComparer.OrdinalIgnoreCase)
-        { "series", "occurrence", "reminders", "source", "tz", "my_day", "my_day_order", "time_block", "completed", "parent", "cover" };
+        { "series", "series_day", "occurrence", "reminders", "source", "tz", "my_day", "my_day_order", "time_block", "completed", "parent", "cover" };
 
     /// <summary>The note's supertags and properties as a short list under the title, with links shown as titles.</summary>
     public static string PropertyList(Node node)

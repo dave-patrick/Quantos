@@ -105,7 +105,8 @@ own tabs, splits and scroll positions.
 - **My Day:** pick what you'll do today. Tasks planned for earlier days can be moved to today with
   one click. This changes the **planned** date only; due dates never move by themselves.
 - **Recurring tasks:** each occurrence is a separate task with its own history. The next one is
-  calculated from the scheduled date, not from when you finished.
+  calculated from the scheduled date, not from when you finished. A monthly task on the 31st falls on
+  the last day of shorter months and goes back to the 31st after.
 - **Subtasks, dependencies, effort:** in a task's panel. Effort rolls up from subtasks; a task
   waiting on unfinished dependencies shows *blocked*.
 - **Reminders:** add a date and time in the task panel. The Windows client shows a notification

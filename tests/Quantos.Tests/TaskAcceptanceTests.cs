@@ -43,6 +43,23 @@ public class TaskAcceptanceTests
         Assert.Equal(new DateOnly(2026, 10, 29), Recurrence.Parse("FREQ=DAILY;INTERVAL=14")!.Next(new DateOnly(2026, 10, 15)));
     }
 
+    [Fact] // Monthly series on the 31st don't drift to the 28th after February
+    public void Monthly_and_yearly_series_keep_their_day()
+    {
+        Assert.Equal(new DateOnly(2027, 3, 31), Recurrence.Parse("monthly")!.Next(new DateOnly(2027, 2, 28), anchorDay: 31));
+        Assert.Equal(new DateOnly(2032, 2, 29), Recurrence.Parse("yearly")!.Next(new DateOnly(2031, 2, 28), anchorDay: 29));
+
+        using var v = new TestVault();
+        var task = T(v).Create(new CreateTaskRequest { Title = "Pay rent", Due = "2027-01-31", Recurrence = "monthly" }, Actor.User);
+        var dues = new List<string?>();
+        for (var i = 0; i < 3; i++)
+        {
+            T(v).SetStatus(task.Id, TaskStatus.Done, Actor.User);
+            task = v.Writes.Require(T(v).List().Single(t => t.Status == TaskStatus.Todo).Id);
+            dues.Add(T(v).Require(task.Id).Due);
+        }
+        Assert.Equal(["2027-02-28", "2027-03-31", "2027-04-30"], dues);
+    }
     [Fact] // 13 tasks.2
     public void Complete_snooze_trash_and_restore_a_task()
     {
