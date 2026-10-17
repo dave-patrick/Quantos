@@ -123,18 +123,18 @@
           <dt title={field.description ?? field.inherited ? `From #${field.inherited}` : ''}>{field.name}{field.required ? ' *' : ''}</dt>
           <dd class:invalid={!!problem}>
             {#if field.type === 'checkbox'}
-              <input type="checkbox" checked={value === true || value === 'true'} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).checked)} />
+              <input type="checkbox" aria-label={field.name} checked={value === true || value === 'true'} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).checked)} />
             {:else if field.type === 'select' || field.type === 'status'}
-              <select class="cell" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLSelectElement).value)}>
+              <select aria-label={field.name} class="cell" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLSelectElement).value)}>
                 <option value=""></option>
                 {#each field.options ?? [] as o (o)}<option value={o}>{o}</option>{/each}
               </select>
             {:else if field.type === 'date'}
-              <input class="cell" type="date" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).value)} />
+              <input aria-label={field.name} class="cell" type="date" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).value)} />
             {:else if field.type === 'number'}
-              <input class="cell" type="number" value={display(value)} onchange={(e) => setValue(field.key, Number((e.target as HTMLInputElement).value))} />
+              <input aria-label={field.name} class="cell" type="number" value={display(value)} onchange={(e) => setValue(field.key, Number((e.target as HTMLInputElement).value))} />
             {:else if field.type === 'datetime'}
-              <input class="cell" type="datetime-local" value={display(value).slice(0, 16)} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).value)} />
+              <input aria-label={field.name} class="cell" type="datetime-local" value={display(value).slice(0, 16)} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).value)} />
             {:else if field.type === 'nodes' || field.type === 'multiselect'}
               {@const items = listOf(value)}
               <div class="chips">
@@ -153,7 +153,7 @@
                     {#each field.options.filter((o) => !items.includes(o)) as o (o)}<option value={o}>{o}</option>{/each}
                   </select>
                 {:else}
-                  <input class="cell add-item" list="items-{field.key}" placeholder={field.type === 'nodes' ? 'Link a note…' : 'Add…'} onchange={(e) => {
+                  <input aria-label="Add {field.name}" class="cell add-item" list="items-{field.key}" placeholder={field.type === 'nodes' ? 'Link a note…' : 'Add…'} onchange={(e) => {
                     const input = e.target as HTMLInputElement; const v = input.value.trim(); if (!v) return;
                     const hit = field.type === 'nodes' ? linkCandidates(v).find((n) => n.title === v) : null;
                     setValue(field.key, [...items, hit ? `[[${hit.id}|${hit.title}]]` : v]); input.value = ''; }} />
@@ -165,12 +165,12 @@
               <button class="node-link" onclick={(e) => openNode(m[1], e.shiftKey ? 'other' : 'current')}>{m[2]}</button>
               <button class="clear" aria-label="Clear" onclick={() => setValue(field.key, '')}><Icon name="x" size={11} /></button>
             {:else if field.type === 'node' || field.type === 'person'}
-              <input class="cell" list="nodes-{field.key}" placeholder="Link a note…" onchange={(e) => {
+              <input aria-label={field.name} class="cell" list="nodes-{field.key}" placeholder="Link a note…" onchange={(e) => {
                 const v = (e.target as HTMLInputElement).value; const hit = linkCandidates(v).find((n) => n.title === v);
                 setValue(field.key, hit ? `[[${hit.id}|${hit.title}]]` : v); }} />
               <datalist id="nodes-{field.key}">{#each app.titles.filter((t) => field.type !== 'person' || t.type === 'person').slice(0, 200) as n (n.id)}<option value={n.title}></option>{/each}</datalist>
             {:else}
-              <input class="cell" value={display(value)} onchange={(e) => setValue(field.key, parse((e.target as HTMLInputElement).value, value))} />
+              <input aria-label={field.name} class="cell" value={display(value)} onchange={(e) => setValue(field.key, parse((e.target as HTMLInputElement).value, value))} />
             {/if}
             {#if problem}<span class="problem" title={problem}>{problem}</span>{/if}
           </dd>
@@ -181,11 +181,11 @@
           <dt>{key}</dt>
           <dd>
             {#if typeof value === 'boolean'}
-              <input type="checkbox" checked={value} onchange={(e) => setValue(key, (e.target as HTMLInputElement).checked)} />
+              <input type="checkbox" aria-label={key} checked={value} onchange={(e) => setValue(key, (e.target as HTMLInputElement).checked)} />
             {:else if typeof value === 'object' && value !== null && !Array.isArray(value)}
               <code class="faint" title="Edit structured values in the source view">{display(value)}</code>
             {:else}
-              <input class="cell" value={display(value)} onchange={(e) => setValue(key, parse((e.target as HTMLInputElement).value, value))} />
+              <input aria-label={key} class="cell" value={display(value)} onchange={(e) => setValue(key, parse((e.target as HTMLInputElement).value, value))} />
             {/if}
             <button class="clear" aria-label="Remove {key}" onclick={() => removeKey(key)}><Icon name="x" size={11} /></button>
           </dd>
