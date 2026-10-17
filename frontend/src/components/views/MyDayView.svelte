@@ -39,10 +39,28 @@
     if (!id || id === target.id) return;
     const order = queue.map((t) => t.id).filter((x) => x !== id);
     order.splice(order.indexOf(target.id), 0, id);
+    await saveOrder(order);
+  }
+
+  async function saveOrder(order: string[]) {
     for (const [i, tid] of order.entries()) {
       const t = queue.find((x) => x.id === tid);
       if (t && t.myDayOrder !== i) await tasks.update(tid, { my_day_order: i });
     }
+  }
+
+  /** Keyboard alternative to dragging: Alt+Up / Alt+Down move the focused task in the queue. */
+  async function moveKey(e: KeyboardEvent, t: TaskDto) {
+    if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    e.preventDefault();
+    const order = queue.map((x) => x.id);
+    const i = order.indexOf(t.id);
+    const j = e.key === 'ArrowUp' ? i - 1 : i + 1;
+    if (j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]];
+    const focused = document.activeElement as HTMLElement | null;
+    await saveOrder(order);
+    focused?.focus();
   }
 </script>
 
@@ -67,7 +85,9 @@
 
     <section>
       {#each queue as t (t.id)}
-        <div role="listitem" ondragover={(e) => e.preventDefault()} ondrop={() => drop(t)}>
+        <!-- Keys come from the focusable controls inside the row (checkbox, title). -->
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <div role="listitem" title="Drag, or Alt+Up / Alt+Down, to reorder" ondragover={(e) => e.preventDefault()} ondrop={() => drop(t)} onkeydown={(e) => moveKey(e, t)}>
           <TaskRow task={t} draggable ondragstart={() => (dragId = t.id)} />
         </div>
       {:else}
