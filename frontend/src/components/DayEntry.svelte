@@ -15,12 +15,18 @@
 
   // Empty daily entries collapse (confirmed); today is always open.
   const empty = $derived(!node || node.body.trim() === '');
+  // Opens by itself when it has text (or is today), but never closes by itself: a note created by
+  // typing into an empty day is still "empty" for a moment and must stay open under the cursor.
   let expanded = $state(false);
-  $effect(() => { expanded = isToday || !empty; });
+  $effect(() => { if (isToday || !empty) expanded = true; });
 
   let doc = $state<Doc | null>(null);
   let pending = '';
   let creating: Promise<void> | null = null;
+  // Typing started in the empty entry: the same editor stays (keeping focus and caret) after the
+  // note is created. bump pushes the template text into it.
+  let started = $state(false);
+  let bump = $state(0);
 
   $effect(() => {
     if (node && !doc) doc = docs.acquire(node.id);
@@ -30,18 +36,23 @@
   async function onchange(text: string) {
     if (doc) { doc.edit(text); return; }
     pending = text;
+    started = true;
     if (!creating) {
       creating = docs.track((async () => {
         try {
           const created = await api.post<NodeDto>(`daily/${workspace}/${date}`);
-          oncreated(created);
-          doc = docs.acquire(created.id);
+          const d = docs.acquire(created.id);
           await new Promise<void>((resolve) => {
-            const wait = () => (doc!.status === 'loading' ? setTimeout(wait, 30) : resolve());
+            const wait = () => (d.status === 'loading' ? setTimeout(wait, 30) : resolve());
             wait();
           });
-          doc.edit(pending);
-          await doc.flush();
+          // A daily template's text goes above what was typed, not under it or instead of it.
+          const template = d.body.trim();
+          d.edit(template && !pending.startsWith(template) ? `${template}\n\n${pending}` : pending);
+          doc = d;
+          if (template) bump++;
+          oncreated(created);
+          await d.flush();
         } catch (e) { app.error(e); }
         finally { creating = null; }
       })());
@@ -65,14 +76,19 @@
   {#if expanded}
     <div class="body">
       {#if !isFuture}<DayTasks {date} {isToday} noteId={node?.id ?? null} />{/if}
-      {#if doc && doc.status !== 'loading'}
+      {#if started || !node}
+        <!-- One editor from the first keystroke on, so creating the note never takes focus away. -->
+        <Editor text={doc?.body ?? ''} version={(doc?.externalVersion ?? 0) + bump} docId={doc?.id ?? null} {onchange} onsave={() => doc?.save()}
+          placeholder={isToday ? 'Start today’s note…' : 'Nothing written. Click to add.'} />
+        {#if doc?.status === 'conflict'}
+          <p class="warn">This entry changed elsewhere with overlapping edits. <button class="btn" onclick={(e) => openNode(doc!.id, e.shiftKey ? 'other' : 'new')}>Compare versions</button></p>
+        {/if}
+      {:else if doc && doc.status !== 'loading'}
         <Editor text={doc.body} version={doc.externalVersion} docId={doc.id} onchange={(t) => doc!.edit(t)} onsave={() => doc!.save()}
           placeholder={isToday ? 'What happened today? Type [[ to link, - [ ] for a task.' : ''} />
         {#if doc.status === 'conflict'}
           <p class="warn">This entry changed elsewhere with overlapping edits. <button class="btn" onclick={(e) => openNode(doc!.id, e.shiftKey ? 'other' : 'new')}>Compare versions</button></p>
         {/if}
-      {:else if !node}
-        <Editor text="" {onchange} placeholder={isToday ? 'Start today’s note…' : 'Nothing written. Click to add.'} />
       {/if}
     </div>
   {/if}
