@@ -120,6 +120,8 @@ own tabs, splits and scroll positions.
 - **Timeline:** drag tasks onto the day to block time.
 - **Stale tasks:** a review of open tasks untouched for a while.
 - **Calendar file:** the calendar button in Tasks saves a `.ics` file to the vault's `exports` folder.
+  Open tasks with a date appear as all-day entries marked free (or half an hour at their due time);
+  time blocks appear as meetings. Import it into Outlook or any calendar app.
 - **Deleting a task** moves it to the trash. Notes that referred to it show a placeholder with
   **Restore**; restoring reconnects the same task everywhere.
 

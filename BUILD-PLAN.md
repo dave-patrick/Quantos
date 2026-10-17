@@ -957,6 +957,7 @@ separately approved; review them during the daily-use checkpoint.
 | Unsaved text is kept in the browser until saved; drafts older than 30 days are dropped | Implemented |
 | The Windows client restarts a backend that stops unexpectedly (at most three times in ten minutes) and signs its windows back in | Implemented |
 | The backend re-reads the computer's time zone every 30 seconds, so a zone change applies without a restart | Implemented |
+| The calendar file holds events, not to-dos (Outlook and Google ignore to-dos): open dated tasks are free all-day entries, time blocks are timed | Implemented |
 ---
 
 ## Final build direction

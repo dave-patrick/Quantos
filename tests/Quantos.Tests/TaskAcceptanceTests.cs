@@ -205,9 +205,20 @@ public class TaskAcceptanceTests
     {
         using var v = new TestVault();
         T(v).Create(new CreateTaskRequest { Title = "Board meeting, prep", Due = "2026-10-20" }, Actor.User);
-        var ics = Calendar.Build(T(v).List(), "Test");
-        Assert.Contains("BEGIN:VTODO", ics);
-        Assert.Contains("DUE;VALUE=DATE:20261020", ics);
+        var emoji = T(v).Create(new CreateTaskRequest { Title = "Plan " + string.Concat(Enumerable.Repeat("🎉", 40)), Due = "2026-10-21" }, Actor.User);
+        var done = T(v).Create(new CreateTaskRequest { Title = "Already finished", Due = "2026-10-22" }, Actor.User);
+        T(v).SetStatus(done.Id, TaskStatus.Done, Actor.User);
+        var ics = Calendar.Build(T(v).List(includeClosed: true), "Test");
+        // Events, not to-dos: Outlook and Google Calendar ignore VTODO in imported files.
+        Assert.DoesNotContain("VTODO", ics);
+        Assert.Contains("DTSTART;VALUE=DATE:20261020\r\nDTEND;VALUE=DATE:20261021", ics);
         Assert.Contains("SUMMARY:Board meeting\\, prep", ics);
+        Assert.Contains("TRANSP:TRANSPARENT", ics);
+        Assert.DoesNotContain("Already finished", ics);
+        // Folded lines stay within 75 octets and never split a character.
+        foreach (var line in ics.Split("\r\n")) Assert.True(System.Text.Encoding.UTF8.GetByteCount(line) <= 75, line);
+        Assert.DoesNotContain('\uFFFD', System.Text.Encoding.UTF8.GetString(System.Text.Encoding.UTF8.GetBytes(ics)));
+        Assert.Contains(string.Concat(Enumerable.Repeat("🎉", 40)), ics.Replace("\r\n ", ""));
+        Assert.Contains(emoji.Id, ics);
     }
 }
