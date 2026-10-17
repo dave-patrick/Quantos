@@ -40,7 +40,7 @@
 </script>
 
 <main class="capture">
-  <textarea bind:this={area} bind:value={text} {onkeydown} placeholder="Capture a thought. Enter saves, Shift+Enter adds a line."></textarea>
+  <textarea aria-label="Capture" bind:this={area} bind:value={text} {onkeydown} placeholder="Capture a thought. Enter saves, Shift+Enter adds a line."></textarea>
   <footer>
     <select bind:value={target} aria-label="Destination"><option value="daily">Today's note</option><option value="inbox">New note</option><option value="task">New task</option></select>
     <select bind:value={workspace} aria-label="Workspace">{#each workspaces as w (w)}<option value={w}>{w}</option>{/each}</select>

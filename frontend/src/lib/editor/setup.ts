@@ -24,6 +24,7 @@ export interface EditorOptions {
   readOnly?: boolean;
   raw?: boolean;
   placeholder?: string;
+  label?: string;
   extra?: Extension[];
 }
 
@@ -96,6 +97,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     }),
     listFolding,
     EditorView.lineWrapping,
+    EditorView.contentAttributes.of({ 'aria-label': options.label ?? (options.raw ? 'Markdown source' : 'Note text') }),
     Prec.high(keymap.of([{ key: 'Enter', run: exitEmptyItem }])),
     markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true }),
     quantosTheme,

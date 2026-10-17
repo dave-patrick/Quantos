@@ -40,7 +40,7 @@
       {#if creating}
         <form class="new" onsubmit={(e) => { e.preventDefault(); create(); }}>
           <!-- svelte-ignore a11y_autofocus -->
-          <input class="input" bind:value={name} placeholder="work, personal…" autofocus />
+          <input class="input" aria-label="New workspace name" bind:value={name} placeholder="work, personal…" autofocus />
           <button class="btn primary" type="submit">Add</button>
         </form>
       {:else}
