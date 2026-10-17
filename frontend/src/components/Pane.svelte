@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { layout, type Pane, type Tab } from '../lib/layout.svelte';
   import { docs } from '../lib/docs.svelte';
   import Icon from './Icon.svelte';
@@ -31,6 +32,29 @@
     pane.tabs.splice(to, 0, moved);
     layout.persist();
   }
+  /** Tab strip keys: arrows move between tabs, Home/End jump, Delete closes, Shift+F10 opens the menu. */
+  function tabKeys(e: KeyboardEvent, tab: Tab) {
+    const keys = pane.tabs.map((t) => t.key);
+    const i = keys.indexOf(tab.key);
+    const strip = (e.currentTarget as HTMLElement).parentElement;
+    const focusTab = (k: string | undefined) => {
+      if (!k) return;
+      e.preventDefault();
+      layout.activate(index, k);
+      tick().then(() => strip?.querySelector<HTMLElement>('[role=tab][aria-selected=true]')?.focus());
+    };
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); layout.activate(index, tab.key); }
+    else if (e.key === 'ArrowRight') focusTab(keys[(i + 1) % keys.length]);
+    else if (e.key === 'ArrowLeft') focusTab(keys[(i - 1 + keys.length) % keys.length]);
+    else if (e.key === 'Home') focusTab(keys[0]);
+    else if (e.key === 'End') focusTab(keys[keys.length - 1]);
+    else if (e.key === 'Delete' && !tab.pinned) { e.preventDefault(); layout.close(index, tab.key); }
+    else if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
+      e.preventDefault();
+      const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      menu = { tab, x: r.left, y: r.bottom };
+    }
+  }
 </script>
 
 <!-- Tracks which pane is active; focus changes already cover keyboard users. -->
@@ -38,11 +62,11 @@
 <section class="pane" class:focused onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
   <div class="tabs" role="tablist">
     {#each pane.tabs as tab (tab.key)}
-      <div class="tab" class:active={tab.key === pane.active} class:pinned={tab.pinned} role="tab" tabindex="0"
+      <div class="tab" class:active={tab.key === pane.active} class:pinned={tab.pinned} role="tab" tabindex={tab.key === pane.active ? 0 : -1}
         aria-selected={tab.key === pane.active} draggable="true"
         ondragstart={() => (dragKey = tab.key)} ondragover={(e) => e.preventDefault()} ondrop={(e) => drop(e, tab)}
         onclick={() => layout.activate(index, tab.key)} onauxclick={(e) => onAux(e, tab)}
-        onkeydown={(e) => { if (e.key === 'Enter') layout.activate(index, tab.key); }}
+        onkeydown={(e) => tabKeys(e, tab)}
         oncontextmenu={(e) => { e.preventDefault(); menu = { tab, x: e.clientX, y: e.clientY }; }}
         title={tab.title}>
         {#if tab.pinned}<Icon name="pin" size={12} />{/if}
