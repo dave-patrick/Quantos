@@ -4,6 +4,7 @@
   import { openNode } from '../lib/links.svelte';
   import type { Supertag, FieldDef } from '../lib/supertags.svelte';
   import type { NodeDto } from '../lib/types';
+  import { modal } from '../lib/modal';
 
   /** Forms validate strictly: nothing is created until every required field is valid (BUILD-PLAN 8C.4). */
   let { tag, onclose }: { tag: Supertag; onclose: () => void } = $props();

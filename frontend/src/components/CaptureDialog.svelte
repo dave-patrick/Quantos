@@ -3,6 +3,7 @@
   import { capture } from '../lib/capture.svelte';
   import { app } from '../lib/state.svelte';
   import Icon from './Icon.svelte';
+  import { modal } from '../lib/modal';
 
   let area = $state<HTMLTextAreaElement | null>(null);
   let busy = $state(false);
@@ -14,14 +15,13 @@
   }
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') capture.open = false;
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); }
   }
 </script>
 
 {#if capture.open}
   <div class="scrim">
-    <div class="card" role="dialog" aria-label="Quick capture">
+    <div class="card" role="dialog" aria-modal="true" aria-label="Quick capture" use:modal={{ onclose: () => (capture.open = false) }}>
       <header><Icon name="inbox" size={16} /> <strong>Quick capture</strong></header>
       <textarea bind:this={area} bind:value={capture.text} {onkeydown} rows="5" placeholder="Jot it down. Ctrl+Enter to save."></textarea>
       <div class="row">
