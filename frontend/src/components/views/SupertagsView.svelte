@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { api } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
   import { layout, type Tab } from '../../lib/layout.svelte';
@@ -24,15 +24,26 @@
 
   onMount(() => { supertags.load(); templatesStore.load(); });
 
+  // The list reloads whenever any note changes, so a fresh copy of the selected tag arrives often.
+  // Unsaved edits to it are kept; the draft is rebuilt only for another tag or when nothing is edited.
+  let draftFor = '';
+  let baseline = '';
   $effect(() => {
     const t = selected;
-    if (!t) { draft = null; return; }
-    draft = {
-      parent: t.parent ?? '', color: t.color ?? '', icon: t.icon ?? '', layout: t.layout ?? '', template: t.template ?? '', autoApply: !!t.autoApplyTemplate,
-      description: t.description ?? '',
-      fields: t.fields.map((f) => ({ name: f.name, type: f.type, options: (f.options ?? []).join(', '), required: !!f.required, description: f.description ?? '' }))
-    };
-    renameTo = t.name;
+    untrack(() => {
+      if (!t) { draft = null; draftFor = ''; return; }
+      const fresh = {
+        parent: t.parent ?? '', color: t.color ?? '', icon: t.icon ?? '', layout: t.layout ?? '', template: t.template ?? '', autoApply: !!t.autoApplyTemplate,
+        description: t.description ?? '',
+        fields: t.fields.map((f) => ({ name: f.name, type: f.type, options: (f.options ?? []).join(', '), required: !!f.required, description: f.description ?? '' }))
+      };
+      const edited = draft !== null && draftFor === t.id && JSON.stringify(draft) !== baseline;
+      if (edited) return;
+      draft = fresh;
+      baseline = JSON.stringify(fresh);
+      if (draftFor !== t.id) renameTo = t.name;
+      draftFor = t.id;
+    });
   });
 
   function select(name: string) {
@@ -64,6 +75,7 @@
           options: f.type === 'select' || f.type === 'multiselect' || f.type === 'status' ? f.options.split(',').map((s) => s.trim()).filter(Boolean) : undefined
         }))
       });
+      baseline = JSON.stringify(draft); // saved: the next copy from the server replaces the draft
       await supertags.load();
       app.toast('Supertag saved. Existing values were kept as they are.', 'ok');
     } catch (e) { app.error(e); }
