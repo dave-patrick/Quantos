@@ -9,7 +9,7 @@ export interface TaskHooks {
   restoreTask?(taskId: string): void;
 }
 
-const TASK_LINE = /^(\s*[-*+]\s+)\[([ xX])\](\s+)(.*?)(\s*<!--task:([0-9A-HJKMNP-TV-Z]{26})-->)?\s*$/;
+const TASK_LINE = /^(\s*[-*+]\s+)\[([ xX])\](\s+|$)(.*?)(\s*<!--task:([0-9A-HJKMNP-TV-Z]{26})-->)?\s*$/;
 
 class CheckWidget extends WidgetType {
   constructor(readonly checked: boolean, readonly pos: number, readonly taskId: string | null) { super(); }

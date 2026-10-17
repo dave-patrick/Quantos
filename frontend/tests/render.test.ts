@@ -23,6 +23,16 @@ describe('footnotes', () => {
   });
 });
 
+describe('task lists', () => {
+  it('show open and done boxes without form inputs', () => {
+    const html = renderMarkdown('- [ ] Open <!--task:01JABCDEF0123456789XYZABCD-->\n- [x] Done\n');
+    expect(html).not.toContain('<input');
+    expect(html).toContain('<span class="md-check" role="img" aria-label="Not done"></span>');
+    expect(html).toContain('md-check on');
+    expect(html).not.toContain('task:');
+  });
+});
+
 describe('readable copy', () => {
   it('drops task markers and uses link titles', () => {
     expect(readable('- [ ] Call <!--task:01JABCDEF0123456789XYZABCD--> [[01JABCDEF0123456789XYZABCD|Sam]]'))

@@ -182,12 +182,15 @@ const footnotes = hoverTooltip((view, pos) => {
 export const blockExtras: Extension = [embedBlocks, calloutFold, foldCollapsedCallouts, footnotes];
 
 export const blockTheme = EditorView.theme({
+  // Rendered HTML inside the editor must not inherit its pre-wrap whitespace (newlines between tags become blank lines).
+  '.cm-embed, .cm-columns, .cm-footnote-tip': { whiteSpace: 'normal' },
   '.cm-embed': { border: '1px solid var(--line-strong)', borderLeft: '3px solid var(--accent)', borderRadius: '8px', background: 'var(--bg-raised)', margin: '6px 0', padding: '6px 12px 8px', fontSize: '0.92em' },
   '.cm-embed.missing': { borderLeftColor: 'var(--danger)' },
   '.cm-embed-head': { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '700', color: 'var(--accent)', cursor: 'pointer', fontSize: '13px' },
   '.cm-embed-edit': { border: '0', background: 'none', color: 'var(--text-faint)', font: '11px var(--font-mono)', cursor: 'pointer' },
   '.cm-embed-body': { color: 'var(--text-soft)', maxHeight: '420px', overflow: 'auto' },
   '.cm-embed-body p, .cm-column p': { margin: '4px 0' },
+  '.cm-embed-body ul, .cm-embed-body ol, .cm-column ul, .cm-column ol': { margin: '4px 0', paddingLeft: '1.4em' },
   '.cm-columns': { display: 'grid', gap: '18px', border: '1px dashed var(--line-strong)', borderRadius: '8px', padding: '8px 12px', margin: '6px 0', cursor: 'text' },
   '.cm-column': { minWidth: '0' },
   '.cm-sync-line, .cm-sync-start, .cm-sync-end': { background: 'color-mix(in srgb, var(--ok) 7%, transparent)', borderLeft: '3px solid color-mix(in srgb, var(--ok) 60%, transparent)', paddingLeft: '10px !important' },

@@ -57,7 +57,9 @@ export function renderMarkdown(body: string, options: { links?: boolean } = {}):
     });
   const html = (marked.parse(prepared, { async: false }) as string)
     // Callouts: a quote that starts with [!type] gets a label instead of showing the marker.
-    .replace(/<blockquote>\s*<p>\[!(\w+)\][+-]?\s*/g, '<blockquote class="callout"><p><span class="callout-label">$1</span> ');
+    .replace(/<blockquote>\s*<p>\[!(\w+)\][+-]?\s*/g, '<blockquote class="callout"><p><span class="callout-label">$1</span> ')
+    // Task checkboxes: inputs don't survive sanitising, so they become boxes drawn in CSS.
+    .replace(/<input\b[^>]*type="checkbox"[^>]*>/g, (tag) => /\bchecked\b/.test(tag) ? '<span class="md-check on" role="img" aria-label="Done"></span>' : '<span class="md-check" role="img" aria-label="Not done"></span>');
   return DOMPurify.sanitize(html, { ADD_ATTR: ['data-target'], FORBID_TAGS: ['style', 'iframe', 'form', 'input', 'object', 'embed'] });
 }
 

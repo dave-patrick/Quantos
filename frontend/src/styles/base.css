@@ -80,4 +80,7 @@ blockquote.callout { border-left-color: var(--accent); background: var(--accent-
 .callout-label { font: 600 11px/1 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-right: 4px; }
 section.footnotes { margin-top: 1.4em; padding-top: .6em; border-top: 1px solid var(--line); font-size: .9em; color: var(--text-soft); }
 section.footnotes ol { padding-left: 1.4em; }
+li:has(> .md-check) { list-style: none; margin-left: -1.2em; }
+.md-check { display: inline-block; width: .85em; height: .85em; margin-right: .45em; vertical-align: -.05em; border: 1.5px solid var(--text-faint); border-radius: 3px; }
+.md-check.on { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--bg-raised); }
 sup.footnote-ref a { text-decoration: none; padding: 0 1px; }
