@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { api } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
   import { onChange } from '../../lib/events';
@@ -98,13 +98,26 @@
   });
 
   let dragId: string | null = null;
+  let dragOver = $state<string | null>(null);
   async function dropKanban(value: string) {
-    const id = dragId; dragId = null;
-    if (!id) return;
+    const id = dragId; dragId = null; dragOver = null;
+    if (id) await moveCard(id, value);
+  }
+  async function moveCard(id: string, value: string) {
     try {
       await api.patch(`nodes/${id}`, value === '—' ? { remove: [kanbanField] } : { set: { [kanbanField]: value } });
-      run();
+      await run();
     } catch (e) { app.error(e); }
+  }
+  /** Alt+Left / Alt+Right moves the focused card to the next column; focus stays on the card. */
+  async function cardKey(e: KeyboardEvent, id: string, column: number) {
+    if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    e.preventDefault();
+    const target = kanbanColumns[column + (e.key === 'ArrowLeft' ? -1 : 1)];
+    if (!target) return;
+    await moveCard(id, target[0]);
+    await tick();
+    (document.querySelector(`.board [data-card="${id}"] button`) as HTMLElement | null)?.focus();
   }
 
   // Structured paste: rows from a spreadsheet, CSV or Markdown table become notes with properties.
@@ -239,12 +252,15 @@
       {/each}
     {:else if view.layout === 'kanban'}
       <div class="board">
-        {#each kanbanColumns as [value, list] (value)}
-          <div class="col" role="list" ondragover={(e) => e.preventDefault()} ondrop={() => dropKanban(value)}>
+        {#each kanbanColumns as [value, list], ci (value)}
+          <div class="col" class:over={dragOver === value} role="list" aria-label={value}
+            ondragover={(e) => { e.preventDefault(); dragOver = value; }} ondragleave={(e) => { if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) dragOver = null; }}
+            ondrop={() => dropKanban(value)}>
             <h3 class="label">{value} <span class="faint">{list.length}</span></h3>
             {#each list as r (r.id)}
-              <div class="card" role="listitem" draggable="true" ondragstart={() => (dragId = r.id)}>
-                <button class="t" onclick={(e) => openNode(r.id, whereFrom(e), r.title)}>{r.title}</button>
+              <div class="card" role="listitem" data-card={r.id} draggable="true" title="Drag, or Alt+Left / Alt+Right, to move"
+                ondragstart={() => (dragId = r.id)} ondragend={() => (dragOver = null)}>
+                <button class="t" onclick={(e) => openNode(r.id, whereFrom(e), r.title)} onkeydown={(e) => cardKey(e, r.id, ci)}>{r.title}</button>
                 {#each columns.filter((c) => c !== 'title' && c !== kanbanField).slice(0, 3) as c (c)}
                   {#if display(cellValue(r, c))}<span class="meta">{c.replace(/_/g, ' ')}: {display(cellValue(r, c))}</span>{/if}
                 {/each}
@@ -299,6 +315,7 @@
   .list-row .t { color: var(--text); font-weight: 600; }
   .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: 10px; overflow-x: auto; align-items: start; }
   .col { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 8px; min-height: 160px; }
+  .col.over { border-color: var(--accent); background: var(--accent-wash); }
   .card { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; display: grid; gap: 2px; cursor: grab; }
   .card .t { border: 0; background: none; text-align: left; padding: 0; color: var(--text); font-weight: 600; }
   .meta { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

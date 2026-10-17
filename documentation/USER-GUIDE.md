@@ -139,6 +139,7 @@ own tabs, splits and scroll positions.
   automatically when the tag is added.
 - **Views:** *New view* under Saved queries builds tables, lists, boards, grids and galleries with
   multi-level sorting and grouping. Tables edit like a spreadsheet (arrow keys, Enter, Tab, Escape).
+  On a board, drag a card to another column, or focus it and press Alt+Left / Alt+Right.
   Paste rows from Excel into *Paste rows* to create notes in bulk.
 - **Metadata dictionary** lists every property, how it's used and which supertags define it.
 
