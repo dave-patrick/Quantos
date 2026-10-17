@@ -93,8 +93,8 @@
 <div class="tags">
   <aside class="scroll list">
     <form class="new" onsubmit={(e) => { e.preventDefault(); create(); }}>
-      <input class="input" bind:value={newName} placeholder="New supertag" />
-      <select class="input" bind:value={newScope} title="Scope"><option value="">Global</option>{#each app.workspaces as w (w)}<option value={w}>{w} only</option>{/each}</select>
+      <input class="input" aria-label="New supertag name" bind:value={newName} placeholder="New supertag" />
+      <select class="input" aria-label="Scope" bind:value={newScope} title="Scope"><option value="">Global</option>{#each app.workspaces as w (w)}<option value={w}>{w} only</option>{/each}</select>
       <button class="btn primary" type="submit">Add</button>
     </form>
     {#each supertags.tree as entry (entry.tag.id)}
@@ -141,7 +141,7 @@
       {#each draft.fields as f, i (i)}
         <div class="field">
           <input class="input name" bind:value={f.name} placeholder="Field name" title={selected.fields[i] ? `Stored as “${selected.allFields.find((x) => x.name === selected.fields[i].name)?.key}” in each note` : ''} />
-          <select class="input type" bind:value={f.type}>{#each types as t (t)}<option value={t}>{t}</option>{/each}</select>
+          <select class="input type" aria-label="Field type" bind:value={f.type}>{#each types as t (t)}<option value={t}>{t}</option>{/each}</select>
           {#if f.type === 'select' || f.type === 'multiselect' || f.type === 'status'}<input class="input opts" bind:value={f.options} placeholder="Options, comma separated" />{:else}<span class="opts"></span>{/if}
           <label class="check"><input type="checkbox" bind:checked={f.required} /> required</label>
           {#if selected.fields[i]}

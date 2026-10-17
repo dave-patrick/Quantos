@@ -111,7 +111,7 @@
 
     <div class="aliases">
       <span class="faint">Also known as</span>
-      <input class="cell" value={node.aliases.join(', ')} placeholder="other names for links and search"
+      <input class="cell" aria-label="Also known as" value={node.aliases.join(', ')} placeholder="other names for links and search"
         onchange={(e) => doc.setProperties({ aliases: (e.target as HTMLInputElement).value.split(',').map((s) => s.trim()).filter(Boolean) })} />
     </div>
 

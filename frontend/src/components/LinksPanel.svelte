@@ -54,9 +54,9 @@
     <section>
       <h3 class="label">Backlinks <span class="faint" title="{visible.length} link{visible.length === 1 ? '' : 's'}">{grouped.length}</span></h3>
       <div class="filters">
-        <input class="input" placeholder="Filter backlinks" bind:value={filter} />
-        <select class="input" bind:value={scope}><option value="all">All workspaces</option><option value="workspace">This workspace</option></select>
-        <select class="input" bind:value={kind}><option value="all">Links and embeds</option><option value="link">Links</option><option value="embed">Embeds</option></select>
+        <input class="input" aria-label="Filter backlinks" placeholder="Filter backlinks" bind:value={filter} />
+        <select class="input" aria-label="Backlinks from" bind:value={scope}><option value="all">All workspaces</option><option value="workspace">This workspace</option></select>
+        <select class="input" aria-label="Kind of link" bind:value={kind}><option value="all">Links and embeds</option><option value="link">Links</option><option value="embed">Embeds</option></select>
       </div>
       {#each grouped as group (group[0].sourceId)}
         <div class="ref">

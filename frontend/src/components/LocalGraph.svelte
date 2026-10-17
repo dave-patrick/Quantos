@@ -7,7 +7,7 @@
 
 <div class="local">
   <div class="bar"><span class="label">Local graph</span>
-    <select class="input" bind:value={hops}><option value={1}>1 hop</option><option value={2}>2 hops</option></select></div>
+    <select class="input" aria-label="Distance" bind:value={hops}><option value={1}>1 hop</option><option value={2}>2 hops</option></select></div>
   {#if id}<Graph centerId={id} {hops} height={420} labels={false} />{:else}<p class="faint">Open a note to see its neighbourhood.</p>{/if}
 </div>
 

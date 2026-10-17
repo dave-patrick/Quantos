@@ -29,7 +29,7 @@
   <div class="inner">
     <h1>Stale tasks</h1>
     <p class="muted">Open tasks untouched for
-      <select class="input inline" bind:value={days}><option value={7}>a week</option><option value={14}>two weeks</option><option value={30}>a month</option><option value={90}>three months</option></select>
+      <select class="input inline" aria-label="Untouched for" bind:value={days}><option value={7}>a week</option><option value={14}>two weeks</option><option value={30}>a month</option><option value={90}>three months</option></select>
       or rolled over three or more times. Decide what to do with each.</p>
     {#each stale as t (t.id)}
       <div class="item">

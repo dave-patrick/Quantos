@@ -38,7 +38,7 @@
     <h1>Templates</h1>
     <p class="muted">Templates live in the vault's templates folder. Variables: <code>{'{{title}}'}</code>, <code>{'{{date}}'}</code>, <code>{'{{date:+7}}'}</code>, <code>{'{{time}}'}</code>, <code>{'{{weekday}}'}</code>, <code>{'{{workspace}}'}</code>. Properties in a template's frontmatter are copied into notes that don't have them yet.</p>
     <form class="new" onsubmit={(e) => { e.preventDefault(); create(); }}>
-      <input class="input" bind:value={name} placeholder="New template name" /><button class="btn primary" type="submit">Create</button>
+      <input class="input" aria-label="New template name" bind:value={name} placeholder="New template name" /><button class="btn primary" type="submit">Create</button>
     </form>
     {#each templatesStore.list as t (t.id)}
       <div class="row">

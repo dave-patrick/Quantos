@@ -71,23 +71,23 @@
       <dd class="prio">
         {#each [1, 2, 3, 4] as p (p)}<button class="p{p}" class:on={task.priority === p} onclick={() => set({ priority: task.priority === p ? null : p })}>P{p}</button>{/each}
       </dd>
-      <dt>Due</dt><dd><input class="cell" type="date" value={task.due?.slice(0, 10) ?? ''} onchange={(e) => set({ due: (e.target as HTMLInputElement).value || null })} /></dd>
-      <dt>Planned</dt><dd><input class="cell" type="date" value={task.planned?.slice(0, 10) ?? ''} onchange={(e) => set({ planned: (e.target as HTMLInputElement).value || null })} />
+      <dt>Due</dt><dd><input aria-label="Due" class="cell" type="date" value={task.due?.slice(0, 10) ?? ''} onchange={(e) => set({ due: (e.target as HTMLInputElement).value || null })} /></dd>
+      <dt>Planned</dt><dd><input aria-label="Planned" class="cell" type="date" value={task.planned?.slice(0, 10) ?? ''} onchange={(e) => set({ planned: (e.target as HTMLInputElement).value || null })} />
         <span class="faint hint">Rollover moves this, never the due date.</span></dd>
-      <dt>Effort</dt><dd><input class="cell narrow" type="number" min="0" step="5" value={task.effort ?? ''} onchange={(e) => set({ effort: (e.target as HTMLInputElement).value || null })} /> min
+      <dt>Effort</dt><dd><input aria-label="Effort in minutes" class="cell narrow" type="number" min="0" step="5" value={task.effort ?? ''} onchange={(e) => set({ effort: (e.target as HTMLInputElement).value || null })} /> min
         {#if task.effortRollup && task.effortRollup !== task.effort}<span class="faint">({task.effortRollup} min with subtasks)</span>{/if}</dd>
       <dt>Project</dt><dd>
-        <input class="cell" list="projects" value={label(task.project)} placeholder="Project note"
+        <input aria-label="Project" class="cell" list="projects" value={label(task.project)} placeholder="Project note"
           onchange={(e) => { const v = (e.target as HTMLInputElement).value; const p = projects.find((x) => x.title === v); set({ project: p ? `[[${p.id}|${p.title}]]` : v || null }); }} />
         <datalist id="projects">{#each projects as p (p.id)}<option value={p.title}></option>{/each}</datalist></dd>
-      <dt>Stage</dt><dd><input class="cell" value={task.stage ?? ''} placeholder="e.g. Drafting" onchange={(e) => set({ stage: (e.target as HTMLInputElement).value || null })} /></dd>
+      <dt>Stage</dt><dd><input aria-label="Stage" class="cell" value={task.stage ?? ''} placeholder="e.g. Drafting" onchange={(e) => set({ stage: (e.target as HTMLInputElement).value || null })} /></dd>
       <dt>Assignees</dt><dd>
-        <input class="cell" list="people" value={task.assignees.map(label).join(', ')} placeholder="People, comma separated"
+        <input aria-label="Assignees" class="cell" list="people" value={task.assignees.map(label).join(', ')} placeholder="People, comma separated"
           onchange={(e) => set({ assignees: (e.target as HTMLInputElement).value.split(',').map((s) => s.trim()).filter(Boolean).map((n) => { const p = people.find((x) => x.title === n); return p ? `[[${p.id}|${p.title}]]` : n; }) })} />
         <datalist id="people">{#each people as p (p.id)}<option value={p.title}></option>{/each}</datalist></dd>
-      <dt>Waiting on</dt><dd><input class="cell" value={task.waitingOn ?? ''} placeholder="Who or what" onchange={(e) => set({ waiting_on: (e.target as HTMLInputElement).value || null })} /></dd>
+      <dt>Waiting on</dt><dd><input aria-label="Waiting on" class="cell" value={task.waitingOn ?? ''} placeholder="Who or what" onchange={(e) => set({ waiting_on: (e.target as HTMLInputElement).value || null })} /></dd>
       <dt>Repeats</dt><dd>
-        <select class="cell" value={task.recurrence ?? ''} onchange={(e) => set({ recurrence: (e.target as HTMLSelectElement).value || null })}>
+        <select aria-label="Repeats" class="cell" value={task.recurrence ?? ''} onchange={(e) => set({ recurrence: (e.target as HTMLSelectElement).value || null })}>
           <option value="">Doesn't repeat</option><option value="daily">Every day</option><option value="weekdays">Every weekday</option>
           <option value="weekly">Every week</option><option value="FREQ=WEEKLY;INTERVAL=2">Every 2 weeks</option><option value="monthly">Every month</option><option value="yearly">Every year</option>
           {#if task.recurrence && !['daily', 'weekdays', 'weekly', 'FREQ=WEEKLY;INTERVAL=2', 'monthly', 'yearly'].includes(task.recurrence)}<option value={task.recurrence}>{task.recurrence}</option>{/if}
@@ -101,12 +101,12 @@
             <button class="x" aria-label="Remove reminder" onclick={() => removeReminder(i)}>×</button>
           </span>
         {/each}
-        <span class="add"><input class="cell" type="datetime-local" bind:value={reminderAt} /><button class="btn" disabled={!reminderAt} onclick={addReminder}>Add</button>
+        <span class="add"><input aria-label="New reminder" class="cell" type="datetime-local" bind:value={reminderAt} /><button class="btn" disabled={!reminderAt} onclick={addReminder}>Add</button>
           {#if task.reminders.some((r) => r.fired)}<button class="btn ghost" onclick={() => snooze(10)}>Snooze 10 min</button><button class="btn ghost" onclick={() => snooze(60)}>1 hour</button>{/if}</span>
       </dd>
       <dt>Depends on</dt><dd class="col">
         {#each deps as d (d.id)}<span class="dep"><TaskRow task={d} compact showMyDay={false} /><button class="x" aria-label="Remove dependency" onclick={() => set({ depends_on: task.dependsOn.filter((x) => x !== d.id) })}>×</button></span>{/each}
-        <input class="cell" list="task-titles" bind:value={depQuery} placeholder="Add a task this one waits for" onchange={() => addDependency(depQuery)} />
+        <input aria-label="Add a dependency" class="cell" list="task-titles" bind:value={depQuery} placeholder="Add a task this one waits for" onchange={() => addDependency(depQuery)} />
         <datalist id="task-titles">{#each taskTitles as t (t.id)}<option value={t.title}></option>{/each}</datalist>
         {#if blocks.length}<span class="faint hint">Blocks: {blocks.map((b) => b.title).join(', ')}</span>{/if}
       </dd>

@@ -168,21 +168,21 @@
         </div>
         <div class="row">
           <span class="label">Supertags</span>
-          <input class="input" list="tag-list" value={(view.query.tags ?? []).join(', ')} placeholder="meeting, project"
+          <input class="input" aria-label="Supertags" list="tag-list" value={(view.query.tags ?? []).join(', ')} placeholder="meeting, project"
             onchange={(e) => { view.query.tags = (e.target as HTMLInputElement).value.split(',').map((s) => s.trim().replace(/^#/, '')).filter(Boolean); changed(); }} />
           <datalist id="tag-list">{#each supertags.list as t (t.id)}<option value={t.name}></option>{/each}</datalist>
           <span class="label">Workspaces</span>
-          <select class="input" value={typeof view.query.workspaces === 'string' ? view.query.workspaces : 'active'} onchange={(e) => { view.query.workspaces = (e.target as HTMLSelectElement).value as 'active' | 'all'; changed(); }}>
+          <select class="input" aria-label="Workspaces" value={typeof view.query.workspaces === 'string' ? view.query.workspaces : 'active'} onchange={(e) => { view.query.workspaces = (e.target as HTMLSelectElement).value as 'active' | 'all'; changed(); }}>
             <option value="active">This workspace</option><option value="all">All workspaces</option>
           </select>
           <span class="label">Text</span>
-          <input class="input" bind:value={view.query.text} oninput={changed} placeholder="contains words" />
+          <input class="input" aria-label="Text" bind:value={view.query.text} oninput={changed} placeholder="contains words" />
           <label class="chip"><input type="checkbox" bind:checked={view.query.includeArchived} onchange={changed} /> archived</label>
         </div>
         {#each view.query.filters ?? [] as f, i (i)}
           <div class="row">
             <span class="label">{i === 0 ? 'Where' : 'and'}</span>
-            <input class="input" list="prop-list" bind:value={f.field} onchange={changed} placeholder="property" />
+            <input class="input" aria-label="Condition property" list="prop-list" bind:value={f.field} onchange={changed} placeholder="property" />
             <select class="input" bind:value={f.op} onchange={changed}>{#each ops as [k, l] (k)}<option value={k}>{l}</option>{/each}</select>
             {#if f.op !== 'empty' && f.op !== 'notempty'}<input class="input" value={String(f.value ?? '')} oninput={(e) => { f.value = (e.target as HTMLInputElement).value; changed(); }} placeholder="value, or today, today+7" />{/if}
             <button class="icon-btn" aria-label="Remove condition" onclick={() => { view.query.filters = view.query.filters!.filter((_, j) => j !== i); changed(); }}><Icon name="x" size={13} /></button>
@@ -193,20 +193,20 @@
           <button class="btn ghost" onclick={addFilter}><Icon name="plus" size={13} /> Condition</button>
           <span class="label">Sort</span>
           {#each view.sort ?? [] as s, i (i)}
-            <input class="input small" list="prop-list" bind:value={s.field} onchange={changed} />
-            <select class="input small" bind:value={s.dir} onchange={changed}><option value="asc">↑</option><option value="desc">↓</option></select>
+            <input class="input small" aria-label="Sort by" list="prop-list" bind:value={s.field} onchange={changed} />
+            <select class="input small" aria-label="Sort direction" bind:value={s.dir} onchange={changed}><option value="asc">↑</option><option value="desc">↓</option></select>
             <button class="icon-btn" aria-label="Remove sort" onclick={() => { view.sort = view.sort!.filter((_, j) => j !== i); changed(); }}><Icon name="x" size={13} /></button>
           {/each}
           <button class="btn ghost" onclick={addSort}><Icon name="plus" size={13} /> Sort</button>
         </div>
         <div class="row">
           <span class="label">Group by</span>
-          <input class="input" list="prop-list" value={(view.group ?? []).join(', ')} placeholder="status, priority"
+          <input class="input" aria-label="Group by" list="prop-list" value={(view.group ?? []).join(', ')} placeholder="status, priority"
             onchange={(e) => (view.group = (e.target as HTMLInputElement).value.split(',').map((s) => s.trim()).filter(Boolean))} />
           <span class="label">Columns</span>
-          <input class="input" list="prop-list" value={(view.columns ?? []).join(', ')} placeholder="automatic"
+          <input class="input" aria-label="Columns" list="prop-list" value={(view.columns ?? []).join(', ')} placeholder="automatic"
             onchange={(e) => { view.columns = (e.target as HTMLInputElement).value.split(',').map((s) => s.trim()).filter(Boolean); changed(); }} />
-          {#if view.layout === 'kanban'}<span class="label">Board field</span><input class="input small" list="prop-list" bind:value={view.kanbanField} placeholder="status" />{/if}
+          {#if view.layout === 'kanban'}<span class="label">Board field</span><input class="input small" aria-label="Board field" list="prop-list" bind:value={view.kanbanField} placeholder="status" />{/if}
         </div>
       </section>
     {/if}

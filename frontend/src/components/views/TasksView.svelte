@@ -94,12 +94,12 @@
     <header>
       <h1>Tasks</h1>
       <div class="controls">
-        <input class="input" placeholder="Filter" bind:value={filter} />
+        <input class="input" aria-label="Filter tasks" placeholder="Filter" bind:value={filter} />
         <select class="input" bind:value={group} aria-label="Group by">
           <option value="due">By date</option><option value="project">By project</option><option value="priority">By priority</option>
           <option value="status">By status</option><option value="stage">By stage</option><option value="assignee">By person</option><option value="none">No grouping</option>
         </select>
-        <select class="input" bind:value={scope}><option value="workspace">{app.workspace}</option><option value="all">All workspaces</option></select>
+        <select class="input" aria-label="Workspaces" bind:value={scope}><option value="workspace">{app.workspace}</option><option value="all">All workspaces</option></select>
         <div class="seg">
           <button class:on={mode === 'list'} onclick={() => (mode = 'list')} title="List"><Icon name="list" size={14} /></button>
           <button class:on={mode === 'board'} onclick={() => (mode = 'board')} title="Board"><Icon name="kanban" size={14} /></button>

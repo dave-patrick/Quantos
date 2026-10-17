@@ -27,11 +27,11 @@
       <h2>Appearance</h2>
       <div class="field"><span>Theme</span>
         <div class="seg"><button class:on={app.theme === 'dark'} onclick={() => (app.theme = 'dark')}>Dark</button><button class:on={app.theme === 'light'} onclick={() => (app.theme = 'light')}>Light</button></div></div>
-      <div class="field"><span>Editor text size</span><input type="range" min="14" max="22" bind:value={prefs.editorSize} /> <span class="mono">{prefs.editorSize}px</span></div>
+      <div class="field"><span>Editor text size</span><input type="range" aria-label="Editor text size" min="14" max="22" bind:value={prefs.editorSize} /> <span class="mono">{prefs.editorSize}px</span></div>
       <div class="field"><span>Typeface</span>
-        <select class="input narrow" bind:value={prefs.fontFamily}><option value="sans">Source Sans 3</option><option value="serif">Serif</option><option value="mono">IBM Plex Mono</option><option value="system">System</option></select></div>
-      <div class="field"><span>Line spacing</span><input type="range" min="1.3" max="2" step="0.05" bind:value={prefs.lineHeight} /> <span class="mono">{prefs.lineHeight}</span></div>
-      <div class="field"><span>Line width</span><input type="range" min="560" max="1100" step="20" bind:value={prefs.editorWidth} /> <span class="mono">{prefs.editorWidth}px</span></div>
+        <select class="input narrow" aria-label="Typeface" bind:value={prefs.fontFamily}><option value="sans">Source Sans 3</option><option value="serif">Serif</option><option value="mono">IBM Plex Mono</option><option value="system">System</option></select></div>
+      <div class="field"><span>Line spacing</span><input type="range" aria-label="Line spacing" min="1.3" max="2" step="0.05" bind:value={prefs.lineHeight} /> <span class="mono">{prefs.lineHeight}</span></div>
+      <div class="field"><span>Line width</span><input type="range" aria-label="Line width" min="560" max="1100" step="20" bind:value={prefs.editorWidth} /> <span class="mono">{prefs.editorWidth}px</span></div>
     {:else if section === 'editor'}
       <h2>Writing</h2>
       <label class="check"><input type="checkbox" bind:checked={prefs.typewriter} /> Typewriter scrolling (keep the current line centred)</label>
@@ -47,7 +47,7 @@
       {/if}
       <h3>Notes and tasks</h3>
       <div class="field"><span>Daily note template</span>
-        <select class="input narrow" value={vaultSettings.data.dailyTemplate ?? ''} onchange={(e) => vaultSettings.set('dailyTemplate', (e.target as HTMLSelectElement).value)}>
+        <select class="input narrow" aria-label="Daily note template" value={vaultSettings.data.dailyTemplate ?? ''} onchange={(e) => vaultSettings.set('dailyTemplate', (e.target as HTMLSelectElement).value)}>
           <option value="">None</option>
           {#each templatesStore.list as t (t.id)}<option value={t.id}>{t.title}</option>{/each}
         </select></div>

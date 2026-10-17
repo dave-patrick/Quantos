@@ -22,10 +22,10 @@
   <header>
     <h1>Graph</h1>
     <div class="tools">
-      <input class="input" list="graph-nodes" placeholder="Centre on a note…" bind:value={query}
+      <input class="input" aria-label="Centre on a note" list="graph-nodes" placeholder="Centre on a note…" bind:value={query}
         onchange={() => { const hit = searchTitles(query, 5).find((n) => n.title === query) ?? searchTitles(query, 1)[0]; if (hit) pick(hit.id); }} />
       <datalist id="graph-nodes">{#each app.titles.slice(0, 300) as n (n.id)}<option value={n.title}></option>{/each}</datalist>
-      <select class="input" bind:value={hops}><option value={1}>1 hop</option><option value={2}>2 hops</option></select>
+      <select class="input" aria-label="Distance" bind:value={hops}><option value={1}>1 hop</option><option value={2}>2 hops</option></select>
       {#if center}<button class="btn ghost" onclick={() => { pick(null); query = ''; }}>Whole workspace</button>{/if}
     </div>
   </header>

@@ -31,8 +31,8 @@
     <h1>Metadata dictionary</h1>
     <p class="muted">Every property used in your notes, how often, what kinds of values it holds, and which supertags define it. Mixed kinds usually mean a typo or an old schema.</p>
     <div class="bar">
-      <input class="input" placeholder="Filter properties" bind:value={filter} />
-      <select class="input" bind:value={scope}><option value="workspace">{app.workspace}</option><option value="all">All workspaces</option></select>
+      <input class="input" aria-label="Filter properties" placeholder="Filter properties" bind:value={filter} />
+      <select class="input" aria-label="Workspaces" bind:value={scope}><option value="workspace">{app.workspace}</option><option value="all">All workspaces</option></select>
     </div>
     <table>
       <thead><tr><th>Property</th><th>Used</th><th>Values</th><th>On</th><th>Defined by</th><th>Examples</th><th></th></tr></thead>

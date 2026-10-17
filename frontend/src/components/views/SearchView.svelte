@@ -41,8 +41,8 @@
     <div class="box">
       <Icon name="search" size={18} />
       <!-- svelte-ignore a11y_autofocus -->
-      <input class="q" bind:value={query} oninput={() => { clearTimeout(timer); timer = setTimeout(search, 200); }} placeholder="Search every note, task and daily entry" autofocus />
-      <select class="input scope" bind:value={scope}><option value="all">All workspaces</option><option value="active">This workspace</option></select>
+      <input class="q" aria-label="Search" bind:value={query} oninput={() => { clearTimeout(timer); timer = setTimeout(search, 200); }} placeholder="Search every note, task and daily entry" autofocus />
+      <select class="input scope" aria-label="Search in" bind:value={scope}><option value="all">All workspaces</option><option value="active">This workspace</option></select>
     </div>
     {#if busy}<p class="faint">Searching…</p>{/if}
     {#if query.trim() && !busy && hits.length === 0}<div class="empty-state"><h3>No matches</h3><p>Try fewer words or a different spelling.</p></div>{/if}
