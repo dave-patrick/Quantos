@@ -954,6 +954,8 @@ separately approved; review them during the daily-use checkpoint.
 | Reminders show in a browser page only when the Windows client isn't running, so each alert shows once | Implemented |
 | Exports list the note's properties under the title and carry its images | Implemented |
 | First start offers the bundled example vault | Implemented |
+| Unsaved text is kept in the browser until saved; drafts older than 30 days are dropped | Implemented |
+| The Windows client restarts a backend that stops unexpectedly (at most three times in ten minutes) and signs its windows back in | Implemented |
 ---
 
 ## Final build direction

@@ -25,9 +25,12 @@ public sealed class MainForm : Form
     private PopupForm? _capture, _scratchpad;
     private readonly HashSet<string> _approvedTerminals = [];
     private readonly HashSet<string> _promptedApprovals = [];
-    private bool _exiting;
+    private bool _exiting, _recovering;
     private TaskCompletionSource<int>? _flush;
     private string? _lastNotificationNode;
+    private readonly SemaphoreSlim _reconnect = new(1, 1);
+    private readonly System.Windows.Forms.Timer _watch = new() { Interval = 5000 };
+    private readonly List<DateTime> _restarts = [];
 
     public MainForm(ClientPaths paths, ClientPrefs prefs)
     {
@@ -113,6 +116,8 @@ public sealed class MainForm : Form
             _terminal = new TerminalHost(Post);
             _backend.Listen(OnBackendEvent);
             RegisterHotkeys();
+            _watch.Tick += async (_, _) => await WatchBackendAsync();
+            _watch.Start();
         }
         catch (WebView2RuntimeNotFoundException)
         {
@@ -128,7 +133,6 @@ public sealed class MainForm : Form
 
     public void ConfigureWebView(CoreWebView2 core, bool main)
     {
-        var origin = new Uri(_backend!.Url).GetLeftPart(UriPartial.Authority);
         core.Settings.AreDevToolsEnabled = Debugger.IsAttached || Environment.GetEnvironmentVariable("QUANTOS_DEVTOOLS") == "1";
         core.Settings.IsStatusBarEnabled = false;
         core.Settings.AreHostObjectsAllowed = false;  // no unrestricted native access from page script
@@ -136,7 +140,7 @@ public sealed class MainForm : Form
         // Only the backend's own pages load here; every other link opens in the default browser.
         core.NavigationStarting += (_, args) =>
         {
-            if (!args.Uri.StartsWith(origin, StringComparison.OrdinalIgnoreCase) && !args.Uri.StartsWith("about:", StringComparison.Ordinal))
+            if (!args.Uri.StartsWith(Origin, StringComparison.OrdinalIgnoreCase) && !args.Uri.StartsWith("about:", StringComparison.Ordinal))
             {
                 args.Cancel = true;
                 OpenExternal(args.Uri);
@@ -146,11 +150,14 @@ public sealed class MainForm : Form
         core.WebMessageReceived += (_, args) =>
         {
             // The bridge accepts messages only from the backend's origin.
-            if (!args.Source.StartsWith(origin, StringComparison.OrdinalIgnoreCase)) return;
+            if (!args.Source.StartsWith(Origin, StringComparison.OrdinalIgnoreCase)) return;
             try { HandleMessage(JsonDocument.Parse(args.WebMessageAsJson).RootElement, core, main); }
             catch (Exception ex) { _paths.Log("Bridge message failed: " + ex.Message); }
         };
     }
+
+    // Read each time: a restarted backend may be on a different port.
+    private string Origin => new Uri(_backend!.Url).GetLeftPart(UriPartial.Authority);
 
     private static void OpenExternal(string uri)
     {
@@ -173,6 +180,9 @@ public sealed class MainForm : Form
                 break;
             case "open-external":
                 OpenExternal(msg.GetProperty("url").GetString() ?? "");
+                break;
+            case "reauth":
+                _ = SignInAgainAsync(source, msg.TryGetProperty("path", out var p) ? p.GetString() : null);
                 break;
             case "open-scratchpad":
                 ToggleScratchpad();
@@ -363,6 +373,65 @@ public sealed class MainForm : Form
         OpenExternal(await _backend.SignInUrlAsync("browser"));
     }
 
+    // ---- backend recovery ------------------------------------------------------------------------
+
+    /// <summary>A page lost its sign-in (usually because the backend restarted): give it a fresh one-time link.</summary>
+    private async Task SignInAgainAsync(CoreWebView2 page, string? path)
+    {
+        try
+        {
+            if (!await EnsureBackendAsync()) return;
+            var url = await _backend!.SignInUrlAsync("app", path is { Length: > 0 } && path.StartsWith('/') ? path : "/");
+            page.PostWebMessageAsJson(JsonSerializer.Serialize(new { type = "signin", url }));
+        }
+        catch (Exception ex) { _paths.Log("Signing a page in again failed: " + ex.Message); }
+    }
+
+    /// <summary>Every few seconds: if the backend's process has gone, start it again and sign the windows back in.</summary>
+    private async Task WatchBackendAsync()
+    {
+        if (_recovering || _exiting || _backend is null || !_backend.ProcessGone()) return;
+        _recovering = true;
+        try
+        {
+            _paths.Log($"The backend (pid {_backend.Info.Pid}) stopped unexpectedly.");
+            if (!await EnsureBackendAsync()) return;
+            await SignInAgainAsync(_web.CoreWebView2, "/");
+            foreach (var popup in new[] { _capture, _scratchpad })
+                if (popup?.Core is { } core) await SignInAgainAsync(core, popup.PagePath);
+        }
+        finally { _recovering = false; }
+    }
+
+    /// <summary>Reconnects, starting a new backend if none is running. False when it keeps failing.</summary>
+    private async Task<bool> EnsureBackendAsync()
+    {
+        await _reconnect.WaitAsync();
+        try
+        {
+            if (_backend is not null && !_backend.ProcessGone()) return true;
+            _restarts.RemoveAll(t => DateTime.UtcNow - t > TimeSpan.FromMinutes(10));
+            if (_restarts.Count >= 3)
+            {
+                _watch.Stop();
+                ShowBalloon("Quantos stopped working", $"The backend stopped several times. Unsaved text is kept in the window. Details are in {_paths.Logs}.", null);
+                return false;
+            }
+            _restarts.Add(DateTime.UtcNow);
+            _backend?.Dispose();
+            _backend = await BackendConnection.ConnectAsync(_paths, s => _paths.Log(s));
+            _backend.Listen(OnBackendEvent);
+            _paths.Log($"Reconnected to backend {_backend.Url} (pid {_backend.Info.Pid}).");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _paths.Log("Restarting the backend failed: " + ex.Message);
+            return false;
+        }
+        finally { _reconnect.Release(); }
+    }
+
     // ---- close and exit ------------------------------------------------------------------------
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -397,6 +466,7 @@ public sealed class MainForm : Form
             if (!Confirm("Exit anyway?", text + " If you exit now, those changes may be lost.", "Exit anyway")) return;
         }
         _exiting = true;
+        _watch.Stop();
         SaveWindow();
         _status.Text = "Closing Quantos safely…";
         _status.Visible = true;

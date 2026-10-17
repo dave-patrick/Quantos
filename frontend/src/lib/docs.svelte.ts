@@ -100,14 +100,16 @@ export class Doc {
   /** Keeps a copy of unsaved text in browser storage (a moment after typing pauses). */
   private scheduleDraft() {
     if (this.draftTimer) clearTimeout(this.draftTimer);
-    this.draftTimer = setTimeout(() => {
-      this.draftTimer = null;
-      if (!this.dirty) { clearDraft(this.id); return; }
-      const draft: Draft = this.raw
-        ? { raw: true, text: this.rawText, base: this.node?.content ?? '', baseHash: this.rawBaseHash, at: Date.now() }
-        : { raw: false, text: this.body, base: this.base, baseHash: this.hash, at: Date.now() };
-      try { const s = JSON.stringify(draft); if (s.length < 4_000_000) localStorage.setItem(DRAFT + this.id, s); } catch { /* full or unavailable */ }
-    }, 400);
+    this.draftTimer = setTimeout(() => this.writeDraft(), 400);
+  }
+
+  writeDraft() {
+    if (this.draftTimer) { clearTimeout(this.draftTimer); this.draftTimer = null; }
+    if (!this.dirty) { clearDraft(this.id); return; }
+    const draft: Draft = this.raw
+      ? { raw: true, text: this.rawText, base: this.node?.content ?? '', baseHash: this.rawBaseHash, at: Date.now() }
+      : { raw: false, text: this.body, base: this.base, baseHash: this.hash, at: Date.now() };
+    try { const s = JSON.stringify(draft); if (s.length < 4_000_000) localStorage.setItem(DRAFT + this.id, s); } catch { /* full or unavailable */ }
   }
 
   /** Text left unsaved last time goes back in and is saved the usual way (merging if the file changed). */
@@ -392,6 +394,11 @@ class DocStore {
     await Promise.all([...this.docs.values()].map((d) => d.flush()));
   }
 
+  /** Writes every unsaved note to browser storage now, so a page reload can't lose it. */
+  keepDrafts() {
+    for (const d of this.docs.values()) d.writeDraft();
+  }
+
   pendingCount() {
     return this.pending.size + [...this.docs.values()].filter((d) => d.dirty || d.status === 'saving').length;
   }
@@ -422,7 +429,15 @@ onChange((e) => docs.handle(e));
 setTabFlusher(async (tab) => {
   if (tab.nodeId) await docs.peek(tab.nodeId)?.flush();
 });
+let leaving = false;
+/** Reloads through a fresh sign-in link without the "leave page?" prompt; unsaved text is kept as drafts. */
+export function leaveFor(url: string) {
+  docs.keepDrafts();
+  leaving = true;
+  location.href = url;
+}
 window.addEventListener('beforeunload', (e) => {
+  if (leaving) return;
   if (docs.pendingCount() > 0) {
     docs.flushAll();
     e.preventDefault();

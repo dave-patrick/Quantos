@@ -81,6 +81,15 @@ public sealed class BackendConnection : IDisposable
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException) { return null; }
     }
 
+    /// <summary>True once the backend's process has gone (crashed or was ended). A busy backend still counts as running.</summary>
+    public bool ProcessGone()
+    {
+        if (Owned is not null) return Owned.HasExited;
+        try { using var p = Process.GetProcessById(Info.Pid); return p.HasExited; }
+        catch (ArgumentException) { return true; }
+        catch (InvalidOperationException) { return true; }
+    }
+
     private static async Task<bool> IsAliveAsync(Discovery info)
     {
         try { using var _ = Process.GetProcessById(info.Pid); }

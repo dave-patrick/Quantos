@@ -37,6 +37,10 @@ public sealed class PopupForm : Form
         _ready = true;
     }
 
+    /// <summary>The page, once loaded; null before that.</summary>
+    public CoreWebView2? Core => _ready ? _web.CoreWebView2 : null;
+    public string PagePath => new Uri(_url).AbsolutePath;
+
     public void ShowNear()
     {
         var screen = Screen.FromPoint(Cursor.Position).WorkingArea;

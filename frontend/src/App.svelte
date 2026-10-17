@@ -6,7 +6,7 @@
   import { layout } from './lib/layout.svelte';
   import { tasks } from './lib/tasks.svelte';
   import { bridge, isWindowsClient } from './lib/platform';
-  import { docs } from './lib/docs.svelte';
+  import { docs, leaveFor } from './lib/docs.svelte';
   import { supertags } from './lib/supertags.svelte';
   import { views } from './lib/views.svelte';
   import { templatesStore } from './lib/templates.svelte';
@@ -46,19 +46,35 @@
       if (recovered) app.toast(`Recovered ${recovered} interrupted operation(s) at startup. See Vault diagnostics.`, 'warn');
       if (status.safeMode) app.toast('Safe mode is on: plugins are turned off.', 'info');
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) phase = 'auth';
+      if (err instanceof ApiError && err.status === 401) signedOut();
       else { phase = 'error'; message = (err as Error).message; }
     }
   }
 
+  /** In the Windows client a lost sign-in (e.g. the backend restarted) is renewed by the window itself. */
+  let reauthAsked = false;
+  function signedOut() {
+    phase = 'auth';
+    if (!isWindowsClient || reauthAsked) return;
+    reauthAsked = true;
+    let recent: number[] = [];
+    try { recent = (JSON.parse(sessionStorage.getItem('quantos-reauth') ?? '[]') as number[]).filter((t) => Date.now() - t < 60_000); } catch { /* storage unavailable */ }
+    if (recent.length >= 3) return; // something is wrong; leave the message up rather than loop
+    try { sessionStorage.setItem('quantos-reauth', JSON.stringify([...recent, Date.now()])); } catch { /* storage unavailable */ }
+    docs.keepDrafts();
+    bridge.send({ type: 'reauth', path: location.pathname });
+  }
+
   onMount(() => {
-    onUnauthorized(() => (phase = 'auth'));
+    onUnauthorized(signedOut);
     connection.listeners.add((c) => (app.connected = c));
     bridge.send({ type: 'ready' });
     bridge.on(async (msg) => {
       if (msg?.type === 'flush') {
         await docs.flushAll();
         bridge.send({ type: 'pending-saves', count: docs.pendingCount() });
+      } else if (msg?.type === 'signin' && typeof msg.url === 'string') {
+        leaveFor(msg.url);
       } else if (msg?.type === 'open-node' && msg.id) {
         openNode(msg.id, 'new');
       } else if (msg?.type === 'run-result') {
@@ -80,7 +96,7 @@
 {:else if phase === 'auth'}
   <Splash title="Open Quantos from the app">
     <p>This browser session isn't signed in. Sign-in links are single-use and expire after a minute.</p>
-    <p>{isWindowsClient ? 'Restart the Quantos window.' : 'Use “Open in browser” in the Windows client, or run'} {#if !isWindowsClient}<code>Quantos.Backend.exe --open</code>.{/if}</p>
+    <p>{isWindowsClient ? 'Quantos is signing this window back in. If this stays, choose Exit from the tray icon and start Quantos again.' : 'Use “Open in browser” in the Windows client, or run'} {#if !isWindowsClient}<code>Quantos.Backend.exe --open</code>.{/if}</p>
   </Splash>
 {:else if phase === 'error'}
   <Splash title="Can't reach the Quantos backend">
