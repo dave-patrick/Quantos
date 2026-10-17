@@ -120,7 +120,7 @@
         {#each fields as field (field.key)}
           {@const value = node.properties[field.key]}
           {@const problem = validate(field, value)}
-          <dt title={field.description ?? field.inherited ? `From #${field.inherited}` : ''}>{field.name}{field.required ? ' *' : ''}</dt>
+          <dt title={field.description ?? (field.inherited ? `From #${field.inherited}` : '')}>{field.name}{field.required ? ' *' : ''}</dt>
           <dd class:invalid={!!problem}>
             {#if field.type === 'checkbox'}
               <input type="checkbox" aria-label={field.name} checked={value === true || value === 'true'} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).checked)} />
