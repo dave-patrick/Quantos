@@ -10,9 +10,11 @@
   } = $props();
 
   const labels: Record<string, string> = { nodes: 'Notes', daily: 'Daily', tasks: 'Tasks', archive: 'Archive', supertags: 'Supertags' };
-  let open = $state(true);
+  // Daily and Supertags start closed. Decided once: the tree reloads on every change, and a folder
+  // the user opened must stay open.
+  const startsClosed = () => !root && depth === 1 && (folder.name === 'daily' || folder.name === 'supertags');
+  let open = $state(!startsClosed());
   let over = $state(false);
-  $effect(() => { if (!root && depth === 1 && (folder.name === 'daily' || folder.name === 'supertags')) open = false; });
 
   function dragStart(e: DragEvent, n: TreeNode) {
     const ids = selected.has(n.id) ? [...selected] : [n.id];
