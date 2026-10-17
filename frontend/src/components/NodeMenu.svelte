@@ -63,10 +63,8 @@
   }
 
   const merge = () => act(async () => {
-    const title = prompt('Merge which note into this one? Type its exact title. It will move to the trash; links to it will point here.');
-    if (!title?.trim()) return;
-    const other = app.titles.find((t) => t.title.toLowerCase() === title.trim().toLowerCase() && t.id !== doc.id);
-    if (!other) { app.toast('No other note has that title.', 'warn'); return; }
+    const other = await app.pickNote('Merge a note into this one', { message: 'The chosen note moves to the trash, and links to it will point here.', confirmLabel: 'Merge', exclude: doc.id });
+    if (!other) return;
     await doc.flush();
     await api.post(`nodes/${doc.id}/merge`, { other: other.id });
     await doc.refresh();
@@ -96,7 +94,7 @@
   });
 
   const setTarget = () => act(async () => {
-    const value = prompt('Writing target (words). 0 removes it.', String(prefs.writingTarget[doc.id] ?? 1000));
+    const value = await app.ask('Writing target', { message: 'Number of words. 0 removes the target.', value: String(prefs.writingTarget[doc.id] ?? 1000), numeric: true, confirmLabel: 'Set' });
     if (value === null) return;
     const n = Math.max(0, Number(value) || 0);
     prefs.writingTarget = { ...prefs.writingTarget, [doc.id]: n };

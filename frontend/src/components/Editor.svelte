@@ -8,6 +8,7 @@
   import { EditorView as View } from '@codemirror/view';
   import { linkHooks, taskHooks, tasksVersion } from '../lib/links.svelte';
   import { prefs } from '../lib/prefs.svelte';
+  import { activeEditor } from '../lib/activeEditor';
 
   let {
     text,
@@ -18,6 +19,7 @@
     readOnly = false,
     raw = false,
     placeholder = '',
+    docId = null,
     view = $bindable<EditorView | null>(null)
   }: {
     text: string;
@@ -28,6 +30,8 @@
     readOnly?: boolean;
     raw?: boolean;
     placeholder?: string;
+    /** The note this editor shows, for editor commands (extract, embed…). */
+    docId?: string | null;
     view?: EditorView | null;
   } = $props();
 
@@ -40,12 +44,15 @@
       raw,
       readOnly,
       placeholder,
-      hooks: { ...linkHooks, ...taskHooks, onChange: (t) => onchange(t), onSave: () => onsave?.(), onFocus: () => onfocus?.() }
+      hooks: { ...linkHooks, ...taskHooks, onChange: (t) => onchange(t), onSave: () => onsave?.(), onFocus: () => { activeEditor.view = view; activeEditor.docId = docId; onfocus?.(); } }
     });
     lastVersion = version;
   });
 
-  onDestroy(() => view?.destroy());
+  onDestroy(() => {
+    if (activeEditor.view === view) { activeEditor.view = null; activeEditor.docId = null; }
+    view?.destroy();
+  });
 
   // Outside changes (merges, server adjustments, reloads) are applied as minimal edits.
   $effect(() => {

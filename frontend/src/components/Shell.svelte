@@ -13,6 +13,7 @@
   import CommandPalette from './CommandPalette.svelte';
   import Toasts from './Toasts.svelte';
   import Dialog from './Dialog.svelte';
+  import Ask from './Ask.svelte';
   import HoverPreview from './HoverPreview.svelte';
   import TerminalDrawer from './TerminalDrawer.svelte';
   import Approvals from './Approvals.svelte';
@@ -22,7 +23,7 @@
   onMount(() => watchDate((d) => (today = d)));
 
   function onkeydown(e: KeyboardEvent) {
-    if (app.dialog) return;
+    if (app.dialog || app.asking) return;
     handleGlobalKey(e);
   }
 </script>
@@ -46,6 +47,7 @@
 <CaptureDialog />
 <Toasts />
 <Dialog />
+<Ask />
 
 <style>
   .shell {

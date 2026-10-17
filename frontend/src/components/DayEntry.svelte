@@ -66,7 +66,7 @@
     <div class="body">
       {#if !isFuture}<DayTasks {date} {isToday} noteId={node?.id ?? null} />{/if}
       {#if doc && doc.status !== 'loading'}
-        <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc!.edit(t)} onsave={() => doc!.save()}
+        <Editor text={doc.body} version={doc.externalVersion} docId={doc.id} onchange={(t) => doc!.edit(t)} onsave={() => doc!.save()}
           placeholder={isToday ? 'What happened today? Type [[ to link, - [ ] for a task.' : ''} />
         {#if doc.status === 'conflict'}
           <p class="warn">This entry changed elsewhere with overlapping edits. <button class="btn" onclick={(e) => openNode(doc!.id, e.shiftKey ? 'other' : 'new')}>Compare versions</button></p>

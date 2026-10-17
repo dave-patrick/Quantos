@@ -20,6 +20,8 @@ class AppState {
   paletteMode = $state<'files' | 'commands'>('files');
   connected = $state(false);
   dialog = $state<{ title: string; message: string; actions: { label: string; kind?: string; run: () => void }[] } | null>(null);
+  /** A question with a text answer, or a choice of note (see ask and pickNote). */
+  asking = $state<AskSpec | null>(null);
 
   private titleTimer: ReturnType<typeof setTimeout> | null = null;
   private toastId = 0;
@@ -104,6 +106,23 @@ class AppState {
     this.toast(message, 'error');
   }
 
+  /** Asks for a line of text; resolves to the trimmed answer, or null when cancelled. */
+  ask(title: string, options: { message?: string; value?: string; placeholder?: string; confirmLabel?: string; numeric?: boolean } = {}): Promise<string | null> {
+    return new Promise((resolve) => {
+      this.asking = { title, ...options, done: (answer) => { this.asking = null; resolve(answer === null ? null : answer.trim()); } };
+    });
+  }
+
+  /** Asks the user to choose a note by typing part of its title. */
+  pickNote(title: string, options: { message?: string; confirmLabel?: string; exclude?: string } = {}): Promise<NodeSummary | null> {
+    return new Promise((resolve) => {
+      this.asking = {
+        title, ...options, notes: true, placeholder: 'Type part of a title',
+        done: (answer) => { this.asking = null; resolve(answer ? this.titleIndex.get(answer) ?? null : null); }
+      };
+    });
+  }
+
   confirm(title: string, message: string, confirmLabel = 'OK', kind = 'primary'): Promise<boolean> {
     return new Promise((resolve) => {
       this.dialog = {
@@ -118,3 +137,16 @@ class AppState {
 }
 
 export const app = new AppState();
+
+export interface AskSpec {
+  title: string;
+  message?: string;
+  value?: string;
+  placeholder?: string;
+  confirmLabel?: string;
+  numeric?: boolean;
+  /** Choose a note: the answer is its id. */
+  notes?: boolean;
+  exclude?: string;
+  done: (answer: string | null) => void;
+}

@@ -27,10 +27,17 @@ function selection() {
   return from === to ? null : { view, from, to, text: view.state.sliceDoc(from, to) };
 }
 
+/** The editor the user last typed in; says so when there isn't one, instead of doing nothing. */
+function editorOrHint() {
+  const view = activeEditor.view;
+  if (!view?.dom.isConnected) { app.toast('Click into a note first, then run the command again.', 'info'); return null; }
+  return view;
+}
+
 async function extract(embed: boolean) {
   const sel = selection();
   if (!sel || !activeEditor.docId) { app.toast('Select the text to extract first.', 'warn'); return; }
-  const title = prompt('Title for the new note', sel.text.split('\n')[0].replace(/^[#\-*\s]+/, '').slice(0, 60));
+  const title = await app.ask('Extract to a new note', { message: 'Title for the new note', value: sel.text.split('\n')[0].replace(/^[#\-*\s]+/, '').slice(0, 60), confirmLabel: 'Extract' });
   if (!title?.trim()) return;
   const doc = docs.peek(activeEditor.docId);
   await doc?.flush();
@@ -52,7 +59,7 @@ async function makeSynced() {
 }
 
 async function insertSynced() {
-  const view = activeEditor.view;
+  const view = editorOrHint();
   if (!view) return;
   const blocks = await api.get<{ id: string; title: string; content: string; uses: number }[]>('synced-blocks');
   if (!blocks.length) { app.toast('No synced blocks yet. Select text and use “Make selection a synced block”.', 'info'); return; }
@@ -73,12 +80,10 @@ async function insertSynced() {
 }
 
 async function embedSelection() {
-  const view = activeEditor.view;
+  const view = editorOrHint();
   if (!view) return;
-  const id = prompt('Embed which note? Type its exact title');
-  if (!id) return;
-  const hit = app.titles.find((t) => t.title.toLowerCase() === id.trim().toLowerCase());
-  if (!hit) { app.toast('No note with that title.', 'warn'); return; }
+  const hit = await app.pickNote('Embed a note', { confirmLabel: 'Embed', exclude: activeEditor.docId ?? undefined });
+  if (!hit) return;
   insertBlock(view, `![[${hit.id}|${hit.title}]]\n`);
 }
 
@@ -89,11 +94,11 @@ register(
   { id: 'edit.synced.insert', title: 'Insert synced block…', group: 'Edit', icon: 'refresh', run: insertSynced },
   { id: 'edit.embed', title: 'Embed a note…', group: 'Edit', icon: 'layers', run: embedSelection },
   { id: 'edit.columns', title: 'Insert two columns', group: 'Edit', icon: 'split', run: () => {
-    const view = activeEditor.view; if (!view) return;
+    const view = editorOrHint(); if (!view) return;
     insertBlock(view, ':::columns\nLeft column\n+++\nRight column\n:::\n', 'Left column');
   } },
   { id: 'edit.callout', title: 'Insert collapsible callout', group: 'Edit', icon: 'info', run: () => {
-    const view = activeEditor.view; if (!view) return;
+    const view = editorOrHint(); if (!view) return;
     insertBlock(view, '> [!note]- Title\n> Hidden detail.\n', 'Title');
   } }
 );

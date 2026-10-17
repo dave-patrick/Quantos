@@ -104,7 +104,7 @@
     else if (e.key === 'ArrowLeft' && row.classList.contains('toggle') && row.getAttribute('aria-expanded') === 'true') { e.preventDefault(); row.click(); }
   }
   async function newFolder(parent: string) {
-    const name = prompt('Folder name');
+    const name = await app.ask('New folder', { placeholder: 'Folder name', confirmLabel: 'Create' });
     if (!name?.trim()) return;
     const clean = name.trim().toLowerCase().replace(/[^\w\- ]+/g, '').replace(/\s+/g, '_');
     try { await api.post('folders', { path: `${parent}/${clean}` }); load(); } catch (e) { app.error(e); }

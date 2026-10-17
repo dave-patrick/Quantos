@@ -27,7 +27,7 @@
 <main class="pad">
   {#if error}<p class="err">{error}</p>
   {:else if doc && doc.status !== 'loading'}
-    <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc!.edit(t)} onsave={() => doc!.save()} placeholder="Scratchpad: jot anything. It stays on top." />
+    <Editor text={doc.body} version={doc.externalVersion} docId={doc.id} onchange={(t) => doc!.edit(t)} onsave={() => doc!.save()} placeholder="Scratchpad: jot anything. It stays on top." />
   {/if}
   <footer>{doc?.status === 'saving' ? 'Saving…' : doc?.dirty ? 'Edited' : 'Saved'}</footer>
 </main>
