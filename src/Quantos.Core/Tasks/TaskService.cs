@@ -72,6 +72,14 @@ public sealed partial class TaskService : ITaskHooks
 
     private CacheIndex Cache => _writes.Cache;
 
+    /// <summary>A project typed as a name ("+apollo-launch") links to the note with that title when exactly one exists.</summary>
+    private string? ProjectLink(string? project, string workspace)
+    {
+        if (string.IsNullOrWhiteSpace(project) || project.Contains("[[")) return project;
+        var hits = Cache.FindByTitle(project.Trim(), workspace).Where(n => n.Type != NodeTypes.Task && !n.Archived).ToList();
+        return hits.Count == 1 ? $"[[{hits[0].Id}|{hits[0].Title}]]" : project.Trim();
+    }
+
     // ---- create / read ------------------------------------------------------------------------
 
     public Node Create(CreateTaskRequest r, Actor actor)
@@ -86,7 +94,7 @@ public sealed partial class TaskService : ITaskHooks
         Put(TaskKeys.Planned, ValidDate(r.Planned, "planned"));
         Put(TaskKeys.Effort, r.Effort is > 0 ? r.Effort : null);
         Put(TaskKeys.Parent, r.Parent);
-        Put(TaskKeys.Project, r.Project);
+        Put(TaskKeys.Project, ProjectLink(r.Project, r.Workspace));
         Put(TaskKeys.WaitingOn, r.WaitingOn);
         Put(TaskKeys.Stage, r.Stage);
         if (r.Assignees is { Count: > 0 }) props[TaskKeys.Assignees] = r.Assignees.ToList();
@@ -345,6 +353,9 @@ public sealed partial class TaskService : ITaskHooks
     [GeneratedRegex(@"^(?<lead>[ \t]*[-*+][ \t]+)\[(?<check>[ xX])\](?<gap>[ \t]+)(?<text>.*?)(?<marker>[ \t]*<!--task:(?<id>[0-9A-HJKMNP-TV-Z]{26})-->)?[ \t]*$")]
     private static partial Regex TaskLine();
 
+    [GeneratedRegex(@"^(?<before>[ \t]*[-*+][ \t]+\[[ xX]\][ \t]+.*?)(?<marker>[ \t]*<!--task:[0-9A-HJKMNP-TV-Z]{26}-->)(?<after>[ \t]*\S.*)$")]
+    private static partial Regex MarkerMidLine();
+
     /// <summary>New "- [ ] text" lines in a note become task nodes, bound by an invisible marker.</summary>
     public string BindInlineTasks(FrontmatterDocument doc, string body, Actor actor)
     {
@@ -362,21 +373,50 @@ public sealed partial class TaskService : ITaskHooks
             var line = lines[i].TrimEnd('\r');
             if (line.TrimStart().StartsWith("```") || line.TrimStart().StartsWith("~~~")) { fence = !fence; continue; }
             if (fence) continue;
+            // Words typed after a task's hidden marker (the cursor was past it) belong to the task's text.
+            if (MarkerMidLine().Match(line) is { Success: true } mid)
+            {
+                line = mid.Groups["before"].Value + mid.Groups["after"].Value.TrimEnd() + mid.Groups["marker"].Value;
+                lines[i] = line + (lines[i].EndsWith('\r') ? "\r" : "");
+                changed = true;
+            }
             var m = TaskLine().Match(line);
             if (!m.Success || m.Groups["id"].Success) continue;
             var text = m.Groups["text"].Value.Trim();
             if (text.Length == 0) continue;
             var checkedBox = m.Groups["check"].Value is "x" or "X";
+            // Quick-add tokens work here too: "- [ ] Call Sam due:fri !1 #client" keeps "Call Sam" in
+            // the note and puts the date, priority and tag on the task.
+            var quick = QuickAdd.Parse(text, _writes.Clock.Today);
+            if (quick.Title.Length == 0) quick = quick with { Title = text };
             var task = Create(new CreateTaskRequest
             {
-                Title = TitleFromLine(text), Workspace = workspace, Source = noteId, Planned = planned,
+                Title = TitleFromLine(quick.Title), Workspace = workspace, Source = noteId,
+                Planned = quick.Planned ?? planned, Due = quick.Due, Priority = quick.Priority, Effort = quick.Effort,
+                Tags = quick.Tags.Count > 0 ? quick.Tags : null, Recurrence = quick.Recurrence, Project = quick.Project,
                 Status = checkedBox ? TaskStatus.Done : TaskStatus.Todo
             }, actor);
-            lines[i] = line + $" <!--task:{task.Id}-->" + (lines[i].EndsWith('\r') ? "\r" : "");
+            if (quick.MyDay) _writes.UpdateFields(task.Id, null, new Dictionary<string, object?> { [TaskKeys.MyDay] = _writes.Clock.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) }, null, actor);
+            var shown = quick.HasTokens ? m.Groups["lead"].Value + "[" + m.Groups["check"].Value + "]" + m.Groups["gap"].Value + quick.Title : line;
+            lines[i] = shown + $" <!--task:{task.Id}-->" + (lines[i].EndsWith('\r') ? "\r" : "");
             changed = true;
         }
         _ = nl;
         return changed ? string.Join('\n', lines) : body;
+    }
+
+    private Dictionary<string, object?> QuickFields(QuickTask q, TaskDto task)
+    {
+        var set = new Dictionary<string, object?>();
+        if (q.Due is not null) set[TaskKeys.Due] = q.Due;
+        if (q.Planned is not null) set[TaskKeys.Planned] = q.Planned;
+        if (q.Priority is not null) set[TaskKeys.Priority] = q.Priority;
+        if (q.Effort is not null) set[TaskKeys.Effort] = q.Effort;
+        if (q.Recurrence is not null) set[TaskKeys.Recurrence] = q.Recurrence;
+        if (q.Project is not null) set[TaskKeys.Project] = ProjectLink(q.Project, task.Workspace);
+        if (q.MyDay) set[TaskKeys.MyDay] = _writes.Clock.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (q.Tags.Count > 0) set[NodeKeys.Tags] = task.Tags.Concat(q.Tags).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        return set;
     }
 
     private static string TitleFromLine(string text) =>
@@ -406,6 +446,15 @@ public sealed partial class TaskService : ITaskHooks
                 var task = Get(id);
                 if (task is null) continue; // trashed or missing: the line shows a placeholder with Restore
                 if (isChecked != TaskStatus.IsClosed(task.Status)) SetStatus(id, isChecked ? TaskStatus.Done : TaskStatus.Todo, actor);
+                // Tokens typed onto a line later ("… due:fri !1") go onto the task, and the line keeps the words.
+                if (task.Source == note.Id && QuickAdd.Parse(text, _writes.Clock.Today) is { HasTokens: true, Title.Length: > 0 } quick)
+                {
+                    Update(id, QuickFields(quick, task), [], actor);
+                    var plain = TitleFromLine(quick.Title);
+                    if (plain != task.Title) _writes.Rename(id, plain, actor);
+                    SyncInline(id, null, quick.Title, actor);
+                    continue;
+                }
                 var title = TitleFromLine(text);
                 if (task.Source == note.Id && title.Length > 0 && title != task.Title)
                 {

@@ -142,6 +142,75 @@ public class TaskAcceptanceTests
         Assert.Equal("Buy oat milk", T(v).Require(task.Id).Title);
     }
 
+    [Fact] // Same tokens as the quick-add box (frontend/tests/logic.test.ts)
+    public void Quick_add_tokens_parse_like_the_frontend()
+    {
+        var today = new DateOnly(2026, 10, 15); // a Thursday
+        var q = QuickAdd.Parse("Call Sam due:fri !2 ~1h #client +apollo-launch every week @tomorrow", today);
+        Assert.Equal("Call Sam", q.Title);
+        Assert.Equal(2, q.Priority);
+        Assert.Equal("2026-10-16", q.Due);
+        Assert.Equal("2026-10-16", q.Planned);
+        Assert.Equal(60, q.Effort);
+        Assert.Equal(["client"], q.Tags);
+        Assert.Equal("apollo launch", q.Project);
+        Assert.Equal("weekly", q.Recurrence);
+        Assert.Equal("2026-10-18", QuickAdd.ParseDate("+3d", today));
+        Assert.Equal("2026-10-29", QuickAdd.ParseDate("+2w", today));
+        Assert.Equal("2026-10-22", QuickAdd.ParseDate("thu", today));
+        Assert.Equal("2027-01-01", QuickAdd.ParseDate("1/1", today));
+        Assert.Null(QuickAdd.ParseDate("31/2", today));
+        Assert.Null(QuickAdd.ParseDate("banana", today));
+        Assert.Equal("Fix bug due:never", QuickAdd.Parse("Fix bug #12a due:never", today).Title);
+        Assert.Equal("FREQ=WEEKLY;INTERVAL=2", QuickAdd.Parse("Payroll every 2 weeks", today).Recurrence);
+    }
+
+    [Fact]
+    public void Inline_task_lines_understand_quick_add_tokens()
+    {
+        using var v = new TestVault();
+        var project = v.Writes.Create(new CreateNodeRequest { Title = "Apollo launch" }, Actor.User);
+        var note = v.Writes.Create(new CreateNodeRequest { Title = "Plan", Body = "- [ ] Call Sam due:tomorrow !1 #client +apollo-launch\n" }, Actor.User);
+        var task = Assert.Single(T(v).List());
+        Assert.Equal("Call Sam", task.Title);
+        Assert.Equal(v.Writes.Clock.Today.AddDays(1).ToString("yyyy-MM-dd"), task.Due);
+        Assert.Equal(1, task.Priority);
+        Assert.Contains("client", task.Tags);
+        Assert.Equal($"[[{project.Id}|Apollo launch]]", task.Project);
+        // The note keeps the words; the details live on the task. A later save doesn't rename it back.
+        Assert.Contains($"- [ ] Call Sam <!--task:{task.Id}-->", note.Body);
+        var current = v.Writes.Require(note.Id);
+        v.Writes.Save(note.Id, current.Content + "\nMore text.\n", current.Hash, Actor.User);
+        Assert.Equal("Call Sam", T(v).Require(task.Id).Title);
+
+        // Tokens added to the line later update the task, and the line is tidied again.
+        current = v.Writes.Require(note.Id);
+        v.Writes.Save(note.Id, current.Content.Replace("- [ ] Call Sam <!--", "- [ ] Call Sam back due:2026-12-24 !3 #urgent <!--"), current.Hash, Actor.User);
+        var updated = T(v).Require(task.Id);
+        Assert.Equal("Call Sam back", updated.Title);
+        Assert.Equal("2026-12-24", updated.Due);
+        Assert.Equal(3, updated.Priority);
+        Assert.Equal(["client", "urgent"], updated.Tags);
+        Assert.Contains($"- [ ] Call Sam back <!--task:{task.Id}-->", v.Writes.Require(note.Id).Body);
+
+        // Typing after the hidden marker (cursor at the end of the line) extends the same task.
+        current = v.Writes.Require(note.Id);
+        v.Writes.Save(note.Id, current.Content.Replace($"<!--task:{task.Id}-->", $"<!--task:{task.Id}--> today"), current.Hash, Actor.User);
+        Assert.Single(T(v).List());
+        Assert.Equal("Call Sam back today", T(v).Require(task.Id).Title);
+        Assert.Contains($"- [ ] Call Sam back today <!--task:{task.Id}-->", v.Writes.Require(note.Id).Body);
+    }
+
+    [Fact]
+    public void Capturing_a_task_understands_quick_add_tokens()
+    {
+        using var v = new TestVault();
+        var node = v.Session.Capture.Capture("Renew passport due:2026-12-01 !2", "default", CaptureTarget.Task, Actor.User);
+        var task = T(v).Require(node.Id);
+        Assert.Equal("Renew passport", task.Title);
+        Assert.Equal("2026-12-01", task.Due);
+        Assert.Equal(2, task.Priority);
+    }
     [Fact] // 13 editing.4-5
     public void Moving_or_copying_task_lines_never_deletes_or_duplicates_tasks()
     {

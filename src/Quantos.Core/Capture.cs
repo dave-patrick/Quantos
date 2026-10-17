@@ -30,7 +30,14 @@ public sealed class CaptureService(WriteService writes, Tasks.TaskService tasks)
                 }, actor);
             }
             case CaptureTarget.Task:
-                return tasks.Create(new Tasks.CreateTaskRequest { Title = text.Split('\n')[0].Trim(), Workspace = workspace, Body = text.Contains('\n') ? text[(text.IndexOf('\n') + 1)..] : "" }, actor);
+                var first = text.Split('\n')[0].Trim();
+                var quick = Tasks.QuickAdd.Parse(first, writes.Clock.Today);
+                return tasks.Create(new Tasks.CreateTaskRequest
+                {
+                    Title = quick.Title.Length > 0 ? quick.Title : first, Workspace = workspace, Body = text.Contains('\n') ? text[(text.IndexOf('\n') + 1)..] : "",
+                    Due = quick.Due, Planned = quick.Planned, Priority = quick.Priority, Effort = quick.Effort,
+                    Tags = quick.Tags.Count > 0 ? quick.Tags : null, Recurrence = quick.Recurrence, Project = quick.Project
+                }, actor);
             default:
             {
                 var daily = writes.GetOrCreateDaily(workspace, writes.Clock.Today, actor);

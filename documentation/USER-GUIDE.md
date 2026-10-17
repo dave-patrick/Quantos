@@ -57,6 +57,8 @@ Windows-only features (below) works the same.
 - **Shift-click** a link to open it in the other pane. `Ctrl`-click opens a new tab.
 - **Tasks:** type `- [ ] Something to do` in any note. It becomes a real task, kept in sync both
   ways: tick it in the note or in the task list and both change. Enter on an empty item ends the list.
+  Quick-add words work on these lines too: `- [ ] Call Sam due:fri !1` keeps *Call Sam* in the note
+  and puts the date and priority on the task.
 - **Embeds:** `![[Note]]` shows another note (or `![[Note#Heading]]`, `![[Note#^block]]`) inline.
 - **Synced blocks:** select text, open the command palette (`Ctrl+Shift+P`) and choose
   *Make selection a synced block*. Insert it elsewhere with *Insert synced block*. Editing any copy
@@ -105,7 +107,8 @@ own tabs, splits and scroll positions.
 
 - **Quick add:** `Call Sam due:fri !2 ~30m #client every week`
   - `!1` to `!4` priority (coloured strip), `due:` deadline, `@tomorrow` or `plan:` planned day,
-    `~45m`/`~2h` effort, `#tag`, `+project`, `every day|weekday|week|month`.
+    `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month`,
+    `!myday`. The same words work in task lines in notes and in quick capture to a task.
 - **My Day:** pick what you'll do today. Tasks planned for earlier days can be moved to today with
   one click. This changes the **planned** date only; due dates never move by themselves.
 - **Recurring tasks:** each occurrence is a separate task with its own history. The next one is

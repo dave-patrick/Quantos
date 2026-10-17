@@ -105,7 +105,19 @@ export function taskLines(hooks: TaskHooks): Extension {
       return false;
     }
   });
-  return [plugin, events];
+  // A bound line ends with a hidden marker (shown as the chip). Typing with the caret past it puts the
+  // words before the marker, so they stay part of the task instead of trailing after it.
+  const keepMarkerLast = EditorView.inputHandler.of((view, from, to, text) => {
+    if (from !== to || text.includes('\n')) return false;
+    const line = view.state.doc.lineAt(from);
+    if (from !== line.to) return false;
+    const m = /[ \t]*<!--task:[0-9A-HJKMNP-TV-Z]{26}-->[ \t]*$/.exec(line.text);
+    if (!m) return false;
+    const at = line.from + m.index;
+    view.dispatch({ changes: { from: at, insert: text }, selection: { anchor: at + text.length }, userEvent: 'input.type' });
+    return true;
+  });
+  return [plugin, events, keepMarkerLast];
 }
 
 /** Forces task decorations to refresh after task data changes. */
