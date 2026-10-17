@@ -9,7 +9,7 @@
   /**
    * Editable data view spanning notes (BUILD-PLAN 8C.6, 8C.11): each cell is a property of a
    * different node; edits save through the single write path. Spreadsheet keyboard navigation:
-   * arrows move, Enter or typing edits, Escape cancels, Tab moves right.
+   * arrows move, Enter or typing edits, Escape cancels, Tab moves right (and out after the last column).
    */
   let { rows, columns, groups = null, readonly = false, onchanged }:
     { rows: QueryRow[]; columns: string[]; groups?: [string, QueryRow[]][] | null; readonly?: boolean; onchanged?: () => void } = $props();
@@ -75,7 +75,12 @@
     if (editing) return;
     const keys: Record<string, 'up' | 'down' | 'left' | 'right'> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
     if (keys[e.key]) { e.preventDefault(); nav(keys[e.key]); return; }
-    if (e.key === 'Tab') { e.preventDefault(); nav(e.shiftKey ? 'left' : 'right'); return; }
+    if (e.key === 'Tab') {
+      // Past the first or last column, Tab leaves the table like any other control.
+      const edge = e.shiftKey ? active?.c === 0 : active?.c === columns.length - 1;
+      if (edge) return;
+      e.preventDefault(); nav(e.shiftKey ? 'left' : 'right'); return;
+    }
     if (e.key === 'Enter' || e.key === 'F2') { e.preventDefault(); if (e.ctrlKey && active) openNode(flat[active.r].id, 'new'); else startEdit(); return; }
     if (e.key === 'Home') { e.preventDefault(); focusCell(active?.r ?? 0, 0); return; }
     if (e.key === 'End') { e.preventDefault(); focusCell(active?.r ?? 0, columns.length - 1); return; }
