@@ -31,10 +31,10 @@
 </script>
 
 {#if !root}
-  <div class="folder" class:over role="treeitem" aria-expanded={open} aria-selected="false" tabindex="-1"
+  <div class="folder" class:over role="group" aria-label={depth === 1 ? labels[folder.name] ?? folder.name : folder.name}
     ondragover={(e) => { if (e.dataTransfer?.types.includes('application/x-quantos-nodes')) { e.preventDefault(); over = true; } }}
     ondragleave={() => (over = false)} ondrop={drop} style="padding-left:{depth * 12}px">
-    <button class="toggle" onclick={() => (open = !open)}>
+    <button class="toggle" aria-expanded={open} onclick={() => (open = !open)}>
       <Icon name={open ? 'chevron-down' : 'chevron-right'} size={12} />
       <Icon name={open ? 'folder-open' : 'folder'} size={14} />
       <span>{depth === 1 ? labels[folder.name] ?? folder.name : folder.name}</span>
@@ -63,7 +63,7 @@
   .toggle span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   .folder:hover { background: var(--bg-hover); }
   .mini { border: 0; background: none; color: var(--text-faint); padding: 3px; border-radius: 4px; opacity: 0; }
-  .folder:hover .mini { opacity: 1; }
+  .folder:hover .mini, .mini:focus-visible { opacity: 1; }
   .mini:hover { color: var(--accent); }
   .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: 4px 8px; border: 0; background: none; border-radius: 5px; color: var(--text-soft); font-size: 13.5px; text-align: left; }
   .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

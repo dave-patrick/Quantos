@@ -88,6 +88,21 @@
     catch (e) { app.error(e); }
   }
 
+  /** Arrow keys move between rows; Left/Right fold and unfold folders; Home/End jump to the ends. */
+  function treeKeys(e: KeyboardEvent) {
+    const list = e.currentTarget as HTMLElement;
+    const rows = [...list.querySelectorAll<HTMLButtonElement>('button.row, button.toggle')];
+    const i = rows.indexOf(document.activeElement as HTMLButtonElement);
+    if (i < 0) return;
+    const go = (n: number) => { e.preventDefault(); rows[Math.max(0, Math.min(rows.length - 1, n))]?.focus(); };
+    const row = rows[i];
+    if (e.key === 'ArrowDown') go(i + 1);
+    else if (e.key === 'ArrowUp') go(i - 1);
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(rows.length - 1);
+    else if (e.key === 'ArrowRight' && row.classList.contains('toggle') && row.getAttribute('aria-expanded') === 'false') { e.preventDefault(); row.click(); }
+    else if (e.key === 'ArrowLeft' && row.classList.contains('toggle') && row.getAttribute('aria-expanded') === 'true') { e.preventDefault(); row.click(); }
+  }
   async function newFolder(parent: string) {
     const name = prompt('Folder name');
     if (!name?.trim()) return;
@@ -112,7 +127,8 @@
       <button class="icon-btn" aria-label="Clear selection" onclick={() => (selected = new Set())}><Icon name="x" size={13} /></button>
     </div>
   {/if}
-  <div class="scroll list">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="scroll list" onkeydown={treeKeys}>
     {#if matches}
       {#each matches as n (n.id)}
         <button class="row" class:on={n.id === activeId} class:sel={selected.has(n.id)} onclick={(e) => click(e, n)}>
