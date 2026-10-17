@@ -117,6 +117,19 @@ public static class Program
         return 0;
     }
 
+    /// <summary>Titles that start with or contain the words typed, offered when nothing matches exactly.</summary>
+    private static async Task<string> Suggest(Client c, string typed)
+    {
+        try
+        {
+            var all = (await c.Get("nodes"))!.AsArray().Select(n => n!["title"]!.ToString()).Distinct().ToList();
+            var close = all.Where(t => t.StartsWith(typed, StringComparison.OrdinalIgnoreCase))
+                .Concat(all.Where(t => t.Contains(typed, StringComparison.OrdinalIgnoreCase))).Distinct().Take(5).ToList();
+            return close.Count == 0 ? "" : " Did you mean: " + string.Join(", ", close.Select(t => $"“{t}”")) + "?";
+        }
+        catch (ApiException) { return ""; }
+    }
+
     public static async Task<string> Resolve(Client c, string titleOrId, string? workspace)
     {
         if (titleOrId.Length == 26 && titleOrId.All(char.IsLetterOrDigit)) return titleOrId;
@@ -125,7 +138,7 @@ public static class Program
         return hits.Count switch
         {
             1 => hits[0]!["id"]!.ToString(),
-            0 => throw new ApiException(404, $"No note called “{titleOrId}”."),
+            0 => throw new ApiException(404, $"No note called “{titleOrId}”." + await Suggest(c, titleOrId)),
             _ => throw new ApiException(409, $"More than one note is called “{titleOrId}”: " +
                 string.Join(", ", hits.Select(h => $"{h!["id"]} ({h["workspace"]})")) + ". Use the id.")
         };
