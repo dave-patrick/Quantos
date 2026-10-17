@@ -1,12 +1,13 @@
 <script lang="ts">
+  import { day } from '../../lib/today.svelte';
   import { api } from '../../lib/api';
   import { tasks, type TaskDto } from '../../lib/tasks.svelte';
   import { app } from '../../lib/state.svelte';
-  import { isoDate, relativeTime } from '../../lib/dates';
+  import { relativeTime } from '../../lib/dates';
   import TaskRow from '../TaskRow.svelte';
 
   let days = $state(14);
-  const today = isoDate();
+  const today = $derived(day.today);
   const cutoff = $derived(Date.now() - days * 86400000);
   // Stale tasks (BUILD-PLAN 8B.14): open, untouched for a while, or rolled over again and again.
   const stale = $derived(tasks.list

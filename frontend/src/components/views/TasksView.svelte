@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { day } from '../../lib/today.svelte';
   import { tasks, type TaskDto } from '../../lib/tasks.svelte';
   import { app } from '../../lib/state.svelte';
-  import { isoDate } from '../../lib/dates';
   import type { Tab } from '../../lib/layout.svelte';
   import { api } from '../../lib/api';
   import TaskRow from '../TaskRow.svelte';
@@ -17,7 +17,7 @@
   let mode = $state<'list' | 'board'>('list');
   let filter = $state('');
   let showDone = $state(false);
-  const today = isoDate();
+  const today = $derived(day.today);
 
   const label = (v: string | null) => (v ? (/\|([^\]]+)\]\]$/.exec(v)?.[1] ?? v) : null);
 
@@ -32,11 +32,15 @@
       (a.priority ?? 9) - (b.priority ?? 9) || (a.due ?? '9999').localeCompare(b.due ?? '9999') || (a.planned ?? '9999').localeCompare(b.planned ?? '9999') || a.title.localeCompare(b.title));
   }
 
+  // Overdue means a missed due date. A planned day only says when you meant to work on it, so a
+  // task planned for today or earlier is in Today, even when it's due later.
   function dueBucket(t: TaskDto) {
-    const d = (t.due ?? t.planned)?.slice(0, 10);
+    const due = t.due?.slice(0, 10);
+    const planned = t.planned?.slice(0, 10);
+    if (due && due < today) return 'Overdue';
+    if (due === today || (planned && planned <= today)) return 'Today';
+    const d = [due, planned].filter((x): x is string => !!x).sort()[0];
     if (!d) return 'No date';
-    if (d < today) return 'Overdue';
-    if (d === today) return 'Today';
     const days = Math.round((new Date(d + 'T00:00:00').getTime() - new Date(today + 'T00:00:00').getTime()) / 86400000);
     if (days <= 7) return 'Next 7 days';
     return 'Later';

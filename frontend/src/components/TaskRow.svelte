@@ -1,14 +1,14 @@
 <script lang="ts">
+  import { day } from '../lib/today.svelte';
   import { tasks, type TaskDto } from '../lib/tasks.svelte';
   import { openNode, whereFrom } from '../lib/links.svelte';
   import { app } from '../lib/state.svelte';
-  import { isoDate } from '../lib/dates';
   import Icon from './Icon.svelte';
 
   let { task, showMyDay = true, draggable = false, ondragstart, compact = false }:
     { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean } = $props();
 
-  const today = isoDate();
+  const today = $derived(day.today);
   const closed = $derived(task.status === 'done' || task.status === 'cancelled');
   const dueDay = $derived(task.due?.slice(0, 10) ?? null);
   const overdue = $derived(!closed && !!dueDay && dueDay < today);
