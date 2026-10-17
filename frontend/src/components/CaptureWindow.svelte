@@ -4,7 +4,11 @@
   import { bridge } from '../lib/platform';
 
   /** The global quick-capture window (Windows client), routed to a workspace (BUILD-PLAN 8E.1-2). */
-  let text = $state('');
+  const UNSENT = 'quantos.capture.unsent';
+  // Unsent text survives this window reloading (e.g. signing back in after the backend restarted).
+  let text = $state(read());
+  function read() { try { return sessionStorage.getItem(UNSENT) ?? ''; } catch { return ''; } }
+  $effect(() => { try { if (text) sessionStorage.setItem(UNSENT, text); else sessionStorage.removeItem(UNSENT); } catch { /* storage unavailable */ } });
   let target = $state<'daily' | 'inbox' | 'task'>('daily');
   let workspace = $state('');
   let workspaces = $state<string[]>([]);
