@@ -103,6 +103,8 @@ public sealed class WriteService
 
     public Node Create(CreateNodeRequest request, Actor actor)
     {
+        // Same rule as renaming: no stray spaces around a title, and never an empty one.
+        request = request with { Title = string.IsNullOrWhiteSpace(request.Title) ? "Untitled" : request.Title.Trim() };
         Permissions.Demand(actor, Permission.CreateEdit, $"Create {request.Type} '{request.Title}'");
         lock (_gate)
         {
