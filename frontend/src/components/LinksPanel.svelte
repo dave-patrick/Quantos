@@ -34,8 +34,15 @@
     for (const b of visible) m.set(b.sourceId, [...(m.get(b.sourceId) ?? []), b]);
     return [...m.values()];
   });
-  const unresolved = $derived(outlinks.filter((o) => o.target.startsWith('?')));
-  const resolved = $derived(outlinks.filter((o) => !o.target.startsWith('?')));
+  // Each linked note once, however many times this note mentions it.
+  const unique = (list: LinkRef[]) => {
+    const m = new Map<string, { link: LinkRef; count: number }>();
+    for (const o of list) { const k = o.target + '|' + o.kind; const e = m.get(k); if (e) e.count++; else m.set(k, { link: o, count: 1 }); }
+    return [...m.values()];
+  };
+  const unresolved = $derived(unique(outlinks.filter((o) => o.target.startsWith('?'))));
+  const resolved = $derived(unique(outlinks.filter((o) => !o.target.startsWith('?'))));
+  const shownContexts = 5;
 
   const clean = (s: string) => s.replace(/\[\[[0-9A-HJKMNP-TV-Z]{26}(?:#[^\]|]+)?\|([^\]]+)\]\]/g, '$1').replace(/<!--task:[0-9A-Z]{26}-->/g, '');
 </script>
@@ -45,7 +52,7 @@
     <p class="faint pad">Open a note to see what links to it.</p>
   {:else}
     <section>
-      <h3 class="label">Backlinks <span class="faint">{visible.length}</span></h3>
+      <h3 class="label">Backlinks <span class="faint" title="{visible.length} link{visible.length === 1 ? '' : 's'}">{grouped.length}</span></h3>
       <div class="filters">
         <input class="input" placeholder="Filter backlinks" bind:value={filter} />
         <select class="input" bind:value={scope}><option value="all">All workspaces</option><option value="workspace">This workspace</option></select>
@@ -56,7 +63,8 @@
           <button class="src" onclick={(e) => openNode(group[0].sourceId, whereFrom(e), group[0].sourceTitle)}>
             <Icon name="file-text" size={13} /> {group[0].sourceTitle} <span class="faint">{group[0].sourceWorkspace !== app.workspace ? '· ' + group[0].sourceWorkspace : ''}</span>
           </button>
-          {#each group as b, i (i)}<p class="ctx">{clean(b.context)}</p>{/each}
+          {#each group.slice(0, shownContexts) as b, i (i)}<p class="ctx">{clean(b.context)}</p>{/each}
+          {#if group.length > shownContexts}<p class="ctx faint">+{group.length - shownContexts} more</p>{/if}
         </div>
       {:else}
         <p class="faint">Nothing links here yet.</p>
@@ -64,12 +72,12 @@
     </section>
     <section>
       <h3 class="label">Forward links <span class="faint">{resolved.length}</span></h3>
-      {#each resolved as o, i (i)}
-        <button class="src" onclick={(e) => openNode(o.target, whereFrom(e), o.sourceTitle)}><Icon name={o.kind === 'embed' ? 'layers' : 'link'} size={13} /> {o.sourceTitle}</button>
+      {#each resolved as { link: o, count }, i (i)}
+        <button class="src" onclick={(e) => openNode(o.target, whereFrom(e), o.sourceTitle)}><Icon name={o.kind === 'embed' ? 'layers' : 'link'} size={13} /> {o.sourceTitle}{#if count > 1}<span class="faint count">×{count}</span>{/if}</button>
       {:else}<p class="faint">No links in this note.</p>{/each}
       {#if unresolved.length}
         <h3 class="label">Unresolved</h3>
-        {#each unresolved as o, i (i)}
+        {#each unresolved as { link: o }, i (i)}
           <button class="src dashed" title="Open or create" onclick={(e) => openTarget(o.target.slice(1), whereFrom(e))}><Icon name="plus" size={13} /> {o.target.slice(1)}</button>
         {/each}
       {/if}
@@ -84,6 +92,7 @@
   .filters { display: grid; gap: 4px; margin-bottom: 8px; }
   .filters .input { height: 28px; font-size: 12.5px; }
   .ref { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .count { margin-left: auto; font: 11px var(--font-mono); }
   .src { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; border: 0; background: none; color: var(--accent); padding: 4px 6px; border-radius: 5px; font-size: 13.5px; }
   .src:hover { background: var(--bg-hover); }
   .src.dashed { color: var(--text-muted); }

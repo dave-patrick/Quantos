@@ -24,9 +24,10 @@ public static partial class Links
 {
     public static IEnumerable<WikiLink> Find(string body)
     {
+        var code = new CodeMap(body);
         foreach (Match m in WikiPattern().Matches(body))
         {
-            if (InCode(body, m.Index)) continue;
+            if (code.Contains(m.Index)) continue;
             yield return new WikiLink(
                 m.Groups["bang"].Success ? LinkKind.Embed : LinkKind.Link,
                 m.Groups["target"].Value.Trim(),
@@ -118,24 +119,7 @@ public static partial class Links
     }
 
     /// <summary>True when <paramref name="index"/> is inside a fenced code block or inline code span.</summary>
-    public static bool InCode(string text, int index)
-    {
-        var fences = 0;
-        var lineStart = 0;
-        while (lineStart < index)
-        {
-            var lineEnd = text.IndexOf('\n', lineStart);
-            if (lineEnd < 0 || lineEnd >= index) break;
-            var line = text.AsSpan(lineStart, lineEnd - lineStart).TrimStart();
-            if (line.StartsWith("```") || line.StartsWith("~~~")) fences++;
-            lineStart = lineEnd + 1;
-        }
-        if (fences % 2 == 1) return true;
-        // Inline code on the same line: odd number of backticks before the index.
-        var ticks = 0;
-        for (var i = lineStart; i < index; i++) if (text[i] == '`') ticks++;
-        return ticks % 2 == 1;
-    }
+    public static bool InCode(string text, int index) => new CodeMap(text).Contains(index);
 
     [GeneratedRegex(@"<!--(?:task|sync|/sync)[^>]*-->")]
     private static partial Regex CommentPattern();
@@ -154,4 +138,40 @@ public static partial class Links
 
     [GeneratedRegex(@"^[ \t]*[-*+][ \t]+\[(?<check>[ xX])\][ \t]+(?<text>.*?)[ \t]*<!--task:(?<id>[0-9A-HJKMNP-TV-Z]{26})-->", RegexOptions.Multiline)]
     private static partial Regex InlineTaskPattern();
+}
+
+/// <summary>
+/// Where the code is in a body, worked out once: fenced blocks from a single pass over the lines,
+/// inline spans from the current line. Checking every link in a long note stays linear.
+/// </summary>
+public sealed class CodeMap
+{
+    private readonly string _text;
+    private readonly List<int> _fenceLineEnds = [];
+
+    public CodeMap(string text)
+    {
+        _text = text;
+        for (var start = 0; start < text.Length;)
+        {
+            var end = text.IndexOf('\n', start);
+            if (end < 0) break;
+            var line = text.AsSpan(start, end - start).TrimStart();
+            if (line.StartsWith("```") || line.StartsWith("~~~")) _fenceLineEnds.Add(end);
+            start = end + 1;
+        }
+    }
+
+    public bool Contains(int index)
+    {
+        // Fence lines that end before the index's own line: an odd count means we're inside a block.
+        var fences = _fenceLineEnds.BinarySearch(index);
+        fences = fences >= 0 ? fences : ~fences;
+        if (fences % 2 == 1) return true;
+        // Inline code on the same line: an odd number of backticks before the index.
+        var lineStart = index == 0 ? 0 : _text.LastIndexOf('\n', index - 1) + 1;
+        var ticks = 0;
+        for (var i = lineStart; i < index; i++) if (_text[i] == '`') ticks++;
+        return ticks % 2 == 1;
+    }
 }

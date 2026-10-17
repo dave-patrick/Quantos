@@ -282,8 +282,11 @@ public sealed partial class SupertagService(WriteService writes)
         return Get(id) ?? throw new QuantosException("Supertag not found.", 404);
     }
 
-    private static string ReplaceHashtag(string body, string from, string to) =>
-        Regex.Replace(body, @"(?<![\w&/#])#" + Regex.Escape(from) + @"(?![\w\-/])", m => Links.InCode(body, m.Index) ? m.Value : "#" + to, RegexOptions.IgnoreCase);
+    private static string ReplaceHashtag(string body, string from, string to)
+    {
+        var code = new CodeMap(body);
+        return Regex.Replace(body, @"(?<![\w&/#])#" + Regex.Escape(from) + @"(?![\w\-/])", m => code.Contains(m.Index) ? m.Value : "#" + to, RegexOptions.IgnoreCase);
+    }
 
     /// <summary>
     /// Explicit data migration after a schema change (the user chose it): converts a field's values

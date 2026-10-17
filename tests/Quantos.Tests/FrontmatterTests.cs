@@ -72,6 +72,16 @@ public class FrontmatterTests
         Assert.Equal("CoverMet Sam about Budget (brief).\n- [ ] Call back \n\nShared line\n", Links.PlainText(body));
     }
 
+    [Fact] // A long note with many links must not take quadratic time to scan (it once took ~30 s to save)
+    public void Finding_links_in_a_long_note_is_fast()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (var i = 0; i < 20_000; i++) sb.Append(i % 50 == 0 ? "```\n[[NotALink]]\n```\n" : $"- item {i} [[01JABCDEF0123456789XYZABCD|Two]]\n");
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var links = Links.Find(sb.ToString()).ToList();
+        Assert.True(sw.ElapsedMilliseconds < 1500, $"took {sw.ElapsedMilliseconds} ms");
+        Assert.Equal(19_600, links.Count);
+    }
     [Fact]
     public void Ulids_are_valid_and_increase()
     {
