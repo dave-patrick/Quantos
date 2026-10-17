@@ -3,6 +3,7 @@
   import { app } from '../lib/state.svelte';
   import { switchWorkspace } from '../lib/workspace';
   import Icon from './Icon.svelte';
+  import { menu } from '../lib/menu';
 
   let open = $state(false);
   let creating = $state(false);
@@ -29,7 +30,7 @@
   </button>
   {#if open}
     <button class="backdrop" aria-label="Close" onclick={() => (open = false)}></button>
-    <div class="menu" role="menu">
+    <div class="menu" role="menu" tabindex="-1" use:menu={{ onclose: () => { open = false; creating = false; } }}>
       {#each app.workspaces as ws (ws)}
         <button role="menuitemradio" aria-checked={ws === app.workspace} class:on={ws === app.workspace}
           onclick={() => { open = false; switchWorkspace(ws); }}>

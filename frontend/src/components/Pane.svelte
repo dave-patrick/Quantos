@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import { menu as menuKeys } from '../lib/menu';
   import { layout, type Pane, type Tab } from '../lib/layout.svelte';
   import { docs } from '../lib/docs.svelte';
   import Icon from './Icon.svelte';
@@ -100,7 +101,7 @@
 
 {#if menu}
   <button class="backdrop" aria-label="Close menu" onclick={() => (menu = null)}></button>
-  <div class="menu" style="left:{menu.x}px; top:{menu.y}px" role="menu">
+  <div class="menu" style="left:{menu.x}px; top:{menu.y}px" role="menu" tabindex="-1" use:menuKeys={{ onclose: () => (menu = null) }}>
     <button role="menuitem" onclick={() => { layout.togglePin(index, menu!.tab.key); menu = null; }}>{menu.tab.pinned ? 'Unpin tab' : 'Pin tab'}</button>
     <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.open({ kind: t.kind, nodeId: t.nodeId, arg: t.arg, title: t.title }, 'other'); }}>Open in other pane</button>
     <button role="menuitem" onclick={() => { layout.closeOthers(index, menu!.tab.key); menu = null; }}>Close other tabs</button>
