@@ -142,6 +142,26 @@ public class TaskAcceptanceTests
         Assert.Equal("Buy oat milk", T(v).Require(task.Id).Title);
     }
 
+    [Fact]
+    public void Dependencies_block_until_done_and_a_trashed_one_stops_blocking()
+    {
+        using var v = new TestVault();
+        var first = T(v).Create(new CreateTaskRequest { Title = "Get quotes", Effort = 30 }, Actor.User);
+        var second = T(v).Create(new CreateTaskRequest { Title = "Choose supplier", DependsOn = [first.Id] }, Actor.User);
+        var sub = T(v).Create(new CreateTaskRequest { Title = "Call two suppliers", Parent = first.Id, Effort = 45 }, Actor.User);
+        Assert.True(T(v).Require(second.Id).Blocked);
+        Assert.Equal(75, T(v).Require(first.Id).EffortRollup);
+        Assert.Equal(1, T(v).Require(first.Id).SubtaskCount);
+
+        T(v).SetStatus(first.Id, TaskStatus.Done, Actor.User);
+        Assert.False(T(v).Require(second.Id).Blocked);
+
+        T(v).SetStatus(first.Id, TaskStatus.Todo, Actor.User);
+        Assert.True(T(v).Require(second.Id).Blocked);
+        v.Writes.Trash(first.Id, Actor.User);
+        Assert.False(T(v).Require(second.Id).Blocked); // nothing to wait for any more
+        _ = sub;
+    }
     [Fact] // Same tokens as the quick-add box (frontend/tests/logic.test.ts)
     public void Quick_add_tokens_parse_like_the_frontend()
     {

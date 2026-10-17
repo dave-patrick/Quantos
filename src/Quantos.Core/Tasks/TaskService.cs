@@ -116,9 +116,8 @@ public sealed partial class TaskService : ITaskHooks
 
     public TaskDto? Get(string id)
     {
-        var all = AllSummaries();
-        var summary = all.FirstOrDefault(s => s.Id == id);
-        return summary is null ? null : ToDto(summary, all);
+        var index = new TaskIndex(AllSummaries());
+        return index.ById.TryGetValue(id, out var summary) ? ToDto(summary, index) : null;
     }
 
     public TaskDto Require(string id) => Get(id) ?? throw new QuantosException("Task not found.", 404);
@@ -126,21 +125,32 @@ public sealed partial class TaskService : ITaskHooks
     public IReadOnlyList<TaskDto> List(string? workspace = null, bool includeClosed = true, bool includeArchived = false)
     {
         var all = AllSummaries();
+        var index = new TaskIndex(all);
         return all.Where(s => (workspace is null || s.Workspace == workspace) && (includeArchived || !s.Archived))
-            .Select(s => ToDto(s, all))
+            .Select(s => ToDto(s, index))
             .Where(t => includeClosed || !TaskStatus.IsClosed(t.Status))
             .ToList();
     }
 
     private List<NodeSummary> AllSummaries() => Cache.List(type: NodeTypes.Task, includeArchived: true, limit: 1_000_000).ToList();
 
-    private static TaskDto ToDto(NodeSummary s, IReadOnlyList<NodeSummary> all)
+    /// <summary>Tasks by id and by parent, built once per listing so each task's lookups are cheap.</summary>
+    private sealed class TaskIndex(IReadOnlyList<NodeSummary> all)
+    {
+        public Dictionary<string, NodeSummary> ById { get; } = all.GroupBy(s => s.Id).ToDictionary(g => g.Key, g => g.First());
+        public ILookup<string, NodeSummary> Children { get; } = all
+            .Select(c => (Parent: Props.LinkId(Props.Str(c.Properties, TaskKeys.Parent)), Child: c))
+            .Where(x => x.Parent is not null).ToLookup(x => x.Parent!, x => x.Child);
+    }
+
+    private static TaskDto ToDto(NodeSummary s, TaskIndex index)
     {
         var p = s.Properties;
         var status = Props.Str(p, TaskKeys.Status) ?? TaskStatus.Todo;
-        var children = all.Where(c => Props.LinkId(Props.Str(c.Properties, TaskKeys.Parent)) == s.Id).ToList();
+        var children = index.Children[s.Id].ToList();
         var deps = Props.List(p, TaskKeys.DependsOn).Select(d => Props.LinkId(d) ?? d).ToList();
-        var blocked = deps.Any(d => all.FirstOrDefault(t => t.Id == d) is not { } dep || !TaskStatus.IsClosed(Props.Str(dep.Properties, TaskKeys.Status)));
+        // Only a dependency that still exists and is open blocks; one in the trash or deleted no longer does.
+        var blocked = deps.Any(d => index.ById.TryGetValue(d, out var dep) && !TaskStatus.IsClosed(Props.Str(dep.Properties, TaskKeys.Status)));
         var block = Props.Map(p, TaskKeys.TimeBlock);
         return new TaskDto(
             s.Id, s.Title, s.Workspace, s.Path, status, Props.Int(p, TaskKeys.Priority), Props.Str(p, TaskKeys.Due), Props.Str(p, TaskKeys.Planned),
@@ -152,20 +162,20 @@ public sealed partial class TaskService : ITaskHooks
                 .Select(m => new ReminderDto(m["at"]!, m.GetValueOrDefault("snoozed_until"), m.GetValueOrDefault("fired"))).ToList(),
             s.Tags, s.Modified, s.Created, s.Archived, blocked, children.Count,
             children.Count(c => TaskStatus.IsClosed(Props.Str(c.Properties, TaskKeys.Status))),
-            EffortRollup(s, all, []), Props.Str(p, TaskKeys.Stage), Props.Str(p, TaskKeys.MyDay), Props.Int(p, TaskKeys.MyDayOrder),
+            EffortRollup(s, index, []), Props.Str(p, TaskKeys.Stage), Props.Str(p, TaskKeys.MyDay), Props.Int(p, TaskKeys.MyDayOrder),
             Props.Int(p, TaskKeys.RolledOver) ?? 0);
     }
 
     /// <summary>Own effort plus all subtasks' effort (BUILD-PLAN 8B.7). Loops are cut, never followed.</summary>
-    private static int? EffortRollup(NodeSummary s, IReadOnlyList<NodeSummary> all, HashSet<string> seen)
+    private static int? EffortRollup(NodeSummary s, TaskIndex index, HashSet<string> seen)
     {
         if (!seen.Add(s.Id)) return null;
         var own = Props.Int(s.Properties, TaskKeys.Effort);
         var sum = own ?? 0;
         var any = own.HasValue;
-        foreach (var child in all.Where(c => Props.LinkId(Props.Str(c.Properties, TaskKeys.Parent)) == s.Id))
+        foreach (var child in index.Children[s.Id])
         {
-            var r = EffortRollup(child, all, seen);
+            var r = EffortRollup(child, index, seen);
             if (r.HasValue) { sum += r.Value; any = true; }
         }
         return any ? sum : null;
