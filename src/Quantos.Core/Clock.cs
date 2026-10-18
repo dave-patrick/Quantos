@@ -24,6 +24,9 @@ public class Clock(TimeProvider? provider = null)
         TimeZoneInfo.ClearCachedData();
     }
 
+    /// <summary>The zone's IANA name (America/Phoenix) when there is one: portable, unlike Windows names.</summary>
+    public string ZoneName => Zone.HasIanaId ? Zone.Id : TimeZoneInfo.TryConvertWindowsIdToIanaId(Zone.Id, out var iana) ? iana : Zone.Id;
+
     public string Stamp() => Now.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);
 
     /// <summary>Sortable UTC stamp used for history and trash names.</summary>

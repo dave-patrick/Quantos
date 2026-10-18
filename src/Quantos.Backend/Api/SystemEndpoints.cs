@@ -33,7 +33,7 @@ public static class SystemEndpoints
                 reconcile = session?.LastReconcile,
                 safeMode = session?.Permissions.SafeMode ?? false,
                 windowsClientConnected = presence.WindowsClientConnected,
-                timeZone = TimeZoneInfo.Local.Id,
+                timeZone = new Clock().ZoneName,
                 utcOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).ToString(),
                 actor = new { kind = ctx.Actor().Kind, name = ctx.Actor().Name, native = ctx.IsNative(), windowsClient = ctx.IsWindowsClient() }
             };

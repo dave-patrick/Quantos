@@ -99,7 +99,7 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 | `completed` | datetime the task was completed |
 | `source` | id of the note the task was created from |
 | `time_block` | `{start: datetime, end: datetime}` for the timeline |
-| `tz` | IANA or Windows time zone used for `due`/`planned`/reminders |
+| `tz` | Time zone used for `due`/`planned`/reminders. New files use the IANA name (`America/Phoenix`); Windows names in older files remain valid. |
 
 ## 3. Inline references
 

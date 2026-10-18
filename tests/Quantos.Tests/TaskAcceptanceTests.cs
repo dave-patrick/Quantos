@@ -162,6 +162,14 @@ public class TaskAcceptanceTests
         Assert.False(T(v).Require(second.Id).Blocked); // nothing to wait for any more
         _ = sub;
     }
+    [Fact]
+    public void Tasks_record_a_portable_time_zone_name()
+    {
+        using var v = new TestVault();
+        var task = T(v).Create(new CreateTaskRequest { Title = "Call home" }, Actor.User);
+        var tz = (string)v.Writes.Require(task.Id).Properties[TaskKeys.Tz]!;
+        Assert.True(tz.Contains('/') || tz == "UTC", $"Expected an IANA name, got '{tz}'");
+    }
     [Fact] // Same tokens as the quick-add box (frontend/tests/logic.test.ts)
     public void Quick_add_tokens_parse_like_the_frontend()
     {

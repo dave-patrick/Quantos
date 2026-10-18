@@ -87,7 +87,7 @@ public sealed partial class TaskService : ITaskHooks
         var title = r.Title.Trim();
         if (title.Length == 0) throw new QuantosException("A task needs a title.");
         if (!TaskStatus.All.Contains(r.Status)) throw new QuantosException($"Unknown status '{r.Status}'.");
-        var props = new Dictionary<string, object?> { [TaskKeys.Status] = r.Status, [TaskKeys.Tz] = _writes.Clock.Zone.Id };
+        var props = new Dictionary<string, object?> { [TaskKeys.Status] = r.Status, [TaskKeys.Tz] = _writes.Clock.ZoneName };
         void Put(string key, object? value) { if (value is not null && (value is not string s || s.Length > 0)) props[key] = value; }
         Put(TaskKeys.Priority, r.Priority is >= 1 and <= 4 ? r.Priority : null);
         Put(TaskKeys.Due, ValidDate(r.Due, "due"));
