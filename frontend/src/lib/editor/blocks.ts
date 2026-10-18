@@ -183,7 +183,7 @@ export const blockExtras: Extension = [embedBlocks, calloutFold, foldCollapsedCa
 
 export const blockTheme = EditorView.theme({
   // Rendered HTML inside the editor must not inherit its pre-wrap whitespace (newlines between tags become blank lines).
-  '.cm-embed, .cm-columns, .cm-footnote-tip': { whiteSpace: 'normal' },
+  '.cm-embed, .cm-columns, .cm-footnote-tip, .cm-query-block': { whiteSpace: 'normal' },
   '.cm-embed': { border: '1px solid var(--line-strong)', borderLeft: '3px solid var(--accent)', borderRadius: '8px', background: 'var(--bg-raised)', margin: '6px 0', padding: '6px 12px 8px', fontSize: '0.92em' },
   '.cm-embed.missing': { borderLeftColor: 'var(--danger)' },
   '.cm-embed-head': { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '700', color: 'var(--accent)', cursor: 'pointer', fontSize: '13px' },
