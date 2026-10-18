@@ -219,8 +219,18 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
             return null;
         }
         catch (Exception ex) { return "PDF export failed: " + ex.Message; }
-        finally { try { Directory.Delete(profile, true); } catch { } }
+        finally { DeleteSoon(profile); }
     }
+
+    /// <summary>Edge's helper processes can hold the temporary profile for a moment after it's closed.</summary>
+    private static void DeleteSoon(string folder) => _ = Task.Run(async () =>
+    {
+        for (var attempt = 0; attempt < 20 && Directory.Exists(folder); attempt++)
+        {
+            try { Directory.Delete(folder, true); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { await Task.Delay(500); }
+        }
+    });
 
     private static string Unique(string path)
     {
