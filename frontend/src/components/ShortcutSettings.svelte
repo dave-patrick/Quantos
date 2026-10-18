@@ -87,11 +87,11 @@
   .filter { max-width: 320px; margin-bottom: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
-  .group { font: 11px var(--font-mono); width: 90px; }
-  .keys { width: 200px; }
+  .group { font: 11px var(--font-mono); width: 1%; white-space: nowrap; padding-right: 14px; }
+  .keys, .actions { width: 1%; white-space: nowrap; }
   .key { border: 1px solid var(--line-strong); border-bottom-width: 2px; background: var(--bg-raised); border-radius: 5px; padding: 2px 10px; font: 12px var(--font-mono); color: var(--text-soft); min-width: 60px; }
   .rec { height: 28px; font-size: 12px; }
   tr.conflict .key { border-color: var(--warn); color: var(--warn); }
-  .actions { width: 160px; text-align: right; }
+  .actions { text-align: right; }
   .actions .btn { height: 24px; font-size: 12px; padding: 0 8px; }
 </style>
