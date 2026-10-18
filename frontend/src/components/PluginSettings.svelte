@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AutomationEditor, { fromJson, toJson, ruleProblems, type UiRule } from './AutomationEditor.svelte';
   import { onMount } from 'svelte';
   import { api, ApiError } from '../lib/api';
   import { app } from '../lib/state.svelte';
@@ -23,8 +24,9 @@
     const p = await api.get<{ grants: typeof grants; safeMode: boolean }>('permissions');
     grants = p.grants; safeMode = p.safeMode;
     await plugins.load();
-    const a = await api.get<unknown>('config/automations.json').catch(() => null);
+    const a = await api.get<any>('config/automations.json').catch(() => null);
     automationsText = JSON.stringify(a ?? { automations: [] }, null, 2);
+    rules = fromJson(Array.isArray(a) ? a : a?.automations ?? []);
     recent = await api.get('automations/recent');
   }
   onMount(load);
@@ -63,7 +65,29 @@
     if (enabled && !safeMode) plugins.mount(name); else plugins.unmount(name);
   }
 
+  /** The form is the usual way; JSON stays available for anything the form doesn't cover. */
+  let automationMode = $state<'form' | 'json'>('form');
+  let rules = $state<UiRule[]>([]);
+
+  function switchMode(to: 'form' | 'json') {
+    if (to === automationMode) return;
+    if (to === 'json') automationsText = JSON.stringify({ automations: toJson(rules) }, null, 2);
+    else {
+      try {
+        const parsed = JSON.parse(automationsText);
+        rules = fromJson(Array.isArray(parsed) ? parsed : parsed.automations ?? []);
+      } catch (e) { automationError = `The JSON isn't valid yet: ${(e as Error).message}`; return; }
+    }
+    automationError = '';
+    automationMode = to;
+  }
+
   async function saveAutomations() {
+    if (automationMode === 'form') {
+      const problems = ruleProblems(rules);
+      if (problems.length) { automationError = problems.join(' '); return; }
+      automationsText = JSON.stringify({ automations: toJson(rules) }, null, 2);
+    }
     try {
       const parsed = JSON.parse(automationsText);
       const list = Array.isArray(parsed) ? parsed : parsed.automations;
@@ -143,11 +167,21 @@
 <section>
   <h3>Automations</h3>
   <p class="faint">Run actions when a property changes. Saved in the vault's automations.json. Automations can edit content; give one more (like archiving) under Grants below.</p>
-  <textarea bind:value={automationsText} rows="14" spellcheck="false"></textarea>
+  {#if automationMode === 'form'}
+    <AutomationEditor bind:rules />
+  {:else}
+    <textarea bind:value={automationsText} rows="14" spellcheck="false" aria-label="Automations as JSON"></textarea>
+  {/if}
   {#if automationError}<p class="warn">{automationError}</p>{/if}
   <div class="row">
     <button class="btn primary" onclick={saveAutomations}>Save automations</button>
-    <button class="btn ghost" onclick={() => (automationsText = example)}>Show an example</button>
+    {#if automationMode === 'form'}
+      {#if !rules.length}<button class="btn ghost" onclick={() => (rules = fromJson(JSON.parse(example).automations))}>Start from an example</button>{/if}
+      <button class="btn ghost" onclick={() => switchMode('json')}>Edit as JSON</button>
+    {:else}
+      <button class="btn ghost" onclick={() => (automationsText = example)}>Show an example</button>
+      <button class="btn ghost" onclick={() => switchMode('form')}>Back to the form</button>
+    {/if}
   </div>
   {#each Object.entries(grants.automations) as [name, perms] (name)}
     <div class="card"><strong>{name}</strong>

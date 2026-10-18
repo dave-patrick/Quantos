@@ -216,7 +216,8 @@ approval in the Windows client.
   and get only the permissions you grant. **Safe mode** (Settings) turns all plugins off. To write one,
   see `PLUGINS.md`.
 - **Automations** react to property changes, e.g. when a `#project` note's status becomes *Done*,
-  stamp the date and create a follow-up task. Edit them in *Settings › Plugins & permissions*.
+  stamp the date and create a follow-up task. Build them with the form in *Settings › Plugins &
+  permissions* (or edit the JSON there). *Recent runs* shows what each one did.
 
 ---
 
