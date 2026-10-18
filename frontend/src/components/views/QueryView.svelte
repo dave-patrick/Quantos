@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ago } from '../../lib/today.svelte';
   import { onMount, tick } from 'svelte';
   import { api } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
@@ -8,7 +9,6 @@
   import { supertags } from '../../lib/supertags.svelte';
   import { cellValue, display, parsePasted, propertyKey, runQuery, type QueryRow } from '../../lib/query';
   import { openNode, whereFrom } from '../../lib/links.svelte';
-  import { relativeTime } from '../../lib/dates';
   import DataTable from '../DataTable.svelte';
   import Icon from '../Icon.svelte';
 
@@ -246,7 +246,7 @@
           <button class="list-row" onclick={(e) => openNode(r.id, whereFrom(e), r.title)}>
             <Icon name={r.type === 'task' ? 'check-square' : r.type === 'person' ? 'user' : 'file-text'} size={14} />
             <span class="t">{r.title}</span>
-            <span class="faint">{columns.filter((c) => c !== 'title').slice(0, 3).map((c) => (c === 'modified' || c === 'created') ? relativeTime(String(cellValue(r, c) ?? '')) : display(cellValue(r, c))).filter(Boolean).join(' · ')}</span>
+            <span class="faint">{columns.filter((c) => c !== 'title').slice(0, 3).map((c) => (c === 'modified' || c === 'created') ? ago(String(cellValue(r, c) ?? '')) : display(cellValue(r, c))).filter(Boolean).join(' · ')}</span>
           </button>
         {/each}
       {/each}

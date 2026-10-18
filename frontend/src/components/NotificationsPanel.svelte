@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { ago } from '../lib/today.svelte';
   import { onMount } from 'svelte';
   import { notifications } from '../lib/notifications.svelte';
   import { openNode } from '../lib/links.svelte';
-  import { relativeTime } from '../lib/dates';
   import { isWindowsClient } from '../lib/platform';
   let permission = $state(typeof Notification === 'undefined' ? 'unsupported' : Notification.permission);
   onMount(() => notifications.load());
@@ -16,7 +16,7 @@
   {/if}
   {#each notifications.list as n (n.id)}
     <button class="note" class:unread={!n.read} onclick={() => { notifications.markRead([n.id]); if (n.nodeId) openNode(n.nodeId, 'new'); }}>
-      <strong>{n.title}</strong><span>{n.body}</span><span class="faint">{relativeTime(n.at)}</span>
+      <strong>{n.title}</strong><span>{n.body}</span><span class="faint">{ago(n.at)}</span>
     </button>
   {:else}
     <p class="faint">No notifications yet. Reminders appear here.</p>

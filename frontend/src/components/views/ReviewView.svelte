@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { day } from '../../lib/today.svelte';
+  import { day, ago } from '../../lib/today.svelte';
   import { api } from '../../lib/api';
   import { tasks, type TaskDto } from '../../lib/tasks.svelte';
   import { app } from '../../lib/state.svelte';
-  import { relativeTime } from '../../lib/dates';
   import TaskRow from '../TaskRow.svelte';
 
   let days = $state(14);
@@ -36,7 +35,7 @@
       <div class="item">
         <TaskRow task={t} showMyDay={false} />
         <div class="actions">
-          <span class="faint">touched {relativeTime(t.modified)}{t.rolledOver ? ` · rolled over ${t.rolledOver}×` : ''}</span>
+          <span class="faint">touched {ago(t.modified)}{t.rolledOver ? ` · rolled over ${t.rolledOver}×` : ''}</span>
           <button class="btn ghost" onclick={() => act(t, 'today')}>Do today</button>
           <button class="btn ghost" onclick={() => act(t, 'keep')}>Still relevant</button>
           <button class="btn ghost" onclick={() => act(t, 'someday')}>Someday</button>

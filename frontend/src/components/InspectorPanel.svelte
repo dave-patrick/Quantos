@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { ago } from '../lib/today.svelte';
   import { onDestroy } from 'svelte';
   import { layout } from '../lib/layout.svelte';
   import { docs, type Doc } from '../lib/docs.svelte';
-  import { relativeTime } from '../lib/dates';
   import Properties from './Properties.svelte';
 
   const id = $derived(layout.activeTab?.nodeId ?? null);
@@ -25,8 +25,8 @@
     <dl class="facts">
       <dt>Type</dt><dd>{doc.node.type}</dd>
       <dt>Workspace</dt><dd>{doc.node.workspace || 'global'}</dd>
-      <dt>Created</dt><dd>{relativeTime(doc.node.created)}</dd>
-      <dt>Modified</dt><dd>{relativeTime(doc.node.modified)}</dd>
+      <dt>Created</dt><dd>{ago(doc.node.created)}</dd>
+      <dt>Modified</dt><dd>{ago(doc.node.modified)}</dd>
       <dt>File</dt><dd class="mono">{doc.node.path}</dd>
       <dt>Identity</dt><dd class="mono">{doc.node.id}</dd>
     </dl>

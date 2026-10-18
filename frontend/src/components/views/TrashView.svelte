@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { ago } from '../../lib/today.svelte';
   import { onMount } from 'svelte';
   import { api, ApiError } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
   import { onChange } from '../../lib/events';
   import { openNode } from '../../lib/links.svelte';
-  import { relativeTime } from '../../lib/dates';
   import { awaitApproval } from '../../lib/approvals.svelte';
   import type { NodeDto, TrashEntry } from '../../lib/types';
   import Icon from '../Icon.svelte';
@@ -68,7 +68,7 @@
               <td><input type="checkbox" checked={selected.has(entry.entryId)} onchange={() => toggle(entry.entryId)} aria-label="Select {entry.title}" /></td>
               <td><Icon name={entry.type === 'task' ? 'check-square' : 'file-text'} size={14} /> {entry.title}</td>
               <td class="mono faint">{entry.originalPath}</td>
-              <td class="faint">{relativeTime(entry.trashedAt)}</td>
+              <td class="faint">{ago(entry.trashedAt)}</td>
               <td class="faint">{entry.referrers.length ? `${entry.referrers.length} note${entry.referrers.length === 1 ? '' : 's'}` : '—'}</td>
               <td class="actions">
                 <button class="btn" onclick={() => restore(entry)}>Restore</button>

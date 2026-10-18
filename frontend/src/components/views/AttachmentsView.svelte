@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { ago } from '../../lib/today.svelte';
   import { onMount } from 'svelte';
   import { api } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
   import { layout } from '../../lib/layout.svelte';
-  import { relativeTime } from '../../lib/dates';
 
   interface Info { path: string; hash: string; size: number; references: number; modified: string; extension: string }
   let items = $state<Info[]>([]);
@@ -48,7 +48,7 @@
             </td>
             <td>{fmt(i.size)}</td>
             <td>{i.references ? `${i.references} note(s)` : 'nothing'}</td>
-            <td class="faint">{relativeTime(i.modified)}</td>
+            <td class="faint">{ago(i.modified)}</td>
             <td class="actions">
               {#if i.extension === '.pdf'}<button class="btn ghost" onclick={() => layout.open({ kind: 'pdf', arg: i.path, title: 'PDF' }, 'new')}>Open</button>{/if}
               {#if !i.references}<button class="btn ghost" onclick={() => trash(i)}>Trash</button>{/if}

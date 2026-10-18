@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ago } from '../../lib/today.svelte';
   import { onDestroy, onMount, tick } from 'svelte';
   import type { EditorView } from '@codemirror/view';
   import { EditorView as CMView } from '@codemirror/view';
@@ -9,7 +10,6 @@
   import { prefs } from '../../lib/prefs.svelte';
   import { copyMarkdown, copyRich, outline } from '../../lib/render';
   import { wordCount, readingMinutes } from '../../lib/text';
-  import { relativeTime } from '../../lib/dates';
   import type { NodeDto } from '../../lib/types';
   import Editor from '../Editor.svelte';
   import Icon from '../Icon.svelte';
@@ -177,7 +177,7 @@
           <div class="meta faint">
             <span class="badge">{doc.node.type}</span>
             {#if doc.node.archived}<span class="badge warn">archived</span>{/if}
-            <span>Edited {relativeTime(doc.node.modified)}</span>
+            <span>Edited {ago(doc.node.modified)}</span>
           </div>
           {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
           <Properties {doc} />
