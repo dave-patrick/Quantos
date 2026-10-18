@@ -2,6 +2,8 @@
   import type { Tab } from '../../lib/layout.svelte';
   import { activeEditor } from '../../lib/activeEditor';
   import { app } from '../../lib/state.svelte';
+  import { docs } from '../../lib/docs.svelte';
+  import { openNode } from '../../lib/links.svelte';
 
   /** PDF viewing and citations (BUILD-PLAN 8D.8): the browser's own viewer, plus "cite this page". */
   let { tab }: { tab: Tab } = $props();
@@ -10,12 +12,35 @@
   const src = $derived(`/api/files/${path}#page=${page}`);
   const name = tab.title ?? 'PDF';
 
+  /** The note's tab is closed or hidden: add the citation through the document store, where the caret was. */
+  async function citeInto(id: string, md: string) {
+    const doc = docs.acquire(id);
+    try {
+      while (doc.status === 'loading') await new Promise((r) => setTimeout(r, 30));
+      const body = doc.body;
+      let at = Math.min(activeEditor.lastPos ?? body.length, body.length);
+      // Right after the caret, on the same line; a space keeps it apart from the word before.
+      const insert = (at > 0 && !/\s/.test(body[at - 1]) ? ' ' : '') + md;
+      doc.edit(body.slice(0, at) + insert + body.slice(at));
+      activeEditor.lastPos = at + insert.length;
+      await doc.flush();
+      const title = doc.node?.title ?? 'the note';
+      app.toast(`Citation added to “${title}”.`, 'ok', { label: 'Open', run: () => openNode(id, 'current', title) });
+    } catch (e) { app.error(e); }
+    finally { docs.release(id); }
+  }
+
   function cite() {
     const md = `[${name}, p. ${page}](${path}#page=${page})`;
-    if (activeEditor.view) {
+    if (activeEditor.view?.dom.isConnected) {
       const v = activeEditor.view;
-      v.dispatch({ changes: { from: v.state.selection.main.head, insert: md } });
+      const at = v.state.selection.main.head;
+      const before = at > 0 ? v.state.sliceDoc(at - 1, at) : '';
+      const insert = (before && !/\s/.test(before) ? ' ' : '') + md;
+      v.dispatch({ changes: { from: at, insert }, selection: { anchor: at + insert.length } });
       app.toast('Citation inserted into the last note you edited.', 'ok');
+    } else if (activeEditor.docId) {
+      void citeInto(activeEditor.docId, md);
     } else {
       navigator.clipboard.writeText(md).then(
         () => app.toast('Citation copied. Paste it into a note.', 'ok'),

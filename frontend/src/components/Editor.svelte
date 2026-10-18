@@ -8,7 +8,7 @@
   import { EditorView as View } from '@codemirror/view';
   import { linkHooks, taskHooks, tasksVersion } from '../lib/links.svelte';
   import { prefs } from '../lib/prefs.svelte';
-  import { activeEditor } from '../lib/activeEditor';
+  import { activeEditor, editorDocs } from '../lib/activeEditor';
 
   let {
     text,
@@ -47,10 +47,11 @@
       hooks: { ...linkHooks, ...taskHooks, onChange: (t) => onchange(t), onSave: () => onsave?.(), onFocus: () => { activeEditor.view = view; activeEditor.docId = docId; onfocus?.(); } }
     });
     lastVersion = version;
+    if (view) editorDocs.set(view, () => docId);
   });
 
   onDestroy(() => {
-    if (activeEditor.view === view) { activeEditor.view = null; activeEditor.docId = null; }
+    if (activeEditor.view === view) { activeEditor.lastPos = view?.state.selection.main.head ?? null; activeEditor.view = null; }
     view?.destroy();
   });
 

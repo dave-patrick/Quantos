@@ -1,3 +1,4 @@
+import { setActiveEditor } from '../activeEditor';
 import { RangeSetBuilder, StateField, type EditorState } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType, type DecorationSet } from '@codemirror/view';
 import { app } from '../state.svelte';
@@ -39,10 +40,14 @@ export const attachmentDrop = EditorView.domEventHandlers({
     insertFiles(view, files, pos);
     return true;
   },
-  mousedown(event) {
+  mousedown(event, view) {
     const el = (event.target as HTMLElement).closest('[data-pdf]') as HTMLElement | null;
     if (!el) return false;
     event.preventDefault();
+    // This note becomes the one "Cite this page" writes into, just after the PDF's link.
+    const line = view.state.doc.lineAt(view.posAtDOM(el));
+    view.dispatch({ selection: { anchor: line.to } });
+    setActiveEditor(view);
     layout.open({ kind: 'pdf', arg: el.dataset.pdf!, title: el.dataset.name ?? 'PDF' }, event.shiftKey ? 'other' : 'new');
     return true;
   }
@@ -76,7 +81,7 @@ class PdfChip extends WidgetType {
 }
 
 const IMAGE = /!\[([^\]]*)\]\((attachments\/[^)\s]+\.(?:png|jpe?g|gif|webp|svg))\)/i;
-const PDF = /\[([^\]]*)\]\((attachments\/[^)\s#]+\.pdf)(?:#page=(\d+))?\)/i;
+const PDF = /\[([^\]]*)\]\((attachments\/[^)\s#]+\.pdf)(?:#page=(\d+))?\)/gi;
 
 function build(state: EditorState): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
@@ -84,8 +89,11 @@ function build(state: EditorState): DecorationSet {
     const line = state.doc.line(n);
     const img = IMAGE.exec(line.text);
     if (img) builder.add(line.to, line.to, Decoration.widget({ widget: new ImageWidget(img[2], img[1]), side: 1, block: true }));
-    const pdf = PDF.exec(line.text);
-    if (pdf && !img) builder.add(line.to, line.to, Decoration.widget({ widget: new PdfChip(pdf[2], pdf[1], pdf[3] ?? null), side: 1 }));
+    // A chip after each PDF link, so a citation next to the file's link gets its own.
+    if (!img) for (const pdf of line.text.matchAll(PDF)) {
+      const at = line.from + pdf.index! + pdf[0].length;
+      builder.add(at, at, Decoration.widget({ widget: new PdfChip(pdf[2], pdf[1], pdf[3] ?? null), side: 1 }));
+    }
   }
   return builder.finish();
 }
