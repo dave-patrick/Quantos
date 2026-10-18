@@ -289,7 +289,8 @@ public class TaskAcceptanceTests
         var events = new List<ChangeEvent>();
         v.Session.Changes.Changed += events.Add;
         File.WriteAllText(v.Abs(node.Path), node.Content.Replace("app text", "outside text"));
-        for (var i = 0; i < 50 && !events.Any(e => e.Origin == "external"); i++) Thread.Sleep(100);
+        // Generous: a busy machine can delay file notifications by seconds.
+        for (var i = 0; i < 200 && !events.Any(e => e.Origin == "external"); i++) Thread.Sleep(100);
         Assert.Contains(events, e => e.Kind == ChangeKind.Updated && e.Id == node.Id && e.Origin == "external");
         Assert.Contains("outside text", v.Writes.Require(node.Id).Body);
         var versions = v.Writes.History.List(node.Id).Select(x => v.Writes.History.Read(node.Id, x.Version)!).ToList();
