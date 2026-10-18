@@ -37,7 +37,7 @@
     }
     const source = query.trim() ? searchTitles(query, 40) : recent.ids.map((id) => app.titleIndex.get(id)).filter((n) => !!n).slice(0, 15).concat(searchTitles('', 25).filter((n) => !recent.ids.includes(n.id))).slice(0, 40);
     const nodes = source.map((n): Item => ({
-      key: n.id, label: n.title, detail: `${n.type}${n.workspace !== app.workspace ? ' · ' + n.workspace : ''}${n.archived ? ' · archived' : ''}`,
+      key: n.id, label: n.title, detail: `${n.type}${n.workspace && n.workspace !== app.workspace ? ' · ' + n.workspace : ''}${n.archived ? ' · archived' : ''}`,
       icon: n.type === 'task' ? 'check-square' : n.type === 'daily' ? 'calendar' : n.type === 'person' ? 'user' : 'file-text',
       run: (where) => openNode(n.id, where, n.title)
     }));
