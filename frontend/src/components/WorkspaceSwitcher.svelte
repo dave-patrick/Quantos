@@ -52,14 +52,16 @@
   /** Stops watching a linked folder. The files stay where they are. */
   async function unlinkFolder() {
     open = false;
-    if (!current) return;
-    const ok = await app.confirm(`Unlink “${current.name}”?`, 'Quantos stops reading and writing the folder. The files stay where they are.', 'Unlink', 'danger');
+    const target = current;
+    if (!target) return;
+    const ok = await app.confirm(`Unlink “${target.name}”?`, 'Quantos stops reading and writing the folder. The files stay where they are.', 'Unlink', 'danger');
     if (!ok) return;
     try {
-      await api.del(`linked-folders/${encodeURIComponent(current.name)}`);
+      // Leave the folder first: while it is still linked, its layout is saved in the vault.
+      await switchWorkspace(app.workspaces[0] ?? 'default');
+      await api.del(`linked-folders/${encodeURIComponent(target.name)}`);
       await app.refreshStatus();
-      await switchWorkspace('default');
-      app.toast(`“${current.name}” is unlinked. Its files were left alone.`, 'ok');
+      app.toast(`“${target.name}” is unlinked. Its files were left alone.`, 'ok');
     } catch (e) { app.error(e); }
   }
 </script>
