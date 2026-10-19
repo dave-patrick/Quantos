@@ -9,7 +9,7 @@
     <RootNamespace>Quantos.Cli</RootNamespace>
     <Product>Quantos</Product>
     <Company>Atomic 22 Industries</Company>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
