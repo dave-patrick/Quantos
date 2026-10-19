@@ -19,7 +19,7 @@
   import TaskPanel from '../TaskPanel.svelte';
   import Whiteboard from '../Whiteboard.svelte';
   import { recent } from '../../lib/recent.svelte';
-  import { openByTitle } from '../../lib/links.svelte';
+  import { openByTitle, whereFrom } from '../../lib/links.svelte';
 
   let { tab, id, paneIndex }: { tab: Tab; id: string; paneIndex: number } = $props();
 
@@ -59,7 +59,30 @@
     try { await doc.rename(next); } catch (e) { app.error(e); titleDraft = doc.node.title; }
   }
 
-  const crumbs = $derived(doc.node ? doc.node.path.split('/').slice(doc.node.path.startsWith('workspaces/') ? 1 : 0, -1) : []);
+  /**
+   * Where the note lives, each step clickable: the workspace and its Notes folder open the notes browser,
+   * Daily the daily stream, Tasks the task list, and any other folder a view of that folder.
+   */
+  const crumbs = $derived.by(() => {
+    if (!doc.node) return [];
+    const parts = doc.node.path.split('/');
+    const inWorkspace = parts[0] === 'workspaces';
+    const out: { label: string; go: (e: MouseEvent) => void }[] = [];
+    const notes = (e: MouseEvent) => layout.open({ kind: 'notes', title: 'Notes' }, whereFrom(e));
+    parts.slice(0, -1).forEach((part, i) => {
+      if (inWorkspace && i === 0) return;
+      const folder = parts.slice(0, i + 1).join('/');
+      const top = inWorkspace ? parts[2] : parts[0];
+      if (inWorkspace && i === 1) out.push({ label: part, go: notes });
+      else if (inWorkspace && i === 2 && part === 'nodes') out.push({ label: 'Notes', go: notes });
+      else if (inWorkspace && top === 'daily') out.push({ label: i === 2 ? 'Daily' : part, go: (e) => layout.open({ kind: 'daily', title: 'Daily' }, whereFrom(e)) });
+      else if (inWorkspace && i === 2 && part === 'tasks') out.push({ label: 'Tasks', go: (e) => layout.open({ kind: 'tasks', title: 'Tasks' }, whereFrom(e)) });
+      else if (part === 'supertags') out.push({ label: 'Supertags', go: (e) => layout.open({ kind: 'supertags', title: 'Supertags', arg: '' }, whereFrom(e)) });
+      else if (part === 'templates' && i === 0) out.push({ label: 'Templates', go: (e) => layout.open({ kind: 'templates', title: 'Templates' }, whereFrom(e)) });
+      else out.push({ label: part === 'archive' ? 'Archive' : part, go: (e) => layout.open({ kind: 'view', title: part, arg: 'folder:' + folder }, whereFrom(e)) });
+    });
+    return out;
+  });
   const words = $derived(wordCount(doc.body));
   const toc = $derived(outline(doc.body));
   // Stored on the note (writing_target), so it follows the file; older targets kept in this browser still show.
@@ -127,7 +150,7 @@
 <div class="node-view">
   <div class="bar">
     <nav class="crumbs" aria-label="Location">
-      {#each crumbs as c, i (i)}<span class="crumb">{c}</span><Icon name="chevron-right" size={11} />{/each}
+      {#each crumbs as c, i (i)}<button class="crumb link" title={`Go to ${c.label}`} onclick={c.go}>{c.label}</button><Icon name="chevron-right" size={11} />{/each}
       {#if zoom}
         <button class="crumb link" onclick={() => (zoom = null)}>{doc.node?.title}</button><Icon name="chevron-right" size={11} />
         <span class="crumb current">{zoom.text}</span>
@@ -245,7 +268,8 @@
   .crumbs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: var(--text-faint); font-size: 12.5px; white-space: nowrap; }
   .crumb { overflow: hidden; text-overflow: ellipsis; }
   .crumb.current { color: var(--text-muted); }
-  .crumb.link { border: 0; background: none; color: var(--accent); padding: 0; font-size: inherit; }
+  .crumb.link { border: 0; background: none; color: var(--text-faint); padding: 0; font-size: inherit; cursor: pointer; }
+  .crumb.link:hover, .crumb.link:focus-visible { color: var(--accent); text-decoration: underline; }
   .actions { display: flex; align-items: center; gap: 2px; }
   .save-state { font: 11px var(--font-mono); color: var(--text-faint); margin-right: 6px; min-width: 52px; text-align: right; }
   .save-state.saving, .save-state.dirty { color: var(--text-muted); }
