@@ -159,7 +159,7 @@ public sealed class WriteService
                 doc.Set(key, value);
             }
             var body = ResolveLinks(request.Body, workspace).Body;
-            doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor) ?? body);
+            doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor, workspace) ?? body);
 
             var node = WriteFile(abs, id, null, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Created, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
@@ -220,7 +220,7 @@ public sealed class WriteService
             if (doc.GetString(NodeKeys.Id) != id) doc.Set(NodeKeys.Id, id);
 
             var (body, ambiguous) = ResolveLinks(doc.Body, current.Workspace);
-            doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor) ?? body);
+            doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor, current.Workspace) ?? body);
             var candidate = doc.ToString();
             if (candidate == disk) return new SaveResult(SaveStatus.Unchanged, current, Ambiguous: ambiguous);
             if (LockRefusal(disk, doc, actor) is { } refusal) return new SaveResult(SaveStatus.ReadOnly, current, Message: refusal);
@@ -261,9 +261,9 @@ public sealed class WriteService
             }
             if (body is not null)
             {
-                var workspace = doc.GetString(NodeKeys.Workspace) ?? "";
+                var workspace = Node.FromText(Vault.Relative(abs), disk).Workspace;
                 var resolved = ResolveLinks(body, workspace).Body;
-                doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor) ?? resolved);
+                doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor, workspace) ?? resolved);
             }
             if (doc.ToString() == disk) return new SaveResult(SaveStatus.Unchanged, Node.FromText(Vault.Relative(abs), disk, diskHash));
             if (!derived && LockRefusal(disk, doc, actor) is { } refusal) return new SaveResult(SaveStatus.ReadOnly, Node.FromText(Vault.Relative(abs), disk, diskHash), Message: refusal);
@@ -538,8 +538,9 @@ public sealed class WriteService
                 body = body.TrimEnd() + (body.Trim().Length > 0 ? nl + nl : "") + underHeading + nl;
             else if (body.Length > 0 && !body.EndsWith('\n')) body += nl;
             body += text.Replace("\r\n", "\n").Replace("\n", nl) + nl;
-            var (resolved, _) = ResolveLinks(body, doc.GetString(NodeKeys.Workspace) ?? "");
-            doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor) ?? resolved);
+            var scope = Node.FromText(Vault.Relative(abs), disk).Workspace;
+            var (resolved, _) = ResolveLinks(body, scope);
+            doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor, scope) ?? resolved);
             doc.Set(NodeKeys.Modified, Clock.Stamp());
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));

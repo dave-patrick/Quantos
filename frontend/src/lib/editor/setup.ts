@@ -18,6 +18,8 @@ import { richBlocks, richTheme } from './diagrams';
 import { blockExtras, blockTheme } from './blocks';
 import { runCode, runCodeTheme } from './runcode';
 import { attachmentDrop, inlineMedia, mediaTheme, type MediaHooks } from './attachments';
+import { blockMenu } from './blockmenu';
+import { slashCompletion } from './slash';
 
 export interface EditorOptions {
   text: string;
@@ -115,7 +117,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     })
   ];
   if (!options.raw) {
-    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, richBlocks, richTheme, blockExtras, blockTheme, runCode, runCodeTheme, attachmentDrop(hooks), inlineMedia(hooks), mediaTheme, autocompletion({ override: [linkCompletion(hooks)], icons: false }));
+    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, richBlocks, richTheme, blockExtras, blockTheme, runCode, runCodeTheme, attachmentDrop(hooks), inlineMedia(hooks), mediaTheme, blockMenu(), autocompletion({ override: [linkCompletion(hooks), slashCompletion()], icons: false }));
   }
   if (options.placeholder) extensions.push(placeholderExt(options.placeholder));
   if (options.extra) extensions.push(...options.extra);

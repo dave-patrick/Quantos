@@ -94,6 +94,8 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Sidebars | `components/LeftSidebar.svelte` (customise, drag to reorder), `RightSidebar.svelte` (split panels) |
 | Convert to task, breadcrumbs, daily markers, subtask completion | lib `totask.ts`, views `NodeView.svelte`, `DailyStream.svelte`, Core `Tasks/TaskService.SetStatus` |
 | Linked folders (Markdown from another app, read and written in place) | Core `Storage/Vault.cs` (linked roots, `linked/<name>/…` paths), `WriteService.cs` (adopt by id, last write wins), `Storage/VaultWatcher.cs`; Backend `Api/NodeEndpoints.cs` (`/api/linked-folders`); `components/WorkspaceSwitcher.svelte`; `documentation/STORAGE-SPEC.md` section 9 |
+| Slash commands and the block menu | lib `editor/slash.ts` (the `/` menu), `editor/blockinfo.ts`, `editor/blockmenu.ts`; `components/BlockMenu.svelte` |
+| MCP settings page | Core `Agents/McpTools.cs`, `Agents/McpService.cs`; Backend `GET/PUT /api/mcp`; `components/McpSettings.svelte` |
 
 ## 4. Roadmap
 

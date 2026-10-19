@@ -22,6 +22,7 @@
   import TerminalDrawer from './TerminalDrawer.svelte';
   import Approvals from './Approvals.svelte';
   import CaptureDialog from './CaptureDialog.svelte';
+  import BlockMenu from './BlockMenu.svelte';
 
   let today = $state('');
   onMount(() => watchDate((d) => (today = d)));
@@ -55,6 +56,7 @@
 <RecorderBar />
 <Ask />
 <AiResult />
+<BlockMenu />
 
 <style>
   .shell {

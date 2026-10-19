@@ -379,9 +379,11 @@ public sealed partial class TaskService : ITaskHooks
     private static partial Regex MarkerMidLine();
 
     /// <summary>New "- [ ] text" lines in a note become task nodes, bound by an invisible marker.</summary>
-    public string BindInlineTasks(FrontmatterDocument doc, string body, Actor actor)
+    /// <param name="scope">Where the note lives, when it is known: a note in a linked folder has no
+    /// workspace in its frontmatter, but its lines still become tasks.</param>
+    public string BindInlineTasks(FrontmatterDocument doc, string body, Actor actor, string? scope = null)
     {
-        var workspace = doc.GetString(NodeKeys.Workspace) ?? "";
+        var workspace = scope ?? doc.GetString(NodeKeys.Workspace) ?? "";
         var type = doc.GetString(NodeKeys.Type) ?? NodeTypes.Note;
         var noteId = doc.GetString(NodeKeys.Id);
         if (workspace.Length == 0 || type is NodeTypes.Template or NodeTypes.Task || noteId is null || !InlineTasksEnabled()) return body;
@@ -539,6 +541,6 @@ public sealed partial class TaskService : ITaskHooks
 /// <summary>Hooks the write service calls so inline task lines stay bound to task nodes.</summary>
 public interface ITaskHooks
 {
-    string BindInlineTasks(FrontmatterDocument doc, string body, Actor actor);
+    string BindInlineTasks(FrontmatterDocument doc, string body, Actor actor, string? scope = null);
     void AfterNoteWritten(Node note, Actor actor);
 }

@@ -7,13 +7,18 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Slash commands in the editor: type `/` for a list of things to put in the note — a task, a
+  heading, a list, a quote, a callout, a code block, a table, a divider, today's date.
+- Right-click a block for what can be done with it: copy, duplicate, move, delete, or turn it into
+  a task, a heading, a bullet or a quote. Tasks offer more: mark done, set to doing or waiting, set
+  a due date or a priority. `Shift+F10` opens the same menu.
 - Settings › AI agents: set an AI agent up without hunting for paths. It shows the program the
   agent runs, the settings for Claude Desktop, Claude Code, Cursor, Codex and OpenCode ready to
   copy, and the nine tools an agent gets.
 - Linked folders: link a folder of Markdown from another app and Quantos reads and writes those
   files where they are, so both apps work on the same notes. Link or unlink from the workspace
   menu; linked folders are listed as their own group. Pictures and files that sit next to a note
-  in a linked folder show up too.
+  in a linked folder show up too, and task lines in them become real tasks.
 - Custom styles in Settings › Appearance are applied with buttons: one style at a time, "None"
   for the built-in look.
 - Right sidebar splits into two panels, each with its own tabs, with a draggable divider.

@@ -223,6 +223,27 @@ public class LinkedFolderTests
     }
 
     [Fact]
+    public void A_task_line_in_a_linked_note_becomes_a_task()
+    {
+        using var v = new TestVault();
+        var outside = Outside(v);
+        WriteFile(outside, "note.md", "---\ntitle: Shared\n---\n\nSome text.\n");
+        v.Session.Vault.RegisterLinkedFolder("notes", outside);
+        v.Session.ApplyLinkedFolders();
+        var node = v.Writes.Require(Only(v, "notes").Id);
+
+        // Writing the note with a task line makes it a task, even though the note has no
+        // workspace in its frontmatter: the folder says where it lives.
+        v.Writes.UpdateFields(node.Id, node.Hash, null, null, Actor.User, "Some text.\n\n- [ ] Call the bank\n");
+
+        var tasks = v.Session.Tasks.List("notes");
+        Assert.Single(tasks);
+        Assert.Equal("Call the bank", tasks[0].Title);
+        // The task is bound to the line, so both stay in step.
+        Assert.Contains("<!--task:", File.ReadAllText(Path.Combine(outside, "note.md")));
+    }
+
+    [Fact]
     public void A_file_next_to_a_linked_note_belongs_to_the_linked_folder()
     {
         using var v = new TestVault();

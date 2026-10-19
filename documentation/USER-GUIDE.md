@@ -51,6 +51,13 @@ Windows-only features (below) works the same.
 ## 2. Writing
 
 - **New note:** `Ctrl+N`. Type a title, press Enter, write.
+- **Slash commands:** type `/` on a line and a list of things to put in the note appears: a task,
+  a heading, a list, a quote, a callout, a code block, a table, a divider, today's date. Type a
+  word to narrow the list, press Enter to use it.
+- **Right-click a block** for what can be done with it: copy it, duplicate it, move it up or down,
+  delete it, or turn it into a task, a heading, a bullet or a quote. For a task there are more:
+  mark it done, set it to doing or waiting, give it a due date or a priority. `Shift+F10` opens the
+  same menu from the keyboard.
 - **Links:** type `[[` and pick a note. Links keep working when notes are renamed or moved, and a
   rename updates the link text everywhere, including links in properties like *Owner*. If two
   notes share a title, Quantos asks which one you mean; it never guesses.
