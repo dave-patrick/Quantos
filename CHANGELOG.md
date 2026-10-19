@@ -41,7 +41,7 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
   that sit next to a note show up, links to the note next door work, and task lines in a linked
   folder become real tasks. If both apps write at once, the newest write wins and the other
   version is kept in history.
-- **Settings › AI agents:** set an AI agent up without hunting for paths. It shows the program the
+- **Settings › MCP:** set an AI agent up without hunting for paths. It shows the program the
   agent runs, the settings for Claude Desktop, Claude Code, Cursor, Codex and OpenCode ready to
   copy, and the nine tools an agent gets.
 - **Slash commands:** type `/` for a list of things to put in the note — a task, a heading, a list,

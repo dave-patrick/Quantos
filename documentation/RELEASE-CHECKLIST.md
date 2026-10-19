@@ -72,7 +72,7 @@ Linked folders
 - [ ] *Vault diagnostics* names a linked folder that has gone, and a task bound to a note that is gone.
 
 Agents
-- [ ] *Settings › AI agents* shows the program and the settings for each agent; copying one works.
+- [ ] *Settings › MCP* shows the program and the settings for each agent; copying one works.
 - [ ] `quantos-cli mcp --agent test` can read but not create until granted.
 - [ ] `quantos-cli tools --format anthropic` prints the nine tools; `quantos-cli call search_notes` runs one.
 - [ ] An agent writing to a linked folder writes to the other app's file, as it should.

@@ -32,7 +32,7 @@ open threads and the machine.
 
 - **Released 0.1.5** (tag `v0.1.5`, zip `Quantos-0.1.5-win-x64.zip`, SHA-256
   `ac7c131a6af2974f71db4d82f913c6059469c05ce7e2db8783cce065a40525fe`): the split right sidebar,
-  linked folders, the AI agents settings page, slash commands, the block right-click menu, and
+  linked folders, the MCP settings page, slash commands, the block right-click menu, and
   custom styles applied with buttons. Ask the owner to try *Settings › Updates* on their machine:
   it is the first test of the updater fetching a real release.
 - **Linked folders (released, not yet used by the owner):** the owner keeps notes in a separate

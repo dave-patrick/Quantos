@@ -12,7 +12,7 @@ Either way, every call goes through the Quantos backend **as the agent you name*
 you've granted that agent in *Settings › Plugins & permissions*. A new agent can read but not write.
 Quantos must be running (the Windows client, or `Quantos.Backend.exe`).
 
-**The quickest way to set an agent up is in the app**: *Settings › AI agents* has the settings for
+**The quickest way to set an agent up is in the app**: *Settings › MCP* has the settings for
 Claude Desktop, Claude Code, Cursor, Codex and OpenCode, filled in with the paths on this computer,
 ready to copy into that agent's configuration file. It also lists the tools below.
 

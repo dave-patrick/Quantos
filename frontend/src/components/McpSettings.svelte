@@ -5,7 +5,7 @@
   import { layout } from '../lib/layout.svelte';
   import Icon from './Icon.svelte';
 
-  /** Settings › AI agents: the Model Context Protocol server and how to point an agent at it. */
+  /** Settings › MCP: the Model Context Protocol server and how to point an agent at it. */
   interface McpInfo {
     program: string | null;
     args: string[];
@@ -60,10 +60,11 @@
   }
 </script>
 
-<h2>AI agents</h2>
+<h2>MCP</h2>
 <p class="faint intro">
-  Quantos speaks the Model Context Protocol, so an AI agent can read and change your notes through
-  the same tools you use. The agent runs as itself: it can read from the start, and you decide in
+  MCP (Model Context Protocol) is how an AI agent reaches Quantos: it gets the same tools you use,
+  to read and change your notes. The agent runs as itself: it can read from the start, and you
+  decide in
   <button class="link" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'plugins' }, 'current')}>Settings › Plugins &amp; permissions</button>
   what else it may do.
 </p>
