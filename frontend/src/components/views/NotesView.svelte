@@ -42,10 +42,11 @@
     if (folderTree && !everywhere) seed(folderTree, top, 0);
     for (const n of shown.slice(0, 3000)) {
       const parts = n.path.split('/');
-      const dirs = parts[0] === 'workspaces' ? parts.slice(2, -1) : parts.slice(0, -1);
-      const base = parts[0] === 'workspaces' ? parts.slice(0, 2) : [];
+      const scoped = parts[0] === 'workspaces' || parts[0] === 'linked';
+      const dirs = scoped ? parts.slice(2, -1) : parts.slice(0, -1);
+      const base = scoped ? parts.slice(0, 2) : [];
       let at = top;
-      if (everywhere && parts[0] === 'workspaces') {
+      if (everywhere && scoped) {
         let ws = at.folders.find((f) => f.path === base.join('/'));
         if (!ws) at.folders.push(ws = { name: parts[1], path: base.join('/'), folders: [], notes: [] });
         at = ws;

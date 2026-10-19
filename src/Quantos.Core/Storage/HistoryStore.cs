@@ -12,7 +12,7 @@ public sealed record HistoryVersion(string Version, DateTimeOffset SavedAt, long
 public sealed class HistoryStore(Vault vault, Clock clock)
 {
     public static readonly TimeSpan CoalesceWindow = TimeSpan.FromMinutes(2);
-    public const string Save = "save", Before = "before", External = "external", Restore = "restore";
+    public const string Save = "save", Before = "before", External = "external", Restore = "restore", Conflict = "conflict";
 
     /// <summary>Records <paramref name="content"/> unless it equals the newest snapshot. Returns the version id, or null if unchanged.</summary>
     public string? Record(string id, byte[] content, string kind)

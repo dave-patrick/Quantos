@@ -1,6 +1,6 @@
 import { api, instanceId } from './api';
 import { onChange } from './events';
-import type { NodeSummary, Status } from './types';
+import type { LinkedFolder, NodeSummary, Status } from './types';
 
 export interface Toast { id: number; message: string; kind: 'info' | 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 
@@ -10,6 +10,7 @@ class AppState {
   status = $state<Status | null>(null);
   workspace = $state('default');
   workspaces = $state<string[]>([]);
+  linked = $state<LinkedFolder[]>([]);
   titles = $state<NodeSummary[]>([]);
   leftOpen = $state(true);
   rightOpen = $state(true);
@@ -78,6 +79,7 @@ class AppState {
   async refreshStatus() {
     this.status = await api.get<Status>('status');
     this.workspaces = this.status.workspaces ?? [];
+    this.linked = this.status.linked ?? [];
     return this.status;
   }
 

@@ -66,10 +66,14 @@ export interface ReconcileReport {
 
 export interface Status {
   version: string; pid: number; port: number; clientData: string; vault: string | null; workspaces: string[] | null;
+  linked: LinkedFolder[] | null;
   lastWorkspace: string | null; nodeCount: number | null; syncedFolderWarning: string | null; reconcile: ReconcileReport | null;
   safeMode: boolean; timeZone: string; utcOffset: string;
   actor: { kind: string; name: string; native: boolean; windowsClient: boolean };
 }
+
+/** A folder of Markdown linked in from elsewhere on this computer. */
+export interface LinkedFolder { name: string; path: string; exists: boolean }
 
 export interface VaultCheck {
   path: string; exists: boolean; empty: boolean; looksLikeVault: boolean; writable: boolean; syncedService: string | null; warning: string | null; error: string | null;

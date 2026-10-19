@@ -7,6 +7,7 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Linked folders: link a folder of Markdown from another app and Quantos reads and writes those
   files where they are, so both apps work on the same notes. Link or unlink from the workspace
   menu; linked folders are listed as their own group.
 - Custom styles in Settings › Appearance are applied with buttons: one style at a time, "None"

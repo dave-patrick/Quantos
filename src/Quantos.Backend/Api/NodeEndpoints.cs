@@ -119,8 +119,46 @@ public static class NodeEndpoints
         {
             var session = host.Require();
             session.Permissions.Demand(ctx.Actor(), Core.Security.Permission.CreateEdit, $"Create workspace {body.Name}");
-            session.Vault.EnsureWorkspace(Vault.ValidateWorkspaceName(body.Name));
+            var name = CleanName(body.Name);
+            if (session.Vault.IsLinked(name)) throw new QuantosException($"'{name}' is a linked folder. Unlink it first.");
+            session.Vault.EnsureWorkspace(name);
             return session.Vault.WorkspaceNames();
+        });
+
+        // Folders linked in from elsewhere on this computer. Their files are read and written in
+        // place, so the other app and Quantos both work on the same Markdown.
+        api.MapGet("/linked-folders", (VaultHost host) => LinkedFolders(host.Require().Vault));
+
+        api.MapPost("/linked-folders", (VaultHost host, HttpContext ctx, LinkedFolderBody body) =>
+        {
+            var session = host.Require();
+            var actor = ctx.Actor();
+            session.Permissions.Demand(actor, Core.Security.Permission.CreateEdit, $"Link the folder {body.Name}");
+            var name = CleanName(body.Name);
+            if (session.Vault.LinkedRoots.ContainsKey(name)) throw new QuantosException($"'{name}' is already linked.", 409);
+            var full = Path.GetFullPath(Environment.ExpandEnvironmentVariables(body.Path.Trim().Trim('"')));
+            if (!Directory.Exists(full)) throw new QuantosException("That folder doesn't exist.");
+            try { var probe = Path.Combine(full, $".quantos-probe-{Guid.NewGuid():N}"); File.WriteAllText(probe, ""); File.Delete(probe); }
+            catch (Exception ex) { throw new QuantosException($"Quantos can't write to that folder: {ex.Message}"); }
+            session.Vault.RegisterLinkedFolder(name, full);
+            session.Config.Write(Vault.LinkedFoldersFile, session.Vault.LinkedFoldersNode(), actor);
+            session.Vault.LoadLinkedFolders();
+            session.ApplyLinkedFolders();
+            return LinkedFolders(session.Vault);
+        });
+
+        api.MapDelete("/linked-folders/{name}", (VaultHost host, HttpContext ctx, string name) =>
+        {
+            var session = host.Require();
+            var actor = ctx.Actor();
+            session.Permissions.Demand(actor, Core.Security.Permission.CreateEdit, $"Unlink the folder {name}");
+            var clean = CleanName(name);
+            if (!session.Vault.LinkedRoots.ContainsKey(clean)) throw new QuantosException("That folder isn't linked.", 404);
+            session.Vault.UnregisterLinkedFolder(clean);
+            session.Config.Write(Vault.LinkedFoldersFile, session.Vault.LinkedFoldersNode(), actor);
+            session.Vault.LoadLinkedFolders();
+            session.ApplyLinkedFolders();
+            return LinkedFolders(session.Vault);
         });
 
         api.MapPost("/folders", (VaultHost host, HttpContext ctx, FolderBody body) =>
@@ -171,6 +209,17 @@ public static class NodeEndpoints
         SaveStatus.Invalid or SaveStatus.ReadOnly => Results.UnprocessableEntity(SaveResultDto.From(result)),
         _ => Results.Ok(SaveResultDto.From(result))
     };
+
+    /// <summary>A name a vault folder can carry: lowercase letters, digits, '-' or '_'.</summary>
+    private static string CleanName(string name)
+    {
+        var clean = name.Trim().ToLowerInvariant().Replace(' ', '-');
+        try { return Vault.ValidateWorkspaceName(clean); }
+        catch (ArgumentException) { throw new QuantosException($"'{name}' isn't a usable name. Use lowercase letters, digits, '-' or '_'.", 422); }
+    }
+
+    private static object LinkedFolders(Vault vault) =>
+        vault.LinkedRoots.Select(kv => new { name = kv.Key, path = kv.Value, exists = Directory.Exists(kv.Value) }).ToList();
 
     private static TreeFolder Tree(VaultSession session, string workspace, bool includeArchived)
     {

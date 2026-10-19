@@ -60,6 +60,9 @@ public sealed record Node
         string? Str(string key) => values.TryGetValue(key, out var v) && v is not null ? Convert.ToString(v, CultureInfo.InvariantCulture) : null;
         var props = values.Where(kv => !NodeKeys.Reserved.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
         _ = int.TryParse(Str(NodeKeys.Schema), out var schema);
+        // A file in a linked folder belongs to that folder, whatever its frontmatter says: the
+        // folder is where the other app keeps it, so the folder decides (STORAGE-SPEC section 9).
+        var linked = Storage.Vault.LinkedScopeOf(relativePath);
         return new Node
         {
             Id = Str(NodeKeys.Id) ?? "",
@@ -68,7 +71,7 @@ public sealed record Node
             Hash = hash ?? Hashing.Sha256(content),
             Title = Str(NodeKeys.Title) ?? System.IO.Path.GetFileNameWithoutExtension(relativePath),
             Type = Str(NodeKeys.Type) ?? NodeTypes.Note,
-            Workspace = Str(NodeKeys.Workspace) ?? "",
+            Workspace = linked ?? Str(NodeKeys.Workspace) ?? "",
             Tags = doc.GetStringList(NodeKeys.Tags).Select(t => t.TrimStart('#')).ToList(),
             Aliases = doc.GetStringList(NodeKeys.Aliases),
             Created = Str(NodeKeys.Created),

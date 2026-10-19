@@ -271,6 +271,26 @@ own tabs, splits and scroll positions.
   so exports read the same anywhere. A workspace zip carries the images and files its notes use.
   Exports go to the vault's `exports` folder.
 
+### Linked folders
+
+Do you keep notes in another app? Link that folder into Quantos and both can work on the same
+Markdown: Quantos reads and writes the files **where they are**, so nothing is moved, copied or
+deleted, and your other app still sees every change.
+
+- **Link a folder:** *Link a folder…* in the workspace menu (top left, next to the workspace name).
+  Give it the folder's path; the name comes from the folder itself.
+- **It appears as its own group** under *Linked folders* in the same menu, next to the workspaces.
+  Pick it and Quantos shows the notes in that folder, and you can edit them as usual.
+- **Your files stay yours.** Quantos adds only an `id` to a note so it can recognise it later; the
+  rest of the frontmatter and the text are untouched. The id comes from the file's path, so a note
+  keeps its identity even if the other app rewrites the file.
+- **Both apps can write.** If you change a note in one app while Quantos has it open, the newest
+  change wins and the other version is kept in the note's history, so you can get it back.
+- **Unlink** with *Unlink “name”* in the same menu. Quantos stops reading the folder; the files
+  are left exactly as they are.
+- A linked folder can't be moved to another workspace or archived, and Quantos keeps its own
+  layout settings in the vault rather than in your folder.
+
 ### Backups
 
 Quantos backs up the vault automatically while it's running, by default once a day to

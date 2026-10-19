@@ -69,7 +69,13 @@ public static class AtomicFile
     public static void Move(string from, string to)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(to)!);
-        Retry(() => File.Move(from, to, overwrite: false));
+        try { Retry(() => File.Move(from, to, overwrite: false)); }
+        catch (IOException) when (!string.Equals(Path.GetPathRoot(from), Path.GetPathRoot(to), StringComparison.OrdinalIgnoreCase))
+        {
+            // Cross-volume moves can't be a rename; copy and remove the original.
+            File.Copy(from, to, overwrite: false);
+            File.Delete(from);
+        }
     }
 
     /// <summary>Sync tools and antivirus briefly lock files; retry sharing violations.</summary>

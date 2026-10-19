@@ -189,3 +189,49 @@ service (so history is kept) only after the user agrees.
 for the built-in look). Earlier versions kept a `themes` array of enabled styles; the first of
 them becomes the applied one and the array is dropped, so only one style is ever applied.
 
+## 9. Linked folders
+
+A linked folder is a folder of Markdown somewhere else on the computer, linked into the vault.
+Quantos reads and writes those files **where they are**: nothing is copied, moved or renamed, so
+the other app and Quantos can both work on the same notes.
+
+### The registry
+
+`linked-folders.json` in the vault root lists them:
+
+```json
+{
+  "folders": [
+    { "name": "notes", "path": "D:\\Notes" }
+  ]
+}
+```
+
+`name` is the scope the folder appears under, and follows the workspace naming rules (lowercase
+letters, digits, `-` and `_`). A linked folder and a workspace never share a name. The path is
+absolute and local to this computer; a folder that isn't there is listed but has no notes.
+
+### Paths and identity
+
+Inside the vault's own path space a linked folder's files are `linked/<name>/<path in the folder>`.
+The prefix keeps them apart from `workspaces/<name>/…`, so a linked file and a vault file can never
+be confused for each other.
+
+A linked file's `id` is derived from that path, not drawn at random. The same file therefore keeps
+the same identity for good, even when the other app rewrites the file and drops the frontmatter.
+Only the `id` is added to a linked file; the other app's own frontmatter and body are left as they
+are. Editing a linked note in Quantos adds `modified` alongside it.
+
+### What Quantos does and doesn't do there
+
+- The folder is watched like the vault, and changes made outside Quantos are picked up in a moment.
+- A note in a linked folder is not moved to another workspace and not archived: the folder belongs
+  to another app. It can be renamed in place, trashed and restored.
+- New notes created in a linked folder are written straight into it.
+- The layout of a linked folder (open tabs, scroll positions) is kept in the vault, under
+  `.state/workspace-state/`, so nothing of Quantos' making lands in the other app's folder.
+- If both apps write the same file, the newest write wins and the version that was on disk is kept
+  in the note's history, so nothing is lost and it can be recovered by hand.
+- A linked folder is outside the vault, so the vault's own backups don't include it. Back it up the
+  way its own app does; Quantos keeps the history of what it changed.
+

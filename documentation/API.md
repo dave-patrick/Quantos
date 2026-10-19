@@ -39,6 +39,8 @@ Authentication and headers: see [SECURITY-MODEL.md](SECURITY-MODEL.md).
 ### Vault
 
 `GET /api/tree?workspace=` · `GET|POST /api/workspaces` · `POST /api/folders` ·
+`GET|POST|DELETE /api/linked-folders[/{name}]` (folders linked in from elsewhere; `POST` takes
+`{ name, path }`) ·
 `GET /api/trash` · `POST /api/trash/{entry}/restore` · `DELETE /api/trash/{entry}?approval=` ·
 `GET|PUT /api/config/{name}` (settings, views, shortcuts, toolbar, automations, … `.json`) ·
 `GET|PUT /api/workspace-state/{ws}` · `POST /api/export/node/{id}` · `POST /api/export/folder` ·

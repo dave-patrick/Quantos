@@ -58,6 +58,7 @@ public sealed class VaultHost : IDisposable
             {
                 report = session.Start();
                 session.StartWatching();
+                session.Watcher!.Failed += ex => _log.LogError(ex, "The vault watcher failed");
                 // Safe mode survives restarts until turned off.
                 session.Permissions.SafeMode = File.Exists(System.IO.Path.Combine(Paths.Settings, "safe-mode")) || Environment.GetEnvironmentVariable("QUANTOS_SAFE_MODE") == "1";
             }

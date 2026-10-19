@@ -32,13 +32,13 @@ public sealed class ConfigStore(Vault vault, PermissionService permissions, Chan
     }
 
     public JsonNode? ReadWorkspaceState(string workspace) =>
-        ReadPath(Path.Combine(vault.WorkspaceDir(workspace), "workspace-state.json"));
+        ReadPath(vault.WorkspaceStatePath(workspace));
 
     public void WriteWorkspaceState(string workspace, JsonNode? value, Actor actor)
     {
         permissions.Demand(actor, Permission.CreateEdit, $"Save layout for {workspace}");
         vault.EnsureWorkspace(workspace);
-        WritePath(Path.Combine(vault.WorkspaceDir(workspace), "workspace-state.json"), value);
+        WritePath(vault.WorkspaceStatePath(workspace), value);
     }
 
     public T Get<T>(string name, T fallback) where T : class

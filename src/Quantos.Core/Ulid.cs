@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Quantos.Core;
@@ -44,6 +45,23 @@ public static partial class Ulid
             chars[i] = Alphabet[(int)(bits & 31)];
             bits >>= 5;
         }
+        return new string(chars);
+    }
+
+    /// <summary>
+    /// A ULID derived from a seed, so the same seed always gives the same id. Files in a linked
+    /// folder use it: the id comes from the file's path, so the note keeps its identity even when
+    /// the other app rewrites the file and drops the frontmatter.
+    /// </summary>
+    public static string FromSeed(string seed)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(seed));
+        // A fixed timestamp keeps the id the same every time; only the random part comes from the seed.
+        long ms = 1577836800000; // 2020-01-01
+        Span<char> chars = stackalloc char[26];
+        for (var i = 9; i >= 0; i--) { chars[i] = Alphabet[(int)(ms & 31)]; ms >>= 5; }
+        var bits = new System.Numerics.BigInteger(hash.AsSpan(0, 10), isUnsigned: true, isBigEndian: true);
+        for (var i = 25; i >= 10; i--) { chars[i] = Alphabet[(int)(bits & 31)]; bits >>= 5; }
         return new string(chars);
     }
 

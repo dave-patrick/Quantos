@@ -30,8 +30,9 @@
 
   function where(n: NodeSummary) {
     // workspaces/<ws>/nodes/client_work/note.md shows as "<ws> · client work".
+    // linked/<folder>/client_work/note.md shows as "<folder> · client work".
     const parts = n.path.split('/').slice(0, -1);
-    const inside = parts[0] === 'workspaces' ? parts.slice(2) : parts;
+    const inside = parts[0] === 'workspaces' || parts[0] === 'linked' ? parts.slice(2) : parts;
     const folder = inside.filter((p, i) => !(i === 0 && ['nodes', 'tasks', 'daily'].includes(p))).map((p) => p.replace(/_/g, ' ')).join(' › ');
     return [n.workspace, folder].filter(Boolean).join(' · ') + (n.archived ? ' · archived' : '');
   }

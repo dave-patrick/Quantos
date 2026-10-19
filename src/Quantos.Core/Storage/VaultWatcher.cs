@@ -11,12 +11,15 @@ namespace Quantos.Core.Storage;
 public sealed class VaultWatcher : IDisposable
 {
     public static readonly TimeSpan Debounce = TimeSpan.FromMilliseconds(300);
+    /// <summary>How often the watcher checks that every folder it should watch is being watched.</summary>
+    public static TimeSpan SweepInterval { get; set; } = TimeSpan.FromSeconds(15);
 
     private readonly WriteService _writes;
-    private readonly FileSystemWatcher _fsw;
+    private readonly Dictionary<string, FileSystemWatcher> _watchers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _gate = new();
     private readonly HashSet<string> _pending = new(StringComparer.OrdinalIgnoreCase);
     private readonly Timer _timer;
+    private readonly Timer _sweep;
     private bool _fullScan;
     private bool _disposed;
 
@@ -26,18 +29,71 @@ public sealed class VaultWatcher : IDisposable
     {
         _writes = writes;
         _timer = new Timer(_ => Flush(), null, Timeout.Infinite, Timeout.Infinite);
-        _fsw = new FileSystemWatcher(writes.Vault.Root)
+        // A watched folder can be deleted and made again, which leaves the watcher blind. The sweep
+        // notices a folder that is being watched but has no watcher, and starts watching it again.
+        _sweep = new Timer(_ => Sweep(), null, SweepInterval, SweepInterval);
+        Watch();
+    }
+
+    /// <summary>Makes a watcher for any folder that should be watched but isn't, and rescans.</summary>
+    private void Sweep()
+    {
+        if (_disposed) return;
+        var wanted = new List<string> { _writes.Vault.Root };
+        wanted.AddRange(_writes.Vault.LinkedRoots.Values);
+        var missing = false;
+        lock (_gate) missing = wanted.Any(r => Directory.Exists(r) && !_watchers.ContainsKey(r));
+        if (!missing) return;
+        Watch();
+        lock (_gate) _fullScan = true;
+        Kick();
+    }
+
+    /// <summary>Watches the vault and every linked folder. Called again when a folder is linked or unlinked:
+    /// a new folder starts being watched and an unlinked one stops.</summary>
+    public void Watch()
+    {
+        var wanted = new List<string> { _writes.Vault.Root };
+        wanted.AddRange(_writes.Vault.LinkedRoots.Values);
+        lock (_gate)
         {
-            IncludeSubdirectories = true,
-            InternalBufferSize = 64 * 1024,
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite | NotifyFilters.Size
-        };
-        _fsw.Changed += (_, e) => Queue(e.FullPath);
-        _fsw.Created += (_, e) => Queue(e.FullPath);
-        _fsw.Deleted += (_, e) => Queue(e.FullPath);
-        _fsw.Renamed += (_, e) => { Queue(e.OldFullPath); Queue(e.FullPath); };
-        _fsw.Error += (_, _) => { lock (_gate) _fullScan = true; Kick(); };
-        _fsw.EnableRaisingEvents = true;
+            foreach (var root in wanted.Distinct(StringComparer.OrdinalIgnoreCase).ToList())
+            {
+                if (_watchers.ContainsKey(root) || !Directory.Exists(root)) continue;
+                var fsw = new FileSystemWatcher(root)
+                {
+                    IncludeSubdirectories = true,
+                    InternalBufferSize = 64 * 1024,
+                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite | NotifyFilters.Size
+                };
+                fsw.Changed += (_, e) => Queue(e.FullPath);
+                fsw.Created += (_, e) => Queue(e.FullPath);
+                fsw.Deleted += (_, e) => Queue(e.FullPath);
+                fsw.Renamed += (_, e) => { Queue(e.OldFullPath); Queue(e.FullPath); };
+                fsw.Error += (_, _) => Drop(root);
+                fsw.EnableRaisingEvents = true;
+                _watchers[root] = fsw;
+            }
+            foreach (var root in _watchers.Keys.Where(r => !wanted.Contains(r, StringComparer.OrdinalIgnoreCase)).ToList())
+            {
+                _watchers[root].Dispose();
+                _watchers.Remove(root);
+            }
+        }
+    }
+
+    /// <summary>
+    /// A watcher stops seeing anything when the folder it watches is deleted and made again, so it is
+    /// thrown away here; the next pass makes a new one for the same path.
+    /// </summary>
+    private void Drop(string root)
+    {
+        lock (_gate)
+        {
+            if (_watchers.Remove(root, out var old)) old.Dispose();
+            _fullScan = true;
+        }
+        Kick();
     }
 
     public event Action<Exception>? Failed;
@@ -76,6 +132,8 @@ public sealed class VaultWatcher : IDisposable
         if (paths.Length == 0 && !full) return;
         try
         {
+            // A folder that was deleted and made again needs a new watcher; the old one sees nothing.
+            Watch();
             if (full) paths = [.. ChangedSinceIndexed()];
             // Small chunks, each holding the write lock briefly: a big import (a copied folder of
             // thousands of notes) mustn't hold up the user's own saves until it finishes.
@@ -160,12 +218,15 @@ public sealed class VaultWatcher : IDisposable
 
     private static bool IsNodeLocation(string rel) =>
         rel.StartsWith("workspaces/", StringComparison.OrdinalIgnoreCase) || rel.StartsWith("templates/", StringComparison.OrdinalIgnoreCase)
-        || rel.StartsWith("supertags/", StringComparison.OrdinalIgnoreCase) || rel.StartsWith("synced_blocks/", StringComparison.OrdinalIgnoreCase);
+        || rel.StartsWith("supertags/", StringComparison.OrdinalIgnoreCase) || rel.StartsWith("synced_blocks/", StringComparison.OrdinalIgnoreCase)
+        || rel.StartsWith(Vault.LinkedPrefix + "/", StringComparison.OrdinalIgnoreCase);
 
     public void Dispose()
     {
         _disposed = true;
-        _fsw.Dispose();
+        foreach (var w in _watchers.Values) w.Dispose();
+        _watchers.Clear();
         _timer.Dispose();
+        _sweep.Dispose();
     }
 }

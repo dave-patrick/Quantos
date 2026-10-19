@@ -15,6 +15,7 @@ public sealed class VaultSession : IDisposable
         paths.EnsureCreated();
         Vault = new Vault(vaultPath);
         Vault.EnsureLayout();
+        Vault.LoadLinkedFolders();
         if (takeLock) _lock = VaultLock.Acquire(Vault);
         Clock = clock ?? new Clock();
         Cache = new CacheIndex(paths.CacheDatabase);
@@ -80,6 +81,18 @@ public sealed class VaultSession : IDisposable
     public void StartWatching()
     {
         Watcher ??= new VaultWatcher(Writes);
+    }
+
+    /// <summary>Called after the list of linked folders changed: watch the new folders, stop watching
+    /// the ones that were unlinked, and index what that changed. The files themselves are left alone.</summary>
+    public void ApplyLinkedFolders()
+    {
+        Watcher?.Watch();
+        // Notes in a folder that is no longer linked leave the index; the files stay where they are.
+        foreach (var file in Cache.AllFiles()
+            .Where(f => f.Path.StartsWith(Vault.LinkedPrefix + "/", StringComparison.OrdinalIgnoreCase)).ToList())
+            if (Vault.LinkedFolderOf(file.Path) is null) Cache.Remove(file.Path);
+        Reconciler.Run();
     }
 
     public QuantosPaths Paths { get; }

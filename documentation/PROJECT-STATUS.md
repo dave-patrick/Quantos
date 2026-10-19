@@ -14,7 +14,7 @@ _Last updated: 2026-10-19, at version 0.1.4 (latest release) plus unreleased wor
 | Latest release | [0.1.4](https://github.com/dave-patrick/Quantos/releases/tag/v0.1.4) (Windows x64 zip, SHA-256 digest published by GitHub) |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
-| Tests | 124 .NET (xUnit, `tests/Quantos.Tests`) and 79 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
+| Tests | 136 .NET (xUnit, `tests/Quantos.Tests`) and 79 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
 Version numbers are product versions (0.1.x) and are separate from the plan's "Release 1.x" names.
@@ -93,6 +93,7 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Scratchpad send-to, docking | lib `scratch.ts`; `components/Scratchpad.svelte`, `ScratchTargets.svelte`; Backend `POST /api/nodes/{id}/append` |
 | Sidebars | `components/LeftSidebar.svelte` (customise, drag to reorder), `RightSidebar.svelte` (split panels) |
 | Convert to task, breadcrumbs, daily markers, subtask completion | lib `totask.ts`, views `NodeView.svelte`, `DailyStream.svelte`, Core `Tasks/TaskService.SetStatus` |
+| Linked folders (Markdown from another app, read and written in place) | Core `Storage/Vault.cs` (linked roots, `linked/<name>/…` paths), `WriteService.cs` (adopt by id, last write wins), `Storage/VaultWatcher.cs`; Backend `Api/NodeEndpoints.cs` (`/api/linked-folders`); `components/WorkspaceSwitcher.svelte`; `documentation/STORAGE-SPEC.md` section 9 |
 
 ## 4. Roadmap
 

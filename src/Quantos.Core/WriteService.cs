@@ -101,6 +101,20 @@ public sealed class WriteService
 
     // ---- create / save ----------------------------------------------------------------------
 
+    /// <summary>
+    /// Whether a write may go ahead even though the file on disk isn't the version the caller had.
+    /// A file in a linked folder is shared with another app, so the newest write wins: the version
+    /// that was on disk is kept in the note's history, so nothing is lost and it can be recovered
+    /// by hand. Returns false for the vault's own files, which are a conflict.
+    /// </summary>
+    private bool OverwriteIsAllowed(string id, string absolutePath, string disk, string baseHash)
+    {
+        if (Vault.LinkedFolderOf(Vault.Relative(absolutePath)) is null) return false;
+        History.Record(id, Encoding.UTF8.GetBytes(disk), HistoryStore.Conflict);
+        return true;
+    }
+
+    /// <summary>Creates a note. The file is written through the vault's write path.</summary>
     public Node Create(CreateNodeRequest request, Actor actor)
     {
         // Same rule as renaming: no stray spaces around a title, and never an empty one.
@@ -190,8 +204,11 @@ public sealed class WriteService
             var diskHash = Hashing.Sha256(disk);
             if (baseHash is not null && baseHash != diskHash)
             {
-                Changes.Publish(new ChangeEvent(ChangeKind.Conflict, id, Vault.Relative(abs), Hash: diskHash, Origin: actor.ToString()));
-                return new SaveResult(SaveStatus.Conflict, null, disk, diskHash, "The file changed on disk since you opened it.");
+                if (!OverwriteIsAllowed(id, abs, disk, baseHash))
+                {
+                    Changes.Publish(new ChangeEvent(ChangeKind.Conflict, id, Vault.Relative(abs), Hash: diskHash, Origin: actor.ToString()));
+                    return new SaveResult(SaveStatus.Conflict, null, disk, diskHash, "The file changed on disk since you opened it.");
+                }
             }
             var current = Node.FromText(Vault.Relative(abs), disk, diskHash);
             if (current.Schema > Node.CurrentSchema)
@@ -226,7 +243,7 @@ public sealed class WriteService
             var (abs, disk) = ReadCurrent(id);
             if (abs is null || disk is null) return new SaveResult(SaveStatus.NotFound, null);
             var diskHash = Hashing.Sha256(disk);
-            if (baseHash is not null && baseHash != diskHash)
+            if (baseHash is not null && baseHash != diskHash && !OverwriteIsAllowed(id, abs, disk, baseHash))
                 return new SaveResult(SaveStatus.Conflict, null, disk, diskHash, "The file changed on disk since you opened it.");
             var doc = FrontmatterDocument.Parse(disk);
             if (doc.YamlError is not null) return new SaveResult(SaveStatus.Invalid, null, Message: "The frontmatter isn't valid YAML; edit it in source mode.");
@@ -303,6 +320,8 @@ public sealed class WriteService
         {
             var node = Require(id);
             if (node.Workspace == workspace) return node;
+            if (Vault.LinkedFolderOf(node.Path) is not null)
+                throw new QuantosException("A note in a linked folder stays where it is: the folder belongs to another app.");
             Vault.EnsureWorkspace(workspace);
             var abs = Vault.Absolute(node.Path);
             var folder = node.Archived ? Path.Combine(Vault.WorkspaceDir(workspace), "archive") : Vault.FolderFor(workspace, node.Type, DailyDate(node));
@@ -322,10 +341,12 @@ public sealed class WriteService
         lock (_gate)
         {
             var node = Require(id);
+            var abs = Vault.Absolute(node.Path);
             var folder = Vault.Absolute(folderRelative);
             if (node.Workspace.Length > 0 && !folder.StartsWith(Vault.WorkspaceDir(node.Workspace), StringComparison.OrdinalIgnoreCase))
-                throw new QuantosException("Use a workspace move to move between workspaces.");
-            var abs = Vault.Absolute(node.Path);
+                throw new QuantosException(Vault.LinkedFolderOf(node.Path) is not null
+                    ? "A note in a linked folder can only be moved inside that folder."
+                    : "Use a workspace move to move between workspaces.");
             if (Vault.PathEquals(Path.GetDirectoryName(abs), folder)) return node;
             if (!allowRename && File.Exists(Path.Combine(folder, Path.GetFileName(abs))))
                 throw new QuantosException($"A file named {Path.GetFileName(abs)} already exists in {folderRelative}.", 409);
@@ -341,6 +362,8 @@ public sealed class WriteService
         {
             var node = Require(id);
             if (node.Archived == archived && Vault.IsArchivedPath(node.Path) == archived) return node;
+            if (Vault.LinkedFolderOf(node.Path) is not null)
+                throw new QuantosException("A note in a linked folder can't be archived: the folder belongs to another app.");
             var abs = Vault.Absolute(node.Path);
             var ws = node.Workspace.Length > 0 ? node.Workspace : Vault.WorkspaceOf(node.Path);
             string newAbs;
@@ -637,17 +660,33 @@ public sealed class WriteService
             var doc = FrontmatterDocument.Parse(disk);
             if (doc.YamlError is not null)
                 throw new QuantosException($"{Vault.Relative(absolutePath)} has invalid frontmatter and can't be adopted.");
+            var rel = Vault.Relative(absolutePath);
+            if (Vault.LinkedFolderOf(rel) is not null) return AdoptLinked(absolutePath, rel, disk, doc);
             var id = Ulid.New();
             doc.Set(NodeKeys.Id, id);
             if (!doc.ContainsKey(NodeKeys.Title)) doc.Set(NodeKeys.Title, Path.GetFileNameWithoutExtension(absolutePath));
             if (!doc.ContainsKey(NodeKeys.Schema)) doc.Set(NodeKeys.Schema, Node.CurrentSchema);
-            var ws = Vault.WorkspaceOf(Vault.Relative(absolutePath));
+            var ws = Vault.WorkspaceOf(rel);
             if (!doc.ContainsKey(NodeKeys.Workspace) && ws.Length > 0) doc.Set(NodeKeys.Workspace, ws);
             if (!doc.ContainsKey(NodeKeys.Created)) doc.Set(NodeKeys.Created, new DateTimeOffset(File.GetCreationTime(absolutePath)).ToString("yyyy-MM-ddTHH:mm:sszzz"));
             var node = WriteFile(absolutePath, id, null, doc.ToString(), beforeKind: HistoryStore.External, beforeBytes: Encoding.UTF8.GetBytes(disk));
             Changes.Publish(new ChangeEvent(ChangeKind.Created, id, node.Path, Hash: node.Hash, Origin: "adopt:" + reason));
             return node;
         }
+    }
+
+    /// <summary>
+    /// Adopts a file in a linked folder: only an id is added, so the other app's own frontmatter
+    /// and body stay as they are. The id comes from the file's path, so the note keeps its
+    /// identity even when the other app rewrites the file and drops the frontmatter.
+    /// </summary>
+    private Node AdoptLinked(string absolutePath, string rel, string disk, FrontmatterDocument doc)
+    {
+        var id = Ulid.FromSeed(rel);
+        doc.Set(NodeKeys.Id, id);
+        var node = WriteFile(absolutePath, id, null, doc.ToString(), beforeKind: HistoryStore.External, beforeBytes: Encoding.UTF8.GetBytes(disk));
+        Changes.Publish(new ChangeEvent(ChangeKind.Created, id, node.Path, Hash: node.Hash, Origin: "adopt:linked"));
+        return node;
     }
 
     // ---- link resolution --------------------------------------------------------------------

@@ -27,6 +27,7 @@ public static class SystemEndpoints
                 clientData = host.Paths.ClientData,
                 vault = session?.Vault.Root,
                 workspaces = session?.Vault.WorkspaceNames(),
+                linked = session?.Vault.LinkedRoots.Select(kv => new { name = kv.Key, path = kv.Value, exists = Directory.Exists(kv.Value) }).ToList(),
                 lastWorkspace = host.Settings.LastWorkspace,
                 nodeCount = session?.Cache.Count(),
                 syncedFolderWarning = session?.SyncedFolderWarning,

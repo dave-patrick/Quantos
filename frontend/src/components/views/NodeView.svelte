@@ -67,13 +67,15 @@
     if (!doc.node) return [];
     const parts = doc.node.path.split('/');
     const inWorkspace = parts[0] === 'workspaces';
+    const inLinked = parts[0] === 'linked';
+    const scoped = inWorkspace || inLinked;
     const out: { label: string; go: (e: MouseEvent) => void }[] = [];
     const notes = (e: MouseEvent) => layout.open({ kind: 'notes', title: 'Notes' }, whereFrom(e));
     parts.slice(0, -1).forEach((part, i) => {
-      if (inWorkspace && i === 0) return;
+      if (scoped && i === 0) return;
       const folder = parts.slice(0, i + 1).join('/');
-      const top = inWorkspace ? parts[2] : parts[0];
-      if (inWorkspace && i === 1) out.push({ label: part, go: notes });
+      const top = scoped ? parts[2] : parts[0];
+      if (scoped && i === 1) out.push({ label: part, go: notes });
       else if (inWorkspace && i === 2 && part === 'nodes') out.push({ label: 'Notes', go: notes });
       else if (inWorkspace && top === 'daily') out.push({ label: i === 2 ? 'Daily' : part, go: (e) => layout.open({ kind: 'daily', title: 'Daily' }, whereFrom(e)) });
       else if (inWorkspace && i === 2 && part === 'tasks') out.push({ label: 'Tasks', go: (e) => layout.open({ kind: 'tasks', title: 'Tasks' }, whereFrom(e)) });

@@ -35,7 +35,8 @@
       if (route === '/capture' || route === '/scratchpad') { phase = 'ready'; return; }
       if (!status.vault) { phase = 'setup'; return; }
       const workspaces = status.workspaces ?? [];
-      app.workspace = status.lastWorkspace && workspaces.includes(status.lastWorkspace) ? status.lastWorkspace : workspaces.includes('default') ? 'default' : workspaces[0] ?? 'default';
+      const scopes = [...workspaces, ...(status.linked ?? []).map((l) => l.name)];
+      app.workspace = status.lastWorkspace && scopes.includes(status.lastWorkspace) ? status.lastWorkspace : workspaces.includes('default') ? 'default' : workspaces[0] ?? scopes[0] ?? 'default';
       await Promise.all([
         app.loadTitles(), tasks.load().catch(() => {}), layout.load(app.workspace), supertags.load(), views.load(), templatesStore.load(), loadCustomizations()
       ]);
