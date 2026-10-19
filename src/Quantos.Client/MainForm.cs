@@ -253,9 +253,12 @@ public sealed class MainForm : Form
     {
         try
         {
-            var full = Path.GetFullPath(path);
-            // Only folders Quantos itself keeps are opened: nothing else on the computer.
             var vault = BackendConnection.Read(_paths)?.Vault;
+            // A path inside the vault may be given as the vault uses it ("exports/name").
+            var full = Path.IsPathRooted(path) || vault is null
+                ? Path.GetFullPath(path)
+                : Path.GetFullPath(Path.Combine(vault, path));
+            // Only folders Quantos itself keeps are opened: nothing else on the computer.
             var allowed = new[] { vault, _paths.ClientData }
                 .Where(p => !string.IsNullOrEmpty(p))
                 .Select(p => Path.GetFullPath(p!).TrimEnd('\\', '/') + Path.DirectorySeparatorChar);
