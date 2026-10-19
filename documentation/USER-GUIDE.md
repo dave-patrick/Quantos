@@ -135,6 +135,13 @@ Windows-only features (below) works the same.
 The **Daily stream** shows today's note at the top, with earlier days below. Days with nothing
 written collapse. Quick capture adds to today's note without disturbing what you're typing.
 
+### Browsing notes
+
+*Notes* at the top of the sidebar (`Ctrl+Shift+B`) lists every note with its first lines, newest
+edits first. Filter by words, type, tag or folder, sort by edited, created or title, and include
+archived notes or other workspaces. Click a note to preview it beside the list; double-click or press
+Enter to open it. Tick notes (or press Space) to tag, archive or trash several at once.
+
 ### The sidebar
 
 The sliders button next to *Settings* customises the left sidebar: untick items to hide them, use
@@ -354,6 +361,7 @@ approval in the Windows client.
 | Focus timer | `Ctrl+Alt+F` |
 | Record audio / stop | `Ctrl+Alt+A` |
 | Convert line or selection to tasks | `Ctrl+Alt+T` |
+| Browse notes | `Ctrl+Shift+B` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

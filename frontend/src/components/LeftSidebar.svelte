@@ -32,6 +32,7 @@
   onChange((e) => { if (e.kind === 'Moved' || e.kind === 'Created') loadFolders(); });
 
   const nav: { kind: TabKind; label: string; icon: string }[] = [
+    { kind: 'notes', label: 'Notes', icon: 'file-text' },
     { kind: 'daily', label: 'Daily stream', icon: 'calendar' },
     { kind: 'myday', label: 'My Day', icon: 'sun' },
     { kind: 'tasks', label: 'Tasks', icon: 'check-square' },

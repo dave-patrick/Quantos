@@ -412,6 +412,19 @@ public sealed partial class CacheIndex : IDisposable
         }
     }
 
+    /// <summary>The start of every note's plain text, for lists that show a line of each note (the notes browser).</summary>
+    public IReadOnlyDictionary<string, string> Excerpts(int length = 200)
+    {
+        lock (_gate)
+        {
+            using var cmd = Command(_db, "SELECT id, substr(body, 1, $n) FROM search", ("$n", length));
+            using var r = cmd.ExecuteReader();
+            var map = new Dictionary<string, string>();
+            while (r.Read()) if (!r.IsDBNull(1)) map[r.GetString(0)] = System.Text.RegularExpressions.Regex.Replace(r.GetString(1), @"\s+", " ").Trim();
+            return map;
+        }
+    }
+
     /// <summary>How connected each node is: resolved links out plus links in, in one query (for the graph overview).</summary>
     public IReadOnlyDictionary<string, int> LinkDegrees()
     {

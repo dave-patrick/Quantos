@@ -121,6 +121,7 @@ register(
   { id: 'view.mindmap', title: 'Mind map of this note', group: 'View', icon: 'graph', run: () => { const t = layout.activeTab; const d = t?.nodeId ? docs.peek(t.nodeId) : undefined; if (d?.node) layout.open({ kind: 'mindmap', nodeId: d.id, title: `Mind map: ${d.node.title}` }, 'new'); else app.toast('Open a note to see its mind map.', 'info'); } },
   { id: 'view.present', title: 'Present this note as slides', group: 'View', keys: 'Mod+Alt+P', icon: 'play', run: () => { const t = layout.activeTab; const d = t?.nodeId ? docs.peek(t.nodeId) : undefined; if (d?.node) presenter.open(d.node.title, d.body); else app.toast('Open a note to present it.', 'info'); } },
   { id: 'focus.open', title: 'Focus timer', group: 'Navigate', keys: 'Mod+Alt+F', icon: 'timer', run: () => layout.open({ kind: 'focus', title: 'Focus' }, 'current') },
+  { id: 'notes.open', title: 'Browse notes', group: 'Navigate', keys: 'Mod+Shift+B', icon: 'file-text', run: () => layout.open({ kind: 'notes', title: 'Notes' }, 'current') },
   { id: 'map.open', title: 'Map of notes with a location', group: 'Navigate', icon: 'map', run: () => layout.open({ kind: 'map', title: 'Map' }, 'current') },
   { id: 'gantt.open', title: 'Gantt chart of tasks', group: 'Navigate', icon: 'gantt', run: () => layout.open({ kind: 'gantt', title: 'Gantt' }, 'current') },
   { id: 'sprints.open', title: 'Sprints', group: 'Navigate', icon: 'layers', run: () => layout.open({ kind: 'sprints', title: 'Sprints' }, 'current') },

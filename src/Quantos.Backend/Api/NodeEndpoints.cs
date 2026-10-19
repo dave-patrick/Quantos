@@ -14,6 +14,9 @@ public static class NodeEndpoints
         api.MapGet("/nodes", (VaultHost host, string? workspace, string? type, bool? archived) =>
             host.Require().Cache.List(workspace, type, archived ?? false));
 
+        // The notes browser: every note's first words, by id (Release 1.2 follow-up).
+        api.MapGet("/nodes/excerpts", (VaultHost host) => host.Require().Cache.Excerpts());
+
         api.MapGet("/nodes/{id}", (VaultHost host, string id) =>
             host.Require().Writes.Get(id) is { } node ? Results.Ok(NodeDto.From(node)) : Results.NotFound(new { error = "Not found." }));
 
