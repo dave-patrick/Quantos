@@ -100,6 +100,7 @@ public static class Program
         ExtensibilityEndpoints.Map(app);
         AiEndpoints.Map(app);
         BackupEndpoints.Map(app);
+        ReplaceEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

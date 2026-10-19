@@ -38,7 +38,10 @@ public sealed class VaultSession : IDisposable
         Attachments = new AttachmentStore(Writes);
         Ai = new Ai.AiService(Writes, paths.Settings, paths.Cache);
         Backups = new Backups.BackupService(Writes, paths.Settings, Path.Combine(paths.ClientData, "backups"));
+        Replace = new Structure.FindReplaceService(Writes);
     }
+
+    public Structure.FindReplaceService Replace { get; }
 
     public Backups.BackupService Backups { get; }
 

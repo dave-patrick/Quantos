@@ -8,6 +8,7 @@
   import DiagnosticsView from './views/DiagnosticsView.svelte';
   import SettingsView from './views/SettingsView.svelte';
   import AskView from './views/AskView.svelte';
+  import ReplaceView from './views/ReplaceView.svelte';
   import TasksView from './views/TasksView.svelte';
   import MyDayView from './views/MyDayView.svelte';
   import TimelineView from './views/TimelineView.svelte';
@@ -30,6 +31,8 @@
   <DailyStream {tab} {today} />
 {:else if tab.kind === 'ask'}
   <AskView />
+{:else if tab.kind === 'replace'}
+  <ReplaceView />
 {:else if tab.kind === 'search'}
   <SearchView {tab} />
 {:else if tab.kind === 'trash'}

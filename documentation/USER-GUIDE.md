@@ -91,6 +91,11 @@ Windows-only features (below) works the same.
   automations, until you choose *Unlock*. Links in it still follow renames. *Reading mode*
   (`Ctrl+Alt+R`, or the command palette) makes every note read-only on this device until you turn
   it off from the status bar.
+- **Find and replace across notes:** `Ctrl+Shift+H` (or the button beside Search). Every change shows
+  before anything happens; untick notes to leave them out. Match case, whole words and patterns
+  (regular expressions, with `$1` for a captured group) are options. Properties, links and task
+  markers are never changed, and locked notes are skipped. *Undo* in the message afterwards puts the
+  notes back (any you've edited since keep your newer text), and each note's history has its old text.
 - **Saving** is automatic. If a save fails (the backend restarting, say), Quantos keeps trying, and keeps
   a copy of the unsaved text in the browser until it's saved, restoring it the next time the note opens.
   If the backend stops unexpectedly, the Windows client starts it again within a few seconds and signs
@@ -269,6 +274,7 @@ approval in the Windows client.
 | Search | `Ctrl+Shift+F` |
 | Ask your notes (AI) | `Ctrl+Shift+K` |
 | Reading mode on / off | `Ctrl+Alt+R` |
+| Find and replace across notes | `Ctrl+Shift+H` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

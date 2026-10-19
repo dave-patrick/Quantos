@@ -47,6 +47,7 @@ local commands; access files outside the vault; network requests; manage permiss
 
 - Grants live in `client-data\settings\permissions.json`, **outside the vault**, so content in the
   vault can never grant itself permissions.
+- Find and replace across notes is the person's alone; agents and plugins edit one note at a time.
 - A **locked** note (`locked: true`) refuses edits from every actor, the person included, until it is
   unlocked; only the person (app, browser session or CLI) can unlock it.
 - Agents and plugins are also checked on every read, and can't reach setup, system, sign-in,

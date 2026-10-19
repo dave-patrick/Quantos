@@ -821,7 +821,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 11. Math rendering. *(Built.)*
 12. Sprint and iteration planning.
 13. Goal rollups and status analytics.
-14. Batch find and replace.
+14. Batch find and replace. *(Built: preview, per-note choice, undo; links, properties and locked notes untouched.)*
 15. Density controls. *(Built.)*
 16. In-app AI and semantic search. *(Built: local and remote providers.)*
 

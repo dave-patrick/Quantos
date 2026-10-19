@@ -98,6 +98,7 @@ register(
   { id: 'note.new', title: 'New note', group: 'Create', keys: 'Mod+N', icon: 'plus', run: () => newNote().catch((e) => app.error(e)) },
   { id: 'daily.today', title: 'Open daily stream', group: 'Navigate', keys: 'Mod+Shift+D', icon: 'calendar', run: () => openToday() },
   { id: 'search.open', title: 'Search the vault', group: 'Navigate', keys: 'Mod+Shift+F', icon: 'search', run: () => layout.open({ kind: 'search', title: 'Search' }, 'current') },
+  { id: 'search.replace', title: 'Find and replace across notes', group: 'Edit', keys: 'Mod+Shift+H', icon: 'replace', run: () => layout.open({ kind: 'replace', title: 'Find and replace' }, 'current') },
   { id: 'ai.ask', title: 'Ask your notes', group: 'AI', keys: 'Mod+Shift+K', icon: 'sparkles', run: () => layout.open({ kind: 'ask', title: 'Ask your notes' }, 'current') },
   { id: 'tasks.open', title: 'Open tasks', group: 'Navigate', keys: 'Mod+Shift+T', icon: 'check-square', run: () => layout.open({ kind: 'tasks', title: 'Tasks' }) },
   { id: 'myday.open', title: 'Open My Day', group: 'Navigate', keys: 'Mod+Shift+M', icon: 'sun', run: () => layout.open({ kind: 'myday', title: 'My Day' }) },
