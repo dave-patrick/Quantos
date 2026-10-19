@@ -170,15 +170,24 @@ own tabs, splits and scroll positions.
   so exports read the same anywhere. A workspace zip carries the images and files its notes use.
   Exports go to the vault's `exports` folder.
 
-### Manual backup (Release 1.0)
+### Backups
 
-Configurable automatic backups arrive in Release 1.1. Until then:
+Quantos backs up the vault automatically while it's running, by default once a day to
+`client-data\backups`, keeping the newest 14. Change this in *Settings › Backups*:
 
-1. Use **Exit** in the Windows client so the backend shuts down safely.
-2. Copy the whole **Vault** folder to your backup location.
-3. You don't need to back up `client-data\cache\`; it's rebuilt automatically.
-4. **To restore:** copy the Vault folder back, start Quantos, and if anything looks out of date
-   choose *Vault diagnostics › Rebuild cache*.
+- **Folder:** pick another drive, a OneDrive folder or a network share, so a backup survives the
+  laptop. It must be outside the vault.
+- **How often** (hourly to weekly), **how many to keep**, and whether to include version history
+  (left out by default because it can be large).
+- **Back up now** makes one straight away. **Check** re-reads a backup and compares every file with
+  the fingerprint recorded when it was made.
+- **Restore a note…** lists the notes in a backup. Restoring puts that note back as it was; its
+  current text stays in the note's history. A note deleted since comes back where it was.
+- **Restore all…** unpacks the whole backup into a new folder (never over your vault) and offers to
+  open it. Switch back from *Settings › Vault*.
+
+Each backup is one zip file. You can also open it with Windows Explorer and copy files out.
+You don't need to back up `client-data\cache\`; it's rebuilt automatically.
 
 ---
 

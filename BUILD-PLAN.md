@@ -724,7 +724,7 @@ These stages set the build order for Release 1.0. They don't cut any features.
 
 ---
 
-## 12. Manual backup procedure (Release 1.0)
+## 12. Manual backup procedure (Release 1.0; replaced by rolling backups in 1.1)
 
 This goes in the user guide until configurable backups arrive in Release 1.1.
 
@@ -808,7 +808,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 
 ### Release 1.1: Enhancement release
 
-1. Configurable rolling backups, stored locally or in a chosen persistent location, with clear retention and restore behavior.
+1. Configurable rolling backups, stored locally or in a chosen persistent location, with clear retention and restore behavior. *(Built.)*
 2. Audio recording and playback.
 3. Habit and metric tracking.
 4. Presentation mode.
@@ -945,6 +945,7 @@ separately approved; review them during the daily-use checkpoint.
 | PDF export uses Microsoft Edge in headless mode; falls back to HTML when Edge is missing | Implemented |
 | Global shortcut defaults: capture `Ctrl+Alt+Q`, scratchpad `Ctrl+Alt+J` | Implemented |
 | Browser tabs share one push channel: one tab holds it and relays changes to the others (browsers allow six connections per host); a tab that stops hearing from it opens its own | Implemented |
+| Rolling backups are verified zips with a hash manifest, named per vault (name plus a hash of its location), pruned to the newest N; restore goes to a new folder or, for one note, writes it back as a restore so the replaced text stays in history | Implemented |
 | In-app AI is a provider layer: Claude through the official Anthropic SDK (with server-side fallback), everything else through the OpenAI-style API; presets for local (Ollama, LM Studio) and remote providers; keys DPAPI-encrypted in client-data; meaning search uses a separate embeddings index outside the vault | Implemented |
 | Density is one CSS factor (`--d`) on row heights and padding; custom styles are vault `themes/*.css`, enabled in settings.json, loaded after the built-in styles and kept local by the page CSP | Implemented |
 | Search indexes the text as you read it: link titles instead of ids, without task, sync and block markers, heading hashes, bullets or emphasis marks | Implemented |
