@@ -43,6 +43,6 @@ describe('web links in rendered notes', () => {
   it('open in a new tab and never replace Quantos', () => {
     const html = renderMarkdown('[site](https://example.com) and [[01JABCDEF0123456789XYZABCD|Note]]');
     expect(html).toContain('<a target="_blank" rel="noopener noreferrer" href="https://example.com">site</a>');
-    expect(html).not.toMatch(/class="wikilink"[^>]*starget="_blank"/);
+    expect(html).not.toMatch(/class="wikilink"[^>]*\starget="_blank"/);
   });
 });
