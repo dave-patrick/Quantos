@@ -37,6 +37,24 @@ public static class VaultEndpoints
             return Results.NoContent();
         });
 
+        // Custom styling (Release 1.1): .css files in the vault's themes folder. The page's content
+        // security policy keeps them local (no remote images, fonts or imports reach the network).
+        api.MapGet("/themes", (VaultHost host) =>
+        {
+            var dir = host.Require().Vault.Themes;
+            if (!Directory.Exists(dir)) return Results.Ok(Array.Empty<object>());
+            return Results.Ok(Directory.EnumerateFiles(dir, "*.css").OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+                .Select(f => new FileInfo(f)).Select(f => new { name = f.Name, size = f.Length, modified = f.LastWriteTimeUtc }));
+        });
+
+        api.MapGet("/themes/{name}", (VaultHost host, string name) =>
+        {
+            // A plain file name in the themes folder only: no folders, no other extensions.
+            if (name != Path.GetFileName(name) || !name.EndsWith(".css", StringComparison.OrdinalIgnoreCase)) return Results.NotFound();
+            var path = Path.Combine(host.Require().Vault.Themes, name);
+            return File.Exists(path) ? Results.Text(Core.Storage.AtomicFile.ReadAllText(path), "text/css") : Results.NotFound();
+        });
+
         api.MapGet("/workspace-state/{workspace}", (VaultHost host, string workspace) =>
             Results.Json(host.Require().Config.ReadWorkspaceState(workspace) ?? new JsonObject()));
 

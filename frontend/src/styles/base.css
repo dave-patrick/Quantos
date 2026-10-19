@@ -2,6 +2,7 @@
 html, body { height: 100%; margin: 0; }
 html { color-scheme: dark; }
 :root[data-theme='light'] { color-scheme: light; }
+html { accent-color: var(--accent); }
 body {
   background: var(--bg);
   color: var(--text);

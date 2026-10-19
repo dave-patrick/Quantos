@@ -62,7 +62,7 @@
 
 <style>
   /* Narrow places (timeline, side panels): chips move under the title rather than squeezing it. */
-  .task { position: relative; display: flex; flex-wrap: wrap; align-items: center; row-gap: 2px; column-gap: 10px; padding: 7px 10px 7px 14px; border-radius: 7px; min-height: 38px; }
+  .task { position: relative; display: flex; flex-wrap: wrap; align-items: center; row-gap: 2px; column-gap: 10px; padding: calc(7px * var(--d)) 10px calc(7px * var(--d)) 14px; border-radius: 7px; min-height: calc(38px * var(--d)); }
   .task:hover { background: var(--bg-hover); }
   .strip { position: absolute; left: 3px; top: 7px; bottom: 7px; width: 3px; border-radius: 3px; background: transparent; }
   .p1 .strip { background: var(--p1); } .p2 .strip { background: var(--p2); } .p3 .strip { background: var(--p3); } .p4 .strip { background: var(--p4); }
@@ -79,5 +79,5 @@
   .myday { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; }
   .task:hover .myday, .myday.on { opacity: 1; }
   .myday.on { color: var(--warn); }
-  .compact { min-height: 32px; padding-top: 4px; padding-bottom: 4px; }
+  .compact { min-height: calc(32px * var(--d)); padding-top: calc(4px * var(--d)); padding-bottom: calc(4px * var(--d)); }
 </style>

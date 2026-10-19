@@ -42,7 +42,9 @@
   --sidebar-w: 248px;
   --rightbar-w: 296px;
   --statusbar-h: 26px;
-  --tab-h: 34px;
+  /* Density (Settings › Appearance): 0.82 compact, 1 comfortable, 1.18 spacious. */
+  --d: 1;
+  --tab-h: calc(34px * var(--d));
   --editor-size: 17px;
   --editor-width: 760px;
   --ease: cubic-bezier(.2, .8, .2, 1);

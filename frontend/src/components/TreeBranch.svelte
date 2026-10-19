@@ -61,13 +61,13 @@
 <style>
   .folder { display: flex; align-items: center; border-radius: 5px; }
   .folder.over { background: var(--accent-wash); outline: 1px dashed var(--accent); }
-  .toggle { flex: 1; display: flex; align-items: center; gap: 5px; border: 0; background: none; color: var(--text-muted); padding: 4px 4px; font-size: 13px; text-align: left; min-width: 0; }
+  .toggle { flex: 1; display: flex; align-items: center; gap: 5px; border: 0; background: none; color: var(--text-muted); padding: calc(4px * var(--d)) 4px; font-size: 13px; text-align: left; min-width: 0; }
   .toggle span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   .folder:hover { background: var(--bg-hover); }
   .mini { border: 0; background: none; color: var(--text-faint); padding: 3px; border-radius: 4px; opacity: 0; }
   .folder:hover .mini, .mini:focus-visible { opacity: 1; }
   .mini:hover { color: var(--accent); }
-  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: 4px 8px; border: 0; background: none; border-radius: 5px; color: var(--text-soft); font-size: 13.5px; text-align: left; }
+  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: calc(4px * var(--d)) 8px; border: 0; background: none; border-radius: 5px; color: var(--text-soft); font-size: 13.5px; text-align: left; }
   .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row:hover { background: var(--bg-hover); }
   .row.on { background: var(--bg-active); color: var(--text); }

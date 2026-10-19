@@ -1,0 +1,17 @@
+/*
+  An example custom style. Switch it on in Settings > Appearance > Custom styles.
+  Quantos's colours and sizes are CSS variables, so a style can change a few of them and
+  leave everything else alone. This one gives the light theme a warm paper look and the
+  editor a little more room between lines.
+*/
+:root[data-theme='light'] {
+  --bg: #f7f3ea;
+  --bg-raised: #fffdf7;
+  --bg-panel: #efe9dc;
+  --line: #e2dacb;
+  --text: #2b2418;
+}
+
+.cm-content {
+  --editor-line: 1.8;
+}

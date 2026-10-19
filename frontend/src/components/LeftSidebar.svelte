@@ -162,7 +162,7 @@
   section { display: grid; gap: 1px; margin-bottom: 14px; }
   .heading { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 0; background: none; font: 600 10.5px/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); text-align: left; }
   .heading:hover { color: var(--text-muted); }
-  .item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 6px 10px 6px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 14px; text-align: left; }
+  .item { display: flex; align-items: center; gap: 9px; width: 100%; padding: calc(6px * var(--d)) 10px calc(6px * var(--d)) 12px; border: 0; border-radius: 6px; background: transparent; color: var(--text-soft); font-size: 14px; text-align: left; }
   .item span:not(.swatch):not(.count):not(.requires-windows) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .item:hover { background: var(--bg-hover); color: var(--text); }
   .item.active { background: var(--bg-active); color: var(--accent-strong); }

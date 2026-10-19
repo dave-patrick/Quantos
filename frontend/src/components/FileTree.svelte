@@ -149,7 +149,7 @@
   .batch span { flex: 1; }
   .batch .btn { height: 24px; padding: 0 8px; font-size: 12px; }
   .list { flex: 1; padding: 0 4px 20px; }
-  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: 4px 8px; border: 0; background: none; border-radius: 5px; color: var(--text-soft); font-size: 13.5px; text-align: left; }
+  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: calc(4px * var(--d)) 8px; border: 0; background: none; border-radius: 5px; color: var(--text-soft); font-size: 13.5px; text-align: left; }
   .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row:hover { background: var(--bg-hover); }
   .row.on { background: var(--bg-active); color: var(--text); }

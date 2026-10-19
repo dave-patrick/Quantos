@@ -221,6 +221,12 @@ approval in the Windows client.
 - **Automations** react to property changes, e.g. when a `#project` note's status becomes *Done*,
   stamp the date and create a follow-up task. Build them with the form in *Settings › Plugins &
   permissions* (or edit the JSON there). *Recent runs* shows what each one did.
+- **Look** (*Settings › Appearance*): dark or light, accent colour, density (compact, comfortable,
+  spacious), typeface and line spacing. These are per device.
+- **Custom styles:** `.css` files in the vault's `themes` folder, switched on in *Settings ›
+  Appearance*. Colours and sizes are CSS variables (`--accent`, `--bg`, `--text`…), so a few lines
+  go a long way; the example vault includes `warm-paper.css`. Styles can't load anything from the
+  internet, and safe mode turns them off.
 
 ---
 

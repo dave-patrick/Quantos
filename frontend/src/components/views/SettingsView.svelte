@@ -9,8 +9,9 @@
   import { vaultSettings } from '../../lib/vaultSettings.svelte';
   import { templatesStore } from '../../lib/templates.svelte';
   import { onMount } from 'svelte';
+  import { ACCENTS, themes, type Density } from '../../lib/appearance.svelte';
 
-  onMount(() => { vaultSettings.load(); templatesStore.load(); });
+  onMount(() => { vaultSettings.load(); templatesStore.load(); themes.list(); });
 
   let section = $state<'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins'>('general');
   let switching = $state(false);
@@ -32,6 +33,28 @@
         <select class="input narrow" aria-label="Typeface" bind:value={prefs.fontFamily}><option value="sans">Source Sans 3</option><option value="serif">Serif</option><option value="mono">IBM Plex Mono</option><option value="system">System</option></select></div>
       <div class="field"><span>Line spacing</span><input type="range" aria-label="Line spacing" min="1.3" max="2" step="0.05" bind:value={prefs.lineHeight} /> <span class="mono">{prefs.lineHeight}</span></div>
       <div class="field"><span>Line width</span><input type="range" aria-label="Line width" min="560" max="1100" step="20" bind:value={prefs.editorWidth} /> <span class="mono">{prefs.editorWidth}px</span></div>
+      <div class="field"><span id="accent-label">Accent colour</span>
+        <div class="swatches" role="radiogroup" aria-labelledby="accent-label">
+          {#each Object.entries(ACCENTS) as [key, a] (key)}
+            <button role="radio" aria-checked={prefs.accent === key} aria-label={a.label} title={a.label} class="swatch" class:on={prefs.accent === key}
+              style="--c:{app.theme === 'light' ? a.light : a.dark}" onclick={() => (prefs.accent = key)}></button>
+          {/each}
+        </div></div>
+      <div class="field"><span>Density</span>
+        <div class="seg">{#each [['compact', 'Compact'], ['comfortable', 'Comfortable'], ['spacious', 'Spacious']] as [key, label] (key)}<button class:on={prefs.density === key} onclick={() => (prefs.density = key as Density)}>{label}</button>{/each}</div></div>
+      <p class="faint note">Theme, colour and density apply to this device. Custom styles below are part of the vault.</p>
+
+      <h3>Custom styles</h3>
+      <p class="faint note">Put <code>.css</code> files in the vault's <code>themes</code> folder, then switch them on here. They load after Quantos's own styles, so they can change any colour or size (the design tokens are CSS variables such as <code>--accent</code> and <code>--bg</code>). They can't load anything from the internet. Safe mode turns them off.</p>
+      {#if themes.files.length}
+        {#each themes.files as f (f.name)}
+          <label class="check"><input type="checkbox" checked={themes.enabled.includes(f.name)} onchange={(e) => themes.toggle(f.name, (e.target as HTMLInputElement).checked)} /> {f.name} <span class="faint">{(f.size / 1024).toFixed(1)} KB</span></label>
+        {/each}
+      {:else}
+        <p class="faint">No styles yet.</p>
+      {/if}
+      {#if themes.error}<p class="warn">{themes.error}</p>{/if}
+      <button class="btn ghost" onclick={async () => { await themes.list(); await themes.apply(); app.toast('Styles reloaded.', 'ok'); }}>Reload styles</button>
     {:else if section === 'editor'}
       <h2>Writing</h2>
       <label class="check"><input type="checkbox" bind:checked={prefs.typewriter} /> Typewriter scrolling (keep the current line centred)</label>
@@ -80,6 +103,10 @@
   .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
   .seg button { border: 0; background: none; padding: 6px 14px; color: var(--text-muted); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
+  .swatches { display: flex; gap: 8px; }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; background: var(--c); box-shadow: inset 0 0 0 2px var(--bg); }
+  .swatch.on { border-color: var(--text); }
+  .note { font-size: 13px; max-width: 640px; }
   .check { display: flex; gap: 8px; align-items: center; margin: 10px 0; color: var(--text-soft); }
   .narrow { width: auto; }
   .mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }

@@ -11,6 +11,7 @@
   import { views } from './lib/views.svelte';
   import { templatesStore } from './lib/templates.svelte';
   import { loadCustomizations } from './lib/customize.svelte';
+  import { loadThemes } from './lib/appearance.svelte';
   import { plugins } from './lib/plugins.svelte';
   import { openNode } from './lib/links.svelte';
   import './lib/editorCommands';
@@ -27,6 +28,7 @@
   async function boot() {
     try {
       const status = await app.refreshStatus();
+      loadThemes().catch(() => {});
       if (route === '/capture' || route === '/scratchpad') { phase = 'ready'; return; }
       if (!status.vault) { phase = 'setup'; return; }
       const workspaces = status.workspaces ?? [];

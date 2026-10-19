@@ -209,7 +209,7 @@
   dt { font: 12.5px/1.3 var(--font-mono); color: var(--text-muted); padding: 5px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   dd { margin: 0; display: flex; align-items: center; gap: 6px; min-width: 0; }
   dd.invalid .cell { border-color: color-mix(in srgb, var(--warn) 60%, transparent); }
-  .cell { flex: 1; min-width: 0; height: 28px; padding: 0 8px; border-radius: 5px; border: 1px solid transparent; background: transparent; color: var(--text); font-size: 14px; }
+  .cell { flex: 1; min-width: 0; height: calc(28px * var(--d)); padding: 0 8px; border-radius: 5px; border: 1px solid transparent; background: transparent; color: var(--text); font-size: 14px; }
   .cell:hover { border-color: var(--line); }
   .cell:focus { outline: none; border-color: var(--accent); background: var(--bg-input); }
   .cell.key { font-family: var(--font-mono); font-size: 12.5px; }
