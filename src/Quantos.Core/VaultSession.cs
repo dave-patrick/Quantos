@@ -37,7 +37,10 @@ public sealed class VaultSession : IDisposable
         Exports = new Export.ExportService(Writes, Queries);
         Attachments = new AttachmentStore(Writes);
         Ai = new Ai.AiService(Writes, paths.Settings, paths.Cache);
+        Backups = new Backups.BackupService(Writes, paths.Settings, Path.Combine(paths.ClientData, "backups"));
     }
+
+    public Backups.BackupService Backups { get; }
 
     public Ai.AiService Ai { get; }
 
@@ -101,6 +104,7 @@ public sealed class VaultSession : IDisposable
         Watcher?.Dispose();
         Automations.Dispose();
         Ai.Dispose();
+        Backups.Dispose();
         Cache.Dispose();
         _lock?.Dispose();
     }
