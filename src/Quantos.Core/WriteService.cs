@@ -464,14 +464,29 @@ public sealed class WriteService
         lock (_gate)
         {
             var content = History.Read(id, version) ?? throw new QuantosException("That version doesn't exist.", 404);
-            var (abs, disk) = ReadCurrent(id);
-            if (abs is null || disk is null) throw new QuantosException("The node no longer exists; restore it from the trash first.", 404);
-            var doc = FrontmatterDocument.Parse(content);
-            if (doc.YamlError is null && doc.GetString(NodeKeys.Id) != id) doc.Set(NodeKeys.Id, id);
-            var node = WriteFile(abs, id, disk, doc.ToString(), HistoryStore.Restore);
-            Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
-            return node;
+            return ReplaceContentLocked(id, content, actor);
         }
+    }
+
+    /// <summary>
+    /// Puts back an earlier text (a history version, or a note from a backup). Written as a restore,
+    /// so it never merges into a recent autosave snapshot: the text it replaces stays in history.
+    /// </summary>
+    public Node ReplaceContent(string id, string content, Actor actor)
+    {
+        Permissions.Demand(actor, Permission.CreateEdit, $"Restore an earlier version of {id}");
+        lock (_gate) return ReplaceContentLocked(id, content, actor);
+    }
+
+    private Node ReplaceContentLocked(string id, string content, Actor actor)
+    {
+        var (abs, disk) = ReadCurrent(id);
+        if (abs is null || disk is null) throw new QuantosException("The node no longer exists; restore it from the trash first.", 404);
+        var doc = FrontmatterDocument.Parse(content);
+        if (doc.YamlError is null && doc.GetString(NodeKeys.Id) != id) doc.Set(NodeKeys.Id, id);
+        var node = WriteFile(abs, id, disk, doc.ToString(), HistoryStore.Restore);
+        Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
+        return node;
     }
 
     /// <summary>Keeps a version in history without changing the file (the losing side of a conflict).</summary>

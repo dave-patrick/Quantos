@@ -99,6 +99,7 @@ public static class Program
         RelationEndpoints.Map(app);
         ExtensibilityEndpoints.Map(app);
         AiEndpoints.Map(app);
+        BackupEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

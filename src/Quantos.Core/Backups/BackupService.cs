@@ -265,10 +265,9 @@ public sealed partial class BackupService : IDisposable
             content = reader.ReadToEnd();
         }
         var id = FrontmatterDocument.Parse(content).GetString(NodeKeys.Id);
-        if (id is not null && _writes.Get(id) is { } current)
+        if (id is not null && _writes.Get(id) is not null)
         {
-            var result = _writes.Save(id, content, current.Hash, actor);
-            return result.Node ?? throw new QuantosException(result.Message ?? "Couldn't restore the note.", 409);
+            return _writes.ReplaceContent(id, content, actor);
         }
         var target = _writes.Vault.Absolute(path);
         if (File.Exists(target)) target = Vault.UniquePath(Path.GetDirectoryName(target)!, Path.GetFileNameWithoutExtension(target));
