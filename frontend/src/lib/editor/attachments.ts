@@ -41,6 +41,13 @@ export const attachmentDrop = EditorView.domEventHandlers({
     return true;
   },
   mousedown(event, view) {
+    const web = (event.target as HTMLElement).closest('.cm-web-link') as HTMLElement | null;
+    if (web?.dataset.href && /^(https?:\/\/|mailto:)/i.test(web.dataset.href)) {
+      // Opens in the browser (the Windows client hands new windows to the default browser).
+      event.preventDefault();
+      window.open(web.dataset.href, '_blank', 'noopener');
+      return true;
+    }
     const el = (event.target as HTMLElement).closest('[data-pdf]') as HTMLElement | null;
     if (!el) return false;
     event.preventDefault();
@@ -85,6 +92,7 @@ const PDF = /\[([^\]]*)\]\((attachments\/[^)\s#]+\.pdf)(?:#page=(\d+))?\)/gi;
 
 // Links to stored files: [name](attachments/ab/abcdef….ext), not images.
 const ATTACHMENT_LINK = /(?<!!)\[([^\]]*)\]\((attachments\/[^)\s]+)\)/g;
+const WEB_LINK = /(?<!!)\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g;
 const hide = Decoration.replace({});
 const fileName = Decoration.mark({ class: 'cm-attach-name' });
 
@@ -111,6 +119,12 @@ function build(state: EditorState): DecorationSet {
         decos.push(hide.range(start, start + 1), fileName.range(start + 1, labelEnd), hide.range(labelEnd, end));
       }
     }
+    // Web and mail links read as their text; clicking the text opens them.
+    for (const m of line.text.matchAll(WEB_LINK)) {
+      if (raw) continue;
+      const start = line.from + m.index!, end = start + m[0].length, labelEnd = start + 1 + m[1].length;
+      decos.push(hide.range(start, start + 1), Decoration.mark({ class: 'cm-web-link', attributes: { 'data-href': m[2], title: m[2] } }).range(start + 1, labelEnd), hide.range(labelEnd, end));
+    }
     // A chip after each PDF link, so a citation next to the file's link gets its own.
     for (const pdf of line.text.matchAll(PDF)) {
       const at = line.from + pdf.index! + pdf[0].length;
@@ -134,5 +148,6 @@ export const inlineMedia = StateField.define<DecorationSet>({
 export const mediaTheme = EditorView.theme({
   '.cm-inline-image': { display: 'block', maxWidth: '100%', maxHeight: '420px', borderRadius: '8px', margin: '6px 0', border: '1px solid var(--line)' },
   '.cm-attach-name': { color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '2px' },
+  '.cm-web-link': { color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer' },
   '.cm-pdf-chip': { marginLeft: '8px', font: '600 11px var(--font-mono)', color: 'var(--accent)', border: '1px solid var(--line-strong)', borderRadius: '10px', padding: '1px 8px', cursor: 'pointer' }
 });
