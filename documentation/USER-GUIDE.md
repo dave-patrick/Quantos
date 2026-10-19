@@ -137,6 +137,12 @@ own tabs, splits and scroll positions.
   Stopping early still logs the minutes done. The Focus view shows today's sessions and totals per
   day and per task for the last week or month, read from those daily notes, so editing a line there
   changes the totals too.
+- **Habits and metrics:** *Habits* in the sidebar. *Track something* adds a habit (done or not) or
+  a number with a unit and an optional daily goal (or a limit to stay under). Click a day to tick it
+  or type the number. Each value is a property on that day's daily note (`exercise: true`,
+  `sleep: 7.5`), so it's in your files and works in queries. Rows show the current streak and the
+  share of days done, or the average for numbers. Click a name to change or stop tracking it; the
+  values already written stay in the notes. The list of trackers is kept in `settings.json`.
 - **My Day:** pick what you'll do today. Tasks planned for earlier days can be moved to today with
   one click. This changes the **planned** date only; due dates never move by themselves.
 - **Recurring tasks:** each occurrence is a separate task with its own history. The next one is

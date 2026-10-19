@@ -810,7 +810,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 
 1. Configurable rolling backups, stored locally or in a chosen persistent location, with clear retention and restore behavior. *(Built.)*
 2. Audio recording and playback.
-3. Habit and metric tracking.
+3. Habit and metric tracking. *(Built: trackers as daily-note properties, grid, streaks, goals, averages.)*
 4. Presentation mode. *(Built: slides from `---` breaks or headings, speaker notes, full screen.)*
 5. Detailed comparison between revisions. *(Built: any version against now or its predecessor, word-level, side by side, properties apart.)*
 6. Mermaid diagrams. *(Built.)*

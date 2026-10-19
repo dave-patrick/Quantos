@@ -40,10 +40,12 @@ public sealed class VaultSession : IDisposable
         Backups = new Backups.BackupService(Writes, paths.Settings, Path.Combine(paths.ClientData, "backups"));
         Replace = new Structure.FindReplaceService(Writes);
         Focus = new Tasks.FocusService(Writes);
+        Habits = new Tasks.HabitService(Writes);
     }
 
     public Structure.FindReplaceService Replace { get; }
     public Tasks.FocusService Focus { get; }
+    public Tasks.HabitService Habits { get; }
 
     public Backups.BackupService Backups { get; }
 
