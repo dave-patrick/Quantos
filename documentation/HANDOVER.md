@@ -30,9 +30,14 @@ open threads and the machine.
 
 ## Open threads (as of 0.1.5)
 
-- **Released on `main` as 0.1.5:** the split right sidebar (two panels), linked folders, the AI
-  agents settings page, slash commands, the block right-click menu, and custom styles applied with
-  buttons. The zip is on the releases page; the in-app update is the next test of the updater.
+- **Released 0.1.5** (tag `v0.1.5`, zip `Quantos-0.1.5-win-x64.zip`, SHA-256
+  `ac7c131a6af2974f71db4d82f913c6059469c05ce7e2db8783cce065a40525fe`): the split right sidebar,
+  linked folders, the AI agents settings page, slash commands, the block right-click menu, and
+  custom styles applied with buttons. Ask the owner to try *Settings › Updates* on their machine:
+  it is the first test of the updater fetching a real release.
+- **Linked folders (released, not yet used by the owner):** the owner keeps notes in a separate
+  Markdown editor and wants both to work on the same files. *Link a folder…* in the workspace menu
+  does it. Ask which editor they use and whether the two behave as expected on their real notes.
 - **First in-app update:** the owner was asked to update 0.1.3 → 0.1.4 through *Settings › Updates*. This
   is the first real run of the Windows client's install-and-restart step (`Updater.cs`,
   `MainForm.ApplyUpdateAsync`). If it failed, the client log `client-data\logs\client-<date>.log` says why;
