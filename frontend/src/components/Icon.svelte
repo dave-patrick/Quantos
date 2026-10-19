@@ -2,6 +2,7 @@
   // Stroke icons, 24px grid.
   const paths: Record<string, string> = {
     menu: 'M4 6h16M4 12h16M4 18h16',
+    sparkles: 'M12 3l1.8 4.6L18 9.5l-4.2 1.9L12 16l-1.8-4.6L6 9.5l4.2-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z',
     'panel-left': 'M3 4h18v16H3zM9 4v16',
     'panel-right': 'M3 4h18v16H3zM15 4v16',
     search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',

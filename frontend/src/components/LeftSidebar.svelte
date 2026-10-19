@@ -37,6 +37,7 @@
     { kind: 'timeline', label: 'Timeline', icon: 'clock' },
     { kind: 'review', label: 'Stale tasks', icon: 'history' },
     { kind: 'search', label: 'Search', icon: 'search' },
+    { kind: 'ask', label: 'Ask your notes', icon: 'sparkles' },
     { kind: 'graph', label: 'Graph', icon: 'graph' }
   ];
 

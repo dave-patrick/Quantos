@@ -6,6 +6,7 @@
   import ShortcutSettings from '../ShortcutSettings.svelte';
   import ToolbarSettings from '../ToolbarSettings.svelte';
   import PluginSettings from '../PluginSettings.svelte';
+  import AiSettingsPanel from '../AiSettings.svelte';
   import { vaultSettings } from '../../lib/vaultSettings.svelte';
   import { templatesStore } from '../../lib/templates.svelte';
   import { onMount } from 'svelte';
@@ -13,13 +14,18 @@
 
   onMount(() => { vaultSettings.load(); templatesStore.load(); themes.list(); });
 
-  let section = $state<'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins'>('general');
+  import type { Tab } from '../../lib/layout.svelte';
+  let { tab }: { tab?: Tab } = $props();
+  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai';
+  let section = $state<Section>('general');
+  // A link can open a particular section ("Open AI settings").
+  $effect(() => { if (tab?.arg) section = tab.arg as Section; });
   let switching = $state(false);
 </script>
 
 <div class="settings">
   <nav>
-    {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions']] as [key, label] (key)}
+    {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI']] as [key, label] (key)}
       <button class:on={section === key} onclick={() => (section = key as typeof section)}>{label}</button>
     {/each}
   </nav>
@@ -83,8 +89,10 @@
       <ShortcutSettings />
     {:else if section === 'toolbar'}
       <ToolbarSettings />
-    {:else}
+    {:else if section === 'plugins'}
       <PluginSettings />
+    {:else if section === 'ai'}
+      <AiSettingsPanel />
     {/if}
   </div>
 </div>

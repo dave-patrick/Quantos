@@ -815,15 +815,15 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 5. Detailed comparison between revisions.
 6. Mermaid diagrams.
 7. Read-only mode.
-8. Custom styling.
-9. CSV import and export for tables.
+8. Custom styling. *(Built.)*
+9. CSV import and export for tables. *(Built.)*
 10. Focus timer and work-session tracking.
 11. Math rendering.
 12. Sprint and iteration planning.
 13. Goal rollups and status analytics.
 14. Batch find and replace.
-15. Density controls.
-16. In-app AI and semantic search.
+15. Density controls. *(Built.)*
+16. In-app AI and semantic search. *(Built: local and remote providers.)*
 
 ### Release 1.2: Visual and agent release
 
@@ -945,6 +945,7 @@ separately approved; review them during the daily-use checkpoint.
 | PDF export uses Microsoft Edge in headless mode; falls back to HTML when Edge is missing | Implemented |
 | Global shortcut defaults: capture `Ctrl+Alt+Q`, scratchpad `Ctrl+Alt+J` | Implemented |
 | Browser tabs share one push channel: one tab holds it and relays changes to the others (browsers allow six connections per host); a tab that stops hearing from it opens its own | Implemented |
+| In-app AI is a provider layer: Claude through the official Anthropic SDK (with server-side fallback), everything else through the OpenAI-style API; presets for local (Ollama, LM Studio) and remote providers; keys DPAPI-encrypted in client-data; meaning search uses a separate embeddings index outside the vault | Implemented |
 | Density is one CSS factor (`--d`) on row heights and padding; custom styles are vault `themes/*.css`, enabled in settings.json, loaded after the built-in styles and kept local by the page CSP | Implemented |
 | Search indexes the text as you read it: link titles instead of ids, without task, sync and block markers, heading hashes, bullets or emphasis marks | Implemented |
 | Views with no type filter leave out supertag, template and synced-block records; choose the type to list them | Implemented |

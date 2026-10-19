@@ -7,6 +7,7 @@
   import HistoryView from './views/HistoryView.svelte';
   import DiagnosticsView from './views/DiagnosticsView.svelte';
   import SettingsView from './views/SettingsView.svelte';
+  import AskView from './views/AskView.svelte';
   import TasksView from './views/TasksView.svelte';
   import MyDayView from './views/MyDayView.svelte';
   import TimelineView from './views/TimelineView.svelte';
@@ -27,6 +28,8 @@
   <NodeView {tab} id={tab.nodeId} {paneIndex} />
 {:else if tab.kind === 'daily'}
   <DailyStream {tab} {today} />
+{:else if tab.kind === 'ask'}
+  <AskView />
 {:else if tab.kind === 'search'}
   <SearchView {tab} />
 {:else if tab.kind === 'trash'}
@@ -36,7 +39,7 @@
 {:else if tab.kind === 'diagnostics'}
   <DiagnosticsView />
 {:else if tab.kind === 'settings'}
-  <SettingsView />
+  <SettingsView {tab} />
 {:else if tab.kind === 'tasks'}
   <TasksView {tab} />
 {:else if tab.kind === 'myday'}

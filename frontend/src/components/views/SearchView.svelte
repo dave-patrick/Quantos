@@ -6,10 +6,15 @@
   import { snippetHtml } from '../../lib/text';
   import type { SearchHit } from '../../lib/types';
   import Icon from '../Icon.svelte';
+  import { onMount } from 'svelte';
+  import { ai } from '../../lib/ai.svelte';
 
   let { tab }: { tab: Tab } = $props();
   let query = $state(tab.arg ?? '');
   let scope = $state<'all' | 'active'>('all');
+  // Words: the full-text index. Meaning: the AI embedding index, when it's set up (Release 1.1).
+  let mode = $state<'words' | 'meaning'>('words');
+  onMount(() => { ai.load(); });
   let hits = $state<SearchHit[]>([]);
   let busy = $state(false);
   let timer: ReturnType<typeof setTimeout>;
@@ -28,12 +33,19 @@
     layout.persist();
     if (!q) { hits = []; return; }
     busy = true;
-    try { hits = await api.get<SearchHit[]>(`search?q=${encodeURIComponent(q)}&limit=200${scope === 'active' ? `&workspace=${app.workspace}` : ''}`); }
+    try {
+      if (mode === 'meaning') {
+        const found = await ai.search(q, scope === 'active' ? app.workspace : undefined);
+        hits = found.map((h) => ({ id: h.id, title: h.title, workspace: h.workspace, path: h.path, type: app.titleIndex.get(h.id)?.type ?? 'note',
+          snippet: h.text.replace(/^[^\n]*\n\n/, '').slice(0, 220) + (h.text.length > 220 ? '…' : '') }));
+      } else hits = await api.get<SearchHit[]>(`search?q=${encodeURIComponent(q)}&limit=200${scope === 'active' ? `&workspace=${app.workspace}` : ''}`);
+    }
     catch (e) { app.error(e); }
     finally { busy = false; }
   }
 
-  $effect(() => { void scope; clearTimeout(timer); timer = setTimeout(search, 200); });
+  $effect(() => { void scope; void mode; clearTimeout(timer); timer = setTimeout(search, 200); });
+  const delay = $derived(mode === 'meaning' ? 600 : 200);
 </script>
 
 <div class="scroll view">
@@ -41,7 +53,8 @@
     <div class="box">
       <Icon name="search" size={18} />
       <!-- svelte-ignore a11y_autofocus -->
-      <input class="q" aria-label="Search" bind:value={query} oninput={() => { clearTimeout(timer); timer = setTimeout(search, 200); }} placeholder="Search every note, task and daily entry" autofocus />
+      <input class="q" aria-label="Search" bind:value={query} oninput={() => { clearTimeout(timer); timer = setTimeout(search, delay); }} placeholder="Search every note, task and daily entry" autofocus />
+      {#if ai.searchReady}<select class="input scope" aria-label="Match by" bind:value={mode}><option value="words">Words</option><option value="meaning">Meaning</option></select>{/if}
       <select class="input scope" aria-label="Search in" bind:value={scope}><option value="all">All workspaces</option><option value="active">This workspace</option></select>
     </div>
     {#if busy}<p class="faint">Searching…</p>{/if}

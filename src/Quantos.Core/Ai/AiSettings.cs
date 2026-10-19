@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Quantos.Core.Storage;
 
 namespace Quantos.Core.Ai;
@@ -8,10 +9,10 @@ namespace Quantos.Core.Ai;
 /// <summary>One use of AI (writing/answering, or embeddings for meaning search): which provider, where, which model.</summary>
 public sealed record AiEndpoint(string Provider, string? BaseUrl, string? Model)
 {
-    public AiPreset? Preset => AiProviders.Find(Provider);
-    public string Url => (string.IsNullOrWhiteSpace(BaseUrl) ? Preset?.BaseUrl ?? "" : BaseUrl).TrimEnd('/');
-    public AiApi Api => Preset?.Api ?? AiApi.OpenAiCompatible;
-    public bool IsLocal => Uri.TryCreate(Url, UriKind.Absolute, out var u) && (u.IsLoopback || u.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase));
+    [JsonIgnore] public AiPreset? Preset => AiProviders.Find(Provider);
+    [JsonIgnore] public string Url => (string.IsNullOrWhiteSpace(BaseUrl) ? Preset?.BaseUrl ?? "" : BaseUrl).TrimEnd('/');
+    [JsonIgnore] public AiApi Api => Preset?.Api ?? AiApi.OpenAiCompatible;
+    [JsonIgnore] public bool IsLocal => Uri.TryCreate(Url, UriKind.Absolute, out var u) && (u.IsLoopback || u.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>Per computer (client-data), not in the vault: a vault may be shared, keys must not be.</summary>

@@ -4,6 +4,8 @@ import { register } from './commands.svelte';
 import { docs } from './docs.svelte';
 import { openNode } from './links.svelte';
 import { app } from './state.svelte';
+import { ai, aiJob } from './ai.svelte';
+import { layout } from './layout.svelte';
 import type { NodeDto } from './types';
 import type { EditorView } from '@codemirror/view';
 
@@ -101,4 +103,46 @@ register(
     const view = editorOrHint(); if (!view) return;
     insertBlock(view, '> [!note]- Title\n> Hidden detail.\n', 'Title');
   } }
+);
+
+// ---- AI on the selected text (Release 1.1) ----------------------------------------------------
+
+/**
+ * Sends the selection (or the whole note, for summaries) to the AI provider with an instruction and
+ * shows the result; the note changes only when the person picks Replace or Insert below.
+ */
+async function aiOnText(title: string, instruction: string | null, wholeNoteIfEmpty = false) {
+  if (!ai.loaded) await ai.load();
+  if (!ai.chatReady) { app.toast('Set up AI first: Settings › AI.', 'info', { label: 'Open', run: () => layout.open({ kind: 'settings', title: 'Settings', arg: 'ai' }, 'current') }); return; }
+  const view = editorOrHint();
+  if (!view) return;
+  let { from, to } = view.state.selection.main;
+  if (from === to) {
+    if (!wholeNoteIfEmpty) { app.toast('Select some text first.', 'warn'); return; }
+    from = 0; to = view.state.doc.length;
+  }
+  const text = view.state.sliceDoc(from, to);
+  if (!text.trim()) { app.toast('There is no text to work on.', 'warn'); return; }
+  const ask = instruction ?? await app.ask(title, { placeholder: 'For example: make it friendlier, translate into French, turn into a list', confirmLabel: 'Go' });
+  if (!ask) return;
+  const noteTitle = activeEditor.docId ? docs.peek(activeEditor.docId)?.node?.title ?? null : null;
+  const whole = from === 0 && to === view.state.doc.length;
+  await aiJob.run(title, ask, text, noteTitle, {
+    // The dialog is modal, so the range is still the selected text when the result is applied.
+    replace: whole ? undefined : (result) => view.dispatch({ changes: { from, to, insert: result }, selection: { anchor: from + result.length }, userEvent: 'input.ai' }),
+    insertBelow: (result) => {
+      const line = view.state.doc.lineAt(Math.min(to, view.state.doc.length));
+      view.dispatch({ changes: { from: line.to, insert: `\n\n${result}` }, selection: { anchor: line.to + 2 + result.length }, userEvent: 'input.ai' });
+    }
+  });
+}
+
+register(
+  { id: 'ai.rewrite', title: 'AI: Rewrite selection…', group: 'AI', icon: 'sparkles', run: () => aiOnText('Rewrite selection', null) },
+  { id: 'ai.improve', title: 'AI: Improve writing', group: 'AI', icon: 'sparkles', run: () => aiOnText('Improve writing', 'Improve the clarity and flow. Keep the meaning, tone and length.') },
+  { id: 'ai.fix', title: 'AI: Fix spelling and grammar', group: 'AI', icon: 'sparkles', run: () => aiOnText('Fix spelling and grammar', 'Fix spelling, grammar and punctuation only. Change nothing else.') },
+  { id: 'ai.shorter', title: 'AI: Make shorter', group: 'AI', icon: 'sparkles', run: () => aiOnText('Make shorter', 'Make it about half as long, keeping every important point.') },
+  { id: 'ai.summarize', title: 'AI: Summarise (selection or whole note)', group: 'AI', icon: 'sparkles', run: () => aiOnText('Summary', 'Summarise this as a few concise bullet points.', true) },
+  { id: 'ai.actions', title: 'AI: List action items (selection or whole note)', group: 'AI', icon: 'sparkles', run: () => aiOnText('Action items', 'List the action items as Markdown tasks ("- [ ] …"), naming who and when where the text says.', true) },
+  { id: 'ai.continue', title: 'AI: Continue writing', group: 'AI', icon: 'sparkles', run: () => aiOnText('Continue writing', 'Continue the text with one or two paragraphs in the same voice. Reply with only the new text.', true) }
 );

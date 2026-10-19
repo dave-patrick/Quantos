@@ -221,6 +221,16 @@ approval in the Windows client.
 - **Automations** react to property changes, e.g. when a `#project` note's status becomes *Done*,
   stamp the date and create a follow-up task. Build them with the form in *Settings › Plugins &
   permissions* (or edit the JSON there). *Recent runs* shows what each one did.
+- **AI** (*Settings › AI*, off until you switch it on): choose a provider for writing and answering
+  and one for meaning search. Presets cover Ollama and LM Studio (on this computer: nothing leaves
+  it), Anthropic Claude, OpenAI, Google Gemini, Mistral, Voyage AI, OpenRouter, Azure OpenAI, and any
+  OpenAI-compatible server. *List models* asks the provider what it offers. Keys are encrypted for
+  your Windows account and never stored in the vault.
+  - **Ask your notes** (sidebar, `Ctrl+Shift+K`): answers from the notes that match, with links to them.
+  - **Meaning search**: in Search, switch *Words* to *Meaning* to find notes by what they mean.
+  - **On selected text** (command palette, “AI:”): rewrite, improve, fix spelling, make shorter,
+    summarise, list action items, continue writing. The result opens in a window; the note changes
+    only when you choose *Replace* or *Insert below*.
 - **Look** (*Settings › Appearance*): dark or light, accent colour, density (compact, comfortable,
   spacious), typeface and line spacing. These are per device.
 - **Custom styles:** `.css` files in the vault's `themes` folder, switched on in *Settings ›
@@ -239,6 +249,7 @@ approval in the Windows client.
 | New note | `Ctrl+N` |
 | Daily stream / My Day / Tasks | `Ctrl+Shift+D` / `Ctrl+Shift+M` / `Ctrl+Shift+T` |
 | Search | `Ctrl+Shift+F` |
+| Ask your notes (AI) | `Ctrl+Shift+K` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

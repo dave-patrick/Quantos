@@ -81,6 +81,23 @@ request alone can never trigger these actions.
 - Automations act as their own actor and stop, with a recorded reason, when they need a permission
   they don't have.
 
+## AI providers (Release 1.1)
+
+- AI is off until switched on in *Settings › AI*. Then the backend talks only to the providers
+  chosen there; nothing else in Quantos makes outbound requests.
+- Local providers (Ollama, LM Studio, any address on this computer) keep everything on the machine.
+  With a remote provider, a request sends only what it needs: a question plus the note passages it
+  draws on, the selected text for a rewrite, or note passages while building the meaning-search index.
+- API keys are kept in `client-data/settings/ai-keys.json`, encrypted with Windows DPAPI for the
+  current user. They're never written to the vault, never returned to a page, and can't be read on
+  another account or machine.
+- Choosing providers and saving keys is for the person only (user or CLI). Agents and plugins that
+  call AI endpoints need the **Network** permission, plus **Read** to use notes.
+- Claude requests use Anthropic's server-side fallback, so a request Claude declines on policy
+  grounds can be answered by another Claude model; if none can, the answer says it was declined.
+- The meaning-search index (`client-data/cache/embeddings.sqlite`) is derived data like the cache:
+  outside the vault, rebuilt when the model changes.
+
 ## Data safety
 
 See [STORAGE-SPEC.md](STORAGE-SPEC.md): atomic writes, conflict checks by content hash, history

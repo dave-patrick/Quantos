@@ -93,7 +93,12 @@ public sealed class AiService : IDisposable
         var s = Settings.Load();
         if (s.Embeddings is not null)
         {
-            try { return (await Index.SearchAsync(question, workspace, 8, ct)).ToList(); }
+            try
+            {
+                // Only passages close to the best match: an answer drawn from unrelated notes is worse than a shorter one.
+                var found = await Index.SearchAsync(question, workspace, 8, ct);
+                return found.Where(h => h.Score >= found[0].Score - 0.15).ToList();
+            }
             catch (QuantosException) { /* fall back to word search */ }
         }
         var hits = _writes.Cache.Search(question, workspace, 8);

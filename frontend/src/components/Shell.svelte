@@ -14,6 +14,8 @@
   import Toasts from './Toasts.svelte';
   import Dialog from './Dialog.svelte';
   import Ask from './Ask.svelte';
+  import AiResult from './AiResult.svelte';
+  import { aiJob } from '../lib/ai.svelte';
   import HoverPreview from './HoverPreview.svelte';
   import TerminalDrawer from './TerminalDrawer.svelte';
   import Approvals from './Approvals.svelte';
@@ -23,7 +25,7 @@
   onMount(() => watchDate((d) => (today = d)));
 
   function onkeydown(e: KeyboardEvent) {
-    if (app.dialog || app.asking) return;
+    if (app.dialog || app.asking || aiJob.open) return;
     handleGlobalKey(e);
   }
 </script>
@@ -48,6 +50,7 @@
 <Toasts />
 <Dialog />
 <Ask />
+<AiResult />
 
 <style>
   .shell {
