@@ -60,7 +60,9 @@ export function renderMarkdown(body: string, options: { links?: boolean } = {}):
     .replace(/<blockquote>\s*<p>\[!(\w+)\][+-]?\s*/g, '<blockquote class="callout"><p><span class="callout-label">$1</span> ')
     // Task checkboxes: inputs don't survive sanitising, so they become boxes drawn in CSS.
     .replace(/<input\b[^>]*type="checkbox"[^>]*>/g, (tag) => /\bchecked\b/.test(tag) ? '<span class="md-check on" role="img" aria-label="Done"></span>' : '<span class="md-check" role="img" aria-label="Not done"></span>');
-  return DOMPurify.sanitize(html, { ADD_ATTR: ['data-target'], FORBID_TAGS: ['style', 'iframe', 'form', 'input', 'object', 'embed'] });
+  // Web links open in a new tab (the Windows client sends them to the default browser), never in place of Quantos.
+  const external = html.replace(/<a href="(https?:\/\/|mailto:)/gi, '<a target="_blank" rel="noopener noreferrer" href="$1');
+  return DOMPurify.sanitize(external, { ADD_ATTR: ['data-target', 'target'], FORBID_TAGS: ['style', 'iframe', 'form', 'input', 'object', 'embed'] });
 }
 
 export function stripFrontmatter(content: string) {
