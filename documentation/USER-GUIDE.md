@@ -336,8 +336,20 @@ approval in the Windows client.
   - **On selected text** (command palette, “AI:”): rewrite, improve, fix spelling, make shorter,
     summarise, list action items, continue writing. The result opens in a window; the note changes
     only when you choose *Replace* or *Insert below*.
-- **Look** (*Settings › Appearance*): dark or light, accent colour, density (compact, comfortable,
-  spacious), typeface and line spacing. These are per device.
+- **Theme** (*Settings › Appearance*): start from a theme (Quantos Dark and Light, Midnight, Graphite,
+  Nord, Forest, Rosé, Solarized, Paper, Sky, High contrast), then change anything:
+  - **Background:** any colour. Panels, lines and softer text are worked out from it, light or dark,
+    and kept readable.
+  - **Text:** any colour, nudged if it would be hard to read.
+  - **Accent:** a preset swatch or any colour, from the picker or as hex. Quantos adjusts it slightly
+    if text in that colour would be hard to read, and says so.
+  - **Fonts:** for the interface, headings, the editor and code. Pick from the list or *Another font…*
+    to type any font installed on the PC.
+  - **Interface size:** scales everything.
+
+  *Save as a vault style…* writes the theme to the vault's `themes` folder so you can switch it on
+  from any device; otherwise the theme, density, editor text size, line spacing and width are per
+  device.
 - **Custom styles:** `.css` files in the vault's `themes` folder, switched on in *Settings ›
   Appearance*. Colours and sizes are CSS variables (`--accent`, `--bg`, `--text`…), so a few lines
   go a long way; the example vault includes `warm-paper.css`. Styles can't load anything from the

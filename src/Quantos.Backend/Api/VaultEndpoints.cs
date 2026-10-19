@@ -56,6 +56,22 @@ public static class VaultEndpoints
             return File.Exists(path) ? Results.Text(Core.Storage.AtomicFile.ReadAllText(path), "text/css") : Results.NotFound();
         });
 
+        // Saving a look from Settings › Appearance as a theme file, so other devices can switch it on.
+        // Only the person can write styles: they apply to every page of the app.
+        api.MapPut("/themes/{name}", async (VaultHost host, HttpContext ctx, string name) =>
+        {
+            if (ctx.Actor().Kind is not (Core.Security.ActorKind.User or Core.Security.ActorKind.Cli)) throw new QuantosException("Only you can save styles.", 403);
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9][A-Za-z0-9 _-]{0,70}\.css$"))
+                throw new QuantosException("A style is saved as a plain file name ending in .css.");
+            using var reader = new StreamReader(ctx.Request.Body);
+            var css = await reader.ReadToEndAsync();
+            if (css.Length > 200_000) throw new QuantosException("That style is too large.");
+            var dir = host.Require().Vault.Themes;
+            Directory.CreateDirectory(dir);
+            Core.Storage.AtomicFile.WriteAllText(Path.Combine(dir, name), css);
+            return Results.Ok(new { name });
+        });
+
         api.MapGet("/workspace-state/{workspace}", (VaultHost host, string workspace) =>
             Results.Json(host.Require().Config.ReadWorkspaceState(workspace) ?? new JsonObject()));
 

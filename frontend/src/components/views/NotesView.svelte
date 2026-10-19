@@ -21,7 +21,7 @@
   let current = $state<string | null>(null);
   let preview = $state<NodeDto | null>(null);
   let picked = $state<Set<string>>(new Set());
-  let list = $state<HTMLDivElement | null>(null);
+  let list = $state<HTMLUListElement | null>(null);
 
   async function loadExcerpts() { try { excerpts = await api.get<Record<string, string>>('nodes/excerpts'); } catch { /* the list still works */ } }
   onMount(() => {
@@ -59,7 +59,7 @@
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       const next = shown[Math.max(0, Math.min(shown.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))];
-      if (next) { select(next.id); tick().then(() => list?.querySelector(`[data-id="${next.id}"]`)?.scrollIntoView({ block: 'nearest' })); }
+      if (next) { select(next.id); tick().then(() => list?.querySelector<HTMLElement>(`[data-id="${next.id}"] .pick`)?.focus()); }
     } else if (e.key === 'Enter' && current) { e.preventDefault(); openNode(current, e.ctrlKey ? 'new' : 'current', shown[i]?.title); }
     else if (e.key === ' ' && current && !(e.target as HTMLElement).closest('input')) { e.preventDefault(); togglePick(current); }
   }
@@ -119,29 +119,31 @@
           <button class="btn ghost" onclick={() => bulk('trash')}><Icon name="trash" size={13} /> Trash</button>
         {/if}
       </div>
-      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <div class="scroll list" bind:this={list} role="listbox" aria-label="Notes" tabindex="0" aria-activedescendant={current ? `note-${current}` : undefined} onkeydown={keys}>
+      <!-- Each row: a tick box, then the note as a button (arrows move between rows, Enter opens). -->
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <ul class="scroll list" bind:this={list} aria-label="Notes" onkeydown={keys}>
         {#each shown.slice(0, 600) as n (n.id)}
-          <div class="row" class:on={current === n.id} class:arch={n.archived} id={`note-${n.id}`} data-id={n.id} role="option" aria-selected={current === n.id} tabindex="-1"
-            onclick={() => select(n.id)} ondblclick={(e) => openNode(n.id, whereFrom(e), n.title)} onkeydown={() => {}}>
-            <input type="checkbox" aria-label={`Select ${n.title}`} checked={picked.has(n.id)} onclick={(e) => e.stopPropagation()} onchange={() => togglePick(n.id)} />
+          <li class="row" class:on={current === n.id} class:arch={n.archived} data-id={n.id}>
+            <input type="checkbox" aria-label={`Select ${n.title}`} checked={picked.has(n.id)} onchange={() => togglePick(n.id)} />
+            <button class="pick" aria-current={current === n.id ? 'true' : undefined} onclick={() => select(n.id)} ondblclick={(e) => openNode(n.id, whereFrom(e), n.title)}>
             <Icon name={icons[n.type] ?? 'file-text'} size={14} />
-            <div class="txt">
-              <div class="t">{n.title || 'Untitled'}</div>
-              {#if n.type === 'canvas'}<div class="x">Whiteboard</div>{:else if excerpts[n.id]}<div class="x">{excerpts[n.id].replace(/\[\^[^\]\s]+\]/g, '')}</div>{/if}
-              <div class="meta">
+            <span class="txt">
+              <span class="t">{n.title || 'Untitled'}</span>
+              {#if n.type === 'canvas'}<span class="x">Whiteboard</span>{:else if excerpts[n.id]}<span class="x">{excerpts[n.id].replace(/\[\^[^\]\s]+\]/g, '')}</span>{/if}
+              <span class="meta">
                 <span>{ago(n.modified)}</span>
                 {#if everywhere}<span>{n.workspace}</span>{/if}
                 {#if folderOf(n)}<span>{folderOf(n)}</span>{/if}
                 {#each n.tags.slice(0, 4) as t (t)}<span class="tag">#{t}</span>{/each}
-              </div>
-            </div>
-          </div>
+              </span>
+            </span>
+            </button>
+          </li>
         {:else}
-          <p class="faint empty">No notes match.</p>
+          <li class="faint empty">No notes match.</li>
         {/each}
-        {#if shown.length > 600}<p class="faint empty">Showing the first 600; filter to narrow it down.</p>{/if}
-      </div>
+        {#if shown.length > 600}<li class="faint empty">Showing the first 600; filter to narrow it down.</li>{/if}
+      </ul>
     </section>
 
     <section class="right scroll">
@@ -177,18 +179,20 @@
   .left { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); }
   .bar { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; min-height: 38px; }
   .sel { font-size: 12.5px; color: var(--accent); margin-left: auto; }
-  .list { flex: 1; outline: none; }
-  .list:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
-  .row { display: grid; grid-template-columns: auto auto 1fr; gap: 8px; align-items: start; padding: 8px 10px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .list { flex: 1; list-style: none; margin: 0; padding: 0; }
+  .row { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .pick { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; min-width: 0; }
+  .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
   .row :global(.icon) { margin-top: 3px; color: var(--text-faint); }
   .row input { margin-top: 3px; }
   .row:hover { background: var(--bg-hover); }
   .row.on { background: var(--bg-active); }
   .row.arch .t { color: var(--text-faint); }
-  .txt { min-width: 0; }
+  .txt { min-width: 0; display: block; }
+  .t, .x, .meta { display: block; }
   .t { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .x { font-size: 12.5px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 1px; }
-  .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 11px var(--font-mono); color: var(--text-faint); margin-top: 3px; }
+  .pick .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 11px var(--font-mono); color: var(--text-faint); margin-top: 3px; }
   .tag { color: var(--accent); }
   .empty { padding: 16px; font-size: 13px; }
   .right { border: 1px solid var(--line); border-radius: 10px; padding: 16px 22px; background: var(--bg); }

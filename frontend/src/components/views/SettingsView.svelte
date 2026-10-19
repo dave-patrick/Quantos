@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ThemeEditor from '../ThemeEditor.svelte';
   import { app } from '../../lib/state.svelte';
   import { prefs } from '../../lib/prefs.svelte';
   import { isWindowsClient } from '../../lib/platform';
@@ -11,7 +12,7 @@
   import { vaultSettings } from '../../lib/vaultSettings.svelte';
   import { templatesStore } from '../../lib/templates.svelte';
   import { onMount } from 'svelte';
-  import { ACCENTS, themes, type Density } from '../../lib/appearance.svelte';
+  import { themes, type Density } from '../../lib/appearance.svelte';
 
   onMount(() => { vaultSettings.load(); templatesStore.load(); themes.list(); });
 
@@ -34,23 +35,16 @@
   <div class="scroll body">
     {#if section === 'general'}
       <h2>Appearance</h2>
-      <div class="field"><span>Theme</span>
-        <div class="seg"><button class:on={app.theme === 'dark'} onclick={() => (app.theme = 'dark')}>Dark</button><button class:on={app.theme === 'light'} onclick={() => (app.theme = 'light')}>Light</button></div></div>
+      <ThemeEditor />
+      <h3>Writing look</h3>
       <div class="field"><span>Editor text size</span><input type="range" aria-label="Editor text size" min="14" max="22" bind:value={prefs.editorSize} /> <span class="mono">{prefs.editorSize}px</span></div>
-      <div class="field"><span>Typeface</span>
+      <div class="field"><span>Editor typeface</span>
         <select class="input narrow" aria-label="Typeface" bind:value={prefs.fontFamily}><option value="sans">Source Sans 3</option><option value="serif">Serif</option><option value="mono">IBM Plex Mono</option><option value="system">System</option></select></div>
       <div class="field"><span>Line spacing</span><input type="range" aria-label="Line spacing" min="1.3" max="2" step="0.05" bind:value={prefs.lineHeight} /> <span class="mono">{prefs.lineHeight}</span></div>
       <div class="field"><span>Line width</span><input type="range" aria-label="Line width" min="560" max="1100" step="20" bind:value={prefs.editorWidth} /> <span class="mono">{prefs.editorWidth}px</span></div>
-      <div class="field"><span id="accent-label">Accent colour</span>
-        <div class="swatches" role="radiogroup" aria-labelledby="accent-label">
-          {#each Object.entries(ACCENTS) as [key, a] (key)}
-            <button role="radio" aria-checked={prefs.accent === key} aria-label={a.label} title={a.label} class="swatch" class:on={prefs.accent === key}
-              style="--c:{app.theme === 'light' ? a.light : a.dark}" onclick={() => (prefs.accent = key)}></button>
-          {/each}
-        </div></div>
       <div class="field"><span>Density</span>
         <div class="seg">{#each [['compact', 'Compact'], ['comfortable', 'Comfortable'], ['spacious', 'Spacious']] as [key, label] (key)}<button class:on={prefs.density === key} onclick={() => (prefs.density = key as Density)}>{label}</button>{/each}</div></div>
-      <p class="faint note">Theme, colour and density apply to this device. Custom styles below are part of the vault.</p>
+      <p class="faint note">Theme, colours, fonts and density apply to this device. Custom styles below are part of the vault and can be switched on anywhere.</p>
 
       <h3>Custom styles</h3>
       <p class="faint note">Put <code>.css</code> files in the vault's <code>themes</code> folder, then switch them on here. They load after Quantos's own styles, so they can change any colour or size (the design tokens are CSS variables such as <code>--accent</code> and <code>--bg</code>). They can't load anything from the internet. Safe mode turns them off.</p>
@@ -115,9 +109,6 @@
   .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
   .seg button { border: 0; background: none; padding: 6px 14px; color: var(--text-muted); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
-  .swatches { display: flex; gap: 8px; }
-  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; background: var(--c); box-shadow: inset 0 0 0 2px var(--bg); }
-  .swatch.on { border-color: var(--text); }
   .note { font-size: 13px; max-width: 640px; }
   .check { display: flex; gap: 8px; align-items: center; margin: 10px 0; color: var(--text-soft); }
   .narrow { width: auto; }

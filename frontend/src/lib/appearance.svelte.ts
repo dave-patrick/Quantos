@@ -1,6 +1,7 @@
 import { api } from './api';
 import { app } from './state.svelte';
 import { vaultSettings } from './vaultSettings.svelte';
+import { baseOf, lookCss, type Look } from './look';
 
 /**
  * Look settings (Release 1.1): accent colour and density are per device (prefs); custom styles
@@ -34,11 +35,25 @@ export function applyAccent(key: string) {
   document.head.appendChild(style);
 }
 
+/** Puts a look's colours and fonts on the page (after the accent preset, so a custom accent wins). */
+export function applyLook(look: Look, base: 'dark' | 'light') {
+  let style = document.getElementById('quantos-look') as HTMLStyleElement | null;
+  if (!style) { style = document.createElement('style'); style.id = 'quantos-look'; document.head.appendChild(style); }
+  style.textContent = lookCss(look, base);
+  document.documentElement.style.setProperty('zoom', look.scale && look.scale !== 1 ? String(look.scale) : '');
+}
+
 export function applyDensity(d: Density) {
   document.documentElement.style.setProperty('--d', String(DENSITY[d] ?? 1));
 }
 
 export interface ThemeFile { name: string; size: number; modified: string }
+
+/** A look written as a vault theme file, so every device can switch it on. */
+export function themeFileCss(name: string, look: Look, fallback: 'dark' | 'light') {
+  const base = baseOf(look, fallback);
+  return `/* ${name}: made in Quantos (Settings › Appearance). Base: ${base}. */\n${lookCss(look, base)}`;
+}
 
 class Themes {
   files = $state<ThemeFile[]>([]);
