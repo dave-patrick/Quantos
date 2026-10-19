@@ -133,7 +133,8 @@ Windows-only features (below) works the same.
 ### Daily notes
 
 The **Daily stream** shows today's note at the top, with earlier days below. Days with nothing
-written collapse. Quick capture adds to today's note without disturbing what you're typing.
+written collapse. A dot and a short summary ("120 words · 2 tasks") mark days that have something
+in them; tick *Hide empty days* to leave out the rest. Quick capture adds to today's note without disturbing what you're typing.
 
 ### Browsing notes
 

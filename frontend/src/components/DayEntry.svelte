@@ -10,8 +10,8 @@
   import Icon from './Icon.svelte';
   import DayTasks from './DayTasks.svelte';
 
-  let { date, node, workspace, isToday, isFuture, oncreated }:
-    { date: string; node: NodeDto | null; workspace: string; isToday: boolean; isFuture: boolean; oncreated: (n: NodeDto) => void } = $props();
+  let { date, node, workspace, isToday, isFuture, oncreated, contents = '' }:
+    { date: string; node: NodeDto | null; workspace: string; isToday: boolean; isFuture: boolean; oncreated: (n: NodeDto) => void; contents?: string } = $props();
 
   // Empty daily entries collapse (confirmed); today is always open.
   const empty = $derived(!node || node.body.trim() === '');
@@ -67,7 +67,7 @@
       <span class="when">{dayLabel(date)}</span>
       <!-- Relative labels get the full date; dated labels already say it, so show the note's file date. -->
       <span class="date faint">{['Today', 'Yesterday', 'Tomorrow'].includes(dayLabel(date)) ? longDate(date) : date}</span>
-      {#if !expanded && empty}<span class="faint empty">empty</span>{/if}
+      {#if contents}<span class="has" title={contents}><span class="dot" aria-hidden="true"></span>{contents}</span>{:else if !expanded && empty}<span class="faint empty">empty</span>{/if}
     </button>
     {#if node}
       <button class="icon-btn" title="Open as a note" onclick={(e) => openNode(node!.id, e.shiftKey ? 'other' : 'new', node!.title)}><Icon name="file-text" size={14} /></button>
@@ -106,6 +106,8 @@
   .collapsed .when { font-size: 14px; color: var(--text-muted); }
   .date { font-size: 12.5px; }
   .empty { font-size: 12px; font-family: var(--font-mono); }
+  .has { display: inline-flex; align-items: center; gap: 6px; font: 12px var(--font-mono); color: var(--text-muted); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
   .body { padding-left: 4px; }
   /* Entries stack in one scrolling stream, so the note editor's scroll-past-end space would leave gaps. */
   .body :global(.cm-content) { padding-bottom: 14px; }

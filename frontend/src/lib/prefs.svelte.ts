@@ -19,6 +19,8 @@ class Prefs {
   sidebarHidden = $state<string[]>([]);
   sidebarOrder = $state<string[]>([]);
   sidebarSections = $state<string[]>([]);
+  /** Daily stream: leave out days with nothing written and no tasks. */
+  dailyHideEmpty = $state(false);
   /** Theme: background, text, accent and fonts (see lib/look.ts). */
   look = $state<Look>({ ...DEFAULT_LOOK });
 
@@ -30,7 +32,7 @@ class Prefs {
     } catch { /* ignore */ }
     $effect.root(() => {
       $effect(() => {
-        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, look: this.look };
+        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, dailyHideEmpty: this.dailyHideEmpty, look: this.look };
         applyDensity(this.density);
         applyAccent(this.accent);
         // A custom background decides light or dark, so light-only details (diagrams, the accent preset) follow it.

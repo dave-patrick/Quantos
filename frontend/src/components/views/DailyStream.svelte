@@ -7,6 +7,8 @@
   import type { Tab } from '../../lib/layout.svelte';
   import type { NodeDto } from '../../lib/types';
   import DayEntry from '../DayEntry.svelte';
+  import { prefs } from '../../lib/prefs.svelte';
+  import { tasks } from '../../lib/tasks.svelte';
 
   let { tab, today }: { tab: Tab; today: string } = $props();
   void tab;
@@ -58,6 +60,23 @@
     return () => { off(); io.disconnect(); clearInterval(t); removeEventListener('focus', findNew); document.removeEventListener('visibilitychange', findNew); };
   });
 
+  // What each day holds: its note's words and the tasks planned, due or done that day.
+  $effect(() => { if (!tasks.list.length) tasks.load().catch(() => {}); });
+  const taskDays = $derived.by(() => {
+    const count = new Map<string, number>();
+    for (const t of tasks.list) {
+      if (t.workspace !== workspace || t.status === 'cancelled') continue;
+      for (const d of new Set([t.planned, t.due, t.completed].map((x) => x?.slice(0, 10)).filter(Boolean) as string[])) count.set(d, (count.get(d) ?? 0) + 1);
+    }
+    return count;
+  });
+  function summary(day: { date: string; node: NodeDto | null }) {
+    const words = day.node ? (day.node.body.match(/[\p{L}\p{N}]+/gu) ?? []).length : 0;
+    const n = taskDays.get(day.date) ?? 0;
+    return { has: words > 0 || n > 0, text: [words ? `${words} ${words === 1 ? 'word' : 'words'}` : '', n ? `${n} ${n === 1 ? 'task' : 'tasks'}` : ''].filter(Boolean).join(' · ') };
+  }
+  const shown = $derived(prefs.dailyHideEmpty ? days.filter((d) => d.date === currentToday || summary(d).has) : days);
+
   // Keep editing past midnight: the new day appears without losing the open entry.
   $effect(() => { if (today && today !== currentToday) reload(); });
 </script>
@@ -67,9 +86,10 @@
     <header class="head">
       <h1>Daily</h1>
       <span class="faint">{app.workspace}</span>
+      <label class="hide"><input type="checkbox" bind:checked={prefs.dailyHideEmpty} /> Hide empty days</label>
     </header>
-    {#each days as day (day.date)}
-      <DayEntry date={day.date} node={day.node} {workspace} isToday={day.date === currentToday} isFuture={day.date > currentToday}
+    {#each shown as day (day.date)}
+      <DayEntry date={day.date} node={day.node} {workspace} isToday={day.date === currentToday} isFuture={day.date > currentToday} contents={summary(day).text}
         oncreated={(n) => (day.node = n)} />
     {/each}
     <div bind:this={sentinel} class="sentinel">{loading ? 'Loading…' : ''}</div>
@@ -81,5 +101,6 @@
   .inner { max-width: calc(var(--editor-width) + 40px); margin: 0 auto; padding-bottom: 30vh; }
   .head { display: flex; align-items: baseline; gap: 12px; padding: 26px 0 10px; }
   h1 { font: 700 30px/1.2 var(--font-display); }
+  .hide { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); }
   .sentinel { height: 40px; text-align: center; color: var(--text-faint); font-size: 13px; }
 </style>
