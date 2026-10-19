@@ -73,6 +73,9 @@
   }
 
   $effect(() => { void query; index = 0; });
+  const i0 = (i: number) => String(i);
+  // Keep the highlighted option in view while arrowing through a long list.
+  $effect(() => { void index; queueMicrotask(() => document.getElementById(`palette-${i0(index)}`)?.scrollIntoView({ block: 'nearest' })); });
 </script>
 
 {#if app.paletteOpen}
@@ -82,17 +85,19 @@
     <div class="palette" role="dialog" aria-label="Command palette" tabindex="-1" onclick={(e) => e.stopPropagation()}>
       <div class="field">
         <Icon name={commandMode ? 'command' : 'search'} size={16} />
-        <input bind:this={input} bind:value={query} {onkeydown} placeholder={commandMode ? 'Run a command…' : 'Jump to a note, or type > for commands'} aria-label="Search" />
+        <input bind:this={input} bind:value={query} {onkeydown} placeholder={commandMode ? 'Run a command…' : 'Jump to a note, or type > for commands'}
+          aria-label="Search" role="combobox" aria-expanded={items.length > 0} aria-controls="palette-list" aria-autocomplete="list"
+          aria-activedescendant={items[index] ? `palette-${i0(index)}` : undefined} />
       </div>
-      <ul role="listbox">
+      <!-- Keyboard stays in the search box (combobox); options take mouse clicks. -->
+      <ul role="listbox" id="palette-list" aria-label={commandMode ? 'Commands' : 'Notes'}>
         {#each items as item, i (item.key)}
-          <li role="option" aria-selected={i === index}>
-            <button class:on={i === index} onmouseenter={() => (index = i)} onclick={(e) => choose(item, e)}>
-              <Icon name={item.icon} size={15} />
-              <span class="name">{item.label}</span>
-              {#if item.detail}<span class="detail">{item.detail}</span>{/if}
-              {#if item.keys}<kbd>{item.keys}</kbd>{/if}
-            </button>
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <li role="option" id="palette-{i0(i)}" aria-selected={i === index} class:on={i === index} onmouseenter={() => (index = i)} onclick={(e) => choose(item, e)}>
+            <Icon name={item.icon} size={15} />
+            <span class="name">{item.label}</span>
+            {#if item.detail}<span class="detail">{item.detail}</span>{/if}
+            {#if item.keys}<kbd>{item.keys}</kbd>{/if}
           </li>
         {:else}
           <li class="none">No matches</li>
@@ -110,8 +115,9 @@
   .field input { flex: 1; height: 50px; border: 0; background: transparent; font-size: 17px; }
   .field input:focus { outline: none; }
   ul { list-style: none; margin: 0; padding: 6px; max-height: 50vh; overflow: auto; }
-  li button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 7px; background: none; text-align: left; color: var(--text-soft); }
-  li button.on { background: var(--bg-select); color: var(--text); }
+  li[role='option'] { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 7px; color: var(--text-soft); cursor: pointer; }
+  li.on { background: var(--bg-select); color: var(--text); }
+  li.on .detail { color: var(--text-soft); }
   .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .detail { font: 11.5px var(--font-mono); color: var(--text-faint); }
   .none { padding: 14px; color: var(--text-faint); text-align: center; }

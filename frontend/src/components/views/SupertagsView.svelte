@@ -103,7 +103,7 @@
 </script>
 
 <div class="tags">
-  <aside class="scroll list">
+  <div class="scroll list" role="navigation" aria-label="Supertags">
     <form class="new" onsubmit={(e) => { e.preventDefault(); create(); }}>
       <input class="input" aria-label="New supertag name" bind:value={newName} placeholder="New supertag" />
       <select class="input" aria-label="Scope" bind:value={newScope} title="Scope"><option value="">Global</option>{#each app.workspaces as w (w)}<option value={w}>{w} only</option>{/each}</select>
@@ -118,12 +118,12 @@
     {:else}
       <p class="faint pad">No supertags yet. A supertag gives notes a type with fields, like #meeting with Date and Attendees.</p>
     {/each}
-  </aside>
+  </div>
 
   <section class="scroll detail">
     {#if selected && draft}
       <header>
-        <h1 style="color:{selected.color ?? 'var(--text)'}">#{selected.name}</h1>
+        <h1><span class="swatch" style="background:{selected.color ?? 'var(--accent)'}" aria-hidden="true"></span>#{selected.name}</h1>
         <div class="tools">
           <button class="btn primary" onclick={() => (formOpen = true)}><Icon name="plus" size={14} /> New #{selected.name}</button>
           <button class="btn" onclick={saveDraft}>Save changes</button>
@@ -152,9 +152,9 @@
       {/each}
       {#each draft.fields as f, i (i)}
         <div class="field">
-          <input class="input name" bind:value={f.name} placeholder="Field name" title={selected.fields[i] ? `Stored as “${selected.allFields.find((x) => x.name === selected.fields[i].name)?.key}” in each note` : ''} />
+          <input class="input name" bind:value={f.name} placeholder="Field name" aria-label="Field name" title={selected.fields[i] ? `Stored as “${selected.allFields.find((x) => x.name === selected.fields[i].name)?.key}” in each note` : ''} />
           <select class="input type" aria-label="Field type" bind:value={f.type}>{#each types as t (t)}<option value={t}>{t}</option>{/each}</select>
-          {#if f.type === 'select' || f.type === 'multiselect' || f.type === 'status'}<input class="input opts" bind:value={f.options} placeholder="Options, comma separated" />{:else}<span class="opts"></span>{/if}
+          {#if f.type === 'select' || f.type === 'multiselect' || f.type === 'status'}<input class="input opts" bind:value={f.options} placeholder="Options, comma separated" aria-label="Options for {f.name || 'this field'}" />{:else}<span class="opts"></span>{/if}
           <label class="check"><input type="checkbox" bind:checked={f.required} /> required</label>
           {#if selected.fields[i]}
             <button class="btn ghost" title="Convert existing values" onclick={() => (migrate = { field: selected.allFields.find((x) => x.name === selected.fields[i].name)?.key ?? '', toType: f.type, toKey: '' })}>Migrate…</button>
@@ -201,7 +201,8 @@
   .pad { padding: 8px; font-size: 13px; }
   .detail { padding: 20px 26px 60px; }
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  h1 { font: 700 28px/1.2 var(--font-display); }
+  h1 { font: 700 28px/1.2 var(--font-display); display: flex; align-items: center; gap: 10px; }
+  .swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
   .tools { display: flex; gap: 6px; }
   .warn { color: var(--warn); display: flex; gap: 6px; align-items: center; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 14px; margin: 16px 0; }

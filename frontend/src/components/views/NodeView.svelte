@@ -171,9 +171,10 @@
         {#if doc.error && doc.status === 'error'}<div class="notice error"><Icon name="alert" size={15} /> {doc.error}</div>{/if}
 
         {#if !doc.raw}
-          <input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle}
+          <!-- The editable title is the page's heading, so screen readers can jump to it. -->
+          <h1 class="title-heading" aria-label={titleDraft || 'Untitled'}><input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle}
             onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); view?.focus(); } if (e.key === 'Escape') { titleDraft = doc.node?.title ?? ''; (e.target as HTMLInputElement).blur(); } }}
-            aria-label="Title" spellcheck="false" />
+            aria-label="Title" spellcheck="false" /></h1>
           {#if namespace.length}<nav class="ns">{#each namespace as part, i (i)}<button onclick={(e) => openByTitle(namespace.slice(0, i + 1).join('/'), e.shiftKey ? 'other' : 'current')}>{part}</button><span>/</span>{/each}</nav>{/if}
           <div class="meta faint">
             <span class="badge">{doc.node.type}</span>
@@ -237,6 +238,7 @@
   .save-state.conflict, .save-state.error { color: var(--danger); }
   .body { flex: 1; padding: 6px 28px 0; }
   .page { max-width: calc(var(--editor-width) + 4px); margin: 0 auto; }
+  .title-heading { margin: 0; font: inherit; }
   .title { width: 100%; border: 0; background: transparent; color: var(--text); font: 700 32px/1.25 var(--font-display); letter-spacing: .005em; padding: 18px 0 4px; }
   .title:focus { outline: none; box-shadow: none; }
   .ns { display: flex; gap: 4px; font: 12.5px var(--font-mono); color: var(--text-faint); margin-top: 14px; }
