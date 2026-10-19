@@ -6,9 +6,10 @@
   import Icon from './Icon.svelte';
 
   /** Settings › Backups (Release 1.1): rolling backups with retention, checks and restore. */
-  interface Settings { enabled: boolean; folder: string | null; intervalHours: number; keep: number; includeHistory: boolean }
+  interface Settings { enabled: boolean; folder: string | null; intervalHours: number; keep: number; includeHistory: boolean; includeLinked: boolean }
   interface Info { name: string; path: string; created: string; size: number }
-  interface Status { settings: Settings; folder: string; last: string | null; next: string | null; running: boolean; error: string | null; backups: Info[] }
+  interface LinkedFolder { name: string; path: string; files: number }
+  interface Status { settings: Settings; folder: string; last: string | null; next: string | null; running: boolean; error: string | null; backups: Info[]; linkedFolders: LinkedFolder[] }
   interface BackupNote { path: string; id: string | null; title: string; existsNow: boolean }
 
   let status = $state<Status | null>(null);
@@ -100,6 +101,21 @@
     </select></div>
   <div class="field"><span>Keep</span><input class="input narrow" type="number" min="1" max="1000" aria-label="Backups to keep" bind:value={draft.keep} /> <span class="faint">newest backups (older ones are deleted)</span></div>
   <label class="check"><input type="checkbox" bind:checked={draft.includeHistory} /> Include version history (larger backups)</label>
+  {#if status.linkedFolders.length}
+    <div class="linked">
+      <h3>Linked folders</h3>
+      <p class="faint">
+        Folders you linked in from elsewhere on this computer hold notes too, and they sit outside the
+        vault. Back them up with it so a restore brings their notes back as well.
+      </p>
+      <label class="check"><input type="checkbox" bind:checked={draft.includeLinked} /> Include linked folders in the backup</label>
+      <ul class="list">
+        {#each status.linkedFolders as f (f.name)}
+          <li><div class="line"><span>{f.name}</span><span class="faint">{f.files} file{f.files === 1 ? '' : 's'}</span><span class="faint mono">{f.path}</span></div></li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
   <div class="row"><button class="btn" disabled={!dirty || busy === 'save'} onclick={save}>Save settings</button></div>
 
   <h3>Backups of this vault</h3>
@@ -148,6 +164,9 @@
   .list { list-style: none; padding: 0; margin: 0; }
   .list li { border-bottom: 1px solid var(--line); padding: 6px 0; }
   .line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .linked { margin-top: 18px; }
+  .linked .list { margin-top: 6px; }
+  .mono { font: 12px var(--font-mono); }
   .when { font-weight: 600; }
   .actions { margin-left: auto; display: flex; gap: 4px; }
   .notes { margin: 8px 0 4px 12px; display: grid; gap: 4px; max-height: 320px; overflow: auto; }

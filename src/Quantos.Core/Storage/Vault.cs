@@ -91,10 +91,11 @@ public sealed partial class Vault
         if (Directory.Exists(Path.Combine(Workspaces, name))) throw new QuantosException($"The vault already has a workspace called '{name}'.");
         if (LinkedRoots.ContainsKey(name)) throw new QuantosException($"'{name}' is already linked.");
         // A folder inside another linked folder would have its files indexed twice.
-        foreach (var other in LinkedRoots.Values)
+        foreach (var (other, otherPath) in LinkedRoots)
         {
-            var otherFull = Path.GetFullPath(other).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            if (full.StartsWith(otherFull, StringComparison.OrdinalIgnoreCase)) throw new QuantosException("That folder is inside another linked folder.");
+            var otherFull = Path.GetFullPath(otherPath).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (full.StartsWith(otherFull, StringComparison.OrdinalIgnoreCase)) throw new QuantosException($"That folder is inside the linked folder '{other}'.");
+            if (string.Equals(Path.GetFullPath(otherPath), full, StringComparison.OrdinalIgnoreCase)) throw new QuantosException($"That folder is already linked as '{other}'.");
         }
         LinkedRoots[name] = full;
     }
@@ -317,6 +318,9 @@ public sealed partial class Vault
                 if (Directory.Exists(Path.Combine(Workspaces, clean))) continue;
                 var full = Path.GetFullPath(path!);
                 if (IsInside(full) || IsInsideVault(full)) continue;
+                // Two linked folders over the same files would index them twice.
+                if (LinkedRoots.Values.Any(o => string.Equals(Path.GetFullPath(o), full, StringComparison.OrdinalIgnoreCase)
+                    || full.StartsWith(Path.GetFullPath(o).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))) continue;
                 LinkedRoots[clean] = full;
             }
         }

@@ -42,6 +42,57 @@ public class BackupTests
     }
 
     [Fact]
+    public async Task A_backup_holds_the_notes_of_a_linked_folder()
+    {
+        using var v = new TestVault();
+        var outside = Path.Combine(v.Root, "outside");
+        Directory.CreateDirectory(outside);
+        File.WriteAllText(Path.Combine(outside, "note.md"), "---\ntitle: Outside\n---\n\nBody.\n");
+        v.Session.Vault.RegisterLinkedFolder("notes", outside);
+
+        var backup = await B(v).BackUpAsync(Actor.User);
+
+        using var zip = ZipFile.OpenRead(backup.Path);
+        Assert.Contains(zip.Entries, e => e.FullName == "linked/notes/note.md");
+        Assert.Empty(B(v).Verify(backup.Name, Actor.User));
+    }
+
+    [Fact]
+    public async Task Linked_folders_can_be_left_out_of_the_backup()
+    {
+        using var v = new TestVault();
+        var outside = Path.Combine(v.Root, "outside");
+        Directory.CreateDirectory(outside);
+        File.WriteAllText(Path.Combine(outside, "note.md"), "---\ntitle: Outside\n---\n\nBody.\n");
+        v.Session.Vault.RegisterLinkedFolder("notes", outside);
+        B(v).SaveSettings(new BackupSettings { IncludeLinked = false });
+
+        var backup = await B(v).BackUpAsync(Actor.User);
+
+        using var zip = ZipFile.OpenRead(backup.Path);
+        Assert.DoesNotContain(zip.Entries, e => e.FullName.StartsWith("linked/"));
+    }
+
+    [Fact]
+    public async Task A_restored_backup_points_at_its_own_copies_of_the_linked_folders()
+    {
+        using var v = new TestVault();
+        var outside = Path.Combine(v.Root, "outside");
+        Directory.CreateDirectory(outside);
+        File.WriteAllText(Path.Combine(outside, "note.md"), "---\ntitle: Outside\n---\n\nBody.\n");
+        v.Session.Vault.RegisterLinkedFolder("notes", outside);
+        var backup = await B(v).BackUpAsync(Actor.User);
+
+        var restored = B(v).RestoreToFolder(backup.Name, Path.Combine(v.Root, "restored"), Actor.User);
+
+        // The restored vault has its own copy of the folder, and points at it.
+        Assert.True(File.Exists(Path.Combine(restored, "linked", "notes", "note.md")));
+        var settings = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(restored, "linked-folders.json")))!;
+        var path = settings["folders"]!.AsArray()[0]!["path"]!.GetValue<string>();
+        Assert.Equal(Path.Combine(restored, "linked", "notes"), path);
+    }
+
+    [Fact]
     public async Task Only_the_newest_backups_are_kept()
     {
         using var v = new TestVault();

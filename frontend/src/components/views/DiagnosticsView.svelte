@@ -66,6 +66,24 @@
       </section>
 
       <section>
+        <h2>Linked folders</h2>
+        {#if status.linked?.length}
+          <p class="muted">Folders linked in from elsewhere on this computer. Their notes are read and written where they are.</p>
+          <ul class="linked">
+            {#each status.linked as f (f.name)}
+              <li>
+                <span class="name">{f.name}</span>
+                {#if f.exists}<span class="ok">there</span>{:else}<span class="warn">not there any more</span>{/if}
+                <span class="mono faint">{f.path}</span>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <p class="muted">No folders are linked in. *Link a folder…* in the workspace menu adds one.</p>
+        {/if}
+      </section>
+
+      <section>
         <h2>Problems</h2>
         {#if all.length === 0}<p class="muted">No problems found.</p>{/if}
         {#each all as d, i (i)}
@@ -99,4 +117,9 @@
   .diag.warning :global(.icon) { color: var(--warn); }
   .diag.error :global(.icon) { color: var(--danger); }
   .diag.info :global(.icon) { color: var(--accent); }
+  .linked { list-style: none; margin: 0; padding: 0; }
+  .linked li { display: flex; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .linked .name { font-weight: 600; min-width: 120px; }
+  .linked .ok { color: var(--ok); }
+  .linked .warn { color: var(--warn); }
 </style>

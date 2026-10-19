@@ -20,13 +20,19 @@ public sealed record BackupSettings
     public int Keep { get; init; } = 14;
     /// <summary>Version history can be large, so it's left out unless asked for.</summary>
     public bool IncludeHistory { get; init; }
+    /// <summary>
+    /// Folders linked in from elsewhere on the computer are outside the vault, so they are left out
+    /// unless this is on. When it is, their files go into the backup under "linked/&lt;name&gt;/".
+    /// </summary>
+    public bool IncludeLinked { get; init; } = true;
 }
 
 public sealed record BackupInfo(string Name, string Path, DateTimeOffset Created, long Size, int Files);
 public sealed record BackupFile(string Path, long Size, string Sha256);
-public sealed record BackupManifest(string Vault, DateTimeOffset Created, string App, bool History, List<BackupFile> Files);
+public sealed record BackupFolder(string Name, string Path, int Files);
+public sealed record BackupManifest(string Vault, DateTimeOffset Created, string App, bool History, List<BackupFile> Files, List<BackupFolder>? Linked = null);
 public sealed record BackupNote(string Path, string? Id, string Title, bool ExistsNow);
-public sealed record BackupStatus(BackupSettings Settings, string Folder, DateTimeOffset? Last, DateTimeOffset? Next, bool Running, string? Error, IReadOnlyList<BackupInfo> Backups);
+public sealed record BackupStatus(BackupSettings Settings, string Folder, DateTimeOffset? Last, DateTimeOffset? Next, bool Running, string? Error, IReadOnlyList<BackupInfo> Backups, IReadOnlyList<BackupFolder> LinkedFolders);
 
 /// <summary>
 /// Rolling backups (Release 1.1): a zip of the vault with a manifest of file hashes, written to a
@@ -99,7 +105,22 @@ public sealed partial class BackupService : IDisposable
         var backups = List();
         DateTimeOffset? last = backups.Count > 0 ? backups[0].Created : null;
         DateTimeOffset? next = s.Enabled ? (last ?? DateTimeOffset.Now).AddHours(last is null ? 0 : s.IntervalHours) : null;
-        return new BackupStatus(s, Folder, last, next, _running.CurrentCount == 0, _error, backups);
+        return new BackupStatus(s, Folder, last, next, _running.CurrentCount == 0, _error, backups, LinkedFolders());
+    }
+
+    /// <summary>The linked folders and how many files each holds, for the settings page.</summary>
+    public List<BackupFolder> LinkedFolders()
+    {
+        var list = new List<BackupFolder>();
+        foreach (var (name, path) in _writes.Vault.LinkedRoots)
+        {
+            var count = 0;
+            try { count = Directory.Exists(path) ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Count() : 0; }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            list.Add(new BackupFolder(name, path, count));
+        }
+        return list;
     }
 
     /// <summary>This vault's backups, newest first.</summary>
@@ -161,6 +182,7 @@ public sealed partial class BackupService : IDisposable
         var partial = final + ".partial";
         var root = _writes.Vault.Root;
         var files = new List<BackupFile>();
+        var linked = new List<BackupFolder>();
         using (var zip = ZipFile.Open(partial, ZipArchiveMode.Create))
         {
             foreach (var abs in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
@@ -178,7 +200,35 @@ public sealed partial class BackupService : IDisposable
                 using (var stream = entry.Open()) stream.Write(bytes);
                 files.Add(new BackupFile(rel, bytes.Length, Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant()));
             }
-            var manifest = new BackupManifest(root, created, "Quantos " + typeof(BackupService).Assembly.GetName().Version, s.IncludeHistory, files);
+            // Folders linked in from elsewhere on the computer hold notes too, so they are backed up
+            // with the vault, under the same "linked/<name>/" names the vault uses for them.
+            if (s.IncludeLinked)
+            {
+                foreach (var (folder, path) in _writes.Vault.LinkedRoots)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (!Directory.Exists(path)) continue;
+                    var count = 0;
+                    foreach (var abs in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        var name2 = Path.GetFileName(abs);
+                        if (name2.StartsWith('.') || name2.EndsWith(AtomicFile.TempSuffix, StringComparison.OrdinalIgnoreCase)) continue;
+                        var rel = "linked/" + folder + "/" + Path.GetRelativePath(path, abs).Replace('\\', '/');
+                        byte[] bytes;
+                        try { bytes = File.ReadAllBytes(abs); }
+                        catch (IOException) { continue; }
+                        catch (UnauthorizedAccessException) { continue; }
+                        var entry = zip.CreateEntry(rel, CompressionLevel.Optimal);
+                        entry.LastWriteTime = File.GetLastWriteTime(abs);
+                        using (var stream = entry.Open()) stream.Write(bytes);
+                        files.Add(new BackupFile(rel, bytes.Length, Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant()));
+                        count++;
+                    }
+                    linked.Add(new BackupFolder(folder, path, count));
+                }
+            }
+            var manifest = new BackupManifest(root, created, "Quantos " + typeof(BackupService).Assembly.GetName().Version, s.IncludeHistory, files, linked);
             using var m = zip.CreateEntry(ManifestName).Open();
             JsonSerializer.Serialize(m, manifest, Json);
         }
@@ -269,6 +319,20 @@ public sealed partial class BackupService : IDisposable
         {
             return _writes.ReplaceContent(id, content, actor);
         }
+        // A note that lived in a linked folder comes back into the vault: the other app's own copy
+        // is left alone, and the file that was there is not overwritten.
+        if (path.StartsWith(Vault.LinkedPrefix + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            var doc = FrontmatterDocument.Parse(content);
+            var title = doc.GetString(NodeKeys.Title) ?? Path.GetFileNameWithoutExtension(path);
+            return _writes.Create(new CreateNodeRequest
+            {
+                Title = title + " (restored)",
+                Type = NodeTypes.Note,
+                Workspace = _writes.Vault.WorkspaceNames().FirstOrDefault() ?? Vault.DefaultWorkspace,
+                Body = doc.Body
+            }, actor);
+        }
         var target = _writes.Vault.Absolute(path);
         if (File.Exists(target)) target = Vault.UniquePath(Path.GetDirectoryName(target)!, Path.GetFileNameWithoutExtension(target));
         var ws = Vault.WorkspaceOf(_writes.Vault.Relative(target));
@@ -300,7 +364,37 @@ public sealed partial class BackupService : IDisposable
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             e.ExtractToFile(dest, overwrite: false);
         }
+        PointLinkedFoldersAtTheRestoredCopies(target, source);
         return target;
+    }
+
+    /// <summary>
+    /// The restored vault carries its own copies of the linked folders, so its settings point at
+    /// those copies rather than at the folders on the computer the backup came from.
+    /// </summary>
+    private void PointLinkedFoldersAtTheRestoredCopies(string target, string source)
+    {
+        List<BackupFolder>? linked;
+        try
+        {
+            using var zip = ZipFile.OpenRead(source);
+            var entry = zip.GetEntry(ManifestName);
+            if (entry is null) return;
+            using var m = entry.Open();
+            linked = JsonSerializer.Deserialize<BackupManifest>(m, Json)?.Linked;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or JsonException) { return; }
+        if (linked is null || linked.Count == 0) return;
+        var folders = new System.Text.Json.Nodes.JsonArray();
+        foreach (var f in linked)
+        {
+            var copy = Path.Combine(target, "linked", f.Name);
+            if (!Directory.Exists(copy)) continue;
+            folders.Add(new System.Text.Json.Nodes.JsonObject { ["name"] = f.Name, ["path"] = copy });
+        }
+        if (folders.Count == 0) return;
+        var file = Path.Combine(target, Vault.LinkedFoldersFile);
+        AtomicFile.WriteAllText(file, new System.Text.Json.Nodes.JsonObject { ["folders"] = folders }.ToJsonString(Json));
     }
 
     private static bool IsInside(string path, string folder)
