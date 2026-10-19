@@ -130,6 +130,17 @@ own tabs, splits and scroll positions.
   - `!1` to `!4` priority (coloured strip), `due:` deadline, `@tomorrow` or `plan:` planned day,
     `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month`,
     `!myday`. The same words work in task lines in notes and in quick capture to a task.
+- **Sprints:** *Sprints* in the sidebar. A sprint is a note (`type: sprint`) with a start, an end,
+  an optional goal and a capacity in hours. Add tasks from the backlog (open tasks in no sprint);
+  each gets a `sprint` property linking the sprint. The sprint shows tasks by status, estimated work
+  against capacity, and a burndown (by estimate when every task has one, otherwise by count). *Move
+  unfinished* sends what's left to another sprint or back to the backlog.
+- **Goals and analytics:** *Goals* in the sidebar. A goal is a note (`type: goal`) with an optional
+  `target` date; sub-goals link it with `parent`, projects with `goal`, and tasks their project with
+  `project`. Progress rolls up through all of them, and health (on track, at risk, off track) compares
+  progress with the time passed to the target. Notes typed or tagged *project*, or named as a task's
+  project, count as projects. Above the list: open, overdue, blocked and waiting tasks, what's due
+  this week, the time from created to done, and tasks created and completed per week.
 - **Focus timer:** *Focus* in the sidebar (`Ctrl+Alt+F`), or *Focus on this task* in a task's `⋮`
   menu. Pick a task (or just say what it's for) and a length; the time left shows in the status bar
   and the window title. When it ends you hear a short tone and can take a break. Each session is

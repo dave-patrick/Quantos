@@ -36,6 +36,8 @@
     { kind: 'tasks', label: 'Tasks', icon: 'check-square' },
     { kind: 'timeline', label: 'Timeline', icon: 'clock' },
     { kind: 'review', label: 'Stale tasks', icon: 'history' },
+    { kind: 'sprints', label: 'Sprints', icon: 'layers' },
+    { kind: 'goals', label: 'Goals', icon: 'target' },
     { kind: 'focus', label: 'Focus', icon: 'timer' },
     { kind: 'habits', label: 'Habits', icon: 'activity' },
     { kind: 'search', label: 'Search', icon: 'search' },

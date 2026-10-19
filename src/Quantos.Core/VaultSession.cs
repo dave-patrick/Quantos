@@ -41,11 +41,13 @@ public sealed class VaultSession : IDisposable
         Replace = new Structure.FindReplaceService(Writes);
         Focus = new Tasks.FocusService(Writes);
         Habits = new Tasks.HabitService(Writes);
+        Planning = new Tasks.PlanningService(Writes, Tasks);
     }
 
     public Structure.FindReplaceService Replace { get; }
     public Tasks.FocusService Focus { get; }
     public Tasks.HabitService Habits { get; }
+    public Tasks.PlanningService Planning { get; }
 
     public Backups.BackupService Backups { get; }
 

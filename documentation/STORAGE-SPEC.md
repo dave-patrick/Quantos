@@ -107,6 +107,8 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 | `source` | id of the note the task was created from |
 | `time_block` | `{start: datetime, end: datetime}` for the timeline |
 | *(tracker keys)* | On daily notes: habit (`true`) and metric (number) values, one property per tracker listed under `trackers` in `settings.json` (Release 1.1). An unticked habit is simply absent. |
+| `sprint` | Task: link to the sprint note it belongs to (Release 1.1). Sprint notes (`type: sprint`) have `start`, `end`, optional `sprint_goal` and `capacity` (minutes). |
+| `goal`, `parent`, `target` | Release 1.1 goals: a project's `goal` links a goal note (`type: goal`); a goal's `parent` links a broader goal; `target` is a goal's date. |
 | `time_spent` | Minutes of logged focus sessions (Release 1.1); each session is also a line under `## Focus` in the daily note: `- 09:00–09:25 · 25 min · [[id|Task]]` |
 | `tz` | Time zone used for `due`/`planned`/reminders. New files use the IANA name (`America/Phoenix`); Windows names in older files remain valid. |
 

@@ -11,6 +11,8 @@
   import ReplaceView from './views/ReplaceView.svelte';
   import FocusView from './views/FocusView.svelte';
   import HabitsView from './views/HabitsView.svelte';
+  import SprintsView from './views/SprintsView.svelte';
+  import GoalsView from './views/GoalsView.svelte';
   import TasksView from './views/TasksView.svelte';
   import MyDayView from './views/MyDayView.svelte';
   import TimelineView from './views/TimelineView.svelte';
@@ -39,6 +41,10 @@
   <FocusView />
 {:else if tab.kind === 'habits'}
   <HabitsView />
+{:else if tab.kind === 'sprints'}
+  <SprintsView />
+{:else if tab.kind === 'goals'}
+  <GoalsView />
 {:else if tab.kind === 'search'}
   <SearchView {tab} />
 {:else if tab.kind === 'trash'}
