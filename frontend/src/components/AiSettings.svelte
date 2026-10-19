@@ -86,7 +86,7 @@
           {#if ai.keys.includes(e.provider)}<button class="btn ghost" onclick={() => ai.setKey(e.provider, null)}>Remove</button>{/if}
         </div>
       {/if}
-      <p class="privacy">{privacy(e, sent)}</p>
+      <p class="privacy" class:local={privacy(e, sent).startsWith('Runs on this computer')}>{privacy(e, sent)}</p>
     {/if}
   </section>
 {/each}
@@ -114,6 +114,7 @@
   .field .input { max-width: 420px; }
   .note { font-size: 13px; max-width: 680px; }
   .privacy { font-size: 13px; color: var(--warn); max-width: 680px; }
+  .privacy.local { color: var(--ok); }
   .row { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
   .check { display: flex; gap: 8px; align-items: center; }
 </style>
