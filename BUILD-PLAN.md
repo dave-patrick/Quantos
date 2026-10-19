@@ -829,7 +829,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 
 1. Whiteboard and spatial organization.
 2. Mindmap annotations.
-3. Dependency Gantt views.
+3. Dependency Gantt views. *(Built: timeline from planned/due/effort, dependency arrows with conflicts, drag and keyboard rescheduling.)*
 4. Map and location views.
 5. Adapters for agent frameworks.
 6. Global knowledge graph.

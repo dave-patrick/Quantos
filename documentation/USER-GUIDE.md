@@ -135,6 +135,12 @@ own tabs, splits and scroll positions.
   - `!1` to `!4` priority (coloured strip), `due:` deadline, `@tomorrow` or `plan:` planned day,
     `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month`,
     `!myday`. The same words work in task lines in notes and in quick capture to a task.
+- **Gantt:** *Gantt* in the sidebar shows tasks on a timeline, grouped by project. A bar runs from a
+  task's planned day (or time block) to its due day; with only one of them, the effort estimate sets
+  the length (striped bars are estimates). Arrows show `depends_on`; a red one means a task starts
+  before what it depends on is due to finish. Drag a bar to move both dates, drag its right edge to
+  change the due date, or focus it and use ← → (Shift to resize). Zoom by day, week or month; tasks
+  without dates are listed below with *Plan for today*.
 - **Sprints:** *Sprints* in the sidebar. A sprint is a note (`type: sprint`) with a start, an end,
   an optional goal and a capacity in hours. Add tasks from the backlog (open tasks in no sprint);
   each gets a `sprint` property linking the sprint. The sprint shows tasks by status, estimated work

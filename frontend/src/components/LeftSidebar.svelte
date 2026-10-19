@@ -35,6 +35,7 @@
     { kind: 'myday', label: 'My Day', icon: 'sun' },
     { kind: 'tasks', label: 'Tasks', icon: 'check-square' },
     { kind: 'timeline', label: 'Timeline', icon: 'clock' },
+    { kind: 'gantt', label: 'Gantt', icon: 'gantt' },
     { kind: 'review', label: 'Stale tasks', icon: 'history' },
     { kind: 'sprints', label: 'Sprints', icon: 'layers' },
     { kind: 'goals', label: 'Goals', icon: 'target' },

@@ -3,7 +3,7 @@ import { app } from './state.svelte';
 
 export type TabKind =
   | 'node' | 'daily' | 'search' | 'trash' | 'history' | 'diagnostics' | 'settings' | 'tasks' | 'myday'
-  | 'timeline' | 'review' | 'query' | 'view' | 'dictionary' | 'attachments' | 'templates' | 'supertags' | 'graph' | 'notifications' | 'pdf' | 'ask' | 'replace' | 'focus' | 'habits' | 'sprints' | 'goals';
+  | 'timeline' | 'review' | 'query' | 'view' | 'dictionary' | 'attachments' | 'templates' | 'supertags' | 'graph' | 'notifications' | 'pdf' | 'ask' | 'replace' | 'focus' | 'habits' | 'sprints' | 'goals' | 'gantt';
 
 export interface TabSpec { kind: TabKind; nodeId?: string; arg?: string; title?: string }
 
@@ -26,7 +26,7 @@ const titles: Record<TabKind, string> = {
   node: 'Note', daily: 'Daily', search: 'Search', trash: 'Trash', history: 'History', diagnostics: 'Vault diagnostics',
   settings: 'Settings', tasks: 'Tasks', myday: 'My Day', timeline: 'Timeline', review: 'Stale tasks', query: 'Query', view: 'View',
   dictionary: 'Metadata dictionary', attachments: 'Attachment auditor', templates: 'Templates', supertags: 'Supertags', graph: 'Graph',
-  notifications: 'Notifications', pdf: 'PDF', ask: 'Ask your notes', replace: 'Find and replace', focus: 'Focus', habits: 'Habits', sprints: 'Sprints', goals: 'Goals'
+  notifications: 'Notifications', pdf: 'PDF', ask: 'Ask your notes', replace: 'Find and replace', focus: 'Focus', habits: 'Habits', sprints: 'Sprints', goals: 'Goals', gantt: 'Gantt'
 };
 
 export function tabKey(spec: TabSpec) {

@@ -111,6 +111,7 @@ register(
   { id: 'audio.record', title: 'Record audio into this note', group: 'Create', keys: 'Mod+Alt+A', icon: 'mic', run: () => { if (recorder.state === 'recording') recorder.stop(); else recorder.start(); } },
   { id: 'view.present', title: 'Present this note as slides', group: 'View', keys: 'Mod+Alt+P', icon: 'play', run: () => { const t = layout.activeTab; const d = t?.nodeId ? docs.peek(t.nodeId) : undefined; if (d?.node) presenter.open(d.node.title, d.body); else app.toast('Open a note to present it.', 'info'); } },
   { id: 'focus.open', title: 'Focus timer', group: 'Navigate', keys: 'Mod+Alt+F', icon: 'timer', run: () => layout.open({ kind: 'focus', title: 'Focus' }, 'current') },
+  { id: 'gantt.open', title: 'Gantt chart of tasks', group: 'Navigate', icon: 'gantt', run: () => layout.open({ kind: 'gantt', title: 'Gantt' }, 'current') },
   { id: 'sprints.open', title: 'Sprints', group: 'Navigate', icon: 'layers', run: () => layout.open({ kind: 'sprints', title: 'Sprints' }, 'current') },
   { id: 'goals.open', title: 'Goals and task analytics', group: 'Navigate', icon: 'target', run: () => layout.open({ kind: 'goals', title: 'Goals' }, 'current') },
   { id: 'habits.open', title: 'Habits and metrics', group: 'Navigate', icon: 'activity', run: () => layout.open({ kind: 'habits', title: 'Habits' }, 'current') },

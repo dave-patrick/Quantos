@@ -13,6 +13,7 @@
   import HabitsView from './views/HabitsView.svelte';
   import SprintsView from './views/SprintsView.svelte';
   import GoalsView from './views/GoalsView.svelte';
+  import GanttView from './views/GanttView.svelte';
   import TasksView from './views/TasksView.svelte';
   import MyDayView from './views/MyDayView.svelte';
   import TimelineView from './views/TimelineView.svelte';
@@ -45,6 +46,8 @@
   <SprintsView />
 {:else if tab.kind === 'goals'}
   <GoalsView />
+{:else if tab.kind === 'gantt'}
+  <GanttView />
 {:else if tab.kind === 'search'}
   <SearchView {tab} />
 {:else if tab.kind === 'trash'}
