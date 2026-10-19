@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Threading.Channels;
+using System.Reflection;
 using Quantos.Backend.Hosting;
 using Quantos.Core;
 using Quantos.Core.Security;
@@ -8,7 +9,18 @@ namespace Quantos.Backend.Api;
 
 public static class SystemEndpoints
 {
-    public static readonly string Version = typeof(SystemEndpoints).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+    /// <summary>
+    /// The version this build reports. A patch release (0.1.5.1) is reported whole: with only the
+    /// first three parts the app would think it was still 0.1.5 and offer the update again.
+    /// </summary>
+    public static readonly string Version = VersionOf(typeof(SystemEndpoints).Assembly);
+
+    private static string VersionOf(Assembly assembly)
+    {
+        var v = assembly.GetName().Version;
+        if (v is null) return "0.0.0";
+        return v.Revision > 0 ? v.ToString(4) : v.ToString(3);
+    }
 
     public static void Map(WebApplication app)
     {

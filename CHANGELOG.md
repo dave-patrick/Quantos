@@ -7,29 +7,35 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
-- Trashing a task takes its subtasks with it, and restoring it brings them back.
-- Right-click a file in the file tree for what can be done with it: open it, open it in the other
-  pane, rename it, export it as Markdown or HTML, or move it to the trash.
-- The quick capture window takes **Ctrl+T** for a task, and the "send to" keys you set for the
+## 0.1.5.1 (2026-10-19)
+
+A patch release with the work that came after 0.1.5.
+
+- **Right-click a task** in the task list (Tasks, My Day, the timeline) to mark it done, set it to
+  doing or waiting, give it a due date or a priority, open it, or move it to the trash. In a note,
+  right-clicking a task line can move the task itself to the trash, or take just the line out of
+  the note.
+- **Delete a task without opening it:** hover the row in a task list and press the **×** at the end
+  of it. It goes to the trash, and the toast offers an undo.
+- **Trashing a task takes its subtasks with it**, and restoring it brings them back.
+- **Right-click a file in the file tree** for what can be done with it: open it, open it in the
+  other pane, rename it, export it as Markdown or HTML, or move it to the trash.
+- **The quick capture window takes Ctrl+T** for a task, and the "send to" keys you set for the
   scratchpad work there too.
-- *Vault diagnostics* says what it found when you check the vault's integrity, instead of leaving
-  the button looking idle.
-- **Publish a folder as a website:** *Publish this folder…* in the workspace menu makes a small
-  site from the notes of a workspace, or of a folder linked in from elsewhere: a page per note with
-  its backlinks and outgoing links, an index you can search, and a graph of how the notes connect.
-  It is written to the vault's `exports` folder and can be put on any web host.
+- **Vault diagnostics** say what they found: the check now reports how many files it looked at and
+  how many problems it found, instead of leaving the button looking idle. It also names a linked
+  folder that has gone, a folder that can't be read, two linked folders over the same files, and a
+  task line bound to a note that no longer exists.
 - **Backups cover linked folders.** Folders linked in from elsewhere on the computer hold notes
   too, so they are now backed up with the vault, under the same `linked/<name>/` names. A restored
   backup points at its own copies, and restoring a single note from a linked folder brings it into
   the vault instead of overwriting the other app's file.
-- **Vault diagnostics** name a linked folder that has gone, a folder that can't be read, two
-  linked folders over the same files, and a task line bound to a note that no longer exists.
-- The release checklist now covers writing, linked folders, agents and security, not just 1.0.
-- Delete a task from the task list without opening it: hover the row and press the **×** at the
-  end of it. It goes to the trash, and the toast offers an undo.
-- Right-click a task in the task list to mark it done, set it to doing or waiting, give it a due
-  date or a priority, open it, or move it to the trash. In a note, right-clicking a task line can
-  move the task itself to the trash, or take just the line out of the note.
+- **Publish a folder as a website:** *Publish this folder…* in the workspace menu makes a small
+  site from the notes of a workspace, or of a folder linked in from elsewhere: a page per note with
+  its backlinks and outgoing links, an index you can search, and a graph of how the notes connect.
+  It is written to the vault's `exports` folder and can be put on any web host.
+- The agent settings page is called **MCP**, and the release checklist now covers writing, linked
+  folders, agents and security, not just 1.0.
 
 ## 0.1.5 (2026-10-19)
 
