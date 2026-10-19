@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Quantos.Backend.Hosting;
 using Quantos.Core;
+using Quantos.Core.Agents;
 
 namespace Quantos.Backend.Api;
 
@@ -10,6 +11,7 @@ public sealed record ReadBody(List<string>? Ids);
 public sealed record LayoutBody(JsonNode? Layout);
 public sealed record ExportBody(string? Format, string? Path);
 public sealed record TableExportBody(string? Name, string? Csv);
+public sealed record McpSettingsBody(string? Program);
 
 public static class VaultEndpoints
 {
@@ -31,6 +33,38 @@ public static class VaultEndpoints
         var api = app.MapGroup("/api");
 
         api.MapGet("/config/{name}", (VaultHost host, string name) => Results.Json(host.Require().Config.Read(name)));
+
+        // The Model Context Protocol server: what an agent needs to reach this vault, and where
+        // its program is on this computer (Settings › AI agents).
+        api.MapGet("/mcp", (VaultHost host, string? agent) =>
+        {
+            var mcp = host.Require().Mcp;
+            var name = string.IsNullOrWhiteSpace(agent) ? "agent" : agent.Trim();
+            var (program, args) = mcp.Command(name);
+            return new
+            {
+                program,
+                args,
+                clientData = mcp.Paths.ClientData,
+                tools = McpTools.List.Select(t => new { t.Name, t.Description }),
+                configs = new
+                {
+                    claudeDesktop = mcp.ConfigFor("claude-desktop", name),
+                    claudeCode = mcp.ConfigFor("claude-code", name),
+                    cursor = mcp.ConfigFor("cursor", name),
+                    codex = mcp.ConfigFor("codex", name),
+                    opencode = mcp.ConfigFor("opencode", name)
+                }
+            };
+        });
+
+        api.MapPut("/mcp/settings", (VaultHost host, HttpContext ctx, McpSettingsBody body) =>
+        {
+            var session = host.Require();
+            session.Permissions.Demand(ctx.Actor(), Core.Security.Permission.CreateEdit, "Change the agent program");
+            session.Mcp.Save(new McpSettings { Program = body.Program ?? "" });
+            return Results.NoContent();
+        });
 
         api.MapPut("/config/{name}", (VaultHost host, HttpContext ctx, string name, JsonNode? body) =>
         {

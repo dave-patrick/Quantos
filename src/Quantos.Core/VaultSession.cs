@@ -26,6 +26,7 @@ public sealed class VaultSession : IDisposable
         Writes = new WriteService(Vault, Cache, Permissions, Changes, Clock);
         Reconciler = new Reconciler(Writes);
         Config = new ConfigStore(Vault, Permissions, Changes);
+        Mcp = new Agents.McpService(paths);
         Tasks = new Tasks.TaskService(Writes);
         Capture = new CaptureService(Writes, Tasks);
         Notifications = new NotificationStore(Vault);
@@ -71,6 +72,7 @@ public sealed class VaultSession : IDisposable
     public Structure.QueryService Queries { get; }
 
     public ConfigStore Config { get; }
+    public Agents.McpService Mcp { get; }
     public Tasks.TaskService Tasks { get; }
     public CaptureService Capture { get; }
     public NotificationStore Notifications { get; }

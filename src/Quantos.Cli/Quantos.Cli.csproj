@@ -13,4 +13,10 @@
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- The tool schemas live with the domain code, but the CLI stays a thin client: it compiles
+         the same file rather than taking a reference on the whole library. -->
+    <Compile Include="..\Quantos.Core\Agents\McpTools.cs" Link="Agents\McpTools.cs" />
+  </ItemGroup>
+
 </Project>

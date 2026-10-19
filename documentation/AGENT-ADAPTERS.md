@@ -12,6 +12,10 @@ Either way, every call goes through the Quantos backend **as the agent you name*
 you've granted that agent in *Settings › Plugins & permissions*. A new agent can read but not write.
 Quantos must be running (the Windows client, or `Quantos.Backend.exe`).
 
+**The quickest way to set an agent up is in the app**: *Settings › AI agents* has the settings for
+Claude Desktop, Claude Code, Cursor, Codex and OpenCode, filled in with the paths on this computer,
+ready to copy into that agent's configuration file. It also lists the tools below.
+
 ## The tools
 
 | Tool | What it does |
@@ -75,6 +79,27 @@ OpenCode, in `~/.config/opencode/opencode.jsonc` (or `%USERPROFILE%\.config\open
 }
 ```
 Use `--client-data` when Quantos's data folder isn't in the default location (the dev harness uses `.dev\client-data`).
+
+Cursor, in `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "quantos": {
+      "command": "C:\\Users\\you\\Documents\\Quantos\\application\\quantos-cli.exe",
+      "args": ["mcp", "--agent", "cursor"]
+    }
+  }
+}
+```
+
+Codex, in `.codex/config.toml`:
+
+```toml
+[mcp_servers.quantos]
+command = "C:\\Users\\you\\Documents\\Quantos\\application\\quantos-cli.exe"
+args = ["mcp", "--agent", "codex"]
+```
 
 ## Frameworks with MCP support
 

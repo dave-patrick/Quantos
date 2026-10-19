@@ -7,9 +7,13 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Settings › AI agents: set an AI agent up without hunting for paths. It shows the program the
+  agent runs, the settings for Claude Desktop, Claude Code, Cursor, Codex and OpenCode ready to
+  copy, and the nine tools an agent gets.
 - Linked folders: link a folder of Markdown from another app and Quantos reads and writes those
   files where they are, so both apps work on the same notes. Link or unlink from the workspace
-  menu; linked folders are listed as their own group.
+  menu; linked folders are listed as their own group. Pictures and files that sit next to a note
+  in a linked folder show up too.
 - Custom styles in Settings › Appearance are applied with buttons: one style at a time, "None"
   for the built-in look.
 - Right sidebar splits into two panels, each with its own tabs, with a draggable divider.

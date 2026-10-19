@@ -370,6 +370,11 @@ only **read** until you grant more in *Settings › Plugins & permissions*. Gran
 confirmed in the Windows client. Agents can never run commands or delete permanently without your
 approval in the Windows client.
 
+- **Set an agent up** in *Settings › AI agents*: give the agent a name, check the program it will
+  run, and copy the settings for Claude Desktop, Claude Code, Cursor, Codex or OpenCode into that
+  agent's configuration file. The page also lists the nine tools an agent gets. Quantos has to be
+  running, because the agent talks to the app and not to the files.
+
 ---
 
 ## 8. Plugins and automations
