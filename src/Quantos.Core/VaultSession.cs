@@ -36,7 +36,10 @@ public sealed class VaultSession : IDisposable
         Automations = new Extensibility.AutomationService(Writes, Tasks, Notifications);
         Exports = new Export.ExportService(Writes, Queries);
         Attachments = new AttachmentStore(Writes);
+        Ai = new Ai.AiService(Writes, paths.Settings, paths.Cache);
     }
+
+    public Ai.AiService Ai { get; }
 
     public AttachmentStore Attachments { get; }
 
@@ -97,6 +100,7 @@ public sealed class VaultSession : IDisposable
     {
         Watcher?.Dispose();
         Automations.Dispose();
+        Ai.Dispose();
         Cache.Dispose();
         _lock?.Dispose();
     }

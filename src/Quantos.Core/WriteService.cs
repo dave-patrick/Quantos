@@ -27,7 +27,7 @@ public sealed record CreateNodeRequest
     public string? Folder { get; init; }
 }
 
-public sealed class QuantosException(string message, int status = 400) : Exception(message)
+public class QuantosException(string message, int status = 400) : Exception(message)
 {
     public int Status { get; } = status;
 }
