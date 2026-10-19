@@ -106,7 +106,13 @@ export const linkHooks = {
   titleOf: (id: string) => app.titleIndex.get(id)?.title,
   openLink: (target: string, event: MouseEvent) => { openTarget(target, whereFrom(event))?.catch?.((e: unknown) => app.error(e)); },
   hoverLink: (target: string, element: HTMLElement | null) => hover.show(target, element),
-  searchTitles: (query: string) => searchTitles(query, 30)
+  searchTitles: (query: string) => searchTitles(query, 30),
+  /** The note at a path, for a link to a file next to the one being written. */
+  findByPath: (path: string) => {
+    const wanted = path.toLowerCase();
+    const n = app.titles.find((t) => t.path.toLowerCase() === wanted);
+    return n ? { id: n.id, title: n.title } : null;
+  }
 };
 
 export const tasksVersion = { get value() { return tasks.version; } };

@@ -227,7 +227,7 @@
               <Editor text={zoomedBody.text} readOnly={noEdit} onchange={editZoomed} onsave={() => doc.save()} bind:view />
             {/key}
           {:else}
-            <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc.edit(t)} onsave={() => doc.save()} bind:view docId={id}
+            <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc.edit(t)} onsave={() => doc.save()} bind:view docId={id} path={doc.node.path}
               readOnly={doc.node.readOnly || noEdit} placeholder="Start writing. Type [[ to link a note, - [ ] for a task." />
           {/if}
         {:else}

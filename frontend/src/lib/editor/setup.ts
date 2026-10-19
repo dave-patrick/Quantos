@@ -17,11 +17,11 @@ import { queryBlocks } from './queryblocks';
 import { richBlocks, richTheme } from './diagrams';
 import { blockExtras, blockTheme } from './blocks';
 import { runCode, runCodeTheme } from './runcode';
-import { attachmentDrop, inlineMedia, mediaTheme } from './attachments';
+import { attachmentDrop, inlineMedia, mediaTheme, type MediaHooks } from './attachments';
 
 export interface EditorOptions {
   text: string;
-  hooks: LinkHooks & TaskHooks & { onChange(text: string): void; onSave?(): void; onFocus?(): void };
+  hooks: LinkHooks & TaskHooks & MediaHooks & { onChange(text: string): void; onSave?(): void; onFocus?(): void };
   readOnly?: boolean;
   raw?: boolean;
   placeholder?: string;
@@ -115,7 +115,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     })
   ];
   if (!options.raw) {
-    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, richBlocks, richTheme, blockExtras, blockTheme, runCode, runCodeTheme, attachmentDrop, inlineMedia, mediaTheme, autocompletion({ override: [linkCompletion(hooks)], icons: false }));
+    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, richBlocks, richTheme, blockExtras, blockTheme, runCode, runCodeTheme, attachmentDrop(hooks), inlineMedia(hooks), mediaTheme, autocompletion({ override: [linkCompletion(hooks)], icons: false }));
   }
   if (options.placeholder) extensions.push(placeholderExt(options.placeholder));
   if (options.extra) extensions.push(...options.extra);

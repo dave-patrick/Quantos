@@ -20,6 +20,7 @@
     raw = false,
     placeholder = '',
     docId = null,
+    path = '',
     view = $bindable<EditorView | null>(null)
   }: {
     text: string;
@@ -32,6 +33,8 @@
     placeholder?: string;
     /** The note this editor shows, for editor commands (extract, embed…). */
     docId?: string | null;
+    /** Where the note lives, so a relative link points at the file next to it. */
+    path?: string;
     view?: EditorView | null;
   } = $props();
 
@@ -44,7 +47,7 @@
       raw,
       readOnly,
       placeholder,
-      hooks: { ...linkHooks, ...taskHooks, onChange: (t) => onchange(t), onSave: () => onsave?.(), onFocus: () => { activeEditor.view = view; activeEditor.docId = docId; onfocus?.(); } }
+      hooks: { ...linkHooks, ...taskHooks, notePath: () => path || null, onChange: (t) => onchange(t), onSave: () => onsave?.(), onFocus: () => { activeEditor.view = view; activeEditor.docId = docId; onfocus?.(); } }
     });
     lastVersion = version;
     if (view) editorDocs.set(view, () => docId);

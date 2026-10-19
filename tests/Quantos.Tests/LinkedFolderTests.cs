@@ -223,6 +223,23 @@ public class LinkedFolderTests
     }
 
     [Fact]
+    public void A_file_next_to_a_linked_note_belongs_to_the_linked_folder()
+    {
+        using var v = new TestVault();
+        var outside = Outside(v);
+        v.Session.Vault.RegisterLinkedFolder("notes", outside);
+        var picture = Path.Combine(outside, "images", "pic.png");
+        Directory.CreateDirectory(Path.GetDirectoryName(picture)!);
+        File.WriteAllBytes(picture, [1, 2, 3]);
+
+        // The picture is addressed the way the note that shows it is: relative to the note's folder.
+        Assert.Equal(picture, v.Session.Vault.Absolute("linked/notes/images/pic.png"));
+        Assert.Equal("linked/notes/images/pic.png", v.Session.Vault.Relative(picture));
+        Assert.True(v.Session.Vault.IsLinkedFile(picture));
+        Assert.False(v.Session.Vault.IsLinkedFile(v.Abs("workspaces/default/nodes/x.md")));
+    }
+
+    [Fact]
     public void Linked_paths_map_to_the_folder_they_live_in()
     {
         using var v = new TestVault();

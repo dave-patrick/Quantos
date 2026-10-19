@@ -230,6 +230,18 @@ public sealed partial class Vault
         return full.StartsWith(rootFull, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>True when a file belongs to a linked folder rather than to the vault.</summary>
+    public bool IsLinkedFile(string fullPath)
+    {
+        var full = Path.GetFullPath(fullPath);
+        foreach (var root in LinkedRoots.Values)
+        {
+            var rootFull = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (full.StartsWith(rootFull, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
     /// <summary>The scope a vault-relative path belongs to: a workspace, a linked folder, or none.</summary>
     public static string WorkspaceOf(string relative)
     {

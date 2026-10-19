@@ -108,11 +108,15 @@ public static class VaultEndpoints
             host.Require().Exports.ExportFolder(b.Path ?? throw new QuantosException("Choose a folder."), Format(b.Format), ctx.Actor()));
 
         // Attachments (images in notes, PDFs): served read-only from the vault's attachments folder.
+        // Files that sit next to a note in a linked folder are served too, so another app's notes
+        // show their pictures here as well.
         api.MapGet("/files/{**path}", (VaultHost host, string path) =>
         {
             var session = host.Require();
             var abs = session.Vault.Absolute(path);
-            if (!abs.StartsWith(session.Vault.Attachments, StringComparison.OrdinalIgnoreCase) || !File.Exists(abs)) return Results.NotFound();
+            var allowed = abs.StartsWith(session.Vault.Attachments, StringComparison.OrdinalIgnoreCase)
+                || session.Vault.IsLinkedFile(abs);
+            if (!allowed || !File.Exists(abs)) return Results.NotFound();
             var type = Path.GetExtension(abs).ToLowerInvariant() switch
             {
                 ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", ".gif" => "image/gif", ".webp" => "image/webp", ".svg" => "image/svg+xml",

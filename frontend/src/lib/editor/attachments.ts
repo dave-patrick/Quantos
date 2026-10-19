@@ -1,5 +1,5 @@
 import { setActiveEditor } from '../activeEditor';
-import { StateField, type EditorState, type Range } from '@codemirror/state';
+import { StateField, type EditorState, type Extension, type Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType, type DecorationSet } from '@codemirror/view';
 import { app } from '../state.svelte';
 import { layout } from '../layout.svelte';
@@ -24,7 +24,9 @@ async function insertFiles(view: EditorView, files: File[], pos: number) {
   }
 }
 
-export const attachmentDrop = EditorView.domEventHandlers({
+export function attachmentDrop(hooks: MediaHooks = {}): Extension {
+  const mediaHooks = hooks;
+  return EditorView.domEventHandlers({
   paste(event, view) {
     const files = [...(event.clipboardData?.files ?? [])];
     // A web address pasted over selected words makes them a link.
@@ -60,6 +62,13 @@ export const attachmentDrop = EditorView.domEventHandlers({
       window.open(web.dataset.href, '_blank', 'noopener');
       return true;
     }
+    // A link to a note next door, as another app writes them.
+    const near = (event.target as HTMLElement).closest('[data-note]') as HTMLElement | null;
+    if (near?.dataset.note) {
+      event.preventDefault();
+      mediaHooks.openLink?.(near.dataset.note, event);
+      return true;
+    }
     const el = (event.target as HTMLElement).closest('[data-pdf]') as HTMLElement | null;
     if (!el) return false;
     event.preventDefault();
@@ -70,7 +79,8 @@ export const attachmentDrop = EditorView.domEventHandlers({
     layout.open({ kind: 'pdf', arg: el.dataset.pdf!, title: el.dataset.name ?? 'PDF' }, event.shiftKey ? 'other' : 'new');
     return true;
   }
-});
+  });
+}
 
 class ImageWidget extends WidgetType {
   constructor(readonly src: string, readonly alt: string) { super(); }
@@ -134,10 +144,17 @@ class PdfChip extends WidgetType {
   ignoreEvent() { return false; }
 }
 
+const IMAGE_EXT = /\.(?:png|jpe?g|gif|webp|svg)$/i;
+const AUDIO_EXT = /\.(?:mp3|m4a|wav|webm|ogg|opus)$/i;
+const PDF_EXT = /\.pdf$/i;
+
+// Files stored in the vault's attachments folder.
 const IMAGE = /!\[([^\]]*)\]\((attachments\/[^)\s]+\.(?:png|jpe?g|gif|webp|svg))\)/i;
 const AUDIO = /\[([^\]]*)\]\((attachments\/[^)\s]+\.(?:mp3|m4a|wav|webm|ogg|opus))\)/gi;
 const PDF = /\[([^\]]*)\]\((attachments\/[^)\s#]+\.pdf)(?:#page=(\d+))?\)/gi;
 
+/** Any Markdown link or image, whatever the target: the kind is decided from the path. */
+const RELATIVE_LINK = /(!?)\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
 // Links to stored files: [name](attachments/ab/abcdef….ext), not images.
 const ATTACHMENT_LINK = /(?<!!)\[([^\]]*)\]\((attachments\/[^)\s]+)\)/g;
 const WEB_LINK = /(?<!!)\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g;
@@ -145,13 +162,45 @@ const hide = Decoration.replace({});
 const fileName = Decoration.mark({ class: 'cm-attach-name' });
 
 /**
+ * A path that points at a file on disk, as opposed to a web address. Attachments live in the
+ * vault's own folder; anything else is relative to the note it sits in, which is how another
+ * app's notes are written.
+ */
+function isLocalPath(path: string): boolean {
+  if (!path) return false;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return false; // http:, mailto:, file:
+  if (path.startsWith('#') || path.startsWith('/')) return false;
+  return true;
+}
+
+/**
+ * The path a relative link points at, in the vault's own path space: a link in a note in a
+ * linked folder resolves inside that folder, as the other app means it.
+ */
+export function resolveLocalPath(raw: string, notePath: string | null | undefined): string | null {
+  if (!isLocalPath(raw)) return null;
+  if (raw.startsWith('attachments/')) return raw;
+  if (!notePath) return null;
+  const dir = notePath.includes('/') ? notePath.slice(0, notePath.lastIndexOf('/')) : '';
+  const parts = (dir ? dir.split('/') : []).concat(raw.split('/'));
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part === '.' || part === '') continue;
+    if (part === '..') { out.pop(); continue; }
+    out.push(part);
+  }
+  return out.join('/');
+}
+
+/**
  * Images show below their line; PDF links get an Open chip. Away from the cursor's line, the storage
  * path is hidden (a link reads as its name, an image as the picture); on that line the Markdown
  * is shown as written, so it can be edited.
  */
-function build(state: EditorState): DecorationSet {
+function build(state: EditorState, hooks: MediaHooks): DecorationSet {
   const decos: Range<Decoration>[] = [];
   const cursorLine = state.doc.lineAt(state.selection.main.head).number;
+  const notePath = hooks.notePath?.() ?? null;
   for (let n = 1; n <= state.doc.lines; n++) {
     const line = state.doc.line(n);
     const raw = n === cursorLine;
@@ -166,6 +215,35 @@ function build(state: EditorState): DecorationSet {
       if (!raw && m[1].length) {
         decos.push(hide.range(start, start + 1), fileName.range(start + 1, labelEnd), hide.range(labelEnd, end));
       }
+    }
+    // Files that sit next to the note, as another app writes them: a picture, a recording, a PDF
+    // or a link to the note in the same folder. They resolve against the note's own folder.
+    for (const m of line.text.matchAll(RELATIVE_LINK)) {
+      const target = m[3];
+      if (!target || target.startsWith('attachments/') || !isLocalPath(target)) continue;
+      const resolved = resolveLocalPath(target, notePath);
+      if (!resolved) continue;
+      const start = line.from + m.index!, end = start + m[0].length;
+      const labelStart = start + 1, labelEnd = labelStart + m[2].length;
+      if (m[1] === '!') {
+        if (!IMAGE_EXT.test(resolved)) continue;
+        if (!raw) decos.push(hide.range(start, end));
+        decos.push(Decoration.widget({ widget: new ImageWidget(resolved, m[2]), side: 1, block: true }).range(line.to));
+        continue;
+      }
+      if (AUDIO_EXT.test(resolved)) {
+        decos.push(Decoration.widget({ widget: new AudioWidget(resolved, m[2]), side: 1, block: true }).range(line.to));
+        continue;
+      }
+      if (PDF_EXT.test(resolved)) {
+        decos.push(Decoration.widget({ widget: new PdfChip(resolved, m[2], null), side: 1 }).range(end));
+        continue;
+      }
+      const note = resolved.toLowerCase().endsWith('.md') ? hooks.findByPath?.(resolved) : null;
+      if (!raw && m[2].length) {
+        decos.push(hide.range(start, labelStart), fileName.range(labelStart, labelEnd), hide.range(labelEnd, end));
+      }
+      if (note) decos.push(Decoration.mark({ class: 'cm-attach-name', attributes: { 'data-note': note.id, title: note.title } }).range(labelStart, labelEnd));
     }
     // Web and mail links read as their text; clicking the text opens them.
     for (const m of line.text.matchAll(WEB_LINK)) {
@@ -186,16 +264,28 @@ function build(state: EditorState): DecorationSet {
   return Decoration.set(decos, true);
 }
 
-export const inlineMedia = StateField.define<DecorationSet>({
-  create: build,
-  update(v, tr) {
-    if (tr.docChanged) return build(tr.state);
-    // Moving the cursor to another line shows that line's Markdown and tidies the one it left.
-    if (tr.selection && tr.startState.doc.lineAt(tr.startState.selection.main.head).number !== tr.state.doc.lineAt(tr.state.selection.main.head).number) return build(tr.state);
-    return v;
-  },
-  provide: (f) => EditorView.decorations.from(f)
-});
+/** What the media extension needs to know about the note it is showing. */
+export interface MediaHooks {
+  /** The path of the note being edited, so a relative link resolves the way the other app means. */
+  notePath?: () => string | null;
+  /** The note at a path, for a link to a file next to this one. */
+  findByPath?: (path: string) => { id: string; title: string } | null;
+  /** Opens a note by id. */
+  openLink?: (target: string, event: MouseEvent) => void;
+}
+
+export function inlineMedia(hooks: MediaHooks = {}): Extension {
+  return StateField.define<DecorationSet>({
+    create: (state) => build(state, hooks),
+    update(v, tr) {
+      if (tr.docChanged) return build(tr.state, hooks);
+      // Moving the cursor to another line shows that line's Markdown and tidies the one it left.
+      if (tr.selection && tr.startState.doc.lineAt(tr.startState.selection.main.head).number !== tr.state.doc.lineAt(tr.state.selection.main.head).number) return build(tr.state, hooks);
+      return v;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
+}
 
 export const mediaTheme = EditorView.theme({
   '.cm-inline-image': { display: 'block', maxWidth: '100%', maxHeight: '420px', borderRadius: '8px', margin: '6px 0', border: '1px solid var(--line)' },
