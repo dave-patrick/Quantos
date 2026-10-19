@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+  files where they are, so both apps work on the same notes. Link or unlink from the workspace
+  menu; linked folders are listed as their own group.
+- Custom styles in Settings › Appearance are applied with buttons: one style at a time, "None"
+  for the built-in look.
 - Right sidebar splits into two panels, each with its own tabs, with a draggable divider.
 - Development harness in `tools/dev/` and handover notes in `documentation/HANDOVER.md`.
 

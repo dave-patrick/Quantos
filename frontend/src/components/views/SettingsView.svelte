@@ -45,14 +45,19 @@
       <div class="field"><span>Line width</span><input type="range" aria-label="Line width" min="560" max="1100" step="20" bind:value={prefs.editorWidth} /> <span class="mono">{prefs.editorWidth}px</span></div>
       <div class="field"><span>Density</span>
         <div class="seg">{#each [['compact', 'Compact'], ['comfortable', 'Comfortable'], ['spacious', 'Spacious']] as [key, label] (key)}<button class:on={prefs.density === key} onclick={() => (prefs.density = key as Density)}>{label}</button>{/each}</div></div>
-      <p class="faint note">Theme, colours, fonts and density apply to this device. Custom styles below are part of the vault and can be switched on anywhere.</p>
+      <p class="faint note">Theme, colours, fonts and density apply to this device. Custom styles below are part of the vault and can be applied anywhere.</p>
 
       <h3>Custom styles</h3>
-      <p class="faint note">Put <code>.css</code> files in the vault's <code>themes</code> folder, then switch them on here. They load after Quantos's own styles, so they can change any colour or size (the design tokens are CSS variables such as <code>--accent</code> and <code>--bg</code>). They can't load anything from the internet. Safe mode turns them off.</p>
-      {#if themes.files.length}
-        {#each themes.files as f (f.name)}
-          <label class="check"><input type="checkbox" checked={themes.enabled.includes(f.name)} onchange={(e) => themes.toggle(f.name, (e.target as HTMLInputElement).checked)} /> {f.name} <span class="faint">{(f.size / 1024).toFixed(1)} KB</span></label>
-        {/each}
+      <p class="faint note">Put <code>.css</code> files in the vault's <code>themes</code> folder, then apply one here. They load after Quantos's own styles, so they can change any colour or size (the design tokens are CSS variables such as <code>--accent</code> and <code>--bg</code>). They can't load anything from the internet. Safe mode turns them off.</p>
+      {#if themes.files.length || themes.active}
+        <div class="styles" role="radiogroup" aria-label="Custom style">
+          <button role="radio" aria-checked={!themes.active} class:on={!themes.active} onclick={() => themes.use(null)}>None</button>
+          {#each themes.files as f (f.name)}
+            <button role="radio" aria-checked={themes.active === f.name} class:on={themes.active === f.name} onclick={() => themes.use(f.name)}>
+              {f.name} <span class="faint">{(f.size / 1024).toFixed(1)} KB</span>
+            </button>
+          {/each}
+        </div>
       {:else}
         <p class="faint">No styles yet.</p>
       {/if}
@@ -112,6 +117,11 @@
   .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
   .seg button { border: 0; background: none; padding: 6px 14px; color: var(--text-muted); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
+  /* The custom styles: one applied at a time, so they can't fight each other. */
+  .styles { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .styles button { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg-raised); color: var(--text-soft); font: 600 13.5px var(--font-body); cursor: pointer; }
+  .styles button:hover { background: var(--bg-hover); color: var(--text); }
+  .styles button.on { background: var(--accent-wash); color: var(--accent-strong); border-color: var(--accent); }
   .note { font-size: 13px; max-width: 640px; }
   .check { display: flex; gap: 8px; align-items: center; margin: 10px 0; color: var(--text-soft); }
   .narrow { width: auto; }

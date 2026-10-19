@@ -59,43 +59,54 @@ class Themes {
   files = $state<ThemeFile[]>([]);
   error = $state('');
 
-  get enabled(): string[] {
-    const v = vaultSettings.data.themes;
-    return Array.isArray(v) ? (v as string[]) : [];
+  /** The one custom style applied on top of Quantos's own, or null for the built-in look. */
+  get active(): string | null {
+    const v = vaultSettings.data.theme;
+    if (typeof v === 'string' && v.length > 0) return v;
+    return null;
   }
 
   async list() {
     try { this.files = await api.get<ThemeFile[]>('themes'); } catch { this.files = []; }
   }
 
-  /** Puts each enabled theme's CSS on the page, after the built-in styles so it wins. Safe mode skips them. */
+  /** Puts the chosen style on the page, after the built-in styles so it wins. Safe mode skips it. */
   async apply() {
     document.querySelectorAll('style[data-quantos-theme]').forEach((s) => s.remove());
     this.error = '';
     if (app.status?.safeMode) return;
-    for (const name of this.enabled) {
-      try {
-        const res = await fetch(`/api/themes/${encodeURIComponent(name)}`, { credentials: 'same-origin', headers: { 'X-Quantos-Request': '1' } });
-        if (!res.ok) { this.error = `Couldn't load ${name}.`; continue; }
-        const style = document.createElement('style');
-        style.dataset.quantosTheme = name;
-        style.textContent = await res.text();
-        document.head.appendChild(style);
-      } catch { this.error = `Couldn't load ${name}.`; }
-    }
+    const name = this.active;
+    if (!name) return;
+    try {
+      const res = await fetch(`/api/themes/${encodeURIComponent(name)}`, { credentials: 'same-origin', headers: { 'X-Quantos-Request': '1' } });
+      if (!res.ok) { this.error = `Couldn't load ${name}.`; return; }
+      const style = document.createElement('style');
+      style.dataset.quantosTheme = name;
+      style.textContent = await res.text();
+      document.head.appendChild(style);
+    } catch { this.error = `Couldn't load ${name}.`; }
   }
 
-  async toggle(name: string, on: boolean) {
-    const next = on ? [...new Set([...this.enabled, name])] : this.enabled.filter((n) => n !== name);
-    await vaultSettings.set('themes', next.length ? next : null);
+  /** Applies one style, replacing whichever was applied before. Null returns to the built-in look. */
+  async use(name: string | null) {
+    await vaultSettings.patch({ theme: name });
     await this.apply();
   }
 }
 
 export const themes = new Themes();
 
-/** At start: settings first (they name the enabled themes), then the styles. */
+/** At start: settings first (they name the applied style), then the styles. */
 export async function loadThemes() {
   if (!Object.keys(vaultSettings.data).length) await vaultSettings.load();
+  await migrate();
   await themes.apply();
+}
+
+/** Older vaults kept a list of enabled styles. The first of them becomes the applied one. */
+async function migrate() {
+  const old = vaultSettings.data.themes;
+  if (old === undefined || vaultSettings.data.theme !== undefined) return;
+  const first = Array.isArray(old) && typeof old[0] === 'string' ? old[0] : null;
+  await vaultSettings.patch({ theme: first, themes: null });
 }

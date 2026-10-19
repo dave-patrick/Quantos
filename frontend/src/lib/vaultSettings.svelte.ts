@@ -13,10 +13,17 @@ class VaultSettings {
   }
 
   async set(key: string, value: unknown) {
-    // Saving before the file has been read would write back only this key and lose the rest.
+    return this.patch({ [key]: value });
+  }
+
+  /** Sets several keys in one write. A null value removes the key. */
+  async patch(values: Record<string, unknown | null>) {
+    // Saving before the file has been read would write back only these keys and lose the rest.
     await (this.loading ?? this.load());
     const next = { ...this.data };
-    if (value === null || value === undefined || value === '') delete next[key]; else next[key] = value;
+    for (const [key, value] of Object.entries(values)) {
+      if (value === null || value === undefined || value === '') delete next[key]; else next[key] = value;
+    }
     this.data = next;
     await api.put('config/settings.json', next);
   }

@@ -40,14 +40,14 @@
   const isListed = (name: string | null) => !name || FONTS.some((f) => f.name === name);
 
   async function saveToVault() {
-    const name = await app.ask('Save as a vault style', { message: 'Saved in the vault’s themes folder, so you can switch it on from any device (Custom styles, below).', placeholder: 'Name, e.g. My theme', confirmLabel: 'Save' });
+    const name = await app.ask('Save as a vault style', { message: 'Saved in the vault’s themes folder, so you can apply it from any device (Custom styles, below).', placeholder: 'Name, e.g. My theme', confirmLabel: 'Save' });
     if (!name?.trim()) return;
     const file = name.trim().replace(/[^\w -]/g, '').replace(/\s+/g, '-').toLowerCase().slice(0, 60) + '.css';
     try {
       const res = await fetch('/api/themes/' + encodeURIComponent(file), { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'text/css', 'X-Quantos-Request': '1', 'X-Quantos-Instance': instanceId }, body: themeFileCss(name.trim(), prefs.look, app.theme) });
       if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? res.statusText);
       await themes.list();
-      app.toast(`Saved ${file}. Switch it on under Custom styles on any device.`, 'ok');
+      app.toast(`Saved ${file}. Apply it under Custom styles on any device.`, 'ok');
     } catch (e) { app.error(e); }
   }
 </script>

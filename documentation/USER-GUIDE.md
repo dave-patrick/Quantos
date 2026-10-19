@@ -381,13 +381,14 @@ approval in the Windows client.
     to type any font installed on the PC.
   - **Interface size:** scales everything.
 
-  *Save as a vault style…* writes the theme to the vault's `themes` folder so you can switch it on
+  *Save as a vault style…* writes the theme to the vault's `themes` folder so you can apply it
   from any device; otherwise the theme, density, editor text size, line spacing and width are per
   device.
-- **Custom styles:** `.css` files in the vault's `themes` folder, switched on in *Settings ›
-  Appearance*. Colours and sizes are CSS variables (`--accent`, `--bg`, `--text`…), so a few lines
-  go a long way; the example vault includes `warm-paper.css`. Styles can't load anything from the
-  internet, and safe mode turns them off.
+- **Custom styles:** `.css` files in the vault's `themes` folder, applied in *Settings ›
+  Appearance*. One style is applied at a time: press the button for the style you want, or *None*
+  to go back to Quantos's own look. Colours and sizes are CSS variables (`--accent`, `--bg`,
+  `--text`…), so a few lines go a long way; the example vault includes `warm-paper.css`. Styles
+  can't load anything from the internet, and safe mode turns them off.
 
 ---
 

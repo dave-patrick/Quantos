@@ -184,3 +184,8 @@ authoritative.
 When the app reads a file with a `schema` greater than it understands, the file is read-only.
 Upgrades that change the format bump the schema number and migrate files through the write
 service (so history is kept) only after the user agrees.
+
+`settings.json` names the custom style applied to the app in `theme` (one file name, or absent
+for the built-in look). Earlier versions kept a `themes` array of enabled styles; the first of
+them becomes the applied one and the array is dropped, so only one style is ever applied.
+
