@@ -6,8 +6,9 @@
   import { openNode, openByTitle, whereFrom } from '../../lib/links.svelte';
   import { onChange } from '../../lib/events';
   import { renderMarkdown } from '../../lib/render';
-  import type { NodeDto, NodeSummary } from '../../lib/types';
+  import type { NodeDto, NodeSummary, TreeFolder } from '../../lib/types';
   import Icon from '../Icon.svelte';
+  import { prefs } from '../../lib/prefs.svelte';
 
   /** Notes browser: every note in a filterable, sortable list with a preview beside it. */
   let excerpts = $state<Record<string, string>>({});
@@ -21,6 +22,60 @@
   let current = $state<string | null>(null);
   let preview = $state<NodeDto | null>(null);
   let picked = $state<Set<string>>(new Set());
+
+  // Tree layout: the same notes, nested in their folders. Dragging a note onto a folder moves it there.
+  interface Folder { name: string; path: string; folders: Folder[]; notes: NodeSummary[] }
+  const LABELS: Record<string, string> = { nodes: 'Notes', daily: 'Daily', tasks: 'Tasks', supertags: 'Supertags', archive: 'Archive', templates: 'Templates', synced_blocks: 'Synced blocks' };
+  // Empty folders count too: they're where notes get dragged to.
+  let folderTree = $state<TreeFolder | null>(null);
+  $effect(() => { void app.workspace; api.get<TreeFolder>(`tree?workspace=${encodeURIComponent(app.workspace)}`).then((t) => (folderTree = t)).catch(() => {}); });
+  const tree = $derived.by(() => {
+    const top: Folder = { name: '', path: '', folders: [], notes: [] };
+    const seed = (t: TreeFolder, into: Folder, depth: number) => {
+      for (const c of t.folders) {
+        if (c.name === 'archive' && !showArchived) continue;
+        const f: Folder = { name: depth === 0 ? LABELS[c.name] ?? c.name : c.name, path: c.path, folders: [], notes: [] };
+        into.folders.push(f);
+        seed(c, f, depth + 1);
+      }
+    };
+    if (folderTree && !everywhere) seed(folderTree, top, 0);
+    for (const n of shown.slice(0, 3000)) {
+      const parts = n.path.split('/');
+      const dirs = parts[0] === 'workspaces' ? parts.slice(2, -1) : parts.slice(0, -1);
+      const base = parts[0] === 'workspaces' ? parts.slice(0, 2) : [];
+      let at = top;
+      if (everywhere && parts[0] === 'workspaces') {
+        let ws = at.folders.find((f) => f.path === base.join('/'));
+        if (!ws) at.folders.push(ws = { name: parts[1], path: base.join('/'), folders: [], notes: [] });
+        at = ws;
+      }
+      dirs.forEach((d, i) => {
+        const path = [...base, ...dirs.slice(0, i + 1)].join('/');
+        let f = at.folders.find((x) => x.path === path);
+        if (!f) at.folders.push(f = { name: i === 0 ? LABELS[d] ?? d : d, path, folders: [], notes: [] });
+        at = f;
+      });
+      at.notes.push(n);
+    }
+    const order = (f: Folder) => { f.folders.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })); f.folders.forEach(order); };
+    order(top);
+    return top;
+  });
+  let closed = $state<Record<string, boolean>>({});
+  let dropFolder = $state<string | null>(null);
+  let dragging: string | null = null;
+  const count = (f: Folder): number => f.notes.length + f.folders.reduce((a, c) => a + count(c), 0);
+
+  async function moveTo(id: string, folder: Folder) {
+    const n = app.titleIndex.get(id);
+    if (!n || n.path.slice(0, n.path.lastIndexOf('/')) === folder.path) return;
+    try {
+      await api.post(`nodes/${id}/move`, { folder: folder.path });
+      app.toast(`Moved “${n.title}” to ${folder.name}.`, 'ok');
+      app.scheduleTitles();
+    } catch (e) { app.error(e); }
+  }
   let list = $state<HTMLUListElement | null>(null);
 
   async function loadExcerpts() { try { excerpts = await api.get<Record<string, string>>('nodes/excerpts'); } catch { /* the list still works */ } }
@@ -96,6 +151,28 @@
   const plainProp = (v: unknown) => String(v).replace(/\[\[[0-9A-HJKMNP-TV-Z]{26}\|([^\]]+)\]\]/g, '$1');
 </script>
 
+{#snippet branch(f: Folder, depth: number)}
+  {#each f.folders as sub (sub.path)}
+    <li class="folder" class:drop={dropFolder === sub.path}
+      ondragover={(e) => { if (dragging) { e.preventDefault(); dropFolder = sub.path; } }} ondragleave={() => { if (dropFolder === sub.path) dropFolder = null; }}
+      ondrop={(e) => { e.preventDefault(); const id = dragging; dragging = null; dropFolder = null; if (id) moveTo(id, sub); }}>
+      <button class="fold" aria-expanded={!closed[sub.path]} style={`padding-left:${8 + depth * 16}px`} onclick={() => (closed[sub.path] = !closed[sub.path])}>
+        <Icon name={closed[sub.path] ? 'chevron-right' : 'chevron-down'} size={12} /><Icon name={closed[sub.path] ? 'folder' : 'folder-open'} size={14} /> {sub.name} <span class="faint n">{count(sub)}</span>
+      </button>
+      {#if !closed[sub.path]}<ul class="sub">{@render branch(sub, depth + 1)}</ul>{/if}
+    </li>
+  {/each}
+  {#each f.notes as n (n.id)}
+    <li class="leaf" class:on={current === n.id} style={`padding-left:${26 + depth * 16}px`}>
+      <input type="checkbox" aria-label={`Select ${n.title}`} checked={picked.has(n.id)} onchange={() => togglePick(n.id)} />
+      <button class="lname" draggable="true" ondragstart={(e) => { dragging = n.id; e.dataTransfer?.setData('text/plain', n.title); }} ondragend={() => { dragging = null; dropFolder = null; }}
+        onclick={() => select(n.id)} ondblclick={(e) => openNode(n.id, whereFrom(e), n.title)}>
+        <Icon name={icons[n.type] ?? 'file-text'} size={13} /> <span>{n.title || 'Untitled'}</span> <span class="faint when">{ago(n.modified)}</span>
+      </button>
+    </li>
+  {/each}
+{/snippet}
+
 <div class="browser">
   <div class="tools">
     <h1><Icon name="file-text" size={20} /> Notes</h1>
@@ -112,6 +189,10 @@
     <section class="left">
       <div class="bar">
         <label class="check"><input type="checkbox" aria-label="Select all shown" checked={allPicked} onchange={pickAll} /> {shown.length} {shown.length === 1 ? 'note' : 'notes'}</label>
+        <span class="seg" role="radiogroup" aria-label="Layout">
+          <button role="radio" aria-checked={!prefs.notesTree} class:on={!prefs.notesTree} onclick={() => (prefs.notesTree = false)}>List</button>
+          <button role="radio" aria-checked={prefs.notesTree} class:on={prefs.notesTree} onclick={() => (prefs.notesTree = true)}>Tree</button>
+        </span>
         {#if picked.size}
           <span class="sel">{picked.size} selected</span>
           <button class="btn ghost" onclick={() => bulk('tag')}><Icon name="hash" size={13} /> Tag</button>
@@ -119,6 +200,10 @@
           <button class="btn ghost" onclick={() => bulk('trash')}><Icon name="trash" size={13} /> Trash</button>
         {/if}
       </div>
+      {#if prefs.notesTree}
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <ul class="scroll list tree" aria-label="Notes by folder">{@render branch(tree, 0)}</ul>
+      {:else}
       <!-- Each row: a tick box, then the note as a button (arrows move between rows, Enter opens). -->
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <ul class="scroll list" bind:this={list} aria-label="Notes" onkeydown={keys}>
@@ -144,6 +229,7 @@
         {/each}
         {#if shown.length > 600}<li class="faint empty">Showing the first 600; filter to narrow it down.</li>{/if}
       </ul>
+      {/if}
     </section>
 
     <section class="right scroll">
@@ -180,6 +266,22 @@
   .bar { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; min-height: 38px; }
   .sel { font-size: 12.5px; color: var(--accent); margin-left: auto; }
   .list { flex: 1; list-style: none; margin: 0; padding: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; margin-left: auto; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 2px 9px; font: 12.5px var(--font-body); cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line-strong); }
+  .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
+  .tree { padding: 4px 0; }
+  .sub { list-style: none; margin: 0; padding: 0; }
+  .folder.drop > .fold { background: var(--accent-wash); outline: 1px dashed var(--accent); }
+  .fold { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; background: none; color: var(--text-soft); font: 600 13.5px var(--font-body); padding: 5px 8px; cursor: pointer; text-align: left; }
+  .fold:hover { background: var(--bg-hover); }
+  .n { font: 11px var(--font-mono); margin-left: auto; }
+  .leaf { display: flex; align-items: center; gap: 6px; padding-right: 8px; }
+  .leaf:hover { background: var(--bg-hover); }
+  .leaf.on { background: var(--bg-active); }
+  .lname { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: 13.5px var(--font-body); padding: 4px 0; cursor: pointer; text-align: left; }
+  .lname span:first-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lname .when { margin-left: auto; font: 11px var(--font-mono); white-space: nowrap; }
   .row { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; padding: 8px 10px; border-bottom: 1px solid var(--line); }
   .pick { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; min-width: 0; }
   .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }

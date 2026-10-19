@@ -141,7 +141,8 @@ in them; tick *Hide empty days* to leave out the rest. Quick capture adds to tod
 *Notes* at the top of the sidebar (`Ctrl+Shift+B`) lists every note with its first lines, newest
 edits first. Filter by words, type, tag or folder, sort by edited, created or title, and include
 archived notes or other workspaces. Click a note to preview it beside the list; double-click or press
-Enter to open it. Tick notes (or press Space) to tag, archive or trash several at once.
+Enter to open it. Tick notes (or press Space) to tag, archive or trash several at once. *Tree* shows the same notes
+nested in their folders (empty folders included); drag a note onto a folder to move it there.
 
 ### The sidebar
 
