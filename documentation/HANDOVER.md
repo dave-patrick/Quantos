@@ -28,15 +28,11 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 0.1.4)
+## Open threads (as of 0.1.5)
 
-- **Unreleased on `main`:** the split right sidebar (two panels), with its tab strip fixed for screen
-  readers. Ask the owner whether to release it as 0.1.5.
-- **Linked folders (built, not yet used by the owner):** the owner asked for a way to keep notes in
-  their old app and edit them in Quantos. *Link a folder…* in the workspace menu does it; the folder's
-  Markdown is read and written in place, Quantos adds only an `id`, and if both apps write at once
-  the newest wins with the other version kept in history. Ask the owner which app they use and
-  whether the two apps behave as expected on their real notes.
+- **Released on `main` as 0.1.5:** the split right sidebar (two panels), linked folders, the AI
+  agents settings page, slash commands, the block right-click menu, and custom styles applied with
+  buttons. The zip is on the releases page; the in-app update is the next test of the updater.
 - **First in-app update:** the owner was asked to update 0.1.3 → 0.1.4 through *Settings › Updates*. This
   is the first real run of the Windows client's install-and-restart step (`Updater.cs`,
   `MainForm.ApplyUpdateAsync`). If it failed, the client log `client-data\logs\client-<date>.log` says why;

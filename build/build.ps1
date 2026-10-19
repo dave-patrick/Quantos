@@ -10,7 +10,7 @@
 param(
     [switch]$SkipTests,
     [string]$Runtime = 'win-x64',
-    [string]$Version = '0.1.4'
+    [string]$Version = '0.1.5'
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
