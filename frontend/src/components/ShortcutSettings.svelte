@@ -4,17 +4,39 @@
   import { bridge, isWindowsClient } from '../lib/platform';
   import { app } from '../lib/state.svelte';
   import { onMount } from 'svelte';
+  import { clientInfo } from '../lib/client.svelte';
 
   let recording = $state<string | null>(null);
   let filter = $state('');
-  let capture = $state('Ctrl+Shift+Space');
-  let scratch = $state('Ctrl+Shift+J');
-  let hotkeyProblems = $state<string[]>([]);
+  // The shortcuts the client really registered (asked for again when this page opens).
+  let capture = $state('');
+  let scratch = $state('');
+  const hotkeyProblems = $derived(clientInfo.problems);
+  onMount(() => clientInfo.refresh());
 
-  onMount(() => bridge.on((m) => {
-    if (m?.type === 'client') { capture = m.captureHotkey; scratch = m.scratchpadHotkey; }
-    if (m?.type === 'hotkey-status') hotkeyProblems = m.problems ?? [];
-  }));
+  /** Pressing keys in a global shortcut box writes them the way Windows registers them ("Ctrl+Alt+Q"). */
+  function globalCombo(e: KeyboardEvent): string | null {
+    const k = e.key;
+    let key: string | null = null;
+    if (/^[a-z]$/i.test(k)) key = k.toUpperCase();
+    else if (/^[0-9]$/.test(k)) key = 'D' + k;
+    else if (/^F([1-9]|1[0-9]|2[0-4])$/.test(k)) key = k;
+    else if (k === ' ') key = 'Space';
+    else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) key = k.slice(5);
+    else if (['Insert', 'Home', 'End', 'PageUp', 'PageDown', 'Pause'].includes(k)) key = k;
+    if (!key) return null;
+    const mods = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Win'].filter(Boolean);
+    return mods.length ? [...mods, key].join('+') : null;
+  }
+  function recordGlobal(e: KeyboardEvent, set: (v: string) => void) {
+    if (e.key === 'Tab' || e.key === 'Escape') return;
+    e.preventDefault();
+    if (e.key === 'Backspace' || e.key === 'Delete') { set(''); return; }
+    const combo = globalCombo(e);
+    if (combo) set(combo);
+  }
+  $effect(() => { if (clientInfo.captureHotkey !== null) capture = clientInfo.captureHotkey; });
+  $effect(() => { if (clientInfo.scratchpadHotkey !== null) scratch = clientInfo.scratchpadHotkey; });
 
   const conflicts = $derived.by(() => { void shortcutOverrides.map; return shortcutConflicts(); });
   const conflictIds = $derived(new Set([...conflicts.values()].flat()));
@@ -43,10 +65,11 @@
 {#if isWindowsClient}
   <section class="global">
     <h3>Global shortcuts <span class="faint">work in any app</span></h3>
-    <label>Quick capture <input class="input" bind:value={capture} /></label>
-    <label>Scratchpad <input class="input" bind:value={scratch} /></label>
+    <p class="faint small">Click a box and press the keys you want (with Ctrl, Alt, Shift or Win), then Apply. Backspace clears it.</p>
+    <label>Quick capture <input class="input" value={capture} placeholder="Ctrl+Alt+Q" readonly onkeydown={(e) => recordGlobal(e, (v) => (capture = v))} /></label>
+    <label>Scratchpad <input class="input" value={scratch} placeholder="Ctrl+Alt+J" readonly onkeydown={(e) => recordGlobal(e, (v) => (scratch = v))} /></label>
     <button class="btn" onclick={() => bridge.send({ type: 'hotkeys', capture, scratchpad: scratch })}>Apply</button>
-    {#each hotkeyProblems as p (p)}<p class="warn">{p}</p>{/each}
+    {#each hotkeyProblems as p (p)}<p class="warn">{p}</p>{:else}{#if clientInfo.captureHotkey}<p class="faint small">Both work from any app while Quantos is running (in the tray too).</p>{/if}{/each}
   </section>
 {:else}
   <p class="muted">Global capture and scratchpad shortcuts <span class="requires-windows">Requires Windows client</span></p>
@@ -79,6 +102,7 @@
 </table>
 
 <style>
+  .small { font-size: 12.5px; }
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 14px; }
   h3 { font: 700 16px/1.3 var(--font-display); margin: 22px 0 8px; }
   .global { display: grid; gap: 8px; max-width: 420px; }

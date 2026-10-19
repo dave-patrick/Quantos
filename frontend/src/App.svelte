@@ -16,6 +16,7 @@
   import { plugins } from './lib/plugins.svelte';
   import { openNode } from './lib/links.svelte';
   import './lib/editorCommands';
+  import './lib/client.svelte';
   import Shell from './components/Shell.svelte';
   import Setup from './components/Setup.svelte';
   import Splash from './components/Splash.svelte';

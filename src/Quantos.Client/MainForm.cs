@@ -196,8 +196,9 @@ public sealed class MainForm : Form
         var type = msg.TryGetProperty("type", out var t) ? t.GetString() : null;
         switch (type)
         {
-            case "ready":
-                source.PostWebMessageAsJson(JsonSerializer.Serialize(new { type = "client", version = Application.ProductVersion, captureHotkey = _prefs.CaptureHotkey, scratchpadHotkey = _prefs.ScratchpadHotkey }));
+            case "ready" or "client-info":
+                // Also asked for by Settings › Shortcuts when it opens, so it shows what's really registered.
+                source.PostWebMessageAsJson(JsonSerializer.Serialize(new { type = "client", version = Application.ProductVersion, captureHotkey = _prefs.CaptureHotkey, scratchpadHotkey = _prefs.ScratchpadHotkey, hotkeyProblems = _hotkeyProblems }));
                 break;
             case "notify":
                 ShowBalloon(msg.GetProperty("title").GetString() ?? "Quantos", msg.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "", null);
@@ -363,11 +364,14 @@ public sealed class MainForm : Form
 
     // ---- windows ---------------------------------------------------------------------------------
 
+    private List<string?> _hotkeyProblems = [];
+
     private void RegisterHotkeys(CoreWebView2? reportTo = null)
     {
         _hotkeys.Clear();
         var problems = new[] { _hotkeys.Register(_prefs.CaptureHotkey, () => BeginInvoke(ShowCapture)), _hotkeys.Register(_prefs.ScratchpadHotkey, () => BeginInvoke(ToggleScratchpad)) }
             .Where(p => p is not null).ToList();
+        _hotkeyProblems = problems;
         foreach (var p in problems) _paths.Log("Shortcut: " + p);
         var json = JsonSerializer.Serialize(new { type = "hotkey-status", problems });
         (reportTo ?? _web.CoreWebView2)?.PostWebMessageAsJson(json);
