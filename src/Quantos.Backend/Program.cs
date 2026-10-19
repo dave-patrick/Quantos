@@ -70,6 +70,7 @@ public static class Program
         builder.Services.AddSingleton(tokens ?? new AccessTokens());
         builder.Services.AddSingleton(new ServerAddress { Port = port });
         builder.Services.AddSingleton<VaultHost>();
+        builder.Services.AddSingleton(new Quantos.Core.Updates.UpdateService(Api.SystemEndpoints.Version, paths.ClientData));
         builder.Services.AddSingleton<ClientPresence>();
 
         var app = builder.Build();
@@ -104,6 +105,7 @@ public static class Program
         FocusEndpoints.Map(app);
         HabitEndpoints.Map(app);
         PlanningEndpoints.Map(app);
+        UpdateEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

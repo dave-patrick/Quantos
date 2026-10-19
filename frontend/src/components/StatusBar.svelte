@@ -6,6 +6,7 @@
   import { notifications } from '../lib/notifications.svelte';
   import { prefs } from '../lib/prefs.svelte';
   import { focus, clock } from '../lib/focus.svelte';
+  import { updates } from '../lib/updates.svelte';
   import Icon from './Icon.svelte';
 
   const activeDoc = $derived(layout.activeTab?.nodeId ? docs.peek(layout.activeTab.nodeId) : undefined);
@@ -30,6 +31,9 @@
   {/if}
   {#if prefs.reading}
     <button class="item link" title="Notes are read-only on this device. Click (or Ctrl+Alt+R) to edit again." onclick={() => (prefs.reading = false)}><Icon name="book" size={12} /> Reading mode</button>
+  {/if}
+  {#if updates.status?.available || updates.status?.ready}
+    <button class="item link" title="See what's new" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'updates' }, 'current')}><Icon name="download" size={12} /> {updates.status?.ready ? `Quantos ${updates.status.ready} ready to install` : `Update: ${updates.status?.latest?.version}`}</button>
   {/if}
   {#if notifications.unread}
     <button class="item link" onclick={() => { app.rightOpen = true; app.rightTab = 'notifications'; }}><Icon name="bell" size={12} /> {notifications.unread}</button>

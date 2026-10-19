@@ -305,6 +305,16 @@ in notes never runs by itself.
 
 ---
 
+### Updating
+
+*Settings › Updates* shows your version. *Check for updates* asks GitHub for the latest release and
+shows what's new; *Download* fetches it and checks it against the checksum GitHub publishes. In the
+Windows client, *Install and restart* saves your notes, swaps in the new program files and restarts;
+your vault and `client-data` aren't touched, and if anything goes wrong the old files are put back.
+The status bar says when an update is waiting. Quantos only contacts GitHub when you check, or once a
+day if you tick *Check once a day*. Updating by hand still works: close Quantos and copy the new
+`application` folder over the old one.
+
 ## 7. Command line and agents
 
 `application\quantos-cli.exe` works with the running app: `quantos-cli search budget`,

@@ -38,6 +38,12 @@ internal static class Program
         // One client window per user; a second launch brings the first one forward.
         using var mutex = new Mutex(true, @"Local\Quantos.Client." + Environment.UserName, out var first);
         using var signal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Quantos.Client.Show." + Environment.UserName);
+        // Restarting after an update: the old window is still closing, so wait for it rather than signalling it.
+        if (!first && args.Contains("--after-update"))
+        {
+            try { first = mutex.WaitOne(TimeSpan.FromSeconds(30)); }
+            catch (AbandonedMutexException) { first = true; }
+        }
         if (!first)
         {
             signal.Set();

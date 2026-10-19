@@ -52,6 +52,10 @@ local commands; access files outside the vault; network requests; manage permiss
   recorder asks, for the microphone.
 - `quantos-cli call` runs the same tools as the MCP server and, with `--agent`, under that agent's
   grants; without `--agent` it acts as the command line.
+- **Updates:** Quantos contacts GitHub (`api.github.com`, and the release download on github.com) only
+  when the person checks or turns on the daily check; only the person can start a check or a download.
+  A download is used only if its SHA-256 matches the digest GitHub publishes for the release file, only
+  `application*` files are unpacked, and the Windows client asks before installing.
 - Find and replace across notes is the person's alone; agents and plugins edit one note at a time.
 - A **locked** note (`locked: true`) refuses edits from every actor, the person included, until it is
   unlocked; only the person (app, browser session or CLI) can unlock it.

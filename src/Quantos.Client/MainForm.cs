@@ -96,6 +96,8 @@ public sealed class MainForm : Form
         try
         {
             _backend = await BackendConnection.ConnectAsync(_paths, s => _status.Text = s);
+            // Up and running on this version: the files an update replaced, and finished downloads, can go.
+            Updater.CleanUp(_paths);
             _status.Text = "Opening…";
             Directory.CreateDirectory(_paths.WebView2);
             _env = await CoreWebView2Environment.CreateAsync(null, _paths.WebView2);
@@ -201,6 +203,9 @@ public sealed class MainForm : Form
                 break;
             case "exit":
                 _ = ExitAsync();
+                break;
+            case "update-apply":
+                if (main) _ = ApplyUpdateAsync();
                 break;
             case "pending-saves":
                 _flush?.TrySetResult(msg.GetProperty("count").GetInt32());
@@ -451,6 +456,65 @@ public sealed class MainForm : Form
             return;
         }
         base.OnFormClosing(e);
+    }
+
+    /// <summary>
+    /// Installs a downloaded update: asks first, saves open notes, stops the backend (whoever started it), swaps in the
+    /// new program files and restarts. If the swap fails, the old files are back and Quantos restarts as it was.
+    /// </summary>
+    private async Task ApplyUpdateAsync()
+    {
+        if (_exiting) return;
+        var staged = Updater.Staged(_paths);
+        if (staged is null) { Post(new { type = "update-error", message = "No downloaded update is waiting. Download it again from Settings › Updates." }); return; }
+        if (!Updater.CanInstall) { Post(new { type = "update-error", message = "This copy of Quantos isn't in the usual application folder, so it can't update itself. Copy the files from " + staged.Value.Folder + " instead." }); return; }
+        ShowMain();
+        if (!Confirm($"Install Quantos {staged.Value.Version}?", "Quantos saves your notes, closes and restarts on the new version. Your vault and settings aren't touched.", "Install and restart")) return;
+
+        if (_web.CoreWebView2 is not null)
+        {
+            _flush = new TaskCompletionSource<int>();
+            _web.CoreWebView2.PostWebMessageAsJson("{\"type\":\"flush\"}");
+            var done = await Task.WhenAny(_flush.Task, Task.Delay(4000));
+            var pending = done == _flush.Task ? _flush.Task.Result : -1;
+            if (pending != 0 && !Confirm("Install anyway?", "Some changes couldn't be confirmed as saved. If you continue now, they may be lost.", "Install anyway")) return;
+        }
+        _exiting = true;
+        _watch.Stop();
+        SaveWindow();
+        _status.Text = $"Installing Quantos {staged.Value.Version}…";
+        _status.Visible = true;
+        _status.BringToFront();
+
+        // The backend has to stop so its program file can be replaced, even if a browser started it.
+        if (_backend is not null)
+        {
+            try { await _backend.Http.PostAsync("api/system/shutdown", null); } catch (HttpRequestException) { }
+            await Task.Run(() =>
+            {
+                try { using var p = System.Diagnostics.Process.GetProcessById(_backend.Info.Pid); p.WaitForExit(15_000); }
+                catch (ArgumentException) { }
+            });
+        }
+
+        try
+        {
+            Updater.Apply(staged.Value.Folder);
+            _paths.Log($"Installed update {Updater.CurrentVersion} -> {staged.Value.Version}");
+        }
+        catch (Exception ex)
+        {
+            _paths.Log("Update failed: " + ex);
+            MessageBox.Show(this, "The update couldn't be installed, so Quantos is staying on this version.\n\n" + ex.Message, "Quantos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        // Start the (new or unchanged) client, which starts its backend; this one leaves.
+        var exe = Path.Combine(ClientPaths.AppDirectory, "Quantos.exe");
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { UseShellExecute = false, ArgumentList = { "--after-update" } });
+        _tray.Visible = false;
+        _terminal?.Dispose();
+        _hotkeys.Dispose();
+        Application.Exit();
     }
 
     /// <summary>Exit: saves open work, warns about anything unsaved, and stops an owned backend only after a safe shutdown.</summary>
