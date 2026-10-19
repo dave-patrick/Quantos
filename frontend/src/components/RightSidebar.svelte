@@ -53,6 +53,7 @@
 </script>
 
 {#snippet pane(which: 0 | 1)}
+  <div class="strip">
   <div class="tabs" role="tablist" aria-label={which === 0 ? (split ? 'Upper panel' : 'Panel') : 'Lower panel'}>
     {#each tabs as t, i (t.key)}
       <button role="tab" aria-selected={current(which) === t.key} tabindex={current(which) === t.key ? 0 : -1} aria-label={t.label} title={t.label} onkeydown={(e) => tabKeys(e, which, i)} class:on={current(which) === t.key} onclick={() => choose(which, t.key)}>
@@ -60,6 +61,7 @@
         {#if t.key === 'notifications' && notifications.unread}<span class="pip">{notifications.unread}</span>{/if}
       </button>
     {/each}
+  </div>
     {#if which === 0}
       <button class="splitbtn" title={split ? 'Show one panel' : 'Split into two panels'} aria-label={split ? 'Show one panel' : 'Split into two panels'} aria-pressed={split} onclick={toggleSplit}><Icon name={split ? 'square' : 'split-h'} size={14} /></button>
     {/if}
@@ -91,12 +93,14 @@
 <style>
   .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; background: var(--bg-raised); border-left: 1px solid var(--line); }
   .part { display: flex; flex-direction: column; min-height: 80px; }
-  .tabs { display: flex; gap: 2px; padding: 6px 6px 0; border-bottom: 1px solid var(--line); flex: none; }
+  .strip { display: flex; align-items: flex-end; padding: 6px 6px 0; border-bottom: 1px solid var(--line); flex: none; }
+  .tabs { display: flex; gap: 2px; flex: 1; }
   .tabs button { position: relative; flex: 1; display: grid; place-items: center; height: 32px; border: 0; background: none; color: var(--text-faint); border-radius: 6px 6px 0 0; }
   .tabs button:hover { color: var(--text); background: var(--bg-hover); }
   .tabs button.on { color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
-  .tabs .splitbtn { flex: 0 0 28px; }
-  .tabs .splitbtn[aria-pressed='true'] { color: var(--accent); }
+  .splitbtn { flex: 0 0 28px; height: 32px; display: grid; place-items: center; border: 0; background: none; color: var(--text-faint); border-radius: 6px 6px 0 0; cursor: pointer; }
+  .splitbtn:hover { color: var(--text); background: var(--bg-hover); }
+  .splitbtn[aria-pressed='true'] { color: var(--accent); }
   .pip { position: absolute; top: 3px; right: 8px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font: 700 9.5px/15px var(--font-mono); }
   .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .divider { flex: none; height: 6px; cursor: row-resize; background: var(--line); border-block: 2px solid var(--bg-raised); touch-action: none; }

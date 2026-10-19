@@ -8,6 +8,7 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 ## Unreleased
 
 - Right sidebar splits into two panels, each with its own tabs, with a draggable divider.
+- Development harness in `tools/dev/` and handover notes in `documentation/HANDOVER.md`.
 
 ## 0.1.4 (2026-10-19)
 

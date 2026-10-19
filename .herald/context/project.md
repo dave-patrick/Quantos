@@ -6,6 +6,8 @@ Markdown files with YAML frontmatter in a vault folder the user owns. One local 
 Svelte interface in a Windows client (WebView2) and in the browser. Published by Atomic 22 Industries.
 
 ## Start here
+- `documentation/HANDOVER.md`: how the owner works, open threads, this machine's quirks.
+- `tools/dev/README.md`: run the app and check changes in a headless browser.
 - `documentation/PROJECT-STATUS.md`: current state, what's built and where, unverified items, roadmap,
   design rules, build/test/release steps. Keep it current when you finish work.
 - `BUILD-PLAN.md`: the approved plan, acceptance tests, roadmap (section 14) and decision log (section 17).

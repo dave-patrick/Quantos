@@ -1,6 +1,7 @@
 # Quantos project status and handoff
 
-For anyone (person or AI agent) picking up work on Quantos. Read this first, then
+For anyone (person or AI agent) picking up work on Quantos. Read [HANDOVER.md](HANDOVER.md) (the owner,
+open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
@@ -33,6 +34,8 @@ Version numbers are product versions (0.1.x) and are separate from the plan's "R
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md), [CLI-REFERENCE.md](CLI-REFERENCE.md), [PLUGINS.md](PLUGINS.md), [AGENT-ADAPTERS.md](AGENT-ADAPTERS.md) | Shipped guides, also shown in Help. |
 | [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) | Manual checks per release (still written for 1.0; needs the 1.1/1.2 features added). |
 | [PERFORMANCE.md](PERFORMANCE.md) | Measured performance. |
+| [HANDOVER.md](HANDOVER.md) | How the owner works, open threads, machine and tool quirks. |
+| [tools/dev/README.md](../tools/dev/README.md) | The development harness: run the app, drive a headless browser, accessibility scans. |
 | `.herald/context/project.md`, `AGENTS.md` | Short project context loaded by agent tools. |
 
 ## 3. What's built, and where
@@ -147,10 +150,9 @@ had no shortcut handling).
 - **Build and test:** `pwsh build/build.ps1` (frontend build, all .NET tests, three self-contained
   single-file exes, zip in `publish/`). Quicker loops: `dotnet test tests/Quantos.Tests`,
   `cd frontend && npx vitest run`, `npx svelte-check --threshold error`.
-- **Run for development:** start the backend (`dotnet run --project src/Quantos.Backend -- --vault <dir>
-  --client-data <dir> --port 47821`) and the Vite dev server (`cd frontend && npx vite`, proxies `/api`).
-  Sign in through a one-time link from `POST /api/auth/code` with the launch token in
-  `client-data/settings/backend.json`.
+- **Run for development:** `pwsh tools/dev/start.ps1` starts the backend against a copy of the example
+  vault in `.dev/`, Vite and a headless Edge, and opens the app signed in; `tools/dev/edge.mjs` drives it
+  and `tools/dev/axe.mjs` scans it. See [tools/dev/README.md](../tools/dev/README.md).
 - **Frontend pitfalls seen in this codebase:**
   - `bind:view` to a component prop with a fallback can't start as `undefined`; start it as `null`.
   - Several `svelte-ignore` codes: one comment per code, stacked directly above the element.

@@ -14,7 +14,8 @@ Releases 1.0, 1.1 and 1.2 of the [build plan](BUILD-PLAN.md) are built, and the 
 [GitHub Releases](https://github.com/dave-patrick/Quantos/releases) (latest: 0.1.4; it updates itself from
 *Settings › Updates*). What's left is the plan's unscheduled roadmap (importing, hosting, accounts, sync).
 
-**Picking up work (people and agents):** start with [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md):
+**Picking up work (people and agents):** start with [AGENTS.md](AGENTS.md), which points to the handover notes and
+[documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md):
 what's built and where, what isn't verified yet, the roadmap, the design rules, how to build, test and
 release. [CHANGELOG.md](CHANGELOG.md) has the per-release changes.
 
@@ -33,6 +34,7 @@ release. [CHANGELOG.md](CHANGELOG.md) has the per-release changes.
 | `site` | Public website (GitHub Pages) |
 | `brand` | Locked wordmark and icon |
 | `examples/agents` | Python helper for agent frameworks that call tools themselves |
+| `tools/dev` | Development harness: run the app and check it in a headless browser |
 
 ## Building
 
