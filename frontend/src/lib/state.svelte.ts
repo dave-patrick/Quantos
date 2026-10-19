@@ -14,6 +14,9 @@ class AppState {
   leftOpen = $state(true);
   rightOpen = $state(true);
   rightTab = $state<RightTab>('files');
+  /** The right sidebar split in two: the lower panel's tab (null when not split) and the upper panel's share of the height. */
+  rightTab2 = $state<RightTab | null>(null);
+  rightSplit = $state(0.5);
   toasts = $state<Toast[]>([]);
   theme = $state<'dark' | 'light'>('dark');
   paletteOpen = $state(false);
@@ -34,6 +37,8 @@ class AppState {
         this.leftOpen = ui.leftOpen ?? true;
         this.rightOpen = ui.rightOpen ?? true;
         this.rightTab = ui.rightTab ?? 'files';
+        this.rightTab2 = ui.rightTab2 ?? null;
+        this.rightSplit = typeof ui.rightSplit === 'number' ? ui.rightSplit : 0.5;
         this.theme = ui.theme ?? 'dark';
       }
     } catch { /* storage unavailable */ }
@@ -57,7 +62,7 @@ class AppState {
         try {
           const wide = typeof innerWidth !== 'number' || innerWidth > 700;
           const prev = JSON.parse(localStorage.getItem('quantos.ui') ?? '{}');
-          localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, theme: this.theme }));
+          localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, rightTab2: this.rightTab2, rightSplit: this.rightSplit, theme: this.theme }));
         } catch { /* ignore */ }
       });
     });

@@ -293,7 +293,9 @@ You don't need to back up `client-data\cache\`; it's rebuilt automatically.
 ### Scratchpad
 
 The scratchpad is one note for quick jotting. Open it as an always-on-top window with `Ctrl+Alt+J`
-(Windows client), or dock it in the right sidebar (its pencil tab); it's the same note in both. Keys
+(Windows client), or dock it in the right sidebar (its pencil tab); it's the same note in both.
+The square button at the end of the right sidebar's tabs splits it into two panels, each with its own
+tabs (say, the scratchpad above the file tree); drag the bar between them to resize. Keys
 move text out of it: the selection, or the paragraph the cursor is in, goes to a place and leaves the
 scratchpad. By default `Ctrl+Enter` sends to today's daily note, `Ctrl+Shift+Enter` makes a new note
 and `Ctrl+Alt+Enter` a new task; *Send to…* at the bottom lists them. Add your own in *Settings ›
