@@ -79,7 +79,49 @@
     [keys[i], keys[j]] = [keys[j], keys[i]];
     prefs.sidebarOrder = keys;
   }
-  function reset() { prefs.sidebarHidden = []; prefs.sidebarOrder = []; }
+  function reset() { prefs.sidebarHidden = []; prefs.sidebarOrder = []; prefs.sidebarSections = []; }
+
+  // Drag and drop: items reorder among items, sections among sections (the arrows in Customise do the same by keyboard).
+  const SECTION_KEYS = ['pinned', 'folders', 'queries', 'tags', 'tools'];
+  const sectionOrder = $derived([...SECTION_KEYS].sort((a, b) => {
+    const r = (k: string) => { const i = prefs.sidebarSections.indexOf(k); return i < 0 ? 100 + SECTION_KEYS.indexOf(k) : i; };
+    return r(a) - r(b);
+  }));
+  let drag = $state<string | null>(null);
+  let over = $state<string | null>(null);
+
+  function startDrag(e: DragEvent, key: string) {
+    drag = key;
+    e.dataTransfer?.setData('text/x-quantos-sidebar', key);
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+  }
+  function endDrag() { drag = null; over = null; }
+  function overSection(e: DragEvent, key: string) { if (drag?.startsWith('section:')) { e.preventDefault(); over = 'section:' + key; } }
+  function dropOn(e: DragEvent, target: string) {
+    e.preventDefault();
+    const from = drag;
+    endDrag();
+    if (!from || from === target || from.startsWith('section:') !== target.startsWith('section:')) return;
+    const keys = from.startsWith('section:') ? sectionOrder.map((k) => 'section:' + k) : ordered.map((i) => i.key);
+    const a = keys.indexOf(from), b = keys.indexOf(target);
+    if (a < 0 || b < 0) return;
+    keys.splice(a, 1);
+    keys.splice(b, 0, from);   // lands where the target was: before it moving up, after it moving down
+    if (from.startsWith('section:')) prefs.sidebarSections = keys.map((k) => k.slice(8));
+    else prefs.sidebarOrder = keys;
+  }
+  /** Props that make an item draggable and a drop target. */
+  function dnd(key: string) {
+    return {
+      draggable: true,
+      ondragstart: (e: DragEvent) => startDrag(e, key),
+      ondragend: endDrag,
+      ondragover: (e: DragEvent) => { if (drag && !drag.startsWith('section:')) { e.preventDefault(); over = key; } },
+      ondragleave: () => { if (over === key) over = null; },
+      ondrop: (e: DragEvent) => dropOn(e, key),
+      'data-drop': over === key && drag !== key ? 'before' : undefined
+    };
+  }
 
   let collapsed = $state<Record<string, boolean>>({});
   const isActive = (kind: TabKind, arg?: string) => layout.activeTab?.kind === kind && (arg === undefined || layout.activeTab?.arg === arg);
@@ -89,45 +131,10 @@
   }
 </script>
 
-<aside class="sidebar" aria-label="Navigation">
-  <div class="scroll body">
-    {#if customizing}
-      <section class="custom" aria-label="Customise the sidebar">
-        <p class="hint">Tick what to show; arrows change the order. Saved on this device.</p>
-        {#each ordered as item, i (item.key)}
-          <div class="crow">
-            <label><input type="checkbox" checked={!prefs.sidebarHidden.includes(item.key)} onchange={() => toggle(item.key)} /> <Icon name={item.icon} size={14} /> {item.label}</label>
-            <button class="icon-btn" aria-label={'Move ' + item.label + ' up'} disabled={i === 0} onclick={() => move(item.key, -1)}><Icon name="arrow-up" size={12} /></button>
-            <button class="icon-btn" aria-label={'Move ' + item.label + ' down'} disabled={i === ordered.length - 1} onclick={() => move(item.key, 1)}><Icon name="arrow-down" size={12} /></button>
-          </div>
-        {/each}
-        <p class="hint">Sections</p>
-        {#each sections as sec (sec.key)}
-          <div class="crow"><label><input type="checkbox" checked={showSection(sec.key)} onchange={() => toggle('section:' + sec.key)} /> {sec.label}</label></div>
-        {/each}
-        <div class="cbtns"><button class="btn primary" onclick={() => (customizing = false)}>Done</button><button class="btn ghost" onclick={reset}>Reset</button></div>
-      </section>
-    {:else}
-    <section>
-      {#each shownItems as item (item.key)}
-        {#if item.kind}
-          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)}>
-            <Icon name={item.icon} size={15} /> <span>{item.label}</span>
-          </button>
-        {:else if item.key === 'capture'}
-          <button class="item" onclick={() => capture.show()}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
-        {:else if isWindowsClient}
-          <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
-        {:else}
-          <div class="item disabled" title="The PowerShell terminal runs in the Windows client only."><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>
-        {/if}
-      {/each}
-    </section>
-    {/if}
-
+{#snippet section_pinned()}
     {#if views.pinned.length && showSection('pinned')}
       <section>
-        <button class="heading" onclick={() => (collapsed.pinned = !collapsed.pinned)}>
+        <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:pinned')} ondragend={endDrag} onclick={() => (collapsed.pinned = !collapsed.pinned)}>
           <Icon name={collapsed.pinned ? 'chevron-right' : 'chevron-down'} size={12} /> Pinned views
         </button>
         {#if !collapsed.pinned}
@@ -139,10 +146,11 @@
         {/if}
       </section>
     {/if}
-
+{/snippet}
+{#snippet section_folders()}
     {#if (folders.length || views.saved.some((v) => v.virtualFolder)) && showSection('folders')}
       <section>
-        <button class="heading" onclick={() => (collapsed.folders = !collapsed.folders)}>
+        <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:folders')} ondragend={endDrag} onclick={() => (collapsed.folders = !collapsed.folders)}>
           <Icon name={collapsed.folders ? 'chevron-right' : 'chevron-down'} size={12} /> Folders
         </button>
         {#if !collapsed.folders}
@@ -160,10 +168,11 @@
         {/if}
       </section>
     {/if}
-
+{/snippet}
+{#snippet section_queries()}
     {#if showSection('queries')}
     <section>
-      <button class="heading" onclick={() => (collapsed.queries = !collapsed.queries)}>
+      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:queries')} ondragend={endDrag} onclick={() => (collapsed.queries = !collapsed.queries)}>
         <Icon name={collapsed.queries ? 'chevron-right' : 'chevron-down'} size={12} /> Saved queries
       </button>
       {#if !collapsed.queries}
@@ -176,10 +185,11 @@
       {/if}
     </section>
     {/if}
-
+{/snippet}
+{#snippet section_tags()}
     {#if showSection('tags')}
     <section>
-      <button class="heading" onclick={() => (collapsed.tags = !collapsed.tags)}>
+      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:tags')} ondragend={endDrag} onclick={() => (collapsed.tags = !collapsed.tags)}>
         <Icon name={collapsed.tags ? 'chevron-right' : 'chevron-down'} size={12} /> Supertags
       </button>
       {#if !collapsed.tags}
@@ -194,10 +204,11 @@
       {/if}
     </section>
     {/if}
-
+{/snippet}
+{#snippet section_tools()}
     {#if showSection('tools')}
     <section>
-      <button class="heading" onclick={() => (collapsed.tools = !collapsed.tools)}>
+      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:tools')} ondragend={endDrag} onclick={() => (collapsed.tools = !collapsed.tools)}>
         <Icon name={collapsed.tools ? 'chevron-right' : 'chevron-down'} size={12} /> Vault
       </button>
       {#if !collapsed.tools}
@@ -209,6 +220,50 @@
       {/if}
     </section>
     {/if}
+{/snippet}
+
+<aside class="sidebar" aria-label="Navigation">
+  <div class="scroll body">
+    {#if customizing}
+      <section class="custom" aria-label="Customise the sidebar">
+        <p class="hint">Tick what to show; arrows change the order. Saved on this device.</p>
+        {#each ordered as item, i (item.key)}
+          <div class="crow" {...dnd(item.key)}>
+            <label><input type="checkbox" checked={!prefs.sidebarHidden.includes(item.key)} onchange={() => toggle(item.key)} /> <Icon name={item.icon} size={14} /> {item.label}</label>
+            <button class="icon-btn" aria-label={'Move ' + item.label + ' up'} disabled={i === 0} onclick={() => move(item.key, -1)}><Icon name="arrow-up" size={12} /></button>
+            <button class="icon-btn" aria-label={'Move ' + item.label + ' down'} disabled={i === ordered.length - 1} onclick={() => move(item.key, 1)}><Icon name="arrow-down" size={12} /></button>
+          </div>
+        {/each}
+        <p class="hint">Sections</p>
+        {#each sections as sec (sec.key)}
+          <div class="crow"><label><input type="checkbox" checked={showSection(sec.key)} onchange={() => toggle('section:' + sec.key)} /> {sec.label}</label></div>
+        {/each}
+        <div class="cbtns"><button class="btn primary" onclick={() => (customizing = false)}>Done</button><button class="btn ghost" onclick={reset}>Reset</button></div>
+      </section>
+    {:else}
+    <section>
+      {#each shownItems as item (item.key)}
+        {#if item.kind}
+          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)} {...dnd(item.key)}>
+            <Icon name={item.icon} size={15} /> <span>{item.label}</span>
+          </button>
+        {:else if item.key === 'capture'}
+          <button class="item" onclick={() => capture.show()} {...dnd(item.key)}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
+        {:else if isWindowsClient}
+          <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()} {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
+        {:else}
+          <div class="item disabled" title="The PowerShell terminal runs in the Windows client only." {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>
+        {/if}
+      {/each}
+    </section>
+    {/if}
+
+    {#each sectionOrder as key (key)}
+      <div class="sec" class:drop={over === 'section:' + key && drag !== 'section:' + key} role="presentation"
+        ondragover={(e) => overSection(e, key)} ondragleave={() => { if (over === 'section:' + key) over = null; }} ondrop={(e) => dropOn(e, 'section:' + key)}>
+        {#if key === 'pinned'}{@render section_pinned()}{:else if key === 'folders'}{@render section_folders()}{:else if key === 'queries'}{@render section_queries()}{:else if key === 'tags'}{@render section_tags()}{:else}{@render section_tools()}{/if}
+      </div>
+    {/each}
   </div>
   <footer>
     <button class="item" onclick={(e) => open(e, 'settings', 'Settings')}><Icon name="settings" size={15} /> <span>Settings</span></button>
@@ -238,4 +293,7 @@
   .crow:hover { background: var(--bg-hover); }
   .crow label { flex: 1; display: flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--text-soft); padding: 4px 0; min-width: 0; cursor: pointer; }
   .cbtns { display: flex; gap: 6px; margin: 8px 8px 0; }
+  :global(.sidebar [data-drop]) { box-shadow: inset 0 2px 0 var(--accent); }
+  .sec.drop { box-shadow: inset 0 2px 0 var(--accent); border-radius: 4px; }
+  .heading[draggable='true'] { cursor: grab; }
 </style>

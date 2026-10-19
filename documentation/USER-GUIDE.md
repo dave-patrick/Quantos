@@ -144,7 +144,8 @@ Enter to open it. Tick notes (or press Space) to tag, archive or trash several a
 
 ### The sidebar
 
-The sliders button next to *Settings* customises the left sidebar: untick items to hide them, use
+Drag sidebar items to reorder them, and drag a section by its heading (Saved queries, Supertags…)
+to move the whole section. The sliders button next to *Settings* also customises the left sidebar: untick items to hide them, use
 the arrows to reorder them, and hide whole sections (Pinned views, Folders, Saved queries, Supertags,
 Vault). *Reset* brings back the standard layout. The choice is kept on this device. Everything hidden
 is still in the command palette (`Ctrl+Shift+P`).
