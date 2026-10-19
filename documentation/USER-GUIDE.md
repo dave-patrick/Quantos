@@ -215,6 +215,11 @@ own tabs, splits and scroll positions.
 - **Search** (`Ctrl+Shift+F`) matches the start of words, across every workspace or just one.
   `"exact phrase"` matches words together, `budget OR forecast` either word, `launch -draft`
   leaves out notes with *draft*. A small typo still finds close matches when nothing else does.
+- **Graph:** *Graph* in the sidebar. *Most connected* shows a workspace's best-linked notes, or the
+  notes within one or two links of a note you choose. *Everything* is the whole knowledge graph, in
+  this workspace or all of them: links from text, properties, embeds and synced blocks, bigger dots for
+  more links, coloured by workspace or type, filtered by type, and with tags as hubs if you like.
+  *Highlight* picks out matching titles. Scroll to zoom, drag to pan, hover to see a note's links.
 - **Metadata dictionary** lists every property, how it's used and which supertags define it.
 
 ---

@@ -42,12 +42,14 @@ public sealed class VaultSession : IDisposable
         Focus = new Tasks.FocusService(Writes);
         Habits = new Tasks.HabitService(Writes);
         Planning = new Tasks.PlanningService(Writes, Tasks);
+        Graph = new Structure.GraphService(Writes);
     }
 
     public Structure.FindReplaceService Replace { get; }
     public Tasks.FocusService Focus { get; }
     public Tasks.HabitService Habits { get; }
     public Tasks.PlanningService Planning { get; }
+    public Structure.GraphService Graph { get; }
 
     public Backups.BackupService Backups { get; }
 

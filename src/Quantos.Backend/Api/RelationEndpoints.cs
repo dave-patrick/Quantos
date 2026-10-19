@@ -39,6 +39,11 @@ public static class RelationEndpoints
             return new { id = node.Id, markdown = Core.Structure.SyncedBlockService.Wrap(node.Id, b.Content) };
         });
 
+        // The global knowledge graph (Release 1.2): one workspace or all, optionally with tags as hubs.
+        api.MapGet("/graph/global", (VaultHost host, HttpContext ctx, string? workspace, int? limit, bool? tags, string? types) =>
+            host.Require().Graph.Global(string.IsNullOrEmpty(workspace) ? null : workspace, limit ?? 300, tags ?? false,
+                types?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), ctx.Actor()));
+
         // Graph neighbourhood (BUILD-PLAN 8C.15): links in both directions, up to two hops out.
         api.MapGet("/graph", (VaultHost host, string? id, int? hops, string? workspace) =>
         {

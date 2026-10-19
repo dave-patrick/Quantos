@@ -832,7 +832,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 3. Dependency Gantt views. *(Built: timeline from planned/due/effort, dependency arrows with conflicts, drag and keyboard rescheduling.)*
 4. Map and location views.
 5. Adapters for agent frameworks.
-6. Global knowledge graph.
+6. Global knowledge graph. *(Built: all workspaces, every link kind, tags as hubs, type filters, colour by workspace or type, highlight.)*
 
 ### Roadmap items without an assigned release
 

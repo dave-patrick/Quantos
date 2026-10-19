@@ -4,11 +4,13 @@
   import { openNode } from '../lib/links.svelte';
   import { onMount } from 'svelte';
 
-  interface GNode { id: string; title: string; type: string; workspace: string; depth: number; x: number; y: number; vx: number; vy: number }
+  interface GNode { id: string; title: string; type: string; workspace: string; depth: number; degree?: number; x: number; y: number; vx: number; vy: number }
   interface GEdge { from: string; to: string; kind: string }
 
-  let { centerId = null, workspace = null, hops = 2, height = 420, labels = true }:
-    { centerId?: string | null; workspace?: string | null; hops?: number; height?: number; labels?: boolean } = $props();
+  let { centerId = null, workspace = null, hops = 2, height = 420, labels = true, source = null, colorBy = 'type', highlight = '', ontag }:
+    { centerId?: string | null; workspace?: string | null; hops?: number; height?: number; labels?: boolean;
+      /** A ready-made query (the global graph); otherwise the neighbourhood or workspace overview. */ source?: string | null;
+      colorBy?: 'type' | 'workspace'; highlight?: string; ontag?: (tag: string) => void } = $props();
 
   let nodes = $state<GNode[]>([]);
   let edges = $state<GEdge[]>([]);
@@ -19,14 +21,14 @@
   let timer: ReturnType<typeof setTimeout>;
 
   async function load() {
-    const q = centerId ? `graph?id=${centerId}&hops=${hops}` : `graph${workspace ? `?workspace=${workspace}` : ''}`;
+    const q = source ?? (centerId ? `graph?id=${centerId}&hops=${hops}` : `graph${workspace ? `?workspace=${workspace}` : ''}`);
     try {
       const data = await api.get<{ nodes: Omit<GNode, 'x' | 'y' | 'vx' | 'vy'>[]; edges: GEdge[] }>(q);
       const prev = new Map(nodes.map((n) => [n.id, n]));
       const placed = data.nodes.map((n, i) => {
         const p = prev.get(n.id);
         const a = (i / Math.max(1, data.nodes.length)) * Math.PI * 2;
-        const r = n.depth * 110 + 20;
+        const r = (n.depth || (source ? 1 + (i % 3) : 0)) * 110 + 20;
         return { ...n, x: p?.x ?? Math.cos(a) * r, y: p?.y ?? Math.sin(a) * r, vx: 0, vy: 0 };
       });
       simulate(placed, data.edges);
@@ -87,13 +89,20 @@
   });
 
   let fitNext = true;
-  $effect(() => { void centerId; void hops; void workspace; fitNext = true; load(); });
+  $effect(() => { void centerId; void hops; void workspace; void source; fitNext = true; load(); });
 
   const byId = $derived(new Map(nodes.map((n) => [n.id, n])));
   // Labels keep the same size on screen at any zoom; dots shrink and grow only a little.
   const inv = $derived(1 / view.k);
   const dot = $derived(1 / Math.sqrt(view.k));
   const neighbours = $derived(hovered ? new Set(edges.filter((e) => e.from === hovered || e.to === hovered).flatMap((e) => [e.from, e.to])) : null);
+  const matches = $derived(highlight.trim() ? new Set(nodes.filter((n) => n.title.toLowerCase().includes(highlight.trim().toLowerCase())).map((n) => n.id)) : null);
+  // Workspaces get colours in turn, so the same workspace keeps its colour while the view is open.
+  const palette = ['#78b6ff', '#7fd8a6', '#f4b35e', '#c49bff', '#ff8a8a', '#78d3e8', '#f4e06a', '#b8c4d6'];
+  const wsColor = $derived(new Map([...new Set(nodes.map((n) => n.workspace))].sort().map((w, i) => [w, palette[i % palette.length]])));
+  const maxDegree = $derived(Math.max(1, ...nodes.map((n) => n.degree ?? 0)));
+  const radius = (n: GNode) => (n.degree !== undefined && !centerId ? 3.5 + 7 * Math.sqrt(n.degree / maxDegree) : n.id === centerId ? 9 : n.depth === 1 ? 6 : 4.5);
+  const fill = (n: GNode) => (n.type === 'tag' ? 'var(--text-faint)' : colorBy === 'workspace' ? wsColor.get(n.workspace) ?? 'var(--accent)' : colors[n.type] ?? 'var(--accent)');
 
   let drag: { x: number; y: number } | null = null;
   function wheel(e: WheelEvent) { e.preventDefault(); view.k = Math.max(0.3, Math.min(3, view.k * (e.deltaY < 0 ? 1.1 : 0.9))); }
@@ -111,18 +120,18 @@
       {#each edges as e, i (i)}
         {@const a = byId.get(e.from)}{@const b = byId.get(e.to)}
         {#if a && b}
-          <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} class="edge {e.kind}" class:dim={neighbours && !(neighbours.has(e.from) && neighbours.has(e.to))} />
+          <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} class="edge {e.kind}" class:dim={(neighbours && !(neighbours.has(e.from) && neighbours.has(e.to))) || (matches && !(matches.has(e.from) || matches.has(e.to)))} />
         {/if}
       {/each}
       {#each nodes as n (n.id)}
-        <g class="node" class:center={n.id === centerId} class:dim={neighbours && !neighbours.has(n.id)} transform="translate({n.x},{n.y})"
+        <g class="node" class:tag={n.type === 'tag'} class:hit={matches?.has(n.id)} class:center={n.id === centerId} class:dim={(neighbours && !neighbours.has(n.id)) || (matches && !matches.has(n.id))} transform="translate({n.x},{n.y})"
           role="button" tabindex="0" aria-label={n.title}
           onpointerdown={(e) => e.stopPropagation()}
-          onclick={(e) => openNode(n.id, e.shiftKey ? 'other' : e.ctrlKey || e.metaKey ? 'new' : 'current', n.title)}
-          onkeydown={(e) => { if (e.key === 'Enter') openNode(n.id, 'current', n.title); }}
+          onclick={(e) => (n.type === 'tag' ? ontag?.(n.title) : openNode(n.id, e.shiftKey ? 'other' : e.ctrlKey || e.metaKey ? 'new' : 'current', n.title))}
+          onkeydown={(e) => { if (e.key === 'Enter') (n.type === 'tag' ? ontag?.(n.title) : openNode(n.id, 'current', n.title)); }}
           onmouseenter={() => (hovered = n.id)} onmouseleave={() => (hovered = null)}>
-          <circle r={(n.id === centerId ? 9 : n.depth === 1 ? 6 : 4.5) * dot} style="fill:{colors[n.type] ?? 'var(--accent)'}" />
-          {#if labels || n.id === hovered || n.id === centerId || n.depth <= 1}
+          <circle r={radius(n) * dot} style="fill:{fill(n)}" />
+          {#if labels || n.id === hovered || n.id === centerId || matches?.has(n.id) || (source ? (n.degree ?? 0) >= maxDegree * 0.35 : n.depth <= 1)}
             <text y={-12 * dot} text-anchor="middle" style="font-size:{(n.id === centerId ? 12.5 : 11.5) * inv}px">{n.title.length > 28 ? n.title.slice(0, 27) + '…' : n.title}</text>
           {/if}
         </g>
@@ -138,6 +147,9 @@
   .edge { stroke: var(--line-strong); stroke-width: 1.2; }
   .edge.embed { stroke-dasharray: 4 3; }
   .edge.sync { stroke: var(--ok); }
+  .edge.tag { stroke-dasharray: 2 3; opacity: .6; }
+  .node.tag text { fill: var(--text-muted); font-family: var(--font-mono); }
+  .node.hit circle { stroke: var(--warn); stroke-width: 3; }
   .node { cursor: pointer; }
   .node text { font-family: var(--font-body); fill: var(--text-soft); pointer-events: none; }
   .node.center text { fill: var(--text); font-weight: 700; }
