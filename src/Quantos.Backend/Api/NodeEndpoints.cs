@@ -14,6 +14,14 @@ public static class NodeEndpoints
         api.MapGet("/nodes", (VaultHost host, string? workspace, string? type, bool? archived) =>
             host.Require().Cache.List(workspace, type, archived ?? false));
 
+        // Adds text to the end of a note, or under a heading in it (the scratchpad's "send to" shortcuts).
+        api.MapPost("/nodes/{id}/append", (VaultHost host, HttpContext ctx, string id, AppendBody body) =>
+        {
+            if (string.IsNullOrWhiteSpace(body.Text)) throw new QuantosException("Nothing to add.");
+            var heading = string.IsNullOrWhiteSpace(body.Heading) ? null : (body.Heading.TrimStart().StartsWith('#') ? body.Heading.Trim() : "## " + body.Heading.Trim());
+            return NodeDto.From(host.Require().Writes.AppendToBody(id, body.Text.Trim(), ctx.Actor(), heading));
+        });
+
         // The notes browser: every note's first words, by id (Release 1.2 follow-up).
         api.MapGet("/nodes/excerpts", (VaultHost host) => host.Require().Cache.Excerpts());
 

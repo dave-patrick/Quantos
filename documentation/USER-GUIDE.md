@@ -290,6 +290,16 @@ Quantos backs up the vault automatically while it's running, by default once a d
 Each backup is one zip file. You can also open it with Windows Explorer and copy files out.
 You don't need to back up `client-data\cache\`; it's rebuilt automatically.
 
+### Scratchpad
+
+The scratchpad is one note for quick jotting. Open it as an always-on-top window with `Ctrl+Alt+J`
+(Windows client), or dock it in the right sidebar (its pencil tab); it's the same note in both. Keys
+move text out of it: the selection, or the paragraph the cursor is in, goes to a place and leaves the
+scratchpad. By default `Ctrl+Enter` sends to today's daily note, `Ctrl+Shift+Enter` makes a new note
+and `Ctrl+Alt+Enter` a new task; *Send to…* at the bottom lists them. Add your own in *Settings ›
+Shortcuts › Scratchpad: send to*, for example the end of a project note under an *Inbox* heading,
+each with its own keys. Editing commands such as *Convert to task* work in the scratchpad window too.
+
 ---
 
 ## 6. Windows client features
@@ -299,7 +309,7 @@ These need the Windows client; the browser labels them *Requires Windows client*
 | Feature | Default shortcut |
 |---|---|
 | Quick capture from anywhere | `Ctrl+Alt+Q` |
-| Always-on-top scratchpad | `Ctrl+Alt+J` |
+| Always-on-top scratchpad (also dockable in the right sidebar) | `Ctrl+Alt+J` |
 | Native notifications for reminders | — |
 | PowerShell terminal (left sidebar › Terminal) | — |
 

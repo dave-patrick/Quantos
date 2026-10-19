@@ -37,6 +37,7 @@ public sealed record VaultPathBody(string Path);
 public sealed record WorkspaceBody(string Name);
 
 public sealed record FolderBody(string Path);
+public sealed record AppendBody(string Text, string? Heading);
 
 public sealed record DecisionBody(bool Approve);
 

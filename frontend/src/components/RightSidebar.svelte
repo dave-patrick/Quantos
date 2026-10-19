@@ -6,6 +6,7 @@
   import InspectorPanel from './InspectorPanel.svelte';
   import NotificationsPanel from './NotificationsPanel.svelte';
   import LocalGraph from './LocalGraph.svelte';
+  import Scratchpad from './Scratchpad.svelte';
   import Icon from './Icon.svelte';
 
   const tabs: { key: RightTab; icon: string; label: string }[] = [
@@ -13,6 +14,7 @@
     { key: 'inspector', icon: 'tag', label: 'Properties' },
     { key: 'links', icon: 'link', label: 'Links' },
     { key: 'graph', icon: 'graph', label: 'Graph' },
+    { key: 'scratch', icon: 'edit', label: 'Scratchpad' },
     { key: 'notifications', icon: 'bell', label: 'Notifications' }
   ];
 
@@ -42,6 +44,7 @@
     {:else if app.rightTab === 'inspector'}<InspectorPanel />
     {:else if app.rightTab === 'links'}<LinksPanel />
     {:else if app.rightTab === 'graph'}<LocalGraph />
+    {:else if app.rightTab === 'scratch'}<Scratchpad docked />
     {:else}<NotificationsPanel />{/if}
   </div>
 </aside>

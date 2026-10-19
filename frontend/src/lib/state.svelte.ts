@@ -4,7 +4,7 @@ import type { NodeSummary, Status } from './types';
 
 export interface Toast { id: number; message: string; kind: 'info' | 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 
-export type RightTab = 'files' | 'inspector' | 'links' | 'notifications' | 'graph';
+export type RightTab = 'files' | 'inspector' | 'links' | 'notifications' | 'graph' | 'scratch';
 
 class AppState {
   status = $state<Status | null>(null);

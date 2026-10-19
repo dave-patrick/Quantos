@@ -73,10 +73,10 @@ export function shortcutConflicts(): Map<string, string[]> {
   return new Map([...byKey].filter(([, ids]) => ids.length > 1));
 }
 
-export function handleGlobalKey(e: KeyboardEvent): boolean {
+export function handleGlobalKey(e: KeyboardEvent, only?: (id: string) => boolean): boolean {
   const combo = normalizeKey(e);
   for (const c of registry.values()) {
-    if (keysFor(c.id) === combo && (!c.when || c.when())) {
+    if (keysFor(c.id) === combo && (!only || only(c.id)) && (!c.when || c.when())) {
       e.preventDefault();
       c.run();
       return true;

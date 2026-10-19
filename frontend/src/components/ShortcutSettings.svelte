@@ -5,6 +5,7 @@
   import { app } from '../lib/state.svelte';
   import { onMount } from 'svelte';
   import { clientInfo } from '../lib/client.svelte';
+  import ScratchTargets from './ScratchTargets.svelte';
 
   let recording = $state<string | null>(null);
   let filter = $state('');
@@ -74,6 +75,8 @@
 {:else}
   <p class="muted">Global capture and scratchpad shortcuts <span class="requires-windows">Requires Windows client</span></p>
 {/if}
+
+<ScratchTargets />
 
 <h3>In-app shortcuts</h3>
 {#if conflicts.size}<p class="warn">{conflicts.size} shortcut{conflicts.size === 1 ? ' is' : 's are'} used by more than one command. The first match wins; change one of them.</p>{/if}
