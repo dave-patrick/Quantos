@@ -7,6 +7,8 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Delete a task from the task list without opening it: hover the row and press the **×** at the
+  end of it. It goes to the trash, and the toast offers an undo.
 - Right-click a task in the task list to mark it done, set it to doing or waiting, give it a due
   date or a priority, open it, or move it to the trash. In a note, right-clicking a task line can
   move the task itself to the trash, or take just the line out of the note.

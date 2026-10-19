@@ -71,10 +71,11 @@ Windows-only features (below) works the same.
   ways: tick it in the note or in the task list and both change. Enter on an empty item ends the list.
   Quick-add words work on these lines too: `- [ ] Call Sam due:fri !1` keeps *Call Sam* in the note
   and puts the date and priority on the task.
-- **Delete a task:** right-click it in the task list (Tasks, My Day, the timeline) and choose *Move to
-  trash*. In a note, right-click the task line for the same thing, or *Delete this block* to take the
-  line out of the note and leave the task alone. A task in the trash can be brought back from
-  *Settings › Trash*, and the toast after deleting offers an undo.
+- **Delete a task:** hover the task in any task list and press the **×** at the end of the row — it
+  goes to the trash and the toast offers an undo. Right-clicking the task gives the same thing
+  plus marking it done, setting it to doing or waiting, a due date and a priority. In a note,
+  right-click the task line to move the task itself to the trash, or *Delete this block* to take
+  just the line out of the note. A task in the trash can be brought back from *Settings › Trash*.
 - **Embeds:** `![[Note]]` shows another note (or `![[Note#Heading]]`, `![[Note#^block]]`) inline.
 - **Synced blocks:** select text, open the command palette (`Ctrl+Shift+P`) and choose
   *Make selection a synced block*. Insert it elsewhere with *Insert synced block*. Editing any copy

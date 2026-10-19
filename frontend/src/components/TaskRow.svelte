@@ -107,6 +107,9 @@
   {#if showMyDay && !closed}
     <button class="myday" class:on={inMyDay} title={inMyDay ? 'Remove from My Day' : 'Add to My Day'} onclick={toggleMyDay}><Icon name="sun" size={14} /></button>
   {/if}
+  <button class="del" title="Move to trash" aria-label={'Move “' + task.title + '” to the trash'} onclick={trash}>
+    <Icon name="x" size={14} />
+  </button>
 </div>
 
 {#if menu}
@@ -132,5 +135,10 @@
   .myday { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; }
   .task:hover .myday, .myday.on { opacity: 1; }
   .myday.on { color: var(--warn); }
+  /* Deleting a task is one click on the row itself. It stays quiet until the row is hovered or the
+     button is reached with the keyboard. */
+  .del { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; flex: none; }
+  .task:hover .del, .del:focus-visible { opacity: 1; }
+  .del:hover { color: var(--danger); background: var(--bg-hover); }
   .compact { min-height: calc(32px * var(--d)); padding-top: calc(4px * var(--d)); padding-bottom: calc(4px * var(--d)); }
 </style>
