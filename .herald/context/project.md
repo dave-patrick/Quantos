@@ -1,23 +1,36 @@
 # Quantos: project context
 
 ## Overview
-Software project in Quantos. See existing project documentation for its purpose.
+Quantos is a local-first productivity app (notes, tasks, projects, people) that keeps everything as
+Markdown files with YAML frontmatter in a vault folder the user owns. One local backend serves a
+Svelte interface in a Windows client (WebView2) and in the browser. Published by Atomic 22 Industries.
 
-## Existing guidance
-- Read `README.md` for existing project guidance; follow directory-specific instructions where present.
+## Start here
+- `documentation/PROJECT-STATUS.md`: current state, what's built and where, unverified items, roadmap,
+  design rules, build/test/release steps. Keep it current when you finish work.
+- `BUILD-PLAN.md`: the approved plan, acceptance tests, roadmap (section 14) and decision log (section 17).
+- `CHANGELOG.md`: what each release contains.
 
-## Stack evidence
-- `BUILD-PLAN.md` is the approved plan. Release 1.0 Stages 1-7 are built; the daily-use checkpoint and laptop test are pending.
-- Planned stack: .NET 10 self-contained single-file backend (localhost only) and Windows client (WebView2); SQLite derived cache in `client-data/cache/`; TypeScript frontend with Vite, Svelte and CodeMirror 6.
-- Nodes are Markdown files with YAML frontmatter, identified by a ULID in `id`. Every vault write goes through one write service.
-- Layout: src/Quantos.Core (storage, write service, tasks, structure, export), src/Quantos.Backend (API, security), src/Quantos.Client (WinForms + WebView2), src/Quantos.Cli (CLI + MCP), frontend (Svelte), tests/Quantos.Tests (acceptance tests).
-- Build the package with `pwsh build/build.ps1`. Run tests with `dotnet test tests/Quantos.Tests`.
-- Every vault change must go through `WriteService`; never write vault files directly. Docs for formats and contracts live in documentation/.
+## Status
+- BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built; published as 0.1.x on GitHub Releases (the app updates
+  itself from there). Remaining: the unscheduled roadmap items, which need the owner's scope decision.
+
+## Stack and layout
+- .NET 10 self-contained single-file backend (127.0.0.1 only) and Windows client (WinForms + WebView2);
+  SQLite derived cache in `client-data/cache/`; TypeScript frontend with Vite, Svelte 5 and CodeMirror 6.
+- src/Quantos.Core (storage, write service, tasks, structure, AI, backups, updates, export),
+  src/Quantos.Backend (API, security), src/Quantos.Client (Windows client, updater), src/Quantos.Cli
+  (CLI + MCP + agent tool export), frontend (Svelte), tests/Quantos.Tests (xUnit), frontend/tests (Vitest).
+- Build with `pwsh build/build.ps1`; test with `dotnet test tests/Quantos.Tests` and `npx vitest run` in frontend.
 
 ## Conventions
+- Every vault change goes through `WriteService`; never write vault files directly. Store feature data
+  as plain note properties or Markdown and document new keys in documentation/STORAGE-SPEC.md.
+- Person-only actions check the actor kind; nothing uses the network unless the person asks.
+- Every user-visible change updates documentation/USER-GUIDE.md (also shown in the in-app Help).
 - Preserve existing project instructions, configuration, credentials, and application data.
 - Use Graft for code context when available, following the global and project Graft guidance.
-- Keep this context accurate as project architecture and conventions are established.
 - Herald compiler output replaces vendor files. Preserve and merge existing guidance before compiling.
-
-- Public landing pages use dark app-specific compositions with real approved brand assets; shared Atomic 22 navigation links to the blue Notes directory. Publish only site/ via GitHub Pages. Never serve or publish private workspace data.
+- Public landing pages use dark app-specific compositions with real approved brand assets; shared Atomic 22
+  navigation links to the blue Notes directory. Publish only site/ via GitHub Pages. Never serve or
+  publish private workspace data.

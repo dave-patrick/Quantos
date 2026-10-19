@@ -1,7 +1,7 @@
 version: "1.0"
 project:
   name: "Quantos"
-  description: "Software project in Quantos. See existing project documentation for its purpose."
+  description: "Local-first notes, tasks and projects app over a Markdown vault (.NET 10 backend, Svelte frontend, WebView2 Windows client)."
 layers:
   context: true
   skills: false

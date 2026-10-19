@@ -1,6 +1,6 @@
 # Quantos
 
-**[Visit the Quantos website →](https://dave-patrick.github.io/Quantos/)** · [Build plan](BUILD-PLAN.md) · [All Atomic 22 apps](https://dave-patrick.github.io/JetPane/apps/)
+**[Visit the Quantos website →](https://dave-patrick.github.io/Quantos/)** · [Download](https://github.com/dave-patrick/Quantos/releases/latest) · [Build plan](BUILD-PLAN.md) · [Changelog](CHANGELOG.md) · [Project status](documentation/PROJECT-STATUS.md) · [All Atomic 22 apps](https://dave-patrick.github.io/JetPane/apps/)
 
 Published by **Atomic 22 Industries**.
 
@@ -10,9 +10,13 @@ client and in your browser.
 
 ## Project status
 
-Release 1.0 is built to the [build plan](BUILD-PLAN.md), Stages 1–7. It hasn't been released yet:
-the plan's daily-use checkpoint (a week of real use) and the test on the target laptop come first.
-See [documentation/RELEASE-CHECKLIST.md](documentation/RELEASE-CHECKLIST.md).
+Releases 1.0, 1.1 and 1.2 of the [build plan](BUILD-PLAN.md) are built, and the app is published on
+[GitHub Releases](https://github.com/dave-patrick/Quantos/releases) (latest: 0.1.4; it updates itself from
+*Settings › Updates*). What's left is the plan's unscheduled roadmap (importing, hosting, accounts, sync).
+
+**Picking up work (people and agents):** start with [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md):
+what's built and where, what isn't verified yet, the roadmap, the design rules, how to build, test and
+release. [CHANGELOG.md](CHANGELOG.md) has the per-release changes.
 
 ## Repository layout
 
@@ -25,9 +29,10 @@ See [documentation/RELEASE-CHECKLIST.md](documentation/RELEASE-CHECKLIST.md).
 | `frontend` | TypeScript, Svelte and CodeMirror 6 interface shared by both clients |
 | `tests/Quantos.Tests` | Acceptance tests from BUILD-PLAN section 13 |
 | `examples/Example Vault` | Sample vault shipped in the package |
-| `documentation` | Storage spec, security model, API, user guide, troubleshooting, CLI reference, performance, release checklist |
+| `documentation` | Project status and handoff, storage spec, security model, API, user guide, troubleshooting, CLI reference, agent adapters, plugins, performance, release checklist |
 | `site` | Public website (GitHub Pages) |
 | `brand` | Locked wordmark and icon |
+| `examples/agents` | Python helper for agent frameworks that call tools themselves |
 
 ## Building
 

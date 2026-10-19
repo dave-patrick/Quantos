@@ -961,6 +961,21 @@ separately approved; review them during the daily-use checkpoint.
 | The Windows client restarts a backend that stops unexpectedly (at most three times in ten minutes) and signs its windows back in | Implemented |
 | The backend re-reads the computer's time zone every 30 seconds, so a zone change applies without a restart | Implemented |
 | The calendar file holds events, not to-dos (Outlook and Google ignore to-dos): open dated tasks are free all-day entries, time blocks are timed | Implemented |
+
+### Decisions after Release 1.2 (from use; see CHANGELOG.md and documentation/PROJECT-STATUS.md)
+
+| Decision | Status |
+|---|---|
+| Product versions are 0.1.x, separate from plan release names; 0.1.1 was the first public release (Releases 1.0 to 1.2) | Implemented |
+| Updates: GitHub Releases is the source; checked only on request or daily if the person turns it on; a download is used only if it matches GitHub's SHA-256 digest; only `application\*` is unpacked; the Windows client swaps the program files (old ones kept as `*.old` until the new version starts) and restarts | Implemented |
+| Single-file executables are not compressed (about 0.45 s faster start per program; the zip stays the same size) | Implemented |
+| Theming is a per-device "look" (background, text, accent, fonts, size) from which the palette is derived with enforced contrast; a look can be saved to the vault as a theme file | Implemented |
+| Whiteboards are notes with `type: canvas` holding a JSON Canvas block; note cards keep the note id as well as the path | Implemented |
+| Mind-map annotations are Markdown footnotes; focus sessions are lines under `## Focus` in daily notes; habits are daily-note properties | Implemented |
+| The map ships its own data (Natural Earth via world-atlas) and fetches nothing; locations are `location: "lat, lng"` and a few other shapes | Implemented |
+| Agent frameworks use the MCP server where they support it; others use `quantos-cli tools`/`call` under the agent's grants | Implemented |
+| Completing a task completes its open subtasks; reopening it doesn't reopen them | Implemented |
+| The scratchpad is one note, shown as a pop-up window or docked in the right sidebar; send-to keys move text out of it | Implemented |
 ---
 
 ## Final build direction
