@@ -817,7 +817,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 7. Read-only mode. *(Built: per-note lock enforced by the write service, and reading mode per device.)*
 8. Custom styling. *(Built.)*
 9. CSV import and export for tables. *(Built.)*
-10. Focus timer and work-session tracking.
+10. Focus timer and work-session tracking. *(Built: sessions in the daily note and the task's `time_spent`, totals per day and task.)*
 11. Math rendering. *(Built.)*
 12. Sprint and iteration planning.
 13. Goal rollups and status analytics.

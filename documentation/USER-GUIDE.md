@@ -130,6 +130,13 @@ own tabs, splits and scroll positions.
   - `!1` to `!4` priority (coloured strip), `due:` deadline, `@tomorrow` or `plan:` planned day,
     `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month`,
     `!myday`. The same words work in task lines in notes and in quick capture to a task.
+- **Focus timer:** *Focus* in the sidebar (`Ctrl+Alt+F`), or *Focus on this task* in a task's `⋮`
+  menu. Pick a task (or just say what it's for) and a length; the time left shows in the status bar
+  and the window title. When it ends you hear a short tone and can take a break. Each session is
+  written to that day's daily note under **## Focus** and added to the task's `time_spent` (minutes).
+  Stopping early still logs the minutes done. The Focus view shows today's sessions and totals per
+  day and per task for the last week or month, read from those daily notes, so editing a line there
+  changes the totals too.
 - **My Day:** pick what you'll do today. Tasks planned for earlier days can be moved to today with
   one click. This changes the **planned** date only; due dates never move by themselves.
 - **Recurring tasks:** each occurrence is a separate task with its own history. The next one is
@@ -284,6 +291,7 @@ approval in the Windows client.
 | Reading mode on / off | `Ctrl+Alt+R` |
 | Find and replace across notes | `Ctrl+Shift+H` |
 | Present the open note as slides | `Ctrl+Alt+P` |
+| Focus timer | `Ctrl+Alt+F` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

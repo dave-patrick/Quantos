@@ -106,6 +106,7 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 | `completed` | datetime the task was completed |
 | `source` | id of the note the task was created from |
 | `time_block` | `{start: datetime, end: datetime}` for the timeline |
+| `time_spent` | Minutes of logged focus sessions (Release 1.1); each session is also a line under `## Focus` in the daily note: `- 09:00–09:25 · 25 min · [[id|Task]]` |
 | `tz` | Time zone used for `due`/`planned`/reminders. New files use the IANA name (`America/Phoenix`); Windows names in older files remain valid. |
 
 ## 3. Inline references

@@ -6,6 +6,7 @@ import { openNode } from './links.svelte';
 import { app } from './state.svelte';
 import { prefs } from './prefs.svelte';
 import { presenter } from './present.svelte';
+import { focus } from './focus.svelte';
 import type { NodeDto } from './types';
 
 export interface Command {
@@ -107,6 +108,8 @@ register(
   { id: 'trash.open', title: 'Open trash', group: 'Navigate', icon: 'trash', run: () => layout.open({ kind: 'trash', title: 'Trash' }) },
   { id: 'diagnostics.open', title: 'Vault diagnostics', group: 'Vault', icon: 'activity', run: () => layout.open({ kind: 'diagnostics', title: 'Vault diagnostics' }) },
   { id: 'view.present', title: 'Present this note as slides', group: 'View', keys: 'Mod+Alt+P', icon: 'play', run: () => { const t = layout.activeTab; const d = t?.nodeId ? docs.peek(t.nodeId) : undefined; if (d?.node) presenter.open(d.node.title, d.body); else app.toast('Open a note to present it.', 'info'); } },
+  { id: 'focus.open', title: 'Focus timer', group: 'Navigate', keys: 'Mod+Alt+F', icon: 'timer', run: () => layout.open({ kind: 'focus', title: 'Focus' }, 'current') },
+  { id: 'focus.stop', title: 'Stop focus timer', group: 'View', icon: 'timer', when: () => !!focus.running, run: () => focus.stop() },
   { id: 'view.reading', title: 'Reading mode (no editing)', group: 'View', keys: 'Mod+Alt+R', icon: 'book', run: () => { prefs.reading = !prefs.reading; app.toast(prefs.reading ? 'Reading mode: notes are read-only until you turn it off (Ctrl+Alt+R).' : 'Reading mode off.', 'info'); } },
   { id: 'settings.open', title: 'Settings', group: 'App', keys: 'Mod+,', icon: 'settings', run: () => layout.open({ kind: 'settings', title: 'Settings' }) },
   { id: 'nav.back', title: 'Go back', group: 'Navigate', keys: 'Alt+ArrowLeft', icon: 'arrow-left', run: () => layout.back() },

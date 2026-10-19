@@ -5,6 +5,7 @@
   import { isWindowsClient } from '../lib/platform';
   import { notifications } from '../lib/notifications.svelte';
   import { prefs } from '../lib/prefs.svelte';
+  import { focus, clock } from '../lib/focus.svelte';
   import Icon from './Icon.svelte';
 
   const activeDoc = $derived(layout.activeTab?.nodeId ? docs.peek(layout.activeTab.nodeId) : undefined);
@@ -23,6 +24,10 @@
   {/if}
   {#if activeDoc?.node?.locked}<span class="item"><Icon name="lock" size={12} /> Locked</span>{/if}
   <span class="spacer"></span>
+  {#if focus.running}
+    <button class="item link" class:brk={focus.running.phase === 'break'} title="Open Focus" onclick={() => layout.open({ kind: 'focus', title: 'Focus' }, 'current')}><Icon name="timer" size={12} /> {clock(focus.remaining)}{focus.running.title ? ` · ${focus.running.title.length > 28 ? focus.running.title.slice(0, 27) + '…' : focus.running.title}` : ''}</button>
+    <button class="item link stop" title={focus.running.phase === 'break' ? 'End break' : 'Stop and log'} aria-label="Stop focus timer" onclick={() => focus.stop()}>■</button>
+  {/if}
   {#if prefs.reading}
     <button class="item link" title="Notes are read-only on this device. Click (or Ctrl+Alt+R) to edit again." onclick={() => (prefs.reading = false)}><Icon name="book" size={12} /> Reading mode</button>
   {/if}
@@ -41,6 +46,8 @@
   .spacer { flex: 1; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
   .conn.off .dot { background: var(--warn); animation: pulse 1s infinite alternate; }
+  .link.brk { color: var(--ok); }
+  .stop { padding: 0 6px 0 0; }
   .link { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; height: 100%; }
   @keyframes pulse { to { opacity: .3; } }
 </style>

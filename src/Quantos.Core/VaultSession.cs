@@ -39,9 +39,11 @@ public sealed class VaultSession : IDisposable
         Ai = new Ai.AiService(Writes, paths.Settings, paths.Cache);
         Backups = new Backups.BackupService(Writes, paths.Settings, Path.Combine(paths.ClientData, "backups"));
         Replace = new Structure.FindReplaceService(Writes);
+        Focus = new Tasks.FocusService(Writes);
     }
 
     public Structure.FindReplaceService Replace { get; }
+    public Tasks.FocusService Focus { get; }
 
     public Backups.BackupService Backups { get; }
 
