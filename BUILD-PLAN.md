@@ -812,7 +812,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 2. Audio recording and playback.
 3. Habit and metric tracking.
 4. Presentation mode.
-5. Detailed comparison between revisions.
+5. Detailed comparison between revisions. *(Built: any version against now or its predecessor, word-level, side by side, properties apart.)*
 6. Mermaid diagrams. *(Built.)*
 7. Read-only mode. *(Built: per-note lock enforced by the write service, and reading mode per device.)*
 8. Custom styling. *(Built.)*

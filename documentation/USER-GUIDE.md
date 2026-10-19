@@ -171,7 +171,11 @@ own tabs, splits and scroll positions.
 ## 5. Files, history and recovery
 
 - **History:** every saved version is kept (`.history` in the vault). Open it from the clock button
-  on any note, compare with the current version, and restore.
+  on any note and pick a version. *Since then* shows what changed from it to now; *Made in this
+  version* shows what that save changed. Changed words are marked inside each line, property changes
+  are listed in their own table, unchanged stretches fold away, and the arrows jump between changes.
+  *Side by side* puts the two versions next to each other. *Restore this version* brings it back,
+  keeping the current text in history.
 - **Trash:** never empties itself. Restore puts a note back where it was, or under a new name if the
   old one is taken. Permanent deletion always asks for confirmation in the Windows client.
 - **Editing outside Quantos:** fine. Quantos notices within a moment. If you also had unsaved changes
