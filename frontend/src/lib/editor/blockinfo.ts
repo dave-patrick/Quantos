@@ -31,24 +31,52 @@ const TASK = /^(\s*)([-*+]|\d+[.)])\s+\[([ xX])\](\s+|$)(.*?)(\s*<!--task:([0-9A
 const HEADING = /^(\s*)(#{1,6})\s+(.*)$/;
 const LIST = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
 const QUOTE = /^(\s*)(>.*)$/;
+const FENCE = /^\s*(```+|~~~+)\s*(\S+)?/;
+
+/**
+ * The code block a position is in, found by scanning the fences. The Markdown parser is used when
+ * it is there; the scan keeps this working in plain text too.
+ */
+function fenceAt(state: EditorState, pos: number): { from: number; to: number; language: string } | null {
+  const trees: { from: number; to: number }[] = [];
+  syntaxTree(state).iterate({
+    enter(node) {
+      if (node.name === 'FencedCode' && node.from <= pos && pos <= node.to) trees.push({ from: node.from, to: node.to });
+      return false;
+    }
+  });
+  if (trees[0]) {
+    const first = state.doc.lineAt(trees[0].from);
+    const language = FENCE.exec(first.text)?.[2] ?? '';
+    return { from: trees[0].from, to: trees[0].to, language };
+  }
+
+  // No parser here: find the fence by hand.
+  let open: { line: number; language: string } | null = null;
+  for (let n = 1; n <= state.doc.lines; n++) {
+    const m = FENCE.exec(state.doc.line(n).text);
+    if (!m) continue;
+    if (open === null) {
+      open = { line: n, language: m[2] ?? '' };
+      continue;
+    }
+    const from = state.doc.line(open.line).from;
+    const to = state.doc.line(n).to;
+    if (pos >= from && pos <= to) return { from, to, language: open.language };
+    open = null;
+  }
+  return null;
+}
 
 /** The block at a position: the line it is on, or the whole code block it sits in. */
 export function blockAt(state: EditorState, pos: number): BlockInfo {
   const line = state.doc.lineAt(pos);
 
   // A fenced code block: the whole fence is the block, whatever line the pointer is on.
-  const fences: { from: number; to: number }[] = [];
-  syntaxTree(state).iterate({
-    enter(node) {
-      if (node.name === 'FencedCode' && node.from <= pos && pos <= node.to) fences.push({ from: node.from, to: node.to });
-      return false;
-    }
-  });
-  const fence = fences[0];
+  const fence = fenceAt(state, pos);
   if (fence) {
     const first = state.doc.lineAt(fence.from);
     const last = state.doc.lineAt(fence.to);
-    const info = /^\s*(?:```|~~~)\s*(\w+)?/.exec(first.text);
     return {
       kind: 'code',
       from: first.to + 1,
@@ -57,7 +85,7 @@ export function blockAt(state: EditorState, pos: number): BlockInfo {
       lineTo: last.to,
       text: state.doc.sliceString(first.to + 1, Math.max(first.to + 1, last.from - 1)),
       marker: first.text.slice(0, first.text.length - first.text.trimStart().length) + '```',
-      language: info?.[1] ?? ''
+      language: fence.language
     };
   }
 
