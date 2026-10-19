@@ -8,6 +8,7 @@ import { ai, aiJob } from './ai.svelte';
 import { layout } from './layout.svelte';
 import type { NodeDto } from './types';
 import type { EditorView } from '@codemirror/view';
+import { toTaskLines } from './totask';
 
 /**
  * Puts a block on its own lines after the cursor's line, selects `placeholder` inside it so typing
@@ -34,6 +35,21 @@ function editorOrHint() {
   const view = activeEditor.view;
   if (!view?.dom.isConnected) { app.toast('Click into a note first, then run the command again.', 'info'); return null; }
   return view;
+}
+
+/** Turns the current line, or every line the selection touches, into task lines. */
+function convertToTasks() {
+  const view = editorOrHint();
+  if (!view) return;
+  const { state } = view;
+  if (state.readOnly) { app.toast('This note is read-only.', 'info'); return; }
+  const sel = state.selection.main;
+  const from = state.doc.lineAt(sel.from).from, to = state.doc.lineAt(sel.to).to;
+  const { text, changed } = toTaskLines(state.sliceDoc(from, to));
+  if (!changed) { app.toast('Already tasks (or nothing to convert).', 'info'); return; }
+  view.dispatch({ changes: { from, to, insert: text }, selection: { anchor: from + text.length }, userEvent: 'input' });
+  view.focus();
+  app.toast(changed === 1 ? 'Converted to a task.' : `Converted ${changed} lines to tasks.`, 'ok');
 }
 
 async function extract(embed: boolean) {
@@ -90,6 +106,7 @@ async function embedSelection() {
 }
 
 register(
+  { id: 'edit.totask', title: 'Convert to task (line or selected lines)', group: 'Edit', keys: 'Mod+Alt+T', icon: 'check-square', run: convertToTasks },
   { id: 'edit.extract', title: 'Extract selection to a new note (link)', group: 'Edit', keys: 'Mod+Alt+E', icon: 'file', run: () => extract(false) },
   { id: 'edit.extract.embed', title: 'Extract selection to a new note (embed)', group: 'Edit', icon: 'layers', run: () => extract(true) },
   { id: 'edit.synced', title: 'Make selection a synced block', group: 'Edit', icon: 'refresh', run: makeSynced },

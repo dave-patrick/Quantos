@@ -8,6 +8,7 @@
   import { terminal } from '../lib/terminal.svelte';
   import { capture } from '../lib/capture.svelte';
   import Icon from './Icon.svelte';
+  import { prefs } from '../lib/prefs.svelte';
   import { api } from '../lib/api';
   import { onChange } from '../lib/events';
   import type { TreeFolder } from '../lib/types';
@@ -55,6 +56,30 @@
     { kind: 'trash', label: 'Trash', icon: 'trash' }
   ];
 
+  // The top list can be reordered and trimmed, and whole sections hidden (per device, in prefs).
+  type NavItem = { key: string; label: string; icon: string; kind?: TabKind };
+  const allItems: NavItem[] = [...nav.map((n) => ({ key: n.kind, ...n })), { key: 'capture', label: 'Quick capture', icon: 'inbox' }, { key: 'terminal', label: 'Terminal', icon: 'terminal' }];
+  const sections = [{ key: 'pinned', label: 'Pinned views' }, { key: 'folders', label: 'Folders' }, { key: 'queries', label: 'Saved queries' }, { key: 'tags', label: 'Supertags' }, { key: 'tools', label: 'Vault' }];
+  const ordered = $derived.by(() => {
+    const rank = (k: string) => { const i = prefs.sidebarOrder.indexOf(k); return i < 0 ? 1000 + allItems.findIndex((x) => x.key === k) : i; };
+    return [...allItems].sort((a, b) => rank(a.key) - rank(b.key));
+  });
+  const shownItems = $derived(ordered.filter((i) => !prefs.sidebarHidden.includes(i.key)));
+  const showSection = (k: string) => !prefs.sidebarHidden.includes('section:' + k);
+  let customizing = $state(false);
+
+  function toggle(key: string) {
+    prefs.sidebarHidden = prefs.sidebarHidden.includes(key) ? prefs.sidebarHidden.filter((k) => k !== key) : [...prefs.sidebarHidden, key];
+  }
+  function move(key: string, by: number) {
+    const keys = ordered.map((i) => i.key);
+    const i = keys.indexOf(key), j = i + by;
+    if (j < 0 || j >= keys.length) return;
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+    prefs.sidebarOrder = keys;
+  }
+  function reset() { prefs.sidebarHidden = []; prefs.sidebarOrder = []; }
+
   let collapsed = $state<Record<string, boolean>>({});
   const isActive = (kind: TabKind, arg?: string) => layout.activeTab?.kind === kind && (arg === undefined || layout.activeTab?.arg === arg);
 
@@ -65,21 +90,41 @@
 
 <aside class="sidebar" aria-label="Navigation">
   <div class="scroll body">
+    {#if customizing}
+      <section class="custom" aria-label="Customise the sidebar">
+        <p class="hint">Tick what to show; arrows change the order. Saved on this device.</p>
+        {#each ordered as item, i (item.key)}
+          <div class="crow">
+            <label><input type="checkbox" checked={!prefs.sidebarHidden.includes(item.key)} onchange={() => toggle(item.key)} /> <Icon name={item.icon} size={14} /> {item.label}</label>
+            <button class="icon-btn" aria-label={'Move ' + item.label + ' up'} disabled={i === 0} onclick={() => move(item.key, -1)}><Icon name="arrow-up" size={12} /></button>
+            <button class="icon-btn" aria-label={'Move ' + item.label + ' down'} disabled={i === ordered.length - 1} onclick={() => move(item.key, 1)}><Icon name="arrow-down" size={12} /></button>
+          </div>
+        {/each}
+        <p class="hint">Sections</p>
+        {#each sections as sec (sec.key)}
+          <div class="crow"><label><input type="checkbox" checked={showSection(sec.key)} onchange={() => toggle('section:' + sec.key)} /> {sec.label}</label></div>
+        {/each}
+        <div class="cbtns"><button class="btn primary" onclick={() => (customizing = false)}>Done</button><button class="btn ghost" onclick={reset}>Reset</button></div>
+      </section>
+    {:else}
     <section>
-      {#each nav as item (item.kind)}
-        <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind, item.label)}>
-          <Icon name={item.icon} size={15} /> <span>{item.label}</span>
-        </button>
+      {#each shownItems as item (item.key)}
+        {#if item.kind}
+          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)}>
+            <Icon name={item.icon} size={15} /> <span>{item.label}</span>
+          </button>
+        {:else if item.key === 'capture'}
+          <button class="item" onclick={() => capture.show()}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
+        {:else if isWindowsClient}
+          <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
+        {:else}
+          <div class="item disabled" title="The PowerShell terminal runs in the Windows client only."><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>
+        {/if}
       {/each}
-      <button class="item" onclick={() => capture.show()}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
-      {#if isWindowsClient}
-        <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
-      {:else}
-        <div class="item disabled" title="The PowerShell terminal runs in the Windows client only."><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>
-      {/if}
     </section>
+    {/if}
 
-    {#if views.pinned.length}
+    {#if views.pinned.length && showSection('pinned')}
       <section>
         <button class="heading" onclick={() => (collapsed.pinned = !collapsed.pinned)}>
           <Icon name={collapsed.pinned ? 'chevron-right' : 'chevron-down'} size={12} /> Pinned views
@@ -94,7 +139,7 @@
       </section>
     {/if}
 
-    {#if folders.length || views.saved.some((v) => v.virtualFolder)}
+    {#if (folders.length || views.saved.some((v) => v.virtualFolder)) && showSection('folders')}
       <section>
         <button class="heading" onclick={() => (collapsed.folders = !collapsed.folders)}>
           <Icon name={collapsed.folders ? 'chevron-right' : 'chevron-down'} size={12} /> Folders
@@ -115,6 +160,7 @@
       </section>
     {/if}
 
+    {#if showSection('queries')}
     <section>
       <button class="heading" onclick={() => (collapsed.queries = !collapsed.queries)}>
         <Icon name={collapsed.queries ? 'chevron-right' : 'chevron-down'} size={12} /> Saved queries
@@ -128,7 +174,9 @@
         <button class="item add" onclick={(e) => open(e, 'view', 'New view', 'new')}><Icon name="plus" size={14} /> <span>New view</span></button>
       {/if}
     </section>
+    {/if}
 
+    {#if showSection('tags')}
     <section>
       <button class="heading" onclick={() => (collapsed.tags = !collapsed.tags)}>
         <Icon name={collapsed.tags ? 'chevron-right' : 'chevron-down'} size={12} /> Supertags
@@ -144,7 +192,9 @@
         <button class="item add" onclick={(e) => open(e, 'supertags', 'Supertags', '')}><Icon name="hash" size={14} /> <span>Manage supertags</span></button>
       {/if}
     </section>
+    {/if}
 
+    {#if showSection('tools')}
     <section>
       <button class="heading" onclick={() => (collapsed.tools = !collapsed.tools)}>
         <Icon name={collapsed.tools ? 'chevron-right' : 'chevron-down'} size={12} /> Vault
@@ -157,9 +207,11 @@
         {/each}
       {/if}
     </section>
+    {/if}
   </div>
   <footer>
     <button class="item" onclick={(e) => open(e, 'settings', 'Settings')}><Icon name="settings" size={15} /> <span>Settings</span></button>
+    <button class="icon-btn" title="Customise the sidebar" aria-label="Customise the sidebar" aria-pressed={customizing} onclick={() => (customizing = !customizing)}><Icon name="sliders" size={15} /></button>
   </footer>
 </aside>
 
@@ -178,5 +230,11 @@
   .item.disabled:hover { background: none; }
   .swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
   .count { font: 11px var(--font-mono); color: var(--text-faint); }
-  footer { padding: 8px; border-top: 1px solid var(--line); }
+  footer { padding: 8px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 4px; }
+  .custom { gap: 2px; }
+  .hint { font-size: 12px; color: var(--text-faint); margin: 2px 8px 6px; }
+  .crow { display: flex; align-items: center; gap: 2px; padding: 0 4px 0 8px; border-radius: 6px; }
+  .crow:hover { background: var(--bg-hover); }
+  .crow label { flex: 1; display: flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--text-soft); padding: 4px 0; min-width: 0; cursor: pointer; }
+  .cbtns { display: flex; gap: 6px; margin: 8px 8px 0; }
 </style>

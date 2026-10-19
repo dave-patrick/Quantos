@@ -45,9 +45,17 @@
         if (day && !day.node && e.id) api.get<NodeDto>(`nodes/${e.id}`).then((n) => (day.node = n)).catch(() => {});
       }
     });
+    // A daily note created in another window (quick capture) appears here even if its live update was missed.
+    const findNew = () => {
+      if (document.visibilityState !== 'visible') return;
+      for (const day of days.filter((d) => !d.node && d.date <= currentToday && d.date >= addDays(currentToday, -1)))
+        api.get<NodeDto>(`daily/${workspace}/${day.date}`).then((n) => { if (!day.node) day.node = n; }).catch(() => {});
+    };
+    addEventListener('focus', findNew);
+    document.addEventListener('visibilitychange', findNew);
     const io = new IntersectionObserver((entries) => { if (entries.some((x) => x.isIntersecting)) more(); }, { rootMargin: '600px' });
     const t = setInterval(() => { if (sentinel) { io.observe(sentinel); clearInterval(t); } }, 100);
-    return () => { off(); io.disconnect(); clearInterval(t); };
+    return () => { off(); io.disconnect(); clearInterval(t); removeEventListener('focus', findNew); document.removeEventListener('visibilitychange', findNew); };
   });
 
   // Keep editing past midnight: the new day appears without losing the open entry.

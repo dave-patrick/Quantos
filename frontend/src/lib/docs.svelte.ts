@@ -344,6 +344,18 @@ class DocStore {
   constructor() {
     // Back online: retry saves that failed while the backend was away.
     connection.listeners.add((connected) => { if (connected) for (const d of this.docs.values()) d.retryNow(); });
+    // Coming back to the window, open notes check their files: a change made in another window (the quick
+    // capture pop-up, say) shows even if its live update was missed. Unsaved edits merge as usual.
+    if (typeof window !== 'undefined') {
+      let last = 0;
+      const check = () => {
+        if (document.visibilityState !== 'visible' || Date.now() - last < 1500) return;
+        last = Date.now();
+        for (const d of this.docs.values()) if (d.node && d.status !== 'loading' && d.status !== 'conflict') d.refresh().catch(() => {});
+      };
+      addEventListener('focus', check);
+      document.addEventListener('visibilitychange', check);
+    }
     // Drafts of notes that never reopened (deleted meanwhile, say) don't pile up: drop ones older than 30 days.
     try {
       for (const key of Object.keys(localStorage).filter((k) => k.startsWith(DRAFT))) {

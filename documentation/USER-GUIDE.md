@@ -58,6 +58,8 @@ Windows-only features (below) works the same.
   your browser. Paste a web address over selected words to link them. Links to stored files read
   as their names the same way.
 - **Shift-click** a link to open it in the other pane. `Ctrl`-click opens a new tab.
+- **Convert to task:** `Ctrl+Alt+T` turns the line you're on (or every selected line) into a task,
+  whether it's plain text, a list item, a heading or a quote.
 - **Tasks:** type `- [ ] Something to do` in any note. It becomes a real task, kept in sync both
   ways: tick it in the note or in the task list and both change. Enter on an empty item ends the list.
   Quick-add words work on these lines too: `- [ ] Call Sam due:fri !1` keeps *Call Sam* in the note
@@ -132,6 +134,13 @@ Windows-only features (below) works the same.
 
 The **Daily stream** shows today's note at the top, with earlier days below. Days with nothing
 written collapse. Quick capture adds to today's note without disturbing what you're typing.
+
+### The sidebar
+
+The sliders button next to *Settings* customises the left sidebar: untick items to hide them, use
+the arrows to reorder them, and hide whole sections (Pinned views, Folders, Saved queries, Supertags,
+Vault). *Reset* brings back the standard layout. The choice is kept on this device. Everything hidden
+is still in the command palette (`Ctrl+Shift+P`).
 
 ### Tabs and panes
 
@@ -344,6 +353,7 @@ approval in the Windows client.
 | Present the open note as slides | `Ctrl+Alt+P` |
 | Focus timer | `Ctrl+Alt+F` |
 | Record audio / stop | `Ctrl+Alt+A` |
+| Convert line or selection to tasks | `Ctrl+Alt+T` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |
