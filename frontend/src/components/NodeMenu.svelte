@@ -7,6 +7,7 @@
   import type { NodeDto, TreeFolder } from '../lib/types';
   import Icon from './Icon.svelte';
   import { templatesStore } from '../lib/templates.svelte';
+  import { presenter } from '../lib/present.svelte';
 
   let { doc, paneIndex, oncopymd, oncopyrich }: { doc: Doc; paneIndex: number; oncopymd: () => void; oncopyrich: () => void } = $props();
   let open = $state(false);
@@ -138,6 +139,7 @@
         {/each}
       {:else}
         <button role="menuitem" onclick={() => { open = false; layout.open({ kind: 'node', nodeId: doc.id, title: doc.node?.title }, paneIndex === 0 ? 'other' : 'other'); }}><Icon name="split" size={14} /> Open in other pane</button>
+        <button role="menuitem" onclick={() => { open = false; presenter.open(doc.node?.title ?? '', doc.body); }}><Icon name="play" size={14} /> Present</button>
         <button role="menuitem" onclick={() => { open = false; oncopymd(); }}><Icon name="copy" size={14} /> Copy as Markdown</button>
         <button role="menuitem" onclick={() => { open = false; oncopyrich(); }}><Icon name="copy" size={14} /> Copy as rich text</button>
         <button role="menuitem" onclick={setTarget}><Icon name="target" size={14} /> Writing target…</button>

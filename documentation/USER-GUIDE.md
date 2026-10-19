@@ -96,6 +96,10 @@ Windows-only features (below) works the same.
   (regular expressions, with `$1` for a captured group) are options. Properties, links and task
   markers are never changed, and locked notes are skipped. *Undo* in the message afterwards puts the
   notes back (any you've edited since keep your newer text), and each note's history has its old text.
+- **Presenting:** *Present* in a note's `⋮` menu (or `Ctrl+Alt+P`) shows it full screen as slides. A
+  `---` line with a blank line above it starts a new slide; a note without any is split at its `#` and
+  `##` headings. Lines after a `Notes:` line are speaker notes: press `N` to see them. Arrows, Space
+  or a click move on, `F` toggles full screen, `Esc` ends. Math, diagrams and images show as in the note.
 - **Saving** is automatic. If a save fails (the backend restarting, say), Quantos keeps trying, and keeps
   a copy of the unsaved text in the browser until it's saved, restoring it the next time the note opens.
   If the backend stops unexpectedly, the Windows client starts it again within a few seconds and signs
@@ -279,6 +283,7 @@ approval in the Windows client.
 | Ask your notes (AI) | `Ctrl+Shift+K` |
 | Reading mode on / off | `Ctrl+Alt+R` |
 | Find and replace across notes | `Ctrl+Shift+H` |
+| Present the open note as slides | `Ctrl+Alt+P` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

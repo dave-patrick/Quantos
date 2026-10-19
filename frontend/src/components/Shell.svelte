@@ -13,6 +13,7 @@
   import CommandPalette from './CommandPalette.svelte';
   import Toasts from './Toasts.svelte';
   import Dialog from './Dialog.svelte';
+  import Presentation from './Presentation.svelte';
   import Ask from './Ask.svelte';
   import AiResult from './AiResult.svelte';
   import { aiJob } from '../lib/ai.svelte';
@@ -49,6 +50,7 @@
 <CaptureDialog />
 <Toasts />
 <Dialog />
+<Presentation />
 <Ask />
 <AiResult />
 
