@@ -39,7 +39,7 @@ Step 'Publish'
 if (Test-Path $pkg) { Remove-Item -LiteralPath $pkg -Recurse -Force }
 New-Item -ItemType Directory -Force $app | Out-Null
 $common = @('-c', 'Release', '-r', $Runtime, '--self-contained', 'true', '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true',
-            '-p:EnableCompressionInSingleFile=true', '-p:DebugType=none', "-p:Version=$Version", '--nologo', '-o', $app)
+            '-p:EnableCompressionInSingleFile=false', '-p:DebugType=none', "-p:Version=$Version", '--nologo', '-o', $app)
 foreach ($project in 'src/Quantos.Backend', 'src/Quantos.Client', 'src/Quantos.Cli') {
     dotnet publish $project @common | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "Publish failed: $project" }

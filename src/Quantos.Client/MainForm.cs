@@ -95,13 +95,29 @@ public sealed class MainForm : Form
         base.OnLoad(e);
         try
         {
+            // The backend and the page's browser engine start at the same time; each takes a moment on a cold start.
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            Directory.CreateDirectory(_paths.WebView2);
+            // Started on the UI thread (WebView2 wants that) but not awaited yet, so it runs alongside the backend start.
+            var webview = CreateEnvironment();
+            async Task<(CoreWebView2Environment env, long ms)> CreateEnvironment()
+            {
+                var env = await CoreWebView2Environment.CreateAsync(null, _paths.WebView2);
+                return (env, clock.ElapsedMilliseconds);
+            }
             _backend = await BackendConnection.ConnectAsync(_paths, s => _status.Text = s);
+            var backendMs = clock.ElapsedMilliseconds;
             // Up and running on this version: the files an update replaced, and finished downloads, can go.
             Updater.CleanUp(_paths);
             _status.Text = "Opening…";
-            Directory.CreateDirectory(_paths.WebView2);
-            _env = await CoreWebView2Environment.CreateAsync(null, _paths.WebView2);
+            var (env, envMs) = await webview;
+            _env = env;
             await _web.EnsureCoreWebView2Async(_env);
+            var viewMs = clock.ElapsedMilliseconds;
+            _web.NavigationCompleted += (_, _) =>
+            {
+                if (clock.IsRunning) { clock.Stop(); _paths.Log($"Startup: backend ready {backendMs} ms, browser engine {envMs} ms, view {viewMs} ms, page {clock.ElapsedMilliseconds} ms"); }
+            };
             ConfigureWebView(_web.CoreWebView2, main: true);
             _web.CoreWebView2.Navigate(await _backend.SignInUrlAsync("app"));
             _web.NavigationCompleted += async (_, args) =>

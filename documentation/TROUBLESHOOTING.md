@@ -15,6 +15,14 @@ Logs: `client-data\logs\backend-YYYYMMDD.log` and `client-YYYYMMDD.log`.
 | The window reloads by itself | The backend stopped and the Windows client started it again. Unsaved text comes back with the window. If it happens three times in ten minutes the client stops trying and says so; the reason is in `backend-YYYYMMDD.log`. |
 | Terminal says ConstrainedLanguage | App control is enforced on this machine. Commands still run, with PowerShell's restrictions. |
 
+## Quantos is slow to start
+
+Each start writes a line like `Startup: backend ready 900 ms, browser engine 300 ms, view 1200 ms, page 1500 ms`
+to `client-datalogsclient-<date>.log`. The first start after installing or updating is the slowest
+(Windows and antivirus software check the new programs once). If the backend figure stays high, a very
+large vault or a slow disk is the usual cause; if the browser engine figure does, update Microsoft Edge
+WebView2.
+
 ## Something looks wrong in my notes
 
 - **A note changed in two places:** Quantos shows both versions side by side. Choose one; the other
