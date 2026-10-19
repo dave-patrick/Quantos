@@ -4,11 +4,11 @@ namespace Quantos.Backend.Api;
 
 public sealed record NodeDto(
     string Id, string Path, string Title, string Type, string Workspace, IReadOnlyList<string> Tags, IReadOnlyList<string> Aliases,
-    string? Created, string? Modified, bool Archived, bool ReadOnly, string? YamlError, int Schema,
+    string? Created, string? Modified, bool Archived, bool Locked, bool ReadOnly, string? YamlError, int Schema,
     IReadOnlyDictionary<string, object?> Properties, string Body, string Content, string Hash)
 {
     public static NodeDto From(Node n) => new(n.Id, n.Path, n.Title, n.Type, n.Workspace, n.Tags, n.Aliases, n.Created, n.Modified,
-        n.Archived, n.ReadOnly, n.YamlError, n.Schema, n.Properties, n.Body, n.Content, n.Hash);
+        n.Archived, n.Locked, n.ReadOnly, n.YamlError, n.Schema, n.Properties, n.Body, n.Content, n.Hash);
 }
 
 public sealed record SaveResultDto(string Status, NodeDto? Node, string? DiskContent, string? DiskHash, string? Message, IReadOnlyList<AmbiguousLink>? Ambiguous)

@@ -76,6 +76,12 @@
     app.toast(node.archived ? 'Archived.' : 'Moved out of the archive.', 'ok');
   });
 
+  const toggleLock = () => act(async () => {
+    if (doc.node?.locked) await doc.setProperties({}, ['locked']);
+    else await doc.setProperties({ locked: true });
+    app.toast(doc.node?.locked ? 'Locked. Nobody can edit this note, including agents and automations, until you unlock it.' : 'Unlocked.', 'ok');
+  });
+
   const trash = () => act(async () => {
     await doc.flush();
     await api.post(`nodes/${doc.id}/trash`);
@@ -139,6 +145,7 @@
         <button role="menuitem" onclick={() => showFolders().catch((e) => app.error(e))}><Icon name="folder" size={14} /> Move to folder…</button>
         <button role="menuitem" onclick={() => (moving = true)}><Icon name="layers" size={14} /> Move to workspace…</button>
         <button role="menuitem" onclick={merge}><Icon name="layers" size={14} /> Merge another note into this…</button>
+        <button role="menuitem" onclick={toggleLock}><Icon name="lock" size={14} /> {doc.node?.locked ? 'Unlock' : 'Lock (read-only)'}</button>
         <button role="menuitem" onclick={archive}><Icon name="archive" size={14} /> {doc.node?.archived ? 'Unarchive' : 'Archive'}</button>
         <div class="sep"></div>
         <button role="menuitem" onclick={() => exportDoc('md')}><Icon name="download" size={14} /> Export Markdown</button>

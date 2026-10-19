@@ -164,7 +164,7 @@ public sealed class WriteService
             var note = Get(referrer);
             if (note is null || note.ReadOnly) continue;
             var resolved = ResolveLinks(note.Body, note.Workspace).Body;
-            if (resolved != note.Body) UpdateFields(referrer, null, null, null, Actor.System with { Instance = actor.Instance }, resolved);
+            if (resolved != note.Body) UpdateFields(referrer, null, null, null, Actor.System with { Instance = actor.Instance }, resolved, derived: true);
         }
     }
 
@@ -206,6 +206,7 @@ public sealed class WriteService
             doc.SetBody(TaskHooks?.BindInlineTasks(doc, body, actor) ?? body);
             var candidate = doc.ToString();
             if (candidate == disk) return new SaveResult(SaveStatus.Unchanged, current, Ambiguous: ambiguous);
+            if (LockRefusal(disk, doc, actor) is { } refusal) return new SaveResult(SaveStatus.ReadOnly, current, Message: refusal);
             doc.Set(NodeKeys.Modified, Clock.Stamp());
 
             var node = WriteFile(abs, id, disk, doc.ToString());
@@ -217,7 +218,7 @@ public sealed class WriteService
     }
 
     /// <summary>Sets or removes frontmatter properties and optionally replaces the body.</summary>
-    public SaveResult UpdateFields(string id, string? baseHash, IReadOnlyDictionary<string, object?>? set, IEnumerable<string>? remove, Actor actor, string? body = null, bool allowReserved = false)
+    public SaveResult UpdateFields(string id, string? baseHash, IReadOnlyDictionary<string, object?>? set, IEnumerable<string>? remove, Actor actor, string? body = null, bool allowReserved = false, bool derived = false)
     {
         Permissions.Demand(actor, Permission.CreateEdit, $"Edit properties of {id}");
         lock (_gate)
@@ -248,6 +249,7 @@ public sealed class WriteService
                 doc.SetBody(TaskHooks?.BindInlineTasks(doc, resolved, actor) ?? resolved);
             }
             if (doc.ToString() == disk) return new SaveResult(SaveStatus.Unchanged, Node.FromText(Vault.Relative(abs), disk, diskHash));
+            if (!derived && LockRefusal(disk, doc, actor) is { } refusal) return new SaveResult(SaveStatus.ReadOnly, Node.FromText(Vault.Relative(abs), disk, diskHash), Message: refusal);
             doc.Set(NodeKeys.Modified, Clock.Stamp());
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
@@ -506,6 +508,7 @@ public sealed class WriteService
             var (abs, disk) = ReadCurrent(id);
             if (abs is null || disk is null) throw new QuantosException("The node no longer exists.", 404);
             var doc = FrontmatterDocument.Parse(disk);
+            if (LockRefusal(disk, doc, actor) is { } refusal) throw new QuantosException(refusal, 423);
             var body = doc.Body;
             var nl = doc.Newline;
             if (underHeading is not null && !body.Contains(underHeading))
@@ -720,6 +723,19 @@ public sealed class WriteService
         if (rel is null) return (null, null);
         var abs = Vault.Absolute(rel);
         return File.Exists(abs) ? (abs, AtomicFile.ReadAllText(abs)) : (null, null);
+    }
+
+    /// <summary>
+    /// A locked note (read-only mode) refuses edits from everyone until the person unlocks it; agents, plugins and
+    /// automations can lock a note but never unlock it. Updates Quantos makes on its own (link text after a rename,
+    /// synced block copies, task checkboxes) still reach it, so it never goes out of step.
+    /// </summary>
+    private static string? LockRefusal(string disk, FrontmatterDocument next, Actor actor)
+    {
+        static bool Locked(FrontmatterDocument d) => string.Equals(Convert.ToString(d.Get(NodeKeys.Locked), System.Globalization.CultureInfo.InvariantCulture), "true", StringComparison.OrdinalIgnoreCase);
+        if (!Locked(FrontmatterDocument.Parse(disk))) return null;
+        if (Locked(next)) return "This note is locked. Unlock it to edit.";
+        return actor.Kind is ActorKind.User or ActorKind.Cli ? null : "Only you can unlock a note.";
     }
 
     private Node WriteFile(string abs, string id, string? disk, string content, string kind = HistoryStore.Save,

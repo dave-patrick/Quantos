@@ -48,7 +48,7 @@ public sealed class SyncedBlockService
                 if (canonical is null) continue; // deleted block: the copy stays as ordinary text
                 var content = region.Content.Trim();
                 if (content == canonical.Body.Trim()) continue;
-                _writes.UpdateFields(region.Id, null, null, null, actor, content + "\n");
+                _writes.UpdateFields(region.Id, null, null, null, actor, content + "\n", derived: true);
                 Propagate(region.Id, content, except: node.Id, actor);
             }
         }
@@ -66,7 +66,7 @@ public sealed class SyncedBlockService
             foreach (var region in Links.SyncRegions(body).Where(r => r.Id == blockId).Reverse())
                 if (region.Content.Trim() != content)
                     body = body[..region.ContentStart] + content + body[region.ContentEnd..];
-            if (body != note.Body) _writes.UpdateFields(referrer, null, null, null, actor, body);
+            if (body != note.Body) _writes.UpdateFields(referrer, null, null, null, actor, body, derived: true);
         }
     }
 

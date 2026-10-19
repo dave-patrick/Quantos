@@ -9,6 +9,8 @@ export interface NodeDto {
   created: string | null;
   modified: string | null;
   archived: boolean;
+  /** Locked by the person (read-only mode): nobody edits it until it is unlocked. */
+  locked?: boolean;
   readOnly: boolean;
   yamlError: string | null;
   schema: number;

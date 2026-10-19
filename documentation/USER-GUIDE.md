@@ -87,6 +87,10 @@ Windows-only features (below) works the same.
 - **Diagrams:** a fenced block marked `mermaid` draws a flowchart, sequence, Gantt or other
   [Mermaid](https://mermaid.js.org) diagram in the app's colours. A mistake shows what went wrong
   under the source. Both work offline. Exports keep the TeX and Mermaid source as text.
+- **Read-only:** *Lock* in a note's `⋮` menu stops anyone editing it, including agents, plugins and
+  automations, until you choose *Unlock*. Links in it still follow renames. *Reading mode*
+  (`Ctrl+Alt+R`, or the command palette) makes every note read-only on this device until you turn
+  it off from the status bar.
 - **Saving** is automatic. If a save fails (the backend restarting, say), Quantos keeps trying, and keeps
   a copy of the unsaved text in the browser until it's saved, restoring it the next time the note opens.
   If the backend stops unexpectedly, the Windows client starts it again within a few seconds and signs
@@ -264,6 +268,7 @@ approval in the Windows client.
 | Daily stream / My Day / Tasks | `Ctrl+Shift+D` / `Ctrl+Shift+M` / `Ctrl+Shift+T` |
 | Search | `Ctrl+Shift+F` |
 | Ask your notes (AI) | `Ctrl+Shift+K` |
+| Reading mode on / off | `Ctrl+Alt+R` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

@@ -67,6 +67,7 @@ Body Markdown.
 | `created`, `modified` | ISO 8601 with offset | Recorded in the device's time zone at the time of the change. |
 | `schema` | integer | Schema version of this file. Missing means 1. |
 | `archived` | bool | Archive state (archived nodes also live under `archive/`). |
+| `locked` | bool | Read-only mode: Quantos refuses edits to the note until the person unlocks it. Agents, plugins and automations can't unlock it. Link text, synced block copies and task checkboxes inside it still update. |
 
 Every other key is a **property**. Unknown keys, comments and key order are preserved exactly:
 the backend edits frontmatter by replacing only the lines of keys it changes, and appends new

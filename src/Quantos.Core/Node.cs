@@ -6,9 +6,10 @@ namespace Quantos.Core;
 public static class NodeKeys
 {
     public const string Id = "id", Title = "title", Type = "type", Workspace = "workspace", Tags = "tags",
-        Aliases = "aliases", Created = "created", Modified = "modified", Schema = "schema", Archived = "archived";
+        Aliases = "aliases", Created = "created", Modified = "modified", Schema = "schema", Archived = "archived",
+        Locked = "locked";
 
-    public static readonly HashSet<string> Reserved = [Id, Title, Type, Workspace, Tags, Aliases, Created, Modified, Schema, Archived];
+    public static readonly HashSet<string> Reserved = [Id, Title, Type, Workspace, Tags, Aliases, Created, Modified, Schema, Archived, Locked];
 }
 
 public static class NodeTypes
@@ -35,6 +36,8 @@ public sealed record Node
     public string? Modified { get; init; }
     public int Schema { get; init; } = CurrentSchema;
     public bool Archived { get; init; }
+    /// <summary>Locked by the person (Release 1.1 read-only mode): nobody edits it until they unlock it.</summary>
+    public bool Locked { get; init; }
     public IReadOnlyDictionary<string, object?> Properties { get; init; } = new Dictionary<string, object?>();
     public string Body { get; init; } = "";
     public string? YamlError { get; init; }
@@ -72,6 +75,7 @@ public sealed record Node
             Modified = Str(NodeKeys.Modified),
             Schema = schema > 0 ? schema : CurrentSchema,
             Archived = string.Equals(Str(NodeKeys.Archived), "true", StringComparison.OrdinalIgnoreCase),
+            Locked = string.Equals(Str(NodeKeys.Locked), "true", StringComparison.OrdinalIgnoreCase),
             Properties = props,
             Body = doc.Body,
             YamlError = doc.YamlError

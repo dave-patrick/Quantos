@@ -492,7 +492,7 @@ public sealed partial class TaskService : ITaskHooks
                      (title ?? m.Groups["text"].Value) + m.Groups["marker"].Value, RegexOptions.Multiline);
             if (body == note.Body) continue;
             _syncDepth++;
-            try { _writes.UpdateFields(noteId, null, null, null, actor, body); }
+            try { _writes.UpdateFields(noteId, null, null, null, actor, body, derived: true); }
             finally { _syncDepth--; }
         }
     }

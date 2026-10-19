@@ -814,7 +814,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 4. Presentation mode.
 5. Detailed comparison between revisions.
 6. Mermaid diagrams. *(Built.)*
-7. Read-only mode.
+7. Read-only mode. *(Built: per-note lock enforced by the write service, and reading mode per device.)*
 8. Custom styling. *(Built.)*
 9. CSV import and export for tables. *(Built.)*
 10. Focus timer and work-session tracking.

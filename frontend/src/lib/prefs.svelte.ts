@@ -11,6 +11,8 @@ class Prefs {
   lineHeight = $state(1.65);
   density = $state<Density>('comfortable');
   accent = $state('blue');
+  /** Reading mode (Release 1.1): every note opens read-only on this device until it's turned off. */
+  reading = $state(false);
 
   constructor() {
     try {
@@ -19,7 +21,7 @@ class Prefs {
     } catch { /* ignore */ }
     $effect.root(() => {
       $effect(() => {
-        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent };
+        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading };
         applyDensity(this.density);
         applyAccent(this.accent);
         const fonts = { sans: "'Source Sans 3', 'Segoe UI', sans-serif", serif: "Georgia, Cambria, 'Times New Roman', serif", mono: "'IBM Plex Mono', Consolas, monospace", system: "system-ui, 'Segoe UI', sans-serif" };

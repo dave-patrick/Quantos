@@ -4,6 +4,7 @@
   import { docs } from '../lib/docs.svelte';
   import { isWindowsClient } from '../lib/platform';
   import { notifications } from '../lib/notifications.svelte';
+  import { prefs } from '../lib/prefs.svelte';
   import Icon from './Icon.svelte';
 
   const activeDoc = $derived(layout.activeTab?.nodeId ? docs.peek(layout.activeTab.nodeId) : undefined);
@@ -20,7 +21,11 @@
       {#if activeDoc.status === 'saving'}Saving…{:else if activeDoc.status === 'dirty'}Unsaved changes{:else if activeDoc.status === 'conflict'}Conflict: choose a version{:else if activeDoc.status === 'error'}Save failed{:else if activeDoc.status === 'saved'}All changes saved{:else if activeDoc.status === 'readonly'}Read-only{:else if activeDoc.status === 'missing'}Note not found{:else if activeDoc.status === 'trashed'}In the trash{/if}
     </span>
   {/if}
+  {#if activeDoc?.node?.locked}<span class="item"><Icon name="lock" size={12} /> Locked</span>{/if}
   <span class="spacer"></span>
+  {#if prefs.reading}
+    <button class="item link" title="Notes are read-only on this device. Click (or Ctrl+Alt+R) to edit again." onclick={() => (prefs.reading = false)}><Icon name="book" size={12} /> Reading mode</button>
+  {/if}
   {#if notifications.unread}
     <button class="item link" onclick={() => { app.rightOpen = true; app.rightTab = 'notifications'; }}><Icon name="bell" size={12} /> {notifications.unread}</button>
   {/if}

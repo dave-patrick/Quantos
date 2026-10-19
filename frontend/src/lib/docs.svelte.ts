@@ -115,7 +115,7 @@ export class Doc {
   /** Text left unsaved last time goes back in and is saved the usual way (merging if the file changed). */
   private restoreDraft(node: NodeDto) {
     const draft = readDraft(this.id);
-    if (!draft || node.readOnly) return;
+    if (!draft || node.readOnly || node.locked) return;
     if (draft.text === (draft.raw ? node.content : node.body)) { clearDraft(this.id); return; }
     if (draft.raw) { this.raw = true; this.rawText = draft.text; this.rawBaseHash = draft.baseHash; }
     else { this.base = draft.base; this.body = draft.text; this.hash = draft.baseHash; this.externalVersion++; }

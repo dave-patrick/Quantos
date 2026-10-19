@@ -28,6 +28,8 @@
   let scroller = $state<HTMLDivElement | null>(null);
   let view = $state<EditorView | null>(null);
   let titleDraft = $state('');
+  /** Locked note or reading mode: the text, title and properties are shown but can't be changed. */
+  const noEdit = $derived(!!doc.node?.locked || prefs.reading);
   let editingTitle = $state(false);
   let showToc = $state(false);
   let zoom = $state<{ line: number; text: string } | null>(null);
@@ -137,7 +139,7 @@
         {#if doc.status === 'saving'}Saving…{:else if doc.status === 'dirty'}Edited{:else if doc.status === 'saved'}Saved{:else if doc.status === 'conflict'}Conflict{:else if doc.status === 'error'}Not saved{:else if doc.status === 'readonly'}Read-only{/if}
       </span>
       <button class="icon-btn" aria-pressed={showToc} title="Table of contents" onclick={() => (showToc = !showToc)}><Icon name="list" /></button>
-      <button class="icon-btn" aria-pressed={doc.raw} title={doc.raw ? 'Back to the editor' : 'Edit the Markdown source'} disabled={doc.node?.readOnly}
+      <button class="icon-btn" aria-pressed={doc.raw} title={doc.raw ? 'Back to the editor' : 'Edit the Markdown source'} disabled={doc.node?.readOnly || noEdit}
         onclick={() => doc.setRaw(!doc.raw)}><Icon name="code" /></button>
       <button class="icon-btn" title="Version history" onclick={() => layout.open({ kind: 'history', nodeId: id, title: `History: ${doc.node?.title ?? ''}` }, 'new')}><Icon name="history" /></button>
       <NodeMenu {doc} {paneIndex} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
@@ -168,11 +170,16 @@
             {doc.node.yamlError ? `The frontmatter isn't valid YAML (${doc.node.yamlError}). Fix it in the source view; the visual editor is off so nothing is lost.` : `This file uses schema ${doc.node.schema}, newer than this version of Quantos understands. It's read-only.`}
           </div>
         {/if}
+        {#if doc.node.locked && !doc.node.readOnly}
+          <div class="notice lock"><Icon name="lock" size={15} /> Locked: nobody can edit this note, including agents and automations. <button class="btn ghost" onclick={() => doc.setProperties({}, ['locked'])}>Unlock</button></div>
+        {:else if prefs.reading && !doc.node.readOnly}
+          <div class="notice lock"><Icon name="book" size={15} /> Reading mode is on. <button class="btn ghost" onclick={() => (prefs.reading = false)}>Edit</button></div>
+        {/if}
         {#if doc.error && doc.status === 'error'}<div class="notice error"><Icon name="alert" size={15} /> {doc.error}</div>{/if}
 
         {#if !doc.raw}
           <!-- The editable title is the page's heading, so screen readers can jump to it. -->
-          <h1 class="title-heading" aria-label={titleDraft || 'Untitled'}><input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle}
+          <h1 class="title-heading" aria-label={titleDraft || 'Untitled'}><input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle} readonly={noEdit}
             onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); view?.focus(); } if (e.key === 'Escape') { titleDraft = doc.node?.title ?? ''; (e.target as HTMLInputElement).blur(); } }}
             aria-label="Title" spellcheck="false" /></h1>
           {#if namespace.length}<nav class="ns">{#each namespace as part, i (i)}<button onclick={(e) => openByTitle(namespace.slice(0, i + 1).join('/'), e.shiftKey ? 'other' : 'current')}>{part}</button><span>/</span>{/each}</nav>{/if}
@@ -181,18 +188,20 @@
             {#if doc.node.archived}<span class="badge warn">archived</span>{/if}
             <span>Edited {ago(doc.node.modified)}</span>
           </div>
-          {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
-          <Properties {doc} />
+          <fieldset class="plain" disabled={noEdit}>
+            {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
+            <Properties {doc} />
+          </fieldset>
           {#if zoomedBody}
             {#key zoom?.line}
-              <Editor text={zoomedBody.text} onchange={editZoomed} onsave={() => doc.save()} bind:view />
+              <Editor text={zoomedBody.text} readOnly={noEdit} onchange={editZoomed} onsave={() => doc.save()} bind:view />
             {/key}
           {:else}
             <Editor text={doc.body} version={doc.externalVersion} onchange={(t) => doc.edit(t)} onsave={() => doc.save()} bind:view docId={id}
-              readOnly={doc.node.readOnly} placeholder="Start writing. Type [[ to link a note, - [ ] for a task." />
+              readOnly={doc.node.readOnly || noEdit} placeholder="Start writing. Type [[ to link a note, - [ ] for a task." />
           {/if}
         {:else}
-          <Editor text={doc.rawText} version={doc.externalVersion} raw onchange={(t) => doc.editRaw(t)} onsave={() => doc.save()} bind:view />
+          <Editor text={doc.rawText} version={doc.externalVersion} raw readOnly={noEdit && !doc.node?.readOnly} onchange={(t) => doc.editRaw(t)} onsave={() => doc.save()} bind:view />
         {/if}
       </article>
     {/if}
@@ -246,6 +255,9 @@
   .meta { display: flex; gap: 10px; align-items: center; font-size: 12.5px; margin-bottom: 10px; }
   .notice { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); font-size: 14px; margin: 14px 0; }
   .notice.warn { background: var(--warn-wash); color: var(--warn); }
+  .notice.lock { background: var(--accent-wash); color: var(--text-soft); align-items: center; }
+  .notice.lock .btn { margin-left: auto; }
+  fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
   .notice.error { background: var(--danger-wash); color: var(--danger); }
   .placeholder { display: flex; gap: 14px; max-width: 560px; margin: 60px auto; padding: 18px 20px; border: 1px dashed var(--line-strong); border-radius: 10px; color: var(--text-muted); }
   .placeholder h3 { font: 700 16px/1.3 var(--font-display); color: var(--text); }
