@@ -142,6 +142,7 @@
       {:else}
         <button role="menuitem" onclick={() => { open = false; layout.open({ kind: 'node', nodeId: doc.id, title: doc.node?.title }, paneIndex === 0 ? 'other' : 'other'); }}><Icon name="split" size={14} /> Open in other pane</button>
         {#if doc.node?.type === 'task'}<button role="menuitem" onclick={() => { open = false; focus.start(focus.lastLength, { id: doc.id, title: doc.node?.title ?? '', workspace: doc.node?.workspace }); }}><Icon name="timer" size={14} /> Focus on this task ({focus.lastLength} min)</button>{/if}
+        <button role="menuitem" onclick={() => { open = false; layout.open({ kind: 'mindmap', nodeId: doc.id, title: `Mind map: ${doc.node?.title ?? ''}` }, 'new'); }}><Icon name="graph" size={14} /> Mind map</button>
         <button role="menuitem" onclick={() => { open = false; recorder.start(); }}><Icon name="mic" size={14} /> Record audio here</button>
         <button role="menuitem" onclick={() => { open = false; presenter.open(doc.node?.title ?? '', doc.body); }}><Icon name="play" size={14} /> Present</button>
         <button role="menuitem" onclick={() => { open = false; oncopymd(); }}><Icon name="copy" size={14} /> Copy as Markdown</button>

@@ -104,6 +104,10 @@ Windows-only features (below) works the same.
   `Ctrl+D` duplicate, arrow keys nudge, `Ctrl+Z` undo. Drag the board to pan, `Ctrl`+scroll to zoom,
   *Fit* to see everything. A whiteboard is a note (`type: canvas`) holding a JSON Canvas block, the
   open format other tools read, so it has history and search like any note.
+- **Mind maps:** *Mind map* in a note's `⋮` menu draws the note's headings and list items as
+  branches. Collapse branches with their − button. To annotate a branch, select it and press `A` (or
+  its 💬 button); click an annotation to change or remove it. Annotations are footnotes on that line
+  (`[^m1]` with `[^m1]: your note` at the end), so they're plain Markdown in the note too.
 - **Presenting:** *Present* in a note's `⋮` menu (or `Ctrl+Alt+P`) shows it full screen as slides. A
   `---` line with a blank line above it starts a new slide; a note without any is split at its `#` and
   `##` headings. Lines after a `Notes:` line are speaker notes: press `N` to see them. Arrows, Space

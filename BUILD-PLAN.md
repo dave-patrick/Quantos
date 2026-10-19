@@ -828,7 +828,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 ### Release 1.2: Visual and agent release
 
 1. Whiteboard and spatial organization. *(Built: JSON Canvas whiteboards with text, note, link and group cards, arrows, undo.)*
-2. Mindmap annotations.
+2. Mindmap annotations. *(Built: mind map of any note's outline, annotations stored as footnotes.)*
 3. Dependency Gantt views. *(Built: timeline from planned/due/effort, dependency arrows with conflicts, drag and keyboard rescheduling.)*
 4. Map and location views.
 5. Adapters for agent frameworks.
