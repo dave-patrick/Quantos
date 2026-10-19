@@ -82,6 +82,11 @@ Windows-only features (below) works the same.
   ```
   ````
 
+- **Math:** `$E = mc^2$` in a line, or `$$` on lines of their own around a block of TeX. A dollar
+  followed by a number stays a dollar, so prices are safe. Click rendered math to edit it.
+- **Diagrams:** a fenced block marked `mermaid` draws a flowchart, sequence, Gantt or other
+  [Mermaid](https://mermaid.js.org) diagram in the app's colours. A mistake shows what went wrong
+  under the source. Both work offline. Exports keep the TeX and Mermaid source as text.
 - **Saving** is automatic. If a save fails (the backend restarting, say), Quantos keeps trying, and keeps
   a copy of the unsaved text in the browser until it's saved, restoring it the next time the note opens.
   If the backend stops unexpectedly, the Windows client starts it again within a few seconds and signs

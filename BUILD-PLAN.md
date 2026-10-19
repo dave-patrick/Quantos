@@ -813,12 +813,12 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 3. Habit and metric tracking.
 4. Presentation mode.
 5. Detailed comparison between revisions.
-6. Mermaid diagrams.
+6. Mermaid diagrams. *(Built.)*
 7. Read-only mode.
 8. Custom styling. *(Built.)*
 9. CSV import and export for tables. *(Built.)*
 10. Focus timer and work-session tracking.
-11. Math rendering.
+11. Math rendering. *(Built.)*
 12. Sprint and iteration planning.
 13. Goal rollups and status analytics.
 14. Batch find and replace.

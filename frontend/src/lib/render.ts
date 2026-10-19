@@ -1,6 +1,7 @@
 import { Marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { app } from './state.svelte';
+import { findMath } from './diagrams';
 
 const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
@@ -43,6 +44,10 @@ export function footnotes(body: string): { body: string; notes: { id: string; te
 }
 
 export function renderMarkdown(body: string, options: { links?: boolean } = {}): string {
+  // Math is set aside before Markdown sees it (so underscores and stars stay TeX), then left as placeholders
+  // that diagrams.ts draws with KaTeX once it's loaded.
+  const math = findMath(body);
+  for (let i = math.length - 1; i >= 0; i--) body = body.slice(0, math[i].from) + `QQMATH${i}QQ` + body.slice(math[i].to);
   const { body: withRefs, notes } = footnotes(body);
   const list = notes.length
     ? `\n\n<section class="footnotes"><ol>${notes.map((n) => `<li id="fn-${escapeAttr(n.id)}">${marked.parseInline(n.text, { async: false }) as string}</li>`).join('')}</ol></section>\n`
@@ -61,7 +66,10 @@ export function renderMarkdown(body: string, options: { links?: boolean } = {}):
     // Task checkboxes: inputs don't survive sanitising, so they become boxes drawn in CSS.
     .replace(/<input\b[^>]*type="checkbox"[^>]*>/g, (tag) => /\bchecked\b/.test(tag) ? '<span class="md-check on" role="img" aria-label="Done"></span>' : '<span class="md-check" role="img" aria-label="Not done"></span>');
   // Web links open in a new tab (the Windows client sends them to the default browser), never in place of Quantos.
-  const external = html.replace(/<a href="(https?:\/\/|mailto:)/gi, '<a target="_blank" rel="noopener noreferrer" href="$1');
+  const withMath = math.length
+    ? html.replace(/QQMATH(\d+)QQ/g, (_m, i) => { const x = math[+i]; return x ? `<span data-q-tex="${escapeAttr(x.tex)}"${x.display ? ' data-q-display="1"' : ''}></span>` : ''; })
+    : html;
+  const external = withMath.replace(/<a href="(https?:\/\/|mailto:)/gi, '<a target="_blank" rel="noopener noreferrer" href="$1');
   return DOMPurify.sanitize(external, { ADD_ATTR: ['data-target', 'target'], FORBID_TAGS: ['style', 'iframe', 'form', 'input', 'object', 'embed'] });
 }
 
