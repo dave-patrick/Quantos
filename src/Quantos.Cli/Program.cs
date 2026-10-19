@@ -38,6 +38,9 @@ public static class Program
           rebuild                         Rebuild the cache from the vault
           mcp                             Serve the Model Context Protocol on stdin/stdout for AI agents
                                           (use with --agent <name>; grants are set in Settings)
+          tools [--format F]              Print the agent tools as openai, anthropic, json or mcp schemas
+          call <tool> [<json> | -]        Run one agent tool with JSON arguments (- reads them from stdin)
+                                          and print its result; exit code 1 when the tool fails
 
         The backend must be running (start Quantos, or Quantos.Backend.exe).
         """;
@@ -49,6 +52,13 @@ public static class Program
         Console.InputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         var opts = Options.Parse(args);
         if (opts.Positional.Count == 0 || opts.Positional[0] is "help" or "--help" or "-h") { Console.WriteLine(Usage); return 0; }
+
+        // Tool schemas need no backend: an agent framework can read them while Quantos is closed.
+        if (opts.Positional[0] == "tools")
+        {
+            try { Console.WriteLine(Mcp.Export(opts.Get("format") ?? "openai")); return 0; }
+            catch (ArgumentException ex) { Console.Error.WriteLine(ex.Message); return 2; }
+        }
 
         Client client;
         try { client = await Client.ConnectAsync(opts); }
@@ -73,6 +83,7 @@ public static class Program
                 "run" => await Run(client, opts),
                 "rebuild" => await Rebuild(client, opts),
                 "mcp" => await Mcp.Serve(client, opts),
+                "call" => await CallTool(client, opts),
                 _ => Fail($"Unknown command '{opts.Positional[0]}'. Run quantos-cli help.")
             };
         }
@@ -80,6 +91,21 @@ public static class Program
     }
 
     private static int Fail(string message) { Console.Error.WriteLine(message); return 2; }
+
+    /// <summary>One agent tool as a command: quantos-cli call search_notes '{"query":"budget"}' (Release 1.2 adapters).</summary>
+    private static async Task<int> CallTool(Client c, Options o)
+    {
+        var name = Arg(o, 1, "tool name");
+        var raw = o.Positional.Count > 2 ? o.Positional[2] : "{}";
+        if (raw == "-") raw = await Console.In.ReadToEndAsync();
+        JsonNode? args;
+        try { args = JsonNode.Parse(string.IsNullOrWhiteSpace(raw) ? "{}" : raw); }
+        catch (System.Text.Json.JsonException ex) { return Fail("The arguments aren't valid JSON: " + ex.Message); }
+        if (args is not JsonObject) return Fail("Arguments are a JSON object, like {\"query\": \"budget\"}.");
+        var (text, isError) = await Mcp.Invoke(c, o, name, args);
+        (isError ? Console.Error : Console.Out).WriteLine(text);
+        return isError ? 1 : 0;
+    }
 
     private static string Arg(Options o, int index, string name) =>
         o.Positional.Count > index ? o.Positional[index] : throw new ApiException(2, $"Missing {name}.");

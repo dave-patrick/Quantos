@@ -33,6 +33,43 @@ public static class Mcp
             new JsonObject { ["text"] = Str("Text"), ["to"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("daily", "inbox", "task") } }, "text")
     ];
 
+    /// <summary>
+    /// The same tools in the shapes other agent frameworks take (Release 1.2 adapters): "openai" for
+    /// Chat Completions / Responses function tools, "anthropic" for the Messages API, "json" for a plain list
+    /// of name, description and JSON Schema. Frameworks then run a tool with <c>quantos-cli call</c>.
+    /// </summary>
+    public static string Export(string format)
+    {
+        var list = Tools.Select(t => t!.AsObject()).ToList();
+        JsonNode result = format switch
+        {
+            "openai" => new JsonArray(list.Select(t => (JsonNode)new JsonObject
+            {
+                ["type"] = "function",
+                ["function"] = new JsonObject { ["name"] = t["name"]!.DeepClone(), ["description"] = t["description"]!.DeepClone(), ["parameters"] = t["inputSchema"]!.DeepClone() }
+            }).ToArray()),
+            "anthropic" => new JsonArray(list.Select(t => (JsonNode)new JsonObject
+            {
+                ["name"] = t["name"]!.DeepClone(), ["description"] = t["description"]!.DeepClone(), ["input_schema"] = t["inputSchema"]!.DeepClone()
+            }).ToArray()),
+            "json" => new JsonArray(list.Select(t => (JsonNode)new JsonObject
+            {
+                ["name"] = t["name"]!.DeepClone(), ["description"] = t["description"]!.DeepClone(), ["parameters"] = t["inputSchema"]!.DeepClone()
+            }).ToArray()),
+            "mcp" => new JsonObject { ["tools"] = Tools.DeepClone() },
+            _ => throw new ArgumentException($"Unknown format '{format}'. Use openai, anthropic, json or mcp.")
+        };
+        return result.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+    }
+
+    /// <summary>Runs one tool outside an MCP session (for frameworks that call tools as commands).</summary>
+    public static async Task<(string Text, bool IsError)> Invoke(Client client, Options options, string name, JsonNode? arguments)
+    {
+        if (!Tools.Any(t => t!["name"]!.ToString() == name)) return ($"Unknown tool '{name}'. Run quantos-cli tools to list them.", true);
+        var result = await Call(client, options, new JsonObject { ["name"] = name, ["arguments"] = arguments ?? new JsonObject() });
+        return (result["content"]![0]!["text"]!.ToString(), result["isError"]?.GetValue<bool>() == true);
+    }
+
     private static JsonObject Str(string description) => new() { ["type"] = "string", ["description"] = description };
 
     private static JsonObject Tool(string name, string description, JsonObject properties, params string[] required) => new()

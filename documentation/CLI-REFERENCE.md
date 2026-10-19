@@ -31,6 +31,8 @@ quantos-cli <command> [arguments] [--json] [--workspace <name>] [--agent <name>]
 | `run "<powershell>" [--cwd folder]` | Run a command after you approve it in the Windows client |
 | `rebuild` | Rebuild the cache from the vault |
 | `mcp [--agent name]` | Model Context Protocol server on stdin/stdout |
+| `tools [--format openai|anthropic|json|mcp]` | Print the agent tools' schemas (works while Quantos is closed) |
+| `call <tool> [<json> | -] [--agent name]` | Run one agent tool; result on stdout, exit 1 with the reason on stderr if it fails |
 
 When a title matches more than one note, the CLI lists the ids instead of guessing.
 
@@ -44,6 +46,9 @@ quantos-cli tasks --json | ConvertFrom-Json | Where-Object priority -eq 1
 ```
 
 ## Connecting an AI agent (MCP)
+
+Setups for Claude, the OpenAI Agents SDK, LangChain, LlamaIndex, CrewAI, AutoGen and Semantic
+Kernel, and for plain function calling, are in `AGENT-ADAPTERS.md`.
 
 Configure your MCP client to run:
 

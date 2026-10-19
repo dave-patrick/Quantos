@@ -831,7 +831,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 2. Mindmap annotations. *(Built: mind map of any note's outline, annotations stored as footnotes.)*
 3. Dependency Gantt views. *(Built: timeline from planned/due/effort, dependency arrows with conflicts, drag and keyboard rescheduling.)*
 4. Map and location views. *(Built: offline world map, pins from location properties, clustering, place a note by clicking.)*
-5. Adapters for agent frameworks.
+5. Adapters for agent frameworks. *(Built: MCP setups for the main frameworks, `quantos-cli tools`/`call` for function calling, a Python helper.)*
 6. Global knowledge graph. *(Built: all workspaces, every link kind, tags as hubs, type filters, colour by workspace or type, highlight.)*
 
 ### Roadmap items without an assigned release

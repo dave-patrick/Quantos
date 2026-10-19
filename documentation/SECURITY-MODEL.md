@@ -50,6 +50,8 @@ local commands; access files outside the vault; network requests; manage permiss
 - The Windows client refuses device permission requests (microphone, camera, location) from any page
   that isn't Quantos's own; Quantos's pages still go through WebView2's own prompt, and only the
   recorder asks, for the microphone.
+- `quantos-cli call` runs the same tools as the MCP server and, with `--agent`, under that agent's
+  grants; without `--agent` it acts as the command line.
 - Find and replace across notes is the person's alone; agents and plugins edit one note at a time.
 - A **locked** note (`locked: true`) refuses edits from every actor, the person included, until it is
   unlocked; only the person (app, browser session or CLI) can unlock it.
