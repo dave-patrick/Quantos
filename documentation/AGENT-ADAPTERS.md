@@ -55,6 +55,27 @@ Claude Code:
 claude mcp add quantos -- "C:\Users\you\Documents\Quantos\application\quantos-cli.exe" mcp --agent claude-code
 ```
 
+OpenCode, in `~/.config/opencode/opencode.jsonc` (or `%USERPROFILE%\.config\opencode\opencode.jsonc` on Windows):
+```json
+{
+  "mcp": {
+    "quantos": {
+      "type": "local",
+      "command": [
+        "C:\\Users\\you\\Documents\\Quantos\\application\\quantos-cli.exe",
+        "mcp",
+        "--agent",
+        "opencode",
+        "--client-data",
+        "C:\\Users\\you\\AppData\\Local\\Quantos\\client-data"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+Use `--client-data` when Quantos's data folder isn't in the default location (the dev harness uses `.dev\client-data`).
+
 ## Frameworks with MCP support
 
 These frameworks start the server as a subprocess and turn its tools into their own. The shapes below
