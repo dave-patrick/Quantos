@@ -6,7 +6,8 @@
   import { isWindowsClient } from '../lib/platform';
   import Icon from './Icon.svelte';
   import WorkspaceSwitcher from './WorkspaceSwitcher.svelte';
-  import iconUrl from '../assets/quantos-icon.svg?url';
+  // The wordmark (brand/quantos-wordmark.svg) is inlined: its letters take the text colour, so it suits light and dark.
+  import wordmark from '../assets/quantos-wordmark.svg?raw';
   import { capture } from '../lib/capture.svelte';
 
   const pane = $derived(layout.pane);
@@ -17,7 +18,7 @@
     <button class="icon-btn" aria-label="Toggle left sidebar" aria-pressed={app.leftOpen} onclick={() => (app.leftOpen = !app.leftOpen)}>
       <Icon name="panel-left" />
     </button>
-    <img src={iconUrl} alt="" width="22" height="22" />
+    <span class="wordmark" role="img" aria-label="Quantos">{@html wordmark}</span>
     <WorkspaceSwitcher />
   </div>
 
@@ -50,7 +51,8 @@
   .header { grid-area: header; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 8px;
     border-bottom: 1px solid var(--line); background: var(--bg-raised); min-width: 0; }
   .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .brand img { margin-left: 2px; }
+  .wordmark { display: inline-flex; height: 19px; margin: 0 4px 0 2px; color: var(--text); flex: none; }
+  .wordmark :global(svg) { height: 100%; width: auto; }
   .toolbar { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
   .toolbar .icon-btn:disabled { opacity: .35; cursor: default; background: none; }
   .sep { width: 1px; height: 18px; background: var(--line); margin: 0 6px; }
