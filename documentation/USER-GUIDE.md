@@ -85,7 +85,7 @@ Windows-only features (below) works the same.
   its windows back in; your unsaved text comes back with them.
 - **Source view:** the `</>` button edits the raw Markdown, frontmatter included.
 - **Writing tools:** table of contents and outline zoom (list button), typewriter scrolling,
-  word count and reading time, writing targets (note menu), multiple cursors (`Alt`-drag for a
+  word count and reading time, writing targets (note menu; saved with the note as `writing_target`), multiple cursors (`Alt`-drag for a
   column selection), folding headings and lists, copy as Markdown or rich text.
 - **Images and files:** paste or drag them into a note. Identical files are stored once.
   PDFs open in a viewer with *Cite this page*.

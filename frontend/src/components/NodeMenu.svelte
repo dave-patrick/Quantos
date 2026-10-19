@@ -94,10 +94,14 @@
   });
 
   const setTarget = () => act(async () => {
-    const value = await app.ask('Writing target', { message: 'Number of words. 0 removes the target.', value: String(prefs.writingTarget[doc.id] ?? 1000), numeric: true, confirmLabel: 'Set' });
+    const current = Number(doc.node?.properties?.writing_target) || prefs.writingTarget[doc.id] || 1000;
+    const value = await app.ask('Writing target', { message: 'Number of words. 0 removes the target. It is saved with the note.', value: String(current), numeric: true, confirmLabel: 'Set' });
     if (value === null) return;
-    const n = Math.max(0, Number(value) || 0);
-    prefs.writingTarget = { ...prefs.writingTarget, [doc.id]: n };
+    const n = Math.max(0, Math.round(Number(value)) || 0);
+    if (n > 0) await doc.setProperties({ writing_target: n });
+    else await doc.setProperties({}, ['writing_target']);
+    // The note holds it now; drop the copy this browser kept.
+    if (prefs.writingTarget[doc.id] !== undefined) { const { [doc.id]: _, ...rest } = prefs.writingTarget; prefs.writingTarget = rest; }
   });
 
   const exportDoc = (format: 'md' | 'html' | 'pdf') => act(async () => {

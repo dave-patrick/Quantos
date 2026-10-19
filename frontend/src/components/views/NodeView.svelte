@@ -59,7 +59,8 @@
   const crumbs = $derived(doc.node ? doc.node.path.split('/').slice(doc.node.path.startsWith('workspaces/') ? 1 : 0, -1) : []);
   const words = $derived(wordCount(doc.body));
   const toc = $derived(outline(doc.body));
-  const target = $derived(prefs.writingTarget[id] ?? 0);
+  // Stored on the note (writing_target), so it follows the file; older targets kept in this browser still show.
+  const target = $derived(Number(doc.node?.properties?.writing_target) || prefs.writingTarget[id] || 0);
 
   function jumpTo(line: number) {
     if (!view) return;
