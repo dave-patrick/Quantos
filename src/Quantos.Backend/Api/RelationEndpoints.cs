@@ -39,6 +39,10 @@ public static class RelationEndpoints
             return new { id = node.Id, markdown = Core.Structure.SyncedBlockService.Wrap(node.Id, b.Content) };
         });
 
+        // Notes with a location, for the map (Release 1.2).
+        api.MapGet("/map/places", (VaultHost host, HttpContext ctx, string? workspace) =>
+            host.Require().Map.Places(string.IsNullOrEmpty(workspace) ? null : workspace, ctx.Actor()));
+
         // The global knowledge graph (Release 1.2): one workspace or all, optionally with tags as hubs.
         api.MapGet("/graph/global", (VaultHost host, HttpContext ctx, string? workspace, int? limit, bool? tags, string? types) =>
             host.Require().Graph.Global(string.IsNullOrEmpty(workspace) ? null : workspace, limit ?? 300, tags ?? false,

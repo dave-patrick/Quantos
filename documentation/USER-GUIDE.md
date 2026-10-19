@@ -220,6 +220,12 @@ own tabs, splits and scroll positions.
   this workspace or all of them: links from text, properties, embeds and synced blocks, bigger dots for
   more links, coloured by workspace or type, filtered by type, and with tags as hubs if you like.
   *Highlight* picks out matching titles. Scroll to zoom, drag to pan, hover to see a note's links.
+- **Map:** *Map* in the sidebar shows notes with a location as pins on a world map. *Place a note*,
+  then click the map, to give a note a `location` (`51.50720, -0.12760`); you can also type one, or
+  use `coordinates: [lat, lng]`, a `geo:` map or `lat:`/`lng:` properties. An optional `place`
+  property names it. Nearby pins group into a numbered bubble; click it to zoom in. The map ships
+  with Quantos (country outlines from Natural Earth) and nothing is fetched from the internet, so it
+  shows countries and coastlines, not streets.
 - **Metadata dictionary** lists every property, how it's used and which supertags define it.
 
 ---

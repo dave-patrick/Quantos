@@ -34,6 +34,7 @@
     "katex": "^0.19.0",
     "marked": "^18.1.1",
     "mermaid": "^12.2.0",
-    "node-diff3": "^3.2.1"
+    "node-diff3": "^3.2.1",
+    "world-atlas": "^2.0.2"
   }
 }

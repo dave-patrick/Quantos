@@ -43,6 +43,7 @@ public sealed class VaultSession : IDisposable
         Habits = new Tasks.HabitService(Writes);
         Planning = new Tasks.PlanningService(Writes, Tasks);
         Graph = new Structure.GraphService(Writes);
+        Map = new Structure.MapService(Writes);
     }
 
     public Structure.FindReplaceService Replace { get; }
@@ -50,6 +51,7 @@ public sealed class VaultSession : IDisposable
     public Tasks.HabitService Habits { get; }
     public Tasks.PlanningService Planning { get; }
     public Structure.GraphService Graph { get; }
+    public Structure.MapService Map { get; }
 
     public Backups.BackupService Backups { get; }
 

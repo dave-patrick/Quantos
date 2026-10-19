@@ -43,7 +43,8 @@
     { kind: 'habits', label: 'Habits', icon: 'activity' },
     { kind: 'search', label: 'Search', icon: 'search' },
     { kind: 'ask', label: 'Ask your notes', icon: 'sparkles' },
-    { kind: 'graph', label: 'Graph', icon: 'graph' }
+    { kind: 'graph', label: 'Graph', icon: 'graph' },
+    { kind: 'map', label: 'Map', icon: 'map' }
   ];
 
   const tools: { kind: TabKind; label: string; icon: string }[] = [
