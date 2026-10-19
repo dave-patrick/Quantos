@@ -267,6 +267,8 @@
   </div>
   <footer>
     <button class="item" onclick={(e) => open(e, 'settings', 'Settings')}><Icon name="settings" size={15} /> <span>Settings</span></button>
+    <button class="icon-btn" title="Help (F1)" aria-label="Help" onclick={(e) => open(e, 'help', 'Help')}><Icon name="help" size={15} /></button>
+    <button class="icon-btn" title="About Quantos" aria-label="About Quantos" onclick={(e) => open(e, 'about', 'About Quantos')}><Icon name="info" size={15} /></button>
     <button class="icon-btn" title="Customise the sidebar" aria-label="Customise the sidebar" aria-pressed={customizing} onclick={() => (customizing = !customizing)}><Icon name="sliders" size={15} /></button>
   </footer>
 </aside>

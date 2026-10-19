@@ -14,6 +14,7 @@
     'check-square': 'M4 4h16v16H4zM8 12l3 3 5-6',
     file: 'M6 3h8l4 4v14H6zM14 3v4h4',
     play: 'M7 4l13 8-13 8z',
+    help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6M12 16.8v.2',
     sliders: 'M4 6h10M18 6h2M14 4v4M4 12h4M12 12h8M8 10v4M4 18h12M16 16v4',
     map: 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',
     gantt: 'M4 3v18M7 6h8M10 12h10M8 18h6',

@@ -310,6 +310,13 @@ in notes never runs by itself.
 
 ---
 
+### Help and About
+
+*Help* (`F1`, or the ? button at the bottom of the sidebar) has this guide, troubleshooting, the
+command line and agent guides, and the keyboard shortcuts as they're currently set, all searchable
+and available offline. *About Quantos* (the i button) shows the version, where your vault and app
+data are, and the licences of the open-source projects Quantos includes.
+
 ### Updating
 
 *Settings › Updates* shows your version. *Check for updates* asks GitHub for the latest release and
@@ -376,6 +383,7 @@ approval in the Windows client.
 
 | Action | Keys |
 |---|---|
+| Help | `F1` |
 | Quick open | `Ctrl+P` or `Ctrl+K` |
 | Command palette | `Ctrl+Shift+P` |
 | New note | `Ctrl+N` |

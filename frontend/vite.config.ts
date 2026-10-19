@@ -16,6 +16,8 @@ export default defineConfig({
     sourcemap: false
   },
   server: {
+    // Help shows the guides from documentation/ (one folder up), and About the LICENSE beside it.
+    fs: { allow: ['..'] },
     port: 5173,
     strictPort: true,
     proxy: {

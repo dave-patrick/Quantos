@@ -17,6 +17,8 @@
   import MindmapView from './views/MindmapView.svelte';
   import MapView from './views/MapView.svelte';
   import NotesView from './views/NotesView.svelte';
+  import HelpView from './views/HelpView.svelte';
+  import AboutView from './views/AboutView.svelte';
   import TasksView from './views/TasksView.svelte';
   import MyDayView from './views/MyDayView.svelte';
   import TimelineView from './views/TimelineView.svelte';
@@ -55,6 +57,10 @@
   <MapView />
 {:else if tab.kind === 'notes'}
   <NotesView />
+{:else if tab.kind === 'help'}
+  <HelpView {tab} />
+{:else if tab.kind === 'about'}
+  <AboutView />
 {:else if tab.kind === 'mindmap' && tab.nodeId}
   {#key tab.nodeId}<MindmapView id={tab.nodeId} />{/key}
 {:else if tab.kind === 'search'}
