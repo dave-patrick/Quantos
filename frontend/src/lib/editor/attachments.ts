@@ -1,5 +1,5 @@
 import { setActiveEditor } from '../activeEditor';
-import { RangeSetBuilder, StateField, type EditorState } from '@codemirror/state';
+import { StateField, type EditorState, type Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType, type DecorationSet } from '@codemirror/view';
 import { app } from '../state.svelte';
 import { layout } from '../layout.svelte';
@@ -83,28 +83,56 @@ class PdfChip extends WidgetType {
 const IMAGE = /!\[([^\]]*)\]\((attachments\/[^)\s]+\.(?:png|jpe?g|gif|webp|svg))\)/i;
 const PDF = /\[([^\]]*)\]\((attachments\/[^)\s#]+\.pdf)(?:#page=(\d+))?\)/gi;
 
+// Links to stored files: [name](attachments/ab/abcdef….ext), not images.
+const ATTACHMENT_LINK = /(?<!!)\[([^\]]*)\]\((attachments\/[^)\s]+)\)/g;
+const hide = Decoration.replace({});
+const fileName = Decoration.mark({ class: 'cm-attach-name' });
+
+/**
+ * Images show below their line; PDF links get an Open chip. Away from the cursor's line, the storage
+ * path is hidden (a link reads as its name, an image as the picture); on that line the Markdown
+ * is shown as written, so it can be edited.
+ */
 function build(state: EditorState): DecorationSet {
-  const builder = new RangeSetBuilder<Decoration>();
+  const decos: Range<Decoration>[] = [];
+  const cursorLine = state.doc.lineAt(state.selection.main.head).number;
   for (let n = 1; n <= state.doc.lines; n++) {
     const line = state.doc.line(n);
+    const raw = n === cursorLine;
     const img = IMAGE.exec(line.text);
-    if (img) builder.add(line.to, line.to, Decoration.widget({ widget: new ImageWidget(img[2], img[1]), side: 1, block: true }));
+    if (img) {
+      if (!raw) decos.push(hide.range(line.from + img.index, line.from + img.index + img[0].length));
+      decos.push(Decoration.widget({ widget: new ImageWidget(img[2], img[1]), side: 1, block: true }).range(line.to));
+      continue;
+    }
+    for (const m of line.text.matchAll(ATTACHMENT_LINK)) {
+      const start = line.from + m.index!, end = start + m[0].length, labelEnd = start + 1 + m[1].length;
+      if (!raw && m[1].length) {
+        decos.push(hide.range(start, start + 1), fileName.range(start + 1, labelEnd), hide.range(labelEnd, end));
+      }
+    }
     // A chip after each PDF link, so a citation next to the file's link gets its own.
-    if (!img) for (const pdf of line.text.matchAll(PDF)) {
+    for (const pdf of line.text.matchAll(PDF)) {
       const at = line.from + pdf.index! + pdf[0].length;
-      builder.add(at, at, Decoration.widget({ widget: new PdfChip(pdf[2], pdf[1], pdf[3] ?? null), side: 1 }));
+      decos.push(Decoration.widget({ widget: new PdfChip(pdf[2], pdf[1], pdf[3] ?? null), side: 1 }).range(at));
     }
   }
-  return builder.finish();
+  return Decoration.set(decos, true);
 }
 
 export const inlineMedia = StateField.define<DecorationSet>({
   create: build,
-  update(v, tr) { return tr.docChanged ? build(tr.state) : v; },
+  update(v, tr) {
+    if (tr.docChanged) return build(tr.state);
+    // Moving the cursor to another line shows that line's Markdown and tidies the one it left.
+    if (tr.selection && tr.startState.doc.lineAt(tr.startState.selection.main.head).number !== tr.state.doc.lineAt(tr.state.selection.main.head).number) return build(tr.state);
+    return v;
+  },
   provide: (f) => EditorView.decorations.from(f)
 });
 
 export const mediaTheme = EditorView.theme({
   '.cm-inline-image': { display: 'block', maxWidth: '100%', maxHeight: '420px', borderRadius: '8px', margin: '6px 0', border: '1px solid var(--line)' },
+  '.cm-attach-name': { color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '2px' },
   '.cm-pdf-chip': { marginLeft: '8px', font: '600 11px var(--font-mono)', color: 'var(--accent)', border: '1px solid var(--line-strong)', borderRadius: '10px', padding: '1px 8px', cursor: 'pointer' }
 });
