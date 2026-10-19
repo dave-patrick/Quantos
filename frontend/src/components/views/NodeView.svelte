@@ -17,6 +17,7 @@
   import ConflictView from '../ConflictView.svelte';
   import NodeMenu from '../NodeMenu.svelte';
   import TaskPanel from '../TaskPanel.svelte';
+  import Whiteboard from '../Whiteboard.svelte';
   import { recent } from '../../lib/recent.svelte';
   import { openByTitle } from '../../lib/links.svelte';
 
@@ -188,11 +189,15 @@
             {#if doc.node.archived}<span class="badge warn">archived</span>{/if}
             <span>Edited {ago(doc.node.modified)}</span>
           </div>
-          <fieldset class="plain" disabled={noEdit}>
-            {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
-            <Properties {doc} />
-          </fieldset>
-          {#if zoomedBody}
+          {#if doc.node.type !== 'canvas'}
+            <fieldset class="plain" disabled={noEdit}>
+              {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
+              <Properties {doc} />
+            </fieldset>
+          {/if}
+          {#if doc.node.type === 'canvas'}
+            <Whiteboard {doc} />
+          {:else if zoomedBody}
             {#key zoom?.line}
               <Editor text={zoomedBody.text} readOnly={noEdit} onchange={editZoomed} onsave={() => doc.save()} bind:view />
             {/key}

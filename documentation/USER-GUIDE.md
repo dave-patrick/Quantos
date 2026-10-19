@@ -96,6 +96,14 @@ Windows-only features (below) works the same.
   (regular expressions, with `$1` for a captured group) are options. Properties, links and task
   markers are never changed, and locked notes are skipped. *Undo* in the message afterwards puts the
   notes back (any you've edited since keep your newer text), and each note's history has its old text.
+- **Whiteboards:** *New whiteboard* in the command palette. Double-click the board for a text card
+  (Markdown, math and diagrams work), or add a **Note** (shows the note and opens it on double-click),
+  a **Link** or a **Group** (cards on a group move with it). Drag a card to move it, its corner to
+  resize, and one of its edge dots onto another card to draw an arrow (or onto empty space for a new,
+  connected card); double-click an arrow to label it. Shift-drag selects several; colour, `Del`,
+  `Ctrl+D` duplicate, arrow keys nudge, `Ctrl+Z` undo. Drag the board to pan, `Ctrl`+scroll to zoom,
+  *Fit* to see everything. A whiteboard is a note (`type: canvas`) holding a JSON Canvas block, the
+  open format other tools read, so it has history and search like any note.
 - **Presenting:** *Present* in a note's `⋮` menu (or `Ctrl+Alt+P`) shows it full screen as slides. A
   `---` line with a blank line above it starts a new slide; a note without any is split at its `#` and
   `##` headings. Lines after a `Notes:` line are speaker notes: press `N` to see them. Arrows, Space

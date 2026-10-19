@@ -8,6 +8,7 @@ import { prefs } from './prefs.svelte';
 import { presenter } from './present.svelte';
 import { focus } from './focus.svelte';
 import { recorder } from './recorder.svelte';
+import { emptyCanvas, serializeCanvas } from './canvas';
 import type { NodeDto } from './types';
 
 export interface Command {
@@ -90,6 +91,13 @@ export async function newNote(where: 'current' | 'new' | 'other' = 'new', title 
   return node;
 }
 
+/** A whiteboard is a note holding a JSON Canvas block (Release 1.2). */
+export async function newWhiteboard(where: 'current' | 'new' | 'other' = 'new') {
+  const node = await api.post<NodeDto>('nodes', { title: 'Whiteboard', type: 'canvas', workspace: app.workspace, body: serializeCanvas('', emptyCanvas()) });
+  await openNode(node.id, where, node.title);
+  return node;
+}
+
 export function openToday(where: 'current' | 'new' | 'other' = 'current') {
   return layout.open({ kind: 'daily', title: 'Daily' }, where);
 }
@@ -98,6 +106,7 @@ register(
   { id: 'palette.files', title: 'Quick open', group: 'Navigate', keys: 'Mod+P', icon: 'search', run: () => { app.paletteMode = 'files'; app.paletteOpen = true; } },
   { id: 'palette.commands', title: 'Command palette', group: 'Navigate', keys: 'Mod+Shift+P', icon: 'command', run: () => { app.paletteMode = 'commands'; app.paletteOpen = true; } },
   { id: 'palette.files.k', title: 'Quick open (alternative)', group: 'Navigate', keys: 'Mod+K', icon: 'search', run: () => { app.paletteMode = 'files'; app.paletteOpen = true; } },
+  { id: 'whiteboard.new', title: 'New whiteboard', group: 'Create', icon: 'layers', run: () => newWhiteboard().catch((e) => app.error(e)) },
   { id: 'note.new', title: 'New note', group: 'Create', keys: 'Mod+N', icon: 'plus', run: () => newNote().catch((e) => app.error(e)) },
   { id: 'daily.today', title: 'Open daily stream', group: 'Navigate', keys: 'Mod+Shift+D', icon: 'calendar', run: () => openToday() },
   { id: 'search.open', title: 'Search the vault', group: 'Navigate', keys: 'Mod+Shift+F', icon: 'search', run: () => layout.open({ kind: 'search', title: 'Search' }, 'current') },
