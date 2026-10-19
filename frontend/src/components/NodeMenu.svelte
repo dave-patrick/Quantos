@@ -9,6 +9,7 @@
   import { templatesStore } from '../lib/templates.svelte';
   import { presenter } from '../lib/present.svelte';
   import { focus } from '../lib/focus.svelte';
+  import { recorder } from '../lib/recorder.svelte';
 
   let { doc, paneIndex, oncopymd, oncopyrich }: { doc: Doc; paneIndex: number; oncopymd: () => void; oncopyrich: () => void } = $props();
   let open = $state(false);
@@ -141,6 +142,7 @@
       {:else}
         <button role="menuitem" onclick={() => { open = false; layout.open({ kind: 'node', nodeId: doc.id, title: doc.node?.title }, paneIndex === 0 ? 'other' : 'other'); }}><Icon name="split" size={14} /> Open in other pane</button>
         {#if doc.node?.type === 'task'}<button role="menuitem" onclick={() => { open = false; focus.start(focus.lastLength, { id: doc.id, title: doc.node?.title ?? '', workspace: doc.node?.workspace }); }}><Icon name="timer" size={14} /> Focus on this task ({focus.lastLength} min)</button>{/if}
+        <button role="menuitem" onclick={() => { open = false; recorder.start(); }}><Icon name="mic" size={14} /> Record audio here</button>
         <button role="menuitem" onclick={() => { open = false; presenter.open(doc.node?.title ?? '', doc.body); }}><Icon name="play" size={14} /> Present</button>
         <button role="menuitem" onclick={() => { open = false; oncopymd(); }}><Icon name="copy" size={14} /> Copy as Markdown</button>
         <button role="menuitem" onclick={() => { open = false; oncopyrich(); }}><Icon name="copy" size={14} /> Copy as rich text</button>

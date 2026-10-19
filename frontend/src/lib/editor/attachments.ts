@@ -85,6 +85,41 @@ class ImageWidget extends WidgetType {
   }
 }
 
+/** Recordings and other audio play in place, with a speed control for listening back quickly. */
+class AudioWidget extends WidgetType {
+  constructor(readonly src: string, readonly name: string) { super(); }
+  eq(o: AudioWidget) { return o.src === this.src; }
+  toDOM() {
+    const box = document.createElement('div');
+    box.className = 'cm-audio';
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.preload = 'metadata';
+    audio.src = '/api/files/' + this.src;
+    audio.setAttribute('aria-label', this.name || 'Recording');
+    // Recordings made in a browser carry no length; seeking to the end once makes the player find it.
+    audio.addEventListener('loadedmetadata', () => {
+      if (audio.duration !== Infinity && !Number.isNaN(audio.duration)) return;
+      audio.addEventListener('timeupdate', () => { audio.currentTime = 0; }, { once: true });
+      audio.currentTime = 1e9;
+    }, { once: true });
+    const speed = document.createElement('button');
+    speed.className = 'cm-audio-speed';
+    speed.textContent = '1×';
+    speed.title = 'Playback speed';
+    const speeds = [1, 1.25, 1.5, 2, 0.75];
+    speed.onclick = () => {
+      const next = speeds[(speeds.indexOf(audio.playbackRate) + 1) % speeds.length];
+      audio.playbackRate = next;
+      speed.textContent = next + '×';
+    };
+    box.append(audio, speed);
+    return box;
+  }
+  ignoreEvent() { return true; }
+  get estimatedHeight() { return 48; }
+}
+
 class PdfChip extends WidgetType {
   constructor(readonly path: string, readonly name: string, readonly page: string | null) { super(); }
   eq(o: PdfChip) { return o.path === this.path && o.page === this.page; }
@@ -100,6 +135,7 @@ class PdfChip extends WidgetType {
 }
 
 const IMAGE = /!\[([^\]]*)\]\((attachments\/[^)\s]+\.(?:png|jpe?g|gif|webp|svg))\)/i;
+const AUDIO = /\[([^\]]*)\]\((attachments\/[^)\s]+\.(?:mp3|m4a|wav|webm|ogg|opus))\)/gi;
 const PDF = /\[([^\]]*)\]\((attachments\/[^)\s#]+\.pdf)(?:#page=(\d+))?\)/gi;
 
 // Links to stored files: [name](attachments/ab/abcdef….ext), not images.
@@ -137,6 +173,10 @@ function build(state: EditorState): DecorationSet {
       const start = line.from + m.index!, end = start + m[0].length, labelEnd = start + 1 + m[1].length;
       decos.push(hide.range(start, start + 1), Decoration.mark({ class: 'cm-web-link', attributes: { 'data-href': m[2], title: m[2] } }).range(start + 1, labelEnd), hide.range(labelEnd, end));
     }
+    // Audio links get a player under the line.
+    for (const a of line.text.matchAll(AUDIO)) {
+      decos.push(Decoration.widget({ widget: new AudioWidget(a[2], a[1]), side: 1, block: true }).range(line.to));
+    }
     // A chip after each PDF link, so a citation next to the file's link gets its own.
     for (const pdf of line.text.matchAll(PDF)) {
       const at = line.from + pdf.index! + pdf[0].length;
@@ -161,5 +201,8 @@ export const mediaTheme = EditorView.theme({
   '.cm-inline-image': { display: 'block', maxWidth: '100%', maxHeight: '420px', borderRadius: '8px', margin: '6px 0', border: '1px solid var(--line)' },
   '.cm-attach-name': { color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '2px' },
   '.cm-web-link': { color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '2px', cursor: 'pointer' },
+  '.cm-audio': { display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 8px' },
+  '.cm-audio audio': { height: '36px', maxWidth: '100%', flex: '1 1 auto' },
+  '.cm-audio-speed': { font: '600 11px var(--font-mono)', color: 'var(--text-muted)', background: 'var(--bg-raised)', border: '1px solid var(--line-strong)', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
   '.cm-pdf-chip': { marginLeft: '8px', font: '600 11px var(--font-mono)', color: 'var(--accent)', border: '1px solid var(--line-strong)', borderRadius: '10px', padding: '1px 8px', cursor: 'pointer' }
 });

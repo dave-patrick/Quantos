@@ -15,7 +15,7 @@ public sealed class AttachmentStore(WriteService writes)
 {
     private Vault Vault => writes.Vault;
     private static readonly HashSet<string> Allowed =
-        [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".pdf", ".txt", ".csv", ".md", ".docx", ".xlsx", ".pptx", ".zip", ".mp3", ".m4a", ".wav", ".mp4", ".json"];
+        [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".pdf", ".txt", ".csv", ".md", ".docx", ".xlsx", ".pptx", ".zip", ".mp3", ".m4a", ".wav", ".webm", ".ogg", ".opus", ".mp4", ".json"];
 
     public (string Path, bool Existed) Add(Stream content, string fileName, Actor actor)
     {

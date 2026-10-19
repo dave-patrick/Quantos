@@ -47,6 +47,9 @@ local commands; access files outside the vault; network requests; manage permiss
 
 - Grants live in `client-data\settings\permissions.json`, **outside the vault**, so content in the
   vault can never grant itself permissions.
+- The Windows client refuses device permission requests (microphone, camera, location) from any page
+  that isn't Quantos's own; Quantos's pages still go through WebView2's own prompt, and only the
+  recorder asks, for the microphone.
 - Find and replace across notes is the person's alone; agents and plugins edit one note at a time.
 - A **locked** note (`locked: true`) refuses edits from every actor, the person included, until it is
   unlocked; only the person (app, browser session or CLI) can unlock it.

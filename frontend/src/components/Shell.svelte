@@ -14,6 +14,7 @@
   import Toasts from './Toasts.svelte';
   import Dialog from './Dialog.svelte';
   import Presentation from './Presentation.svelte';
+  import RecorderBar from './RecorderBar.svelte';
   import Ask from './Ask.svelte';
   import AiResult from './AiResult.svelte';
   import { aiJob } from '../lib/ai.svelte';
@@ -51,6 +52,7 @@
 <Toasts />
 <Dialog />
 <Presentation />
+<RecorderBar />
 <Ask />
 <AiResult />
 

@@ -14,6 +14,7 @@
     'check-square': 'M4 4h16v16H4zM8 12l3 3 5-6',
     file: 'M6 3h8l4 4v14H6zM14 3v4h4',
     play: 'M7 4l13 8-13 8z',
+    mic: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3M8 21h8',
     'file-text': 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6',
     folder: 'M3 6h6l2 2h10v11H3z',
     'folder-open': 'M3 6h6l2 2h8v3M3 6v13h15l3-8H6l-3 8',

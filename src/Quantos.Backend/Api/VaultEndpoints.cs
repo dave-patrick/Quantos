@@ -100,7 +100,9 @@ public static class VaultEndpoints
             var type = Path.GetExtension(abs).ToLowerInvariant() switch
             {
                 ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", ".gif" => "image/gif", ".webp" => "image/webp", ".svg" => "image/svg+xml",
-                ".pdf" => "application/pdf", ".txt" or ".md" => "text/plain; charset=utf-8", _ => "application/octet-stream"
+                ".pdf" => "application/pdf", ".txt" or ".md" => "text/plain; charset=utf-8",
+                ".mp3" => "audio/mpeg", ".m4a" => "audio/mp4", ".wav" => "audio/wav", ".webm" => "audio/webm", ".ogg" or ".opus" => "audio/ogg", ".mp4" => "video/mp4",
+                _ => "application/octet-stream"
             };
             return Results.File(abs, type, enableRangeProcessing: true);
         });

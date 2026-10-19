@@ -108,6 +108,11 @@ Windows-only features (below) works the same.
 - **Writing tools:** table of contents and outline zoom (list button), typewriter scrolling,
   word count and reading time, writing targets (note menu; saved with the note as `writing_target`), multiple cursors (`Alt`-drag for a
   column selection), folding headings and lists, copy as Markdown or rich text.
+- **Audio:** *Record audio here* in a note's `⋮` menu (or `Ctrl+Alt+A`, again to stop). A bar shows
+  the time and the input level; *Stop and save* stores the recording in the vault (Opus audio, about
+  half a megabyte a minute) and puts its link under the line you were on, or in today's daily note if
+  no note is open. The first time, allow Quantos to use the microphone. Audio files (recordings, MP3,
+  M4A, WAV, Ogg) play in the note, with a speed button for listening back faster.
 - **Images and files:** paste or drag them into a note. Identical files are stored once.
   PDFs open in a viewer with *Cite this page*.
 
@@ -309,6 +314,7 @@ approval in the Windows client.
 | Find and replace across notes | `Ctrl+Shift+H` |
 | Present the open note as slides | `Ctrl+Alt+P` |
 | Focus timer | `Ctrl+Alt+F` |
+| Record audio / stop | `Ctrl+Alt+A` |
 | Back / forward | `Alt+←` / `Alt+→` |
 | Split right / close tab | `Ctrl+\` / `Ctrl+W` |
 | Toggle sidebars | `Ctrl+[` / `Ctrl+]` |

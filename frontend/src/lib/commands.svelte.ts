@@ -7,6 +7,7 @@ import { app } from './state.svelte';
 import { prefs } from './prefs.svelte';
 import { presenter } from './present.svelte';
 import { focus } from './focus.svelte';
+import { recorder } from './recorder.svelte';
 import type { NodeDto } from './types';
 
 export interface Command {
@@ -107,6 +108,7 @@ register(
   { id: 'timeline.open', title: 'Open timeline', group: 'Navigate', icon: 'clock', run: () => layout.open({ kind: 'timeline', title: 'Timeline' }) },
   { id: 'trash.open', title: 'Open trash', group: 'Navigate', icon: 'trash', run: () => layout.open({ kind: 'trash', title: 'Trash' }) },
   { id: 'diagnostics.open', title: 'Vault diagnostics', group: 'Vault', icon: 'activity', run: () => layout.open({ kind: 'diagnostics', title: 'Vault diagnostics' }) },
+  { id: 'audio.record', title: 'Record audio into this note', group: 'Create', keys: 'Mod+Alt+A', icon: 'mic', run: () => { if (recorder.state === 'recording') recorder.stop(); else recorder.start(); } },
   { id: 'view.present', title: 'Present this note as slides', group: 'View', keys: 'Mod+Alt+P', icon: 'play', run: () => { const t = layout.activeTab; const d = t?.nodeId ? docs.peek(t.nodeId) : undefined; if (d?.node) presenter.open(d.node.title, d.body); else app.toast('Open a note to present it.', 'info'); } },
   { id: 'focus.open', title: 'Focus timer', group: 'Navigate', keys: 'Mod+Alt+F', icon: 'timer', run: () => layout.open({ kind: 'focus', title: 'Focus' }, 'current') },
   { id: 'sprints.open', title: 'Sprints', group: 'Navigate', icon: 'layers', run: () => layout.open({ kind: 'sprints', title: 'Sprints' }, 'current') },

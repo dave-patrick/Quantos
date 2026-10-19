@@ -147,6 +147,12 @@ public sealed class MainForm : Form
             }
         };
         core.NewWindowRequested += (_, args) => { args.Handled = true; OpenExternal(args.Uri); };
+        // Device permissions (the microphone, for recordings) are only ever asked for by Quantos's own pages,
+        // and WebView2 still asks the person; anything else is refused.
+        core.PermissionRequested += (_, args) =>
+        {
+            if (!args.Uri.StartsWith(Origin, StringComparison.OrdinalIgnoreCase)) args.State = CoreWebView2PermissionState.Deny;
+        };
         core.WebMessageReceived += (_, args) =>
         {
             // The bridge accepts messages only from the backend's origin.
