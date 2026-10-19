@@ -199,20 +199,23 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
         if (edge is null) return "PDF export needs Microsoft Edge, which wasn't found.";
         var profile = Path.Combine(Path.GetTempPath(), "quantos-pdf-" + Guid.NewGuid().ToString("N"));
         var psi = new ProcessStartInfo(edge) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true, RedirectStandardOutput = true };
-        foreach (var a in new[] { "--headless", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--disable-extensions", "--no-pdf-header-footer", $"--user-data-dir={profile}", $"--print-to-pdf={pdf}", new Uri(html).AbsoluteUri })
+        foreach (var a in new[] { "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--disable-extensions", "--no-pdf-header-footer", $"--user-data-dir={profile}", $"--print-to-pdf={pdf}", new Uri(html).AbsoluteUri })
             psi.ArgumentList.Add(a);
         try
         {
             using var p = Process.Start(psi)!;
-            // Edge writes the PDF well before it finishes shutting down: return once the file is complete.
-            var deadline = DateTime.UtcNow.AddSeconds(60);
+            // Wait for the file, not the process: msedge.exe may hand the job to another Edge process
+            // and exit at once, and Edge writes the PDF well before it finishes shutting down.
+            var started = DateTime.UtcNow;
+            var deadline = started.AddSeconds(60);
             long lastSize = -1;
             while (DateTime.UtcNow < deadline)
             {
-                if (p.WaitForExit(250)) break;
+                var exited = p.WaitForExit(250);
                 var size = File.Exists(pdf) ? new FileInfo(pdf).Length : 0;
                 if (size > 0 && size == lastSize) break;
                 lastSize = size;
+                if (exited && size == 0 && DateTime.UtcNow - started > TimeSpan.FromSeconds(15)) break; // nothing is coming
             }
             if (!p.HasExited) { try { p.Kill(true); } catch (InvalidOperationException) { } }
             if (!File.Exists(pdf) || new FileInfo(pdf).Length == 0) return DateTime.UtcNow >= deadline ? "PDF export timed out." : "Edge didn't produce a PDF.";
