@@ -11,6 +11,7 @@
   const vars = $derived(lookVars(prefs.look, base));
 
   function set(patch: Partial<Look>) { prefs.look = { ...prefs.look, ...patch }; }
+  let scaleDraft = $state<number | null>(null);
 
   function applyPreset(p: Preset) {
     prefs.look = { ...DEFAULT_LOOK, scale: prefs.look.scale, ...p.look };
@@ -105,7 +106,11 @@
     {#if look[key]}<span class="preview" style={`font-family:"${look[key]}"`}>Quantos Aa 123</span>{/if}
   </div>
 {/each}
-<div class="field"><span>Interface size</span><input type="range" aria-label="Interface size" min="0.9" max="1.25" step="0.05" value={look.scale} oninput={(e) => set({ scale: Number((e.target as HTMLInputElement).value) })} /> <span class="mono">{Math.round(look.scale * 100)}%</span></div>
+<!-- Applied when the slider is let go: resizing everything while dragging moves the slider under the pointer. -->
+<div class="field"><span>Interface size</span><input type="range" aria-label="Interface size" min="0.9" max="1.25" step="0.05" value={look.scale}
+  oninput={(e) => (scaleDraft = Number((e.target as HTMLInputElement).value))} onchange={(e) => { set({ scale: Number((e.target as HTMLInputElement).value) }); scaleDraft = null; }} />
+  <span class="mono">{Math.round((scaleDraft ?? look.scale) * 100)}%</span>
+  {#if look.scale !== 1}<button class="btn ghost" onclick={() => set({ scale: 1 })}>100%</button>{/if}</div>
 <div class="row">
   <button class="btn" onclick={saveToVault}>Save as a vault style…</button>
   <button class="btn ghost" onclick={() => { prefs.look = { ...DEFAULT_LOOK }; prefs.accent = 'blue'; app.theme = 'dark'; }}>Reset theme</button>

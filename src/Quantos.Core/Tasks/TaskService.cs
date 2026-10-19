@@ -198,8 +198,20 @@ public sealed partial class TaskService : ITaskHooks
         }
         SyncInline(id, TaskStatus.IsClosed(status), null, actor);
         if (TaskStatus.IsClosed(status) && !TaskStatus.IsClosed(before.Status)) GenerateNext(Require(id), actor);
+        // Finishing a task finishes its open subtasks too (and theirs); reopening it leaves them as they are.
+        if (status == TaskStatus.Done && before.Status != TaskStatus.Done && (_cascading ??= []).Add(id))
+        {
+            try
+            {
+                foreach (var child in List(before.Workspace, includeClosed: false).Where(t => Props.LinkId(t.Parent) == id && !TaskStatus.IsClosed(t.Status)))
+                    SetStatus(child.Id, TaskStatus.Done, actor);
+            }
+            finally { _cascading.Remove(id); }
+        }
         return Require(id);
     }
+
+    [ThreadStatic] private static HashSet<string>? _cascading;
 
     private static readonly HashSet<string> Editable =
     [

@@ -195,6 +195,8 @@ own tabs, splits and scroll positions.
   values already written stay in the notes. The list of trackers is kept in `settings.json`.
 - **My Day:** pick what you'll do today. Tasks planned for earlier days can be moved to today with
   one click. This changes the **planned** date only; due dates never move by themselves.
+- **Subtasks:** marking a task done also marks its open subtasks done (and theirs). Reopening it
+  leaves them as they are.
 - **Recurring tasks:** each occurrence is a separate task with its own history. The next one is
   calculated from the scheduled date, not from when you finished. A monthly task on the 31st falls on
   the last day of shorter months and goes back to the 31st after.
