@@ -27,6 +27,18 @@ async function insertFiles(view: EditorView, files: File[], pos: number) {
 export const attachmentDrop = EditorView.domEventHandlers({
   paste(event, view) {
     const files = [...(event.clipboardData?.files ?? [])];
+    // A web address pasted over selected words makes them a link.
+    const text = event.clipboardData?.getData('text/plain')?.trim() ?? '';
+    const sel = view.state.selection.main;
+    if (!files.length && !sel.empty && /^https?:\/\/\S+$/i.test(text)) {
+      const label = view.state.sliceDoc(sel.from, sel.to);
+      if (!label.includes('\n') && !/[[\]]/.test(label)) {
+        event.preventDefault();
+        const insert = `[${label}](${text})`;
+        view.dispatch({ changes: { from: sel.from, to: sel.to, insert }, selection: { anchor: sel.from + insert.length }, userEvent: 'input.paste' });
+        return true;
+      }
+    }
     if (!files.length) return false;
     event.preventDefault();
     insertFiles(view, files, view.state.selection.main.head);

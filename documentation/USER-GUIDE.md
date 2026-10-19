@@ -55,7 +55,8 @@ Windows-only features (below) works the same.
   rename updates the link text everywhere, including links in properties like *Owner*. If two
   notes share a title, Quantos asks which one you mean; it never guesses.
 - **Web links:** `[text](https://…)` reads as its text away from the cursor; click it to open it in
-  your browser. Links to stored files read as their names the same way.
+  your browser. Paste a web address over selected words to link them. Links to stored files read
+  as their names the same way.
 - **Shift-click** a link to open it in the other pane. `Ctrl`-click opens a new tab.
 - **Tasks:** type `- [ ] Something to do` in any note. It becomes a real task, kept in sync both
   ways: tick it in the note or in the task list and both change. Enter on an empty item ends the list.
