@@ -48,6 +48,25 @@ public class FrontmatterTests
         Assert.Equal("  padded ", parsed.GetString("e"));
     }
 
+    [Fact] // Views sort and filter numbers as numbers, and checkbox fields read true/false.
+    public void Unquoted_numbers_and_booleans_are_typed_but_text_stays_text()
+    {
+        var doc = FrontmatterDocument.Parse("---\nn: 1200\nneg: -3\nf: 2.5\nb: true\nB: FALSE\nnone: ~\nzip: 007\nver: 1.10\nplus: +5\nquoted: \"42\"\nwhen: 2026-10-18\ntime: 09:30\n---\nbody\n");
+        Assert.Equal(1200L, doc.Get("n"));
+        Assert.Equal(-3L, doc.Get("neg"));
+        Assert.Equal(2.5, doc.Get("f"));
+        Assert.Equal(true, doc.Get("b"));
+        Assert.Equal(false, doc.Get("B"));
+        Assert.Null(doc.Get("none"));
+        Assert.Equal("007", doc.Get("zip"));
+        Assert.Equal("1.10", doc.Get("ver"));
+        Assert.Equal("+5", doc.Get("plus"));
+        Assert.Equal("42", doc.Get("quoted"));
+        Assert.Equal("2026-10-18", doc.Get("when"));
+        Assert.Equal("09:30", doc.Get("time"));
+        Assert.Equal("true", Quantos.Core.Tasks.Props.Str(doc.Get("b")));
+    }
+
     [Fact]
     public void Invalid_yaml_is_reported_not_thrown()
     {

@@ -9,6 +9,7 @@ public sealed record PreserveBody(string Content, string? Label);
 public sealed record ReadBody(List<string>? Ids);
 public sealed record LayoutBody(JsonNode? Layout);
 public sealed record ExportBody(string? Format, string? Path);
+public sealed record TableExportBody(string? Name, string? Csv);
 
 public static class VaultEndpoints
 {
@@ -83,6 +84,9 @@ public static class VaultEndpoints
 
         api.MapPost("/export/node/{id}", (VaultHost host, HttpContext ctx, string id, ExportBody b) =>
             host.Require().Exports.ExportNode(id, Format(b.Format), ctx.Actor()));
+
+        api.MapPost("/export/table", (VaultHost host, HttpContext ctx, TableExportBody b) =>
+            host.Require().Exports.ExportTable(b.Name ?? "table", b.Csv ?? "", ctx.Actor()));
 
         api.MapPost("/export/folder", (VaultHost host, HttpContext ctx, ExportBody b) =>
             host.Require().Exports.ExportFolder(b.Path ?? throw new QuantosException("Choose a folder."), Format(b.Format), ctx.Actor()));

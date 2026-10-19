@@ -49,15 +49,14 @@ export const linkTarget = (value: unknown) => typeof value === 'string' ? /^\[\[
 
 /** Parses pasted rows: tab-separated (spreadsheets), CSV, or a Markdown table. First row is the header. */
 export function parsePasted(text: string): { headers: string[]; rows: string[][] } {
+  text = text.replace(/^﻿/, '');
   const lines = text.replace(/\r/g, '').split('\n').filter((l) => l.trim().length > 0);
   if (lines.length === 0) return { headers: [], rows: [] };
   let cells: string[][];
   if (lines[0].trim().startsWith('|')) {
     cells = lines.filter((l) => !/^\s*\|?\s*:?-{2,}/.test(l)).map((l) => l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim()));
-  } else if (lines[0].includes('\t')) {
-    cells = lines.map((l) => l.split('\t').map((c) => c.trim()));
   } else {
-    cells = lines.map(parseCsvLine);
+    cells = parseCsv(text).map((r) => r.map((c) => c.trim()));
   }
   // A single column without a title/name header is just a list of titles.
   if (cells.every((r) => r.length === 1) && !/^(title|name)$/i.test(cells[0][0])) return { headers: ['title'], rows: cells };
@@ -66,21 +65,45 @@ export function parsePasted(text: string): { headers: string[]; rows: string[][]
   return { headers: headers.map((h) => h.trim()), rows };
 }
 
-function parseCsvLine(line: string): string[] {
-  const out: string[] = [];
-  let cur = '', quoted = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+/** The separator a CSV file uses: tab, semicolon (Excel in many European locales) or comma. */
+function detectDelimiter(text: string): string {
+  const first = text.split(/\r?\n/, 1)[0] ?? '';
+  const count = (ch: string) => first.split(ch).length - 1;
+  if (count('\t') > 0) return '\t';
+  return count(';') > count(',') ? ';' : ',';
+}
+
+/** CSV per RFC 4180: quoted cells may hold separators, doubled quotes and line breaks. Blank lines are skipped. */
+export function parseCsv(text: string, delimiter = detectDelimiter(text)): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [], cell = '', quoted = false;
+  const endRow = () => { row.push(cell); if (row.some((c) => c.trim() !== '')) rows.push(row); row = []; cell = ''; };
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
     if (quoted) {
-      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
       else if (ch === '"') quoted = false;
-      else cur += ch;
-    } else if (ch === '"') quoted = true;
-    else if (ch === ',') { out.push(cur.trim()); cur = ''; }
-    else cur += ch;
+      else cell += ch;
+    } else if (ch === '"' && cell.trim() === '') { quoted = true; cell = ''; }
+    else if (ch === delimiter) { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; endRow(); }
+    else cell += ch;
   }
-  out.push(cur.trim());
-  return out;
+  if (cell !== '' || row.length) endRow();
+  return rows;
+}
+
+/** Rows as CSV that Excel opens correctly: UTF-8 marker, CRLF line ends, quotes only where needed. */
+export function toCsv(headers: string[], rows: string[][]): string {
+  const quote = (v: string) => (/[",\r\n;]/.test(v) || /^\s|\s$/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  return '﻿' + [headers, ...rows].map((r) => r.map((v) => quote(v ?? '')).join(',')).join('\r\n') + '\r\n';
+}
+
+/** Plain numbers and true/false become typed values; anything else (a code like "007", dates) stays text. */
+export function typedValue(v: string): string | number | boolean {
+  if (/^(true|false)$/i.test(v)) return v.toLowerCase() === 'true';
+  if (/^-?(0|[1-9]\d{0,14})(\.\d+)?$/.test(v)) return Number(v);
+  return v;
 }
 
 export const propertyKey = (header: string) => header.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '');

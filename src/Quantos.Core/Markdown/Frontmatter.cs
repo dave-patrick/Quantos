@@ -2,7 +2,7 @@ using System.Collections;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using YamlDotNet.Serialization;
+using YamlDotNet.RepresentationModel;
 
 namespace Quantos.Core.Markdown;
 
@@ -189,23 +189,51 @@ public sealed partial class FrontmatterDocument
 
     // ---- YAML helpers -------------------------------------------------------------------------
 
-    private static readonly IDeserializer Deserializer = new DeserializerBuilder().Build();
-
     private static Dictionary<string, object?> ParseYaml(string yaml)
     {
         if (string.IsNullOrWhiteSpace(yaml)) return new();
-        var result = Deserializer.Deserialize<object?>(yaml);
-        if (result is null) return new();
-        if (result is not IDictionary<object, object?> map) throw new FormatException("Frontmatter is not a mapping.");
-        return map.ToDictionary(kv => Convert.ToString(kv.Key, CultureInfo.InvariantCulture)!, kv => Normalize(kv.Value));
+        var stream = new YamlStream();
+        stream.Load(new StringReader(yaml));
+        if (stream.Documents.Count == 0) return new();
+        return stream.Documents[0].RootNode switch
+        {
+            YamlMappingNode map => Mapping(map),
+            YamlScalarNode { Value: null or "" } => new(),
+            _ => throw new FormatException("Frontmatter is not a mapping.")
+        };
     }
 
-    private static object? Normalize(object? value) => value switch
+    private static Dictionary<string, object?> Mapping(YamlMappingNode map)
     {
-        IDictionary<object, object?> map => map.ToDictionary(kv => Convert.ToString(kv.Key, CultureInfo.InvariantCulture)!, kv => Normalize(kv.Value)),
-        IList<object?> list => list.Select(Normalize).ToList(),
-        _ => value
+        var result = new Dictionary<string, object?>();
+        foreach (var (key, value) in map.Children) result[(key as YamlScalarNode)?.Value ?? key.ToString()] = Value(value);
+        return result;
+    }
+
+    private static object? Value(YamlNode node) => node switch
+    {
+        YamlMappingNode map => Mapping(map),
+        YamlSequenceNode seq => seq.Children.Select(Value).ToList(),
+        YamlScalarNode s => Scalar(s),
+        _ => node.ToString()
     };
+
+    /// <summary>
+    /// Unquoted true/false and null become those values, and an unquoted number becomes a number when
+    /// it reads back exactly as written (so 1.10, +5 and 007 stay text). Quoted values are always text.
+    /// </summary>
+    private static object? Scalar(YamlScalarNode s)
+    {
+        var text = s.Value ?? "";
+        if (s.Style != YamlDotNet.Core.ScalarStyle.Plain || !s.Tag.IsEmpty) return text;
+        if (text is "" or "~" || text.Equals("null", StringComparison.OrdinalIgnoreCase)) return null;
+        if (text.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
+        if (text.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
+        if (long.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var n) && n.ToString(CultureInfo.InvariantCulture) == text) return n;
+        if (text.Contains('.') && double.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var d)
+            && double.IsFinite(d) && d.ToString("R", CultureInfo.InvariantCulture) == text) return d;
+        return text;
+    }
 
     private static IEnumerable<string> Serialize(string key, object? value)
     {

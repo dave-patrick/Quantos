@@ -13,7 +13,7 @@ using Quantos.Core.Tasks;
 
 namespace Quantos.Core.Export;
 
-public enum ExportFormat { Markdown, Html, Pdf }
+public enum ExportFormat { Markdown, Html, Pdf, Csv }
 
 public sealed record ExportResult(string Path, ExportFormat Format, string? Note);
 
@@ -25,6 +25,18 @@ public sealed record ExportResult(string Path, ExportFormat Format, string? Note
 public sealed partial class ExportService(WriteService writes, QueryService queries)
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().DisableHtml().Build();
+
+    /// <summary>A table (a view or query's rows, made into CSV by the page) saved to Vault/exports.</summary>
+    public ExportResult ExportTable(string name, string csv, Actor actor)
+    {
+        writes.Permissions.Demand(actor, Permission.Read, $"Export {name}");
+        if (csv.Length > 50_000_000) throw new QuantosException("That table is too large to export.");
+        Directory.CreateDirectory(writes.Vault.Exports);
+        var stem = Storage.Vault.Slug(string.IsNullOrWhiteSpace(name) ? "table" : name) + "-" + writes.Clock.Now.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture);
+        var path = Unique(Path.Combine(writes.Vault.Exports, stem + ".csv"));
+        AtomicFile.WriteAllText(path, csv);
+        return new ExportResult(writes.Vault.Relative(path), ExportFormat.Csv, null);
+    }
 
     public ExportResult ExportNode(string id, ExportFormat format, Actor actor)
     {

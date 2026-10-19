@@ -3,6 +3,7 @@
   import { onChange } from '../lib/events';
   import { runQueryText, type QueryResult } from '../lib/query';
   import DataTable from './DataTable.svelte';
+  import { exportRowsAsCsv } from '../lib/csvexport';
   import Icon from './Icon.svelte';
 
   let { text, onedit }: { text: string; onedit: () => void } = $props();
@@ -24,6 +25,7 @@
   <div class="head">
     <Icon name="filter" size={13} /> <span>Query</span>
     {#if result && !result.error}<span class="faint">{result.total} result{result.total === 1 ? '' : 's'}</span>{/if}
+    {#if result && !result.error && result.rows.length}<button class="edit" onclick={() => exportRowsAsCsv('query', result!.columns, result!.rows)}><Icon name="download" size={12} /> CSV</button>{/if}
     <button class="edit" onclick={onedit}><Icon name="code" size={12} /> Edit query</button>
   </div>
   {#if result?.error}

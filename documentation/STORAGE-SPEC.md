@@ -73,6 +73,12 @@ the backend edits frontmatter by replacing only the lines of keys it changes, an
 keys at the end of the block. If the block can't be parsed as YAML, the file is read-only in
 the visual editor and opens in raw-source mode with a diagnostic.
 
+Property values are read as YAML writes them: unquoted `true`/`false` are booleans, unquoted `null`
+or `~` is empty, and an unquoted number is a number when it reads back exactly as written (`1200`,
+`-3`, `2.5`). Anything else is text, including quoted values (`"42"`) and values such as `007`,
+`1.10`, `+5`, dates and times. Quantos writes numbers and booleans unquoted and quotes text that
+would otherwise read as one.
+
 A Markdown file with no frontmatter, or with frontmatter missing `id`, is **adopted** on
 reconciliation: an `id` (and `schema: 1`) is added, everything else is left untouched.
 

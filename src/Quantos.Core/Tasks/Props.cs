@@ -17,6 +17,7 @@ public static class Props
         JsonElement { ValueKind: JsonValueKind.String } e => e.GetString() is { Length: > 0 } s ? s : null,
         JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
         JsonElement e => e.ToString(),
+        bool b => b ? "true" : "false",
         IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
         _ => v.ToString()
     };

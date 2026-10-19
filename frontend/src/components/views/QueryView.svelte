@@ -7,7 +7,8 @@
   import { layout, type Tab } from '../../lib/layout.svelte';
   import { views, type SavedView, type ViewLayout, type Filter } from '../../lib/views.svelte';
   import { supertags } from '../../lib/supertags.svelte';
-  import { cellValue, display, parsePasted, propertyKey, runQuery, type QueryRow } from '../../lib/query';
+  import { cellValue, display, parsePasted, propertyKey, runQuery, typedValue, type QueryRow } from '../../lib/query';
+  import { exportRowsAsCsv } from '../../lib/csvexport';
   import { openNode, whereFrom } from '../../lib/links.svelte';
   import DataTable from '../DataTable.svelte';
   import Icon from '../Icon.svelte';
@@ -120,6 +121,16 @@
     (document.querySelector(`.board [data-card="${id}"] button`) as HTMLElement | null)?.focus();
   }
 
+  /** A CSV file goes through the same preview as pasted rows, so nothing is created until you confirm. */
+  async function importFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 20_000_000) { app.toast('That file is over 20 MB. Split it and import the parts.', 'warn'); return; }
+    pasteText = await file.text();
+    input.value = '';
+  }
+
   // Structured paste: rows from a spreadsheet, CSV or Markdown table become notes with properties.
   const pasted = $derived(pasteText.trim() ? parsePasted(pasteText) : null);
   async function createPasted() {
@@ -129,7 +140,7 @@
       type: view.query.types?.[0] ?? 'note', tags: view.query.tags ?? [], workspace: app.workspace,
       rows: pasted.rows.map((cells) => ({
         title: cells[titleIndex] ?? '',
-        properties: Object.fromEntries(pasted.headers.map((h, i) => [propertyKey(h), cells[i] ?? '']).filter(([k, v], i) => i !== titleIndex && k && v !== ''))
+        properties: Object.fromEntries(pasted.headers.map((h, i) => [propertyKey(h), cells[i] ?? '']).filter(([k, v], i) => i !== titleIndex && k && v !== '').map(([k, v]) => [k, typedValue(v)]))
       }))
     };
     try {
@@ -161,7 +172,8 @@
             {#each layouts as l (l.key)}<button class:on={view.layout === l.key} title={l.label} onclick={() => (view.layout = l.key)}><Icon name={l.icon} size={14} /></button>{/each}
           </div>
           <button class="btn ghost" onclick={() => (editingSpec = !editingSpec)}><Icon name="filter" size={14} /> {editingSpec ? 'Hide query' : 'Edit query'}</button>
-          <button class="btn ghost" onclick={() => (pasteOpen = !pasteOpen)}><Icon name="upload" size={14} /> Paste rows</button>
+          <button class="btn ghost" onclick={() => (pasteOpen = !pasteOpen)}><Icon name="upload" size={14} /> Paste or import</button>
+          <button class="btn ghost" disabled={!rows.length} onclick={() => exportRowsAsCsv(view.name || 'view', columns, rows)}><Icon name="download" size={14} /> Export CSV</button>
           <label class="pin"><input type="checkbox" bind:checked={view.pinned} /> Pin</label>
           <label class="pin" title="Show as a folder in the sidebar"><input type="checkbox" bind:checked={view.virtualFolder} /> Folder</label>
           <button class="btn primary" onclick={save}>Save</button>
@@ -226,8 +238,9 @@
 
     {#if pasteOpen}
       <section class="paste">
-        <p class="muted">Paste rows from a spreadsheet, a CSV file or a Markdown table. The first row names the properties; a “title” or “name” column becomes the note title.
+        <p class="muted">Paste rows from a spreadsheet or a Markdown table, or import a CSV file (comma, semicolon or tab separated). The first row names the properties; a “title” or “name” column becomes the note title. Plain numbers and true/false become typed values.
           New notes get this view's type and supertags.</p>
+        <label class="btn ghost file"><Icon name="upload" size={14} /> Import a CSV file…<input type="file" accept=".csv,.tsv,.txt,text/csv" onchange={importFile} /></label>
         <textarea bind:value={pasteText} rows="6" placeholder={'title\tstatus\tdue\nQ4 budget\tdraft\t2026-11-01'}></textarea>
         {#if pasted}<p class="faint">{pasted.rows.length} row(s), properties: {pasted.headers.join(', ')}</p>{/if}
         <button class="btn primary" disabled={!pasted?.rows.length} onclick={createPasted}>Create {pasted?.rows.length ?? 0} note(s)</button>
@@ -302,6 +315,9 @@
   .seg button.on { background: var(--accent-wash); color: var(--accent); }
   .pin { display: flex; gap: 4px; align-items: center; font-size: 13px; color: var(--text-muted); }
   .spec, .paste { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); margin-bottom: 12px; display: grid; gap: 8px; }
+  .file { justify-self: start; cursor: pointer; }
+  .file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .file:focus-within { box-shadow: var(--focus-ring); }
   .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .row .input { width: auto; min-width: 120px; height: 28px; font-size: 13px; }
   .row .input.small { min-width: 90px; }
