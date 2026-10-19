@@ -76,6 +76,25 @@ public class TaskAcceptanceTests
         Assert.Equal(TaskStatus.Done, T(v).Require(node.Id).Status);
     }
 
+    [Fact]
+    public void Trashing_a_task_takes_its_subtasks_with_it()
+    {
+        using var v = new TestVault();
+        var parent = T(v).Create(new CreateTaskRequest { Title = "Parent task", Workspace = "default" }, Actor.User);
+        var child = T(v).Create(new CreateTaskRequest { Title = "Subtask", Workspace = "default", Parent = parent.Id }, Actor.User);
+
+        v.Writes.Trash(parent.Id, Actor.User);
+
+        // The subtask is in the trash with the task it belongs to.
+        Assert.NotNull(v.Writes.TrashBin.FindById(child.Id));
+
+        // And restoring the task brings the subtask back.
+        var entry = v.Writes.TrashBin.FindById(parent.Id)!;
+        v.Writes.Restore(entry.EntryId, Actor.User);
+        Assert.Null(v.Writes.TrashBin.FindById(child.Id));
+        Assert.NotNull(v.Writes.Get(child.Id));
+    }
+
     [Fact] // 13 tasks.3
     public void Rollover_changes_planned_dates_but_not_due_dates()
     {

@@ -2,6 +2,8 @@
   import { onMount, tick } from 'svelte';
   import { api } from '../lib/api';
   import { bridge } from '../lib/platform';
+  import { normalizeKey } from '../lib/commands.svelte';
+  import { prefs } from '../lib/prefs.svelte';
 
   /** The global quick-capture window (Windows client), routed to a workspace (BUILD-PLAN 8E.1-2). */
   const UNSENT = 'quantos.capture.unsent';
@@ -26,12 +28,13 @@
 
   function focus() { tick().then(() => area?.focus()); }
 
-  async function submit() {
+  async function submit(to?: 'daily' | 'inbox' | 'task') {
     if (!text.trim()) return;
+    const where = to ?? target;
     try {
-      await api.post('capture', { text, workspace, target });
+      await api.post('capture', { text, workspace, target: where });
       localStorage.setItem('quantos.capture.ws', workspace);
-      localStorage.setItem('quantos.capture.target', target);
+      localStorage.setItem('quantos.capture.target', where);
       text = '';
       message = 'Captured.';
       setTimeout(() => bridge.send({ type: 'close-popup' }), 350);
@@ -39,17 +42,23 @@
   }
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && (e.ctrlKey || !e.shiftKey)) { e.preventDefault(); submit(); }
+    // The keys the person set for the scratchpad's "send to" work here too.
+    const combo = normalizeKey(e);
+    const send = prefs.scratchTargets.find((t) => t.keys && t.keys === combo && (t.kind === 'daily' || t.kind === 'inbox' || t.kind === 'task'));
+    if (send) { e.preventDefault(); submit(send.kind as 'daily' | 'inbox' | 'task'); return; }
+    if (e.key === 'Enter' && (e.ctrlKey || !e.shiftKey)) { e.preventDefault(); submit(); return; }
+    // Ctrl+T captures straight to a task.
+    if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 't') { e.preventDefault(); submit('task'); }
   }
 </script>
 
 <main class="capture">
-  <textarea aria-label="Capture" bind:this={area} bind:value={text} {onkeydown} placeholder="Capture a thought. Enter saves, Shift+Enter adds a line."></textarea>
+  <textarea aria-label="Capture" bind:this={area} bind:value={text} {onkeydown} placeholder="Capture a thought. Enter saves, Ctrl+T saves a task, Shift+Enter adds a line."></textarea>
   <footer>
     <select bind:value={target} aria-label="Destination"><option value="daily">Today's note</option><option value="inbox">New note</option><option value="task">New task</option></select>
     <select bind:value={workspace} aria-label="Workspace">{#each workspaces as w (w)}<option value={w}>{w}</option>{/each}</select>
     <span class="msg">{message}</span>
-    <button class="btn primary" onclick={submit} disabled={!text.trim()}>Capture</button>
+    <button class="btn primary" onclick={() => submit()} disabled={!text.trim()}>Capture</button>
   </footer>
 </main>
 

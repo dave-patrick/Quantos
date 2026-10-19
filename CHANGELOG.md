@@ -7,6 +7,13 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Trashing a task takes its subtasks with it, and restoring it brings them back.
+- Right-click a file in the file tree for what can be done with it: open it, open it in the other
+  pane, rename it, export it as Markdown or HTML, or move it to the trash.
+- The quick capture window takes **Ctrl+T** for a task, and the "send to" keys you set for the
+  scratchpad work there too.
+- *Vault diagnostics* says what it found when you check the vault's integrity, instead of leaving
+  the button looking idle.
 - **Publish a folder as a website:** *Publish this folder…* in the workspace menu makes a small
   site from the notes of a workspace, or of a folder linked in from elsewhere: a page per note with
   its backlinks and outgoing links, an index you can search, and a graph of how the notes connect.

@@ -30,6 +30,7 @@
   onMount(load);
   const report = $derived(status?.reconcile);
   const all = $derived([...(report?.diagnostics ?? []), ...(integrity?.diagnostics ?? [])]);
+  const problems = $derived((integrity?.diagnostics ?? []).filter(d => d.severity !== 'info').length);
 </script>
 
 <div class="scroll view">
@@ -60,8 +61,11 @@
         {/if}
         <div class="row">
           <button class="btn" disabled={busy} onclick={rebuild}><Icon name="refresh" size={14} /> Rebuild cache</button>
-          <button class="btn" disabled={busy} onclick={check}><Icon name="shield" size={14} /> Check integrity</button>
+          <button class="btn" disabled={busy} onclick={check}><Icon name="shield" size={14} /> {busy ? 'Checking…' : 'Check integrity'}</button>
         </div>
+        {#if integrity}
+          <p class="muted">Checked {integrity.checked} file{integrity.checked === 1 ? '' : 's'}: {problems} problem{problems === 1 ? '' : 's'} found.</p>
+        {/if}
         <p class="faint small">The cache lives outside the vault and can always be rebuilt from your files.</p>
       </section>
 

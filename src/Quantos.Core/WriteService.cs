@@ -424,8 +424,22 @@ public sealed class WriteService
             Journal.Execute(op);
             Cache.Remove(node.Path);
             Changes.Publish(new ChangeEvent(ChangeKind.Trashed, id, null, node.Path, Origin: actor.ToString(), Data: entry));
+            // A task takes its subtasks with it: they are part of the same piece of work.
+            foreach (var child in SubtaskIds(id)) Trash(child, actor);
             return entry;
         }
+    }
+
+    /// <summary>The tasks that are subtasks of this one, and their subtasks, deepest last.</summary>
+    private List<string> SubtaskIds(string parentId)
+    {
+        var children = Cache.List(type: NodeTypes.Task, includeArchived: true, limit: 1_000_000)
+            .Where(t => string.Equals(Tasks.Props.LinkId(Tasks.Props.Str(t.Properties, Tasks.TaskKeys.Parent)), parentId, StringComparison.OrdinalIgnoreCase))
+            .Select(t => t.Id)
+            .ToList();
+        var all = new List<string>();
+        foreach (var child in children) { all.Add(child); all.AddRange(SubtaskIds(child)); }
+        return all;
     }
 
     public Node Restore(string entryId, Actor actor)
@@ -454,8 +468,27 @@ public sealed class WriteService
             var node = AfterJournal(target);
             History.Record(node.Id, Encoding.UTF8.GetBytes(node.Content), HistoryStore.Restore);
             Changes.Publish(new ChangeEvent(ChangeKind.Restored, node.Id, node.Path, entry.OriginalPath, node.Hash, actor.ToString(), entry));
+            // The subtasks that went with it come back too.
+            foreach (var child in TrashedSubtaskEntries(entry.Id)) Restore(child.EntryId, actor);
             return node;
         }
+    }
+
+    /// <summary>The trashed tasks that are subtasks of this one.</summary>
+    private List<TrashEntry> TrashedSubtaskEntries(string parentId)
+    {
+        var found = new List<TrashEntry>();
+        foreach (var e in TrashBin.List())
+        {
+            if (string.Equals(e.Id, parentId, StringComparison.OrdinalIgnoreCase)) continue;
+            var file = TrashBin.EntryFile(e);
+            if (!File.Exists(file)) continue;
+            string? parent;
+            try { parent = FrontmatterDocument.Parse(AtomicFile.ReadAllText(file)).GetString(Tasks.TaskKeys.Parent); }
+            catch (IOException) { continue; }
+            if (string.Equals(Tasks.Props.LinkId(parent), parentId, StringComparison.OrdinalIgnoreCase)) found.Add(e);
+        }
+        return found;
     }
 
     private Node RestoreAttachment(TrashEntry entry, string file, Actor actor)

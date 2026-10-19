@@ -76,7 +76,7 @@ Windows-only features (below) works the same.
   plus marking it done, setting it to doing or waiting, a due date and a priority. In a note,
   right-click the task line to move the task itself to the trash, or *Delete this block* to take
   just the line out of the note. A task in the trash can be brought back from *Trash* in the
-  sidebar.
+  sidebar. Trashing a task takes its subtasks with it, and restoring it brings them back.
 - **Embeds:** `![[Note]]` shows another note (or `![[Note#Heading]]`, `![[Note#^block]]`) inline.
 - **Synced blocks:** select text, open the command palette (`Ctrl+Shift+P`) and choose
   *Make selection a synced block*. Insert it elsewhere with *Insert synced block*. Editing any copy

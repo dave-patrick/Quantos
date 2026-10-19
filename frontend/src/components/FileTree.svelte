@@ -8,6 +8,7 @@
   import type { NodeDto, TreeFolder, TreeNode } from '../lib/types';
   import Icon from './Icon.svelte';
   import TreeBranch from './TreeBranch.svelte';
+  import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
 
   let tree = $state<TreeFolder | null>(null);
   let filter = $state('');
@@ -109,6 +110,54 @@
     const clean = name.trim().toLowerCase().replace(/[^\w\- ]+/g, '').replace(/\s+/g, '_');
     try { await api.post('folders', { path: `${parent}/${clean}` }); load(); } catch (e) { app.error(e); }
   }
+
+  // The right mouse button on a file in the tree: what can be done with it.
+  let menu = $state<{ x: number; y: number; node: TreeNode } | null>(null);
+
+  function openMenu(e: MouseEvent, n: TreeNode) {
+    e.preventDefault();
+    menu = { x: e.clientX, y: e.clientY, node: n };
+  }
+
+  async function rename(n: TreeNode) {
+    const title = await app.ask('Rename', { value: n.title, confirmLabel: 'Rename' });
+    if (!title?.trim()) return;
+    try { await api.post(`nodes/${n.id}/rename`, { title: title.trim() }); load(); } catch (e) { app.error(e); }
+  }
+
+  async function exportNote(n: TreeNode, format: 'md' | 'html') {
+    try {
+      const r = await api.post<{ path: string; note: string | null }>(`export/node/${n.id}`, { format });
+      app.toast(`Exported to ${r.path}`, 'ok');
+    } catch (e) { app.error(e); }
+  }
+
+  async function trash(n: TreeNode) {
+    try {
+      await api.post(`nodes/${n.id}/trash`);
+      app.toast('Moved to trash.', 'ok', { label: 'Undo', run: async () => {
+        const entries = await api.get<{ entryId: string; id: string }[]>('trash');
+        const entry = entries.find((e) => e.id === n.id);
+        if (entry) await api.post(`trash/${entry.entryId}/restore`);
+      } });
+      load();
+    } catch (e) { app.error(e); }
+  }
+
+  const menuItems = $derived.by((): ContextMenuItem[] => {
+    const n = menu?.node;
+    if (!n) return [];
+    return [
+      { label: 'Open', icon: 'file-text', run: () => openNode(n.id, 'current', n.title) },
+      { label: 'Open in the other pane', icon: 'split', run: () => openNode(n.id, 'other', n.title) },
+      { label: 'Rename…', icon: 'edit', run: () => rename(n) },
+      { separator: true },
+      { label: 'Export as Markdown', icon: 'download', run: () => exportNote(n, 'md') },
+      { label: 'Export as HTML', icon: 'download', run: () => exportNote(n, 'html') },
+      { separator: true },
+      { label: 'Move to trash', icon: 'trash', danger: true, run: () => trash(n) }
+    ];
+  });
 </script>
 
 <div class="files">
@@ -131,15 +180,19 @@
   <div class="scroll list" onkeydown={treeKeys}>
     {#if matches}
       {#each matches as n (n.id)}
-        <button class="row" class:on={n.id === activeId} class:sel={selected.has(n.id)} onclick={(e) => click(e, n)}>
+        <button class="row" class:on={n.id === activeId} class:sel={selected.has(n.id)} onclick={(e) => click(e, n)} oncontextmenu={(e) => openMenu(e, n)}>
           <Icon name={n.type === 'task' ? 'check-square' : n.type === 'daily' ? 'calendar' : 'file-text'} size={14} /> <span>{n.title}</span>
         </button>
       {:else}<p class="faint pad">No matches.</p>{/each}
     {:else if tree}
-      <TreeBranch folder={tree} depth={0} {selected} {activeId} onclick={click} onmove={moveTo} onnewnote={newNote} onnewfolder={newFolder} root />
+      <TreeBranch folder={tree} depth={0} {selected} {activeId} onclick={click} oncontextmenu={openMenu} onmove={moveTo} onnewnote={newNote} onnewfolder={newFolder} root />
     {/if}
   </div>
 </div>
+
+{#if menu}
+  <ContextMenu x={menu.x} y={menu.y} items={menuItems} onclose={() => (menu = null)} />
+{/if}
 
 <style>
   .files { flex: 1; display: flex; flex-direction: column; min-height: 0; }

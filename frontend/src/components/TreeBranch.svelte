@@ -3,9 +3,11 @@
   import Icon from './Icon.svelte';
   import Self from './TreeBranch.svelte';
 
-  let { folder, depth, selected, activeId, onclick, onmove, onnewnote, onnewfolder, root = false }: {
+  let { folder, depth, selected, activeId, onclick, oncontextmenu, onmove, onnewnote, onnewfolder, root = false }: {
     folder: TreeFolder; depth: number; selected: Set<string>; activeId: string | undefined;
-    onclick: (e: MouseEvent, n: TreeNode) => void; onmove: (ids: string[], folder: string) => void;
+    onclick: (e: MouseEvent, n: TreeNode) => void;
+    oncontextmenu?: (e: MouseEvent, n: TreeNode) => void;
+    onmove: (ids: string[], folder: string) => void;
     onnewnote: (folder?: string) => void; onnewfolder: (parent: string) => void; root?: boolean;
   } = $props();
 
@@ -47,11 +49,11 @@
 {/if}
 {#if open || root}
   {#each folder.folders as child (child.path)}
-    <Self folder={child} depth={depth + 1} {selected} {activeId} {onclick} {onmove} {onnewnote} {onnewfolder} />
+    <Self folder={child} depth={depth + 1} {selected} {activeId} {onclick} {oncontextmenu} {onmove} {onnewnote} {onnewfolder} />
   {/each}
   {#each folder.nodes as n (n.id)}
     <button class="row" class:on={n.id === activeId} class:sel={selected.has(n.id)} style="padding-left:{(depth + 1) * 12 + 14}px"
-      draggable="true" ondragstart={(e) => dragStart(e, n)} onclick={(e) => onclick(e, n)} title={n.path}>
+      draggable="true" ondragstart={(e) => dragStart(e, n)} onclick={(e) => onclick(e, n)} oncontextmenu={(e) => oncontextmenu?.(e, n)} title={n.path}>
       <Icon name={n.type === 'task' ? 'check-square' : n.type === 'daily' ? 'calendar' : n.type === 'person' ? 'user' : n.type === 'project' ? 'briefcase' : 'file-text'} size={14} />
       <span>{n.title}</span>
     </button>
