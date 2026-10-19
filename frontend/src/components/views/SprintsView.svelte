@@ -207,7 +207,7 @@
   .sp:hover { background: var(--bg-hover); }
   .sp.on { background: var(--bg-active); color: var(--text); }
   .sp .t { font-weight: 600; display: flex; gap: 6px; align-items: center; }
-  .sp .faint { font-size: 12px; }
+  .sp .faint { font-size: 12px; color: var(--text-muted); }
   .bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
   .bar span { display: block; height: 100%; background: var(--accent); }
   .state { font: 600 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line-strong); color: var(--text-muted); }
