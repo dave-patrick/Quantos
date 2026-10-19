@@ -34,7 +34,7 @@
   }
 </script>
 
-<div class="task p{task.priority ?? 0}" class:closed class:compact {draggable} {ondragstart} role="listitem">
+<div class="task p{task.priority ?? 0}" class:closed class:compact {draggable} {ondragstart} role="group" aria-label={task.title}>
   <span class="strip" aria-hidden="true"></span>
   <span class="main">
     <input type="checkbox" checked={task.status === 'done'} onchange={toggle} aria-label={closed ? 'Reopen task' : 'Complete task'} />

@@ -90,12 +90,14 @@
       <button class="icon-btn" aria-label="Next day" onclick={() => (day = addDays(day, 1))}><Icon name="arrow-right" /></button>
       <button class="btn ghost" onclick={() => (day = isoDate())}>Today</button>
     </header>
-    <div class="grid" bind:this={grid} style="height:{rows * rowPx}px" role="list"
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="grid" bind:this={grid} style="height:{rows * rowPx}px" role="region" aria-label="Schedule for {longDate(day)}"
       ondragover={(e) => e.preventDefault()} ondrop={(e) => grid && dropAt(e, grid)}>
       {#each Array(endHour - startHour) as _, h (h)}
-        <div class="hour" style="top:{h * (60 / slot) * rowPx}px"><span>{String(startHour + h).padStart(2, '0')}:00</span></div>
+        <div class="hour" aria-hidden="true" style="top:{h * (60 / slot) * rowPx}px"><span>{String(startHour + h).padStart(2, '0')}:00</span></div>
       {/each}
-      {#if nowLine >= 0}<div class="now" style="top:{nowLine}px"></div>{/if}
+      {#if nowLine >= 0}<div class="now" aria-hidden="true" style="top:{nowLine}px"></div>{/if}
+      <div class="blocks" role="list" aria-label="Scheduled tasks">
       {#each blocks as t (t.id)}
         <div class="block p{t.priority ?? 0}" class:done={t.status === 'done'} style="top:{top(t.timeBlock!.start)}px; height:{height(t)}px" role="listitem"
           draggable="true" ondragstart={(e) => { dragId = t.id; dragOffset = e.offsetY; }}>
@@ -108,6 +110,7 @@
           </span>
         </div>
       {/each}
+      </div>
     </div>
   </section>
 </div>
@@ -122,6 +125,8 @@
   .main { padding: 0 24px 40px; }
   header { display: flex; align-items: center; gap: 8px; padding: 16px 0; position: sticky; top: 0; background: var(--bg); z-index: 2; }
   h1 { font: 700 20px/1.2 var(--font-display); }
+  .blocks { position: absolute; inset: 0; pointer-events: none; }
+  .blocks .block { pointer-events: auto; }
   .grid { position: relative; margin: 10px 0 0 56px; border-left: 1px solid var(--line); }
   .hour { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line); }
   .hour span { position: absolute; left: -54px; top: -8px; font: 11px var(--font-mono); color: var(--text-faint); }

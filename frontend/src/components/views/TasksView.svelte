@@ -140,7 +140,7 @@
           <div class="column" role="list" ondragover={(e) => e.preventDefault()} ondrop={() => dropOn(name)}>
             <h2 class="label">{name} <span class="faint">{list.length}</span></h2>
             {#each list as t (t.id)}
-              <div class="card"><TaskRow task={t} compact draggable ondragstart={() => (dragId = t.id)} /></div>
+              <div class="card" role="listitem"><TaskRow task={t} compact draggable ondragstart={() => (dragId = t.id)} /></div>
             {/each}
           </div>
         {/each}

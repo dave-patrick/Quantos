@@ -106,7 +106,7 @@
   {#if nodes.length <= 1}
     <p class="faint empty">{centerId ? 'No links to or from this note yet.' : 'No linked notes yet.'}</p>
   {/if}
-  <svg {width} {height} role="img" aria-label="Link graph" onwheel={wheel} onpointerdown={down} onpointermove={move} onpointerup={() => (drag = null)} onpointerleave={() => (drag = null)}>
+  <svg {width} {height} role="group" aria-label="Link graph" onwheel={wheel} onpointerdown={down} onpointermove={move} onpointerup={() => (drag = null)} onpointerleave={() => (drag = null)}>
     <g transform="translate({width / 2 + view.x},{height / 2 + view.y}) scale({view.k})">
       {#each edges as e, i (i)}
         {@const a = byId.get(e.from)}{@const b = byId.get(e.to)}

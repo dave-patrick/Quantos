@@ -37,7 +37,7 @@
   function tabKeys(e: KeyboardEvent, tab: Tab) {
     const keys = pane.tabs.map((t) => t.key);
     const i = keys.indexOf(tab.key);
-    const strip = (e.currentTarget as HTMLElement).parentElement;
+    const strip = (e.currentTarget as HTMLElement).closest('[role=tablist]');
     const focusTab = (k: string | undefined) => {
       if (!k) return;
       e.preventDefault();
@@ -61,23 +61,26 @@
 <!-- Tracks which pane is active; focus changes already cover keyboard users. -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <section class="pane" class:focused onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
-  <div class="tabs" role="tablist">
+  <div class="tabs">
+    <div class="strip" role="tablist" aria-label="Open tabs">
     {#each pane.tabs as tab (tab.key)}
-      <div class="tab" class:active={tab.key === pane.active} class:pinned={tab.pinned} role="tab" tabindex={tab.key === pane.active ? 0 : -1}
-        aria-selected={tab.key === pane.active} draggable="true"
+      <!-- The tab is a button; the close button sits beside it, not inside (one control can't contain another). -->
+      <div class="tab" class:active={tab.key === pane.active} class:pinned={tab.pinned} role="presentation" draggable="true"
         ondragstart={() => (dragKey = tab.key)} ondragover={(e) => e.preventDefault()} ondrop={(e) => drop(e, tab)}
-        onclick={() => layout.activate(index, tab.key)} onauxclick={(e) => onAux(e, tab)}
-        onkeydown={(e) => tabKeys(e, tab)}
-        oncontextmenu={(e) => { e.preventDefault(); menu = { tab, x: e.clientX, y: e.clientY }; }}
-        title={tab.title}>
-        {#if tab.pinned}<Icon name="pin" size={12} />{/if}
-        <span class="title">{tab.title}</span>
-        {#if dirty(tab)}<span class="dot" title="Unsaved changes"></span>{/if}
+        onauxclick={(e) => onAux(e, tab)}
+        oncontextmenu={(e) => { e.preventDefault(); menu = { tab, x: e.clientX, y: e.clientY }; }}>
+        <button class="tab-button" role="tab" tabindex={tab.key === pane.active ? 0 : -1} aria-selected={tab.key === pane.active}
+          onclick={() => layout.activate(index, tab.key)} onkeydown={(e) => tabKeys(e, tab)} title={tab.title}>
+          {#if tab.pinned}<Icon name="pin" size={12} />{/if}
+          <span class="title">{tab.title}</span>
+          {#if dirty(tab)}<span class="dot" title="Unsaved changes"></span>{/if}
+        </button>
         {#if !tab.pinned}
-          <button class="close" aria-label="Close {tab.title}" onclick={(e) => { e.stopPropagation(); layout.close(index, tab.key); }}><Icon name="x" size={12} /></button>
+          <button class="close" tabindex="-1" aria-hidden="true" title="Close (Delete)" onclick={(e) => { e.stopPropagation(); layout.close(index, tab.key); }}><Icon name="x" size={12} /></button>
         {/if}
       </div>
     {/each}
+    </div>
     <div class="spacer"></div>
     <span class="count" title="Tabs in this pane (limit 10)">{pane.tabs.length}/10</span>
     {#if layout.panes.length > 1}
@@ -113,12 +116,15 @@
   .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .tabs { display: flex; align-items: stretch; height: var(--tab-h); background: var(--bg-raised); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; flex: none; }
   .tabs::-webkit-scrollbar { display: none; }
+  .strip { display: flex; align-items: stretch; min-width: 0; }
   .tab { display: flex; align-items: center; gap: 6px; max-width: 210px; min-width: 90px; padding: 0 6px 0 12px; border-right: 1px solid var(--line);
     color: var(--text-muted); font-size: 13px; cursor: default; user-select: none; position: relative; }
   .tab:hover { background: var(--bg-hover); color: var(--text-soft); }
   .tab.active { background: var(--bg); color: var(--text); }
   .pane.focused .tab.active::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--accent); }
   .tab.pinned { min-width: 0; max-width: 150px; padding-right: 10px; }
+  .tab-button { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: default; }
+  .tab-button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 3px; }
   .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
   .close { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 4px; border: 0; background: none; color: var(--text-faint); opacity: 0; }
