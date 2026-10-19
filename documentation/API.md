@@ -44,6 +44,8 @@ Authentication and headers: see [SECURITY-MODEL.md](SECURITY-MODEL.md).
 `GET /api/trash` · `POST /api/trash/{entry}/restore` · `DELETE /api/trash/{entry}?approval=` ·
 `GET|PUT /api/config/{name}` (settings, views, shortcuts, toolbar, automations, … `.json`) ·
 `GET|PUT /api/workspace-state/{ws}` · `POST /api/export/node/{id}` · `POST /api/export/folder` ·
+`POST /api/export/site` (publishes a workspace or a linked folder as a small website; takes
+`{ scope }`) · `POST /api/export/table` ·
 `POST /api/attachments?name=` (raw body) · `GET /api/attachments/audit` · `POST /api/attachments/trash` ·
 `GET /api/files/attachments/…` · `GET /api/diagnostics/integrity` · `GET /api/notifications` ·
 `POST /api/notifications/read`

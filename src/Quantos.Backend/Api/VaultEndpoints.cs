@@ -10,6 +10,7 @@ public sealed record PreserveBody(string Content, string? Label);
 public sealed record ReadBody(List<string>? Ids);
 public sealed record LayoutBody(JsonNode? Layout);
 public sealed record ExportBody(string? Format, string? Path);
+public sealed record PublishBody(string? Scope);
 public sealed record TableExportBody(string? Name, string? Csv);
 public sealed record McpSettingsBody(string? Program);
 
@@ -140,6 +141,10 @@ public static class VaultEndpoints
 
         api.MapPost("/export/folder", (VaultHost host, HttpContext ctx, ExportBody b) =>
             host.Require().Exports.ExportFolder(b.Path ?? throw new QuantosException("Choose a folder."), Format(b.Format), ctx.Actor()));
+
+        // Publishes a workspace, or a folder linked in from elsewhere, as a small website.
+        api.MapPost("/export/site", (VaultHost host, HttpContext ctx, PublishBody b) =>
+            host.Require().Exports.Publish(b.Scope ?? throw new QuantosException("Choose what to publish."), ctx.Actor()));
 
         // Attachments (images in notes, PDFs): served read-only from the vault's attachments folder.
         // Files that sit next to a note in a linked folder are served too, so another app's notes

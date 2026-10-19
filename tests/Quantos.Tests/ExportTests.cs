@@ -35,6 +35,31 @@ public class ExportTests
     }
 
     [Fact]
+    public void Publishing_makes_a_small_website()
+    {
+        using var v = new TestVault();
+        v.Writes.Create(new CreateNodeRequest { Title = "First", Body = "Hello." }, Actor.User);
+        v.Writes.Create(new CreateNodeRequest { Title = "Second", Body = "Links to [[First]]." }, Actor.User);
+
+        var result = v.Session.Exports.Publish("default", Actor.User);
+
+        var dir = Path.Combine(v.VaultPath, result.Path.Replace('/', Path.DirectorySeparatorChar));
+        Assert.True(File.Exists(Path.Combine(dir, "index.html")));
+        Assert.True(File.Exists(Path.Combine(dir, "first.html")));
+        Assert.True(File.Exists(Path.Combine(dir, "graph.html")));
+        // The index lists the notes, and a link points at the other page.
+        var index = File.ReadAllText(Path.Combine(dir, "index.html"));
+        Assert.Contains("First", index);
+        Assert.Contains("second.html", index);
+        var second = File.ReadAllText(Path.Combine(dir, "second.html"));
+        Assert.Contains("first.html", second);
+        // The note that is linked to says who links here.
+        Assert.Contains("Links to this note", File.ReadAllText(Path.Combine(dir, "first.html")));
+        // Publishing never changes the notes.
+        Assert.Equal(2, v.Session.Cache.Count());
+    }
+
+    [Fact]
     public void Folder_export_zips_every_note()
     {
         using var v = new TestVault();

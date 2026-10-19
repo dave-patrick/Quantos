@@ -4,6 +4,7 @@
   import { switchWorkspace } from '../lib/workspace';
   import Icon from './Icon.svelte';
   import { menu } from '../lib/menu';
+  import { bridge } from '../lib/platform';
 
   let open = $state(false);
   let creating = $state(false);
@@ -64,6 +65,16 @@
       app.toast(`“${target.name}” is unlinked. Its files were left alone.`, 'ok');
     } catch (e) { app.error(e); }
   }
+
+  /** Publishes the current workspace, or linked folder, as a small website. */
+  async function publish() {
+    open = false;
+    const scope = app.workspace;
+    try {
+      const r = await api.post<{ path: string; note: string | null }>('export/site', { scope });
+      app.toast(`Published ${r.note ?? 'the notes'} to ${r.path}.`, 'ok', { label: 'Open', run: () => bridge.send({ type: 'open-folder', path: r.path }) });
+    } catch (e) { app.error(e); }
+  }
 </script>
 
 <div class="switcher">
@@ -106,6 +117,7 @@
         <button role="menuitem" onclick={() => (creating = true)}><Icon name="plus" size={14} /> New workspace</button>
       {/if}
       <button role="menuitem" onclick={linkFolder}><Icon name="link" size={14} /> Link a folder…</button>
+      <button role="menuitem" onclick={publish}><Icon name="globe" size={14} /> Publish this folder…</button>
       {#if current}
         <button role="menuitem" onclick={unlinkFolder}><Icon name="x" size={14} /> Unlink “{current.name}”</button>
       {/if}

@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Markdig;
+using Quantos.Core.Cache;
 using Quantos.Core.Markdown;
 using Quantos.Core.Security;
 using Quantos.Core.Structure;
@@ -13,7 +14,7 @@ using Quantos.Core.Tasks;
 
 namespace Quantos.Core.Export;
 
-public enum ExportFormat { Markdown, Html, Pdf, Csv }
+public enum ExportFormat { Markdown, Html, Pdf, Csv, Site }
 
 public sealed record ExportResult(string Path, ExportFormat Format, string? Note);
 
@@ -107,6 +108,224 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
         }
         return new ExportResult(writes.Vault.Relative(zipPath), format, $"{count} note(s)");
     }
+
+    /// <summary>
+    /// Publishes a scope (a workspace, or a folder linked in from elsewhere) as a small website: a
+    /// page per note with its links and backlinks, an index that can be searched, and a graph of
+    /// how the notes connect. The site is a copy; the notes are not touched.
+    /// </summary>
+    public ExportResult Publish(string scope, Actor actor)
+    {
+        writes.Permissions.Demand(actor, Permission.Read, $"Publish {scope}");
+        var vault = writes.Vault;
+        var summaries = writes.Cache.List(scope, null, includeArchived: false, limit: 100_000)
+            .Where(n => !Storage.Vault.IsArchivedPath(n.Path))
+            .OrderBy(n => n.Title, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (summaries.Count == 0) throw new QuantosException("There are no notes in that folder to publish.");
+
+        // One page per note; the file name comes from the title, with a number if two notes share it.
+        var pages = new Dictionary<string, string>();
+        var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var n in summaries)
+        {
+            var stem = Storage.Vault.Slug(n.Title);
+            var page = stem + ".html";
+            for (var i = 2; !used.Add(page); i++) page = stem + "-" + i + ".html";
+            pages[n.Id] = page;
+        }
+        var titles = summaries.ToDictionary(n => n.Id, n => n.Title);
+
+        var dir = Path.Combine(vault.Exports, Storage.Vault.Slug(scope) + "-" + writes.Clock.Now.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture));
+        if (Directory.Exists(dir)) dir = dir + "-2";
+        Directory.CreateDirectory(dir);
+
+        // The attachments the notes use, copied in beside the pages.
+        var assets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var written = 0;
+        foreach (var n in summaries)
+        {
+            var node = writes.Get(n.Id);
+            if (node is null) continue;
+            foreach (var a in Attachments.Find(node.Body))
+            {
+                var source = vault.Absolute(a);
+                if (!File.Exists(source)) continue;
+                var name = Path.GetFileName(source);
+                var target = assets.TryGetValue(a, out var known) ? known : name;
+                assets[a] = target;
+                var dest = Path.Combine(dir, "assets", target);
+                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                try { File.Copy(source, dest, overwrite: true); } catch (IOException) { }
+            }
+            var html = SitePage(node, pages, titles, assets, summaries);
+            AtomicFile.WriteAllText(Path.Combine(dir, pages[n.Id]), html);
+            written++;
+        }
+
+        AtomicFile.WriteAllText(Path.Combine(dir, "index.html"), SiteIndex(scope, summaries, pages));
+        AtomicFile.WriteAllText(Path.Combine(dir, "graph.html"), SiteGraph(scope, summaries, pages));
+        AtomicFile.WriteAllText(Path.Combine(dir, "style.css"), SiteCss());
+        return new ExportResult(vault.Relative(dir), ExportFormat.Site, $"{written} note(s)");
+    }
+
+    /// <summary>A note as a page: the note, the notes that link here, and the ones it links to.</summary>
+    private string SitePage(Node node, Dictionary<string, string> pages, Dictionary<string, string> titles, Dictionary<string, string> assets, List<NodeSummary> all)
+    {
+        var body = SiteBody(node, pages, titles, assets);
+        var backlinks = writes.Cache.Backlinks(node.Id)
+            .Where(b => pages.ContainsKey(b.SourceId))
+            .OrderBy(b => b.SourceTitle, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var links = Links.Find(node.Body)
+            .Where(l => l.IsResolved && pages.ContainsKey(l.Target))
+            .Select(l => (Title: titles.GetValueOrDefault(l.Target) ?? l.TitleTarget.Title, Page: pages[l.Target]))
+            .DistinctBy(l => l.Page)
+            .ToList();
+
+        var sb = new StringBuilder();
+        sb.Append("<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">");
+        sb.Append($"<title>{WebUtility.HtmlEncode(node.Title)}</title>");
+        sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        sb.Append("<link rel=\"stylesheet\" href=\"style.css\"></head><body>");
+        sb.Append("<nav><a href=\"index.html\">All notes</a><span>·</span><a href=\"graph.html\">Graph</a></nav>");
+        sb.Append($"<article><h1>{WebUtility.HtmlEncode(node.Title)}</h1>");
+        var meta = new List<string>();
+        if (node.Type.Length > 0) meta.Add(WebUtility.HtmlEncode(node.Type));
+        if (node.Modified is not null) meta.Add("updated " + node.Modified);
+        if (meta.Count > 0) sb.Append($"<p class=\"meta\">{string.Join(" · ", meta)}</p>");
+        sb.Append(Markdig.Markdown.ToHtml(PropertyList(node) + body, Pipeline));
+        if (backlinks.Count > 0)
+        {
+            sb.Append("<section class=\"links\"><h2>Links to this note</h2><ul>");
+            foreach (var b in backlinks) sb.Append($"<li><a href=\"{pages[b.SourceId]}\">{WebUtility.HtmlEncode(b.SourceTitle)}</a></li>");
+            sb.Append("</ul></section>");
+        }
+        if (links.Count > 0)
+        {
+            sb.Append("<section class=\"links\"><h2>Links from this note</h2><ul>");
+            foreach (var l in links) sb.Append($"<li><a href=\"{l.Page}\">{WebUtility.HtmlEncode(l.Title)}</a></li>");
+            sb.Append("</ul></section>");
+        }
+        sb.Append("</article></body></html>");
+        return sb.ToString();
+    }
+
+    /// <summary>The body for a page: links point at the other pages, attachments at the copied files.</summary>
+    private string SiteBody(Node node, Dictionary<string, string> pages, Dictionary<string, string> titles, Dictionary<string, string> assets)
+    {
+        var body = node.Body;
+        body = SyncMarker().Replace(body, "");
+        body = TaskMarker().Replace(body, "");
+        // A query becomes the table it would show now, so the page reads the same anywhere.
+        body = QueryFence().Replace(body, m => Freeze(m.Groups["q"].Value, node.Workspace));
+        body = EmbedLine().Replace(body, m =>
+        {
+            var target = writes.Get(m.Groups["id"].Value);
+            if (target is null) return "> *(embedded note not found)*";
+            var frag = m.Groups["frag"].Success ? m.Groups["frag"].Value : null;
+            var text = frag is null ? SiteBody(target, pages, titles, assets) : Links.Fragment(target.Body, frag) ?? "";
+            var quoted = string.Join("\n", text.TrimEnd().Split('\n').Select(l => "> " + l));
+            return $"> **{target.Title}**\n>\n{quoted}";
+        });
+        body = Links.Rewrite(body, l =>
+        {
+            var title = l.Display ?? titles.GetValueOrDefault(l.Target) ?? l.TitleTarget.Title;
+            return pages.TryGetValue(l.Target, out var page) ? $"[{title}]({page})" : title;
+        });
+        // The attachments sit in the site's own assets folder.
+        body = AttachmentPath().Replace(body, m => "assets/" + Path.GetFileName(m.Groups["file"].Value));
+        return body.Trim() + "\n";
+    }
+
+    /// <summary>The home page: every note, and a box to search them.</summary>
+    private string SiteIndex(string scope, List<NodeSummary> notes, Dictionary<string, string> pages)
+    {
+        var sb = new StringBuilder();
+        sb.Append("<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">");
+        sb.Append($"<title>{WebUtility.HtmlEncode(scope)}</title>");
+        sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        sb.Append("<link rel=\"stylesheet\" href=\"style.css\"></head><body>");
+        sb.Append($"<h1>{WebUtility.HtmlEncode(scope)}</h1>");
+        sb.Append($"<p class=\"meta\">{notes.Count} note(s) · <a href=\"graph.html\">graph</a></p>");
+        sb.Append("<input id=\"q\" type=\"search\" placeholder=\"Search these notes\" aria-label=\"Search these notes\">");
+        sb.Append("<ul id=\"notes\">");
+        foreach (var n in notes)
+        {
+            var meta = n.Type.Length > 0 ? n.Type : "note";
+            if (n.Modified is not null) meta += " · " + n.Modified;
+            sb.Append($"<li data-t=\"{WebUtility.HtmlEncode(n.Title.ToLowerInvariant())}\"><a href=\"{pages[n.Id]}\">{WebUtility.HtmlEncode(n.Title)}</a> <span class=\"meta\">{WebUtility.HtmlEncode(meta)}</span></li>");
+        }
+        sb.Append("</ul>");
+        sb.Append("<script>const q=document.getElementById('q');q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();for(const li of document.getElementById('notes').children)li.style.display=!v||li.dataset.t.includes(v)?'':'none';});</script>");
+        sb.Append("</body></html>");
+        return sb.ToString();
+    }
+
+    /// <summary>The notes as a graph: a circle of notes, and a line for every link between them.</summary>
+    private string SiteGraph(string scope, List<NodeSummary> notes, Dictionary<string, string> pages)
+    {
+        const double size = 900, radius = 360, dot = 7;
+        var centre = size / 2;
+        var at = new Dictionary<string, (double X, double Y)>();
+        for (var i = 0; i < notes.Count; i++)
+        {
+            var angle = 2 * Math.PI * i / Math.Max(1, notes.Count) - Math.PI / 2;
+            at[notes[i].Id] = (centre + radius * Math.Cos(angle), centre + radius * Math.Sin(angle));
+        }
+        var sb = new StringBuilder();
+        sb.Append("<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">");
+        sb.Append($"<title>{WebUtility.HtmlEncode(scope)} — graph</title>");
+        sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        sb.Append("<link rel=\"stylesheet\" href=\"style.css\"></head><body>");
+        sb.Append("<nav><a href=\"index.html\">All notes</a></nav>");
+        sb.Append($"<h1>{WebUtility.HtmlEncode(scope)}</h1>");
+        sb.Append($"<svg viewBox=\"0 0 {size} {size}\" role=\"img\" aria-label=\"How the notes link to each other\">");
+        foreach (var n in notes)
+        {
+            var body = writes.Get(n.Id)?.Body ?? "";
+            foreach (var l in Links.Find(body).Where(l => l.IsResolved && at.ContainsKey(l.Target)))
+            {
+                var a = at[n.Id];
+                var b = at[l.Target];
+                sb.Append($"<line x1=\"{a.X:F1}\" y1=\"{a.Y:F1}\" x2=\"{b.X:F1}\" y2=\"{b.Y:F1}\" class=\"edge\" />");
+            }
+        }
+        foreach (var n in notes)
+        {
+            var p = at[n.Id];
+            sb.Append($"<a href=\"{pages[n.Id]}\"><circle cx=\"{p.X:F1}\" cy=\"{p.Y:F1}\" r=\"{dot}\" class=\"dot\" /><title>{WebUtility.HtmlEncode(n.Title)}</title></a>");
+        }
+        sb.Append("</svg></body></html>");
+        return sb.ToString();
+    }
+
+    /// <summary>One stylesheet for the whole site, in the app's own colours.</summary>
+    private static string SiteCss() =>
+        """
+        :root { color-scheme: light dark; }
+        body { max-width: 760px; margin: 40px auto; padding: 0 24px; font: 16px/1.65 "Source Sans 3", "Segoe UI", system-ui, sans-serif; color: #0c131d; background: #ffffff; }
+        h1, h2, h3 { line-height: 1.25; } h1 { font-size: 2em; border-bottom: 2px solid #78b6ff; padding-bottom: .2em; }
+        h2 { font-size: 1.15em; margin-top: 2em; } a { color: #1f6fd1; }
+        code, pre { font-family: "IBM Plex Mono", Consolas, monospace; font-size: .9em; }
+        pre { background: #f2f5f9; padding: 12px; border-radius: 6px; overflow: auto; }
+        blockquote { margin: 1em 0; padding: .2em 1em; border-left: 3px solid #78b6ff; background: #f5f8fc; }
+        table { border-collapse: collapse; width: 100%; font-size: .92em; } th, td { border: 1px solid #d6dde8; padding: 6px 8px; text-align: left; }
+        th { background: #eef2f8; } img { max-width: 100%; }
+        nav { display: flex; gap: 10px; font-size: .9em; margin-bottom: 18px; }
+        .meta { color: #6c7a8c; font-size: .88em; }
+        .links ul { list-style: none; padding: 0; } .links li { padding: 2px 0; }
+        #q { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d6dde8; font: inherit; margin-bottom: 14px; }
+        #notes { list-style: none; padding: 0; } #notes li { padding: 5px 0; border-bottom: 1px solid #eef1f6; }
+        svg { width: 100%; height: auto; } .edge { stroke: #c3cede; stroke-width: 1; } .dot { fill: #1f6fd1; }
+        @media (prefers-color-scheme: dark) {
+          body { color: #e6ecf5; background: #10151d; } a { color: #78b6ff; }
+          pre { background: #1a2130; } blockquote { background: #161d28; border-left-color: #78b6ff; }
+          th { background: #1a2130; } th, td { border-color: #2a3446; } #notes li { border-color: #1c2431; }
+          .edge { stroke: #2c3648; } .meta { color: #8b98ab; }
+          #q { background: #161d28; border-color: #2a3446; color: #e6ecf5; }
+        }
+        """;
 
     /// <summary>The body made self-contained: readable links, inlined embeds, frozen queries, no hidden markers.</summary>
     public string Prepare(Node node, bool freeze, int depth, string attachmentBase = "")
@@ -271,4 +490,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
 
     [GeneratedRegex(@"(?<open>\]\(<?)attachments/", RegexOptions.IgnoreCase)]
     private static partial Regex AttachmentRef();
+
+    [GeneratedRegex(@"attachments/(?<file>[^)\s>]+)", RegexOptions.IgnoreCase)]
+    private static partial Regex AttachmentPath();
 }

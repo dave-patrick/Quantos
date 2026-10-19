@@ -32,7 +32,7 @@ Version numbers are product versions (0.1.x) and are separate from the plan's "R
 | [API.md](API.md) | Backend HTTP API contracts. |
 | [USER-GUIDE.md](USER-GUIDE.md) | The user-facing guide (shipped in the zip and shown in Help). Every user-visible feature is described here. |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md), [CLI-REFERENCE.md](CLI-REFERENCE.md), [PLUGINS.md](PLUGINS.md), [AGENT-ADAPTERS.md](AGENT-ADAPTERS.md) | Shipped guides, also shown in Help. |
-| [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) | Manual checks per release (still written for 1.0; needs the 1.1/1.2 features added). |
+| [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) | Manual checks per release (build, packaging, writing, linked folders, agents, security, documents). |
 | [PERFORMANCE.md](PERFORMANCE.md) | Measured performance. |
 | [HANDOVER.md](HANDOVER.md) | How the owner works, open threads, machine and tool quirks. |
 | [tools/dev/README.md](../tools/dev/README.md) | The development harness: run the app, drive a headless browser, accessibility scans. |
@@ -94,6 +94,7 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Sidebars | `components/LeftSidebar.svelte` (customise, drag to reorder), `RightSidebar.svelte` (split panels) |
 | Convert to task, breadcrumbs, daily markers, subtask completion | lib `totask.ts`, views `NodeView.svelte`, `DailyStream.svelte`, Core `Tasks/TaskService.SetStatus` |
 | Linked folders (Markdown from another app, read and written in place) | Core `Storage/Vault.cs` (linked roots, `linked/<name>/…` paths), `WriteService.cs` (adopt by id, last write wins), `Storage/VaultWatcher.cs`; Backend `Api/NodeEndpoints.cs` (`/api/linked-folders`); `components/WorkspaceSwitcher.svelte`; `documentation/STORAGE-SPEC.md` section 9 |
+| Publishing a folder as a website | Core `Export/ExportService.cs` (`Publish`); Backend `POST /api/export/site`; `components/WorkspaceSwitcher.svelte` |
 | Slash commands and the block menu | lib `editor/slash.ts` (the `/` menu), `editor/blockinfo.ts`, `editor/blockmenu.ts`; `components/BlockMenu.svelte` |
 | MCP settings page | Core `Agents/McpTools.cs`, `Agents/McpService.cs`; Backend `GET/PUT /api/mcp`; `components/McpSettings.svelte` |
 

@@ -7,6 +7,17 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **Publish a folder as a website:** *Publish this folder…* in the workspace menu makes a small
+  site from the notes of a workspace, or of a folder linked in from elsewhere: a page per note with
+  its backlinks and outgoing links, an index you can search, and a graph of how the notes connect.
+  It is written to the vault's `exports` folder and can be put on any web host.
+- **Backups cover linked folders.** Folders linked in from elsewhere on the computer hold notes
+  too, so they are now backed up with the vault, under the same `linked/<name>/` names. A restored
+  backup points at its own copies, and restoring a single note from a linked folder brings it into
+  the vault instead of overwriting the other app's file.
+- **Vault diagnostics** name a linked folder that has gone, a folder that can't be read, two
+  linked folders over the same files, and a task line bound to a note that no longer exists.
+- The release checklist now covers writing, linked folders, agents and security, not just 1.0.
 - Delete a task from the task list without opening it: hover the row and press the **×** at the
   end of it. It goes to the trash, and the toast offers an undo.
 - Right-click a task in the task list to mark it done, set it to doing or waiting, give it a due

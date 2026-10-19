@@ -242,7 +242,28 @@ public sealed class MainForm : Form
             case "selfcheck":
                 _ = Task.Run(() => SelfCheck.RunAndShow(_paths, this));
                 break;
+            case "open-folder":
+                OpenFolder(msg.GetProperty("path").GetString() ?? "");
+                break;
         }
+    }
+
+    /// <summary>Shows a folder of the vault (or of Quantos's own data) in Explorer.</summary>
+    private void OpenFolder(string path)
+    {
+        try
+        {
+            var full = Path.GetFullPath(path);
+            // Only folders Quantos itself keeps are opened: nothing else on the computer.
+            var vault = BackendConnection.Read(_paths)?.Vault;
+            var allowed = new[] { vault, _paths.ClientData }
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Select(p => Path.GetFullPath(p!).TrimEnd('\\', '/') + Path.DirectorySeparatorChar);
+            if (!allowed.Any(a => full.StartsWith(a, StringComparison.OrdinalIgnoreCase))) return;
+            if (!Directory.Exists(full)) return;
+            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{full}\"") { UseShellExecute = true });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { }
     }
 
     private void HandleTerminal(JsonElement msg)

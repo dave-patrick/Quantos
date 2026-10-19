@@ -283,6 +283,10 @@ own tabs, splits and scroll positions.
   tree. Queries are frozen into tables, embeds are included and properties are listed under the title,
   so exports read the same anywhere. A workspace zip carries the images and files its notes use.
   Exports go to the vault's `exports` folder.
+- **Publish:** *Publish this folder…* in the workspace menu makes a small website from the notes of
+  the workspace, or of a linked folder: a page per note with the notes that link to it and the ones
+  it links to, an index you can search, and a graph of how they connect. The site is written to the
+  vault's `exports` folder and can be put on any web host; the notes themselves are not changed.
 
 ### Linked folders
 
