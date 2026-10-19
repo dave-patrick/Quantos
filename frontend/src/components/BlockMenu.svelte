@@ -1,11 +1,10 @@
 <script lang="ts">
   import { editorMenu, closeBlockMenu } from '../lib/editorMenu.svelte';
-  import { activeEditor } from '../lib/activeEditor';
   import { tasks, type TaskStatus } from '../lib/tasks.svelte';
   import { app } from '../lib/state.svelte';
+  import { api } from '../lib/api';
   import { setMarker, blockSource } from '../lib/editor/blockinfo';
-  import { menu } from '../lib/menu';
-  import Icon from './Icon.svelte';
+  import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
 
   /** The right-click menu for a block: what can be done with the block under the pointer. */
   const block = $derived(editorMenu.block);
@@ -15,16 +14,6 @@
   const checked = $derived(isTask ? (taskInfo && !taskInfo.deleted ? taskInfo.status === 'done' : !!block?.checked) : false);
   /** A task line is bound to a task node once the note has been saved; until then it is just a box. */
   const bound = $derived(!!block?.taskId);
-
-  /** Runs an action on the block the menu was opened for, then closes the menu. */
-  function act(fn: (b: NonNullable<typeof block>, v: NonNullable<typeof view>) => void) {
-    const b = block;
-    const v = view;
-    closeBlockMenu();
-    if (!b || !v) return;
-    fn(b, v);
-    v.focus();
-  }
 
   function copy(b: NonNullable<typeof block>, v: NonNullable<typeof view>) {
     navigator.clipboard.writeText(blockSource(v.state, b)).catch((e) => app.error(e));
@@ -89,48 +78,55 @@
     const n = Number(value.trim());
     tasks.update(taskId, n >= 1 && n <= 4 ? { priority: n } : {}, n >= 1 && n <= 4 ? [] : ['priority']).catch((e) => app.error(e));
   }
+
+  /** A task is a note, so it goes to the trash like any other note, and can be brought back. */
+  async function trashTask(taskId: string) {
+    try {
+      await api.post(`nodes/${taskId}/trash`);
+      app.toast('Moved to trash.', 'ok', { label: 'Undo', run: async () => {
+        const entries = await api.get<{ entryId: string; id: string }[]>('trash');
+        const entry = entries.find((e) => e.id === taskId);
+        if (entry) await api.post(`trash/${entry.entryId}/restore`);
+        await tasks.load();
+      } });
+    } catch (e) { app.error(e); }
+  }
+
+  /** The menu, for the block it was opened for. */
+  const items = $derived.by((): ContextMenuItem[] => {
+    const b = block;
+    const v = view;
+    if (!b || !v) return [];
+    const out: ContextMenuItem[] = [];
+    if (isTask) {
+      out.push({ label: checked ? 'Mark as not done' : 'Mark as done', icon: 'check', run: () => tick(b, v) });
+      if (bound && b.taskId) {
+        out.push({ label: 'Set to doing', icon: 'play', run: () => status(b.taskId!, 'doing') });
+        out.push({ label: 'Set to waiting', icon: 'clock', run: () => status(b.taskId!, 'waiting') });
+        out.push({ label: 'Set a due date…', icon: 'calendar', run: () => setDue(b.taskId!) });
+        out.push({ label: 'Set a priority…', icon: 'flag', run: () => setPriority(b.taskId!) });
+        out.push({ label: 'Move the task to trash', icon: 'trash', danger: true, run: () => trashTask(b.taskId!) });
+      }
+      out.push({ separator: true });
+    }
+    out.push({ label: 'Copy this block', icon: 'copy', run: () => copy(b, v) });
+    out.push({ label: 'Select this block', icon: 'text', run: () => select(b, v) });
+    out.push({ label: 'Duplicate', icon: 'copy', run: () => duplicate(b, v) });
+    out.push({ label: 'Move up', icon: 'arrow-up', run: () => move(b, v, -1) });
+    out.push({ label: 'Move down', icon: 'arrow-down', run: () => move(b, v, 1) });
+    out.push({ separator: true });
+    out.push({ group: 'Turn into' });
+    out.push({ label: 'Task', icon: 'check-square', run: () => turnInto(b, v, '- [ ] ') });
+    out.push({ label: 'Heading', icon: 'text', run: () => turnInto(b, v, '## ') });
+    out.push({ label: 'Bullet', icon: 'list', run: () => turnInto(b, v, '- ') });
+    out.push({ label: 'Quote', icon: 'inbox', run: () => turnInto(b, v, '> ') });
+    out.push({ separator: true });
+    out.push({ label: 'Delete this block', icon: 'trash', danger: true, run: () => remove(b, v) });
+    return out;
+  });
 </script>
 
 {#if editorMenu.open && block}
-  <button class="backdrop" aria-label="Close menu" onclick={closeBlockMenu}></button>
-  <div class="menu" role="menu" tabindex="-1" style="left:{editorMenu.x}px; top:{editorMenu.y}px" use:menu={{ onclose: closeBlockMenu }}>
-    {#if isTask}
-      <button role="menuitem" onclick={() => act(tick)}>
-        <Icon name="check" size={14} /> {checked ? 'Mark as not done' : 'Mark as done'}
-      </button>
-      {#if bound && block.taskId}
-        <button role="menuitem" onclick={() => act((b) => status(b.taskId!, 'doing'))}><Icon name="play" size={14} /> Set to doing</button>
-        <button role="menuitem" onclick={() => act((b) => status(b.taskId!, 'waiting'))}><Icon name="clock" size={14} /> Set to waiting</button>
-        <button role="menuitem" onclick={() => act((b) => setDue(b.taskId!))}><Icon name="calendar" size={14} /> Set a due date…</button>
-        <button role="menuitem" onclick={() => act((b) => setPriority(b.taskId!))}><Icon name="flag" size={14} /> Set a priority…</button>
-      {/if}
-      <hr />
-    {/if}
-    <button role="menuitem" onclick={() => act(copy)}><Icon name="copy" size={14} /> Copy this block</button>
-    <button role="menuitem" onclick={() => act(select)}><Icon name="text" size={14} /> Select this block</button>
-    <button role="menuitem" onclick={() => act(duplicate)}><Icon name="copy" size={14} /> Duplicate</button>
-    <button role="menuitem" onclick={() => act((b, v) => move(b, v, -1))}><Icon name="arrow-up" size={14} /> Move up</button>
-    <button role="menuitem" onclick={() => act((b, v) => move(b, v, 1))}><Icon name="arrow-down" size={14} /> Move down</button>
-    <hr />
-    <div class="group" role="group" aria-label="Turn into">
-      <span class="label">Turn into</span>
-      <button role="menuitem" onclick={() => act((b, v) => turnInto(b, v, '- [ ] '))}><Icon name="check-square" size={14} /> Task</button>
-      <button role="menuitem" onclick={() => act((b, v) => turnInto(b, v, '## '))}><Icon name="text" size={14} /> Heading</button>
-      <button role="menuitem" onclick={() => act((b, v) => turnInto(b, v, '- '))}><Icon name="list" size={14} /> Bullet</button>
-      <button role="menuitem" onclick={() => act((b, v) => turnInto(b, v, '> '))}><Icon name="inbox" size={14} /> Quote</button>
-    </div>
-    <hr />
-    <button role="menuitem" class="danger" onclick={() => act(remove)}><Icon name="trash" size={14} /> Delete this block</button>
-  </div>
+  <ContextMenu x={editorMenu.x} y={editorMenu.y} {items} onclose={closeBlockMenu} />
 {/if}
 
-<style>
-  .backdrop { position: fixed; inset: 0; border: 0; background: transparent; z-index: 45; cursor: default; }
-  .menu { position: fixed; z-index: 46; min-width: 210px; padding: 5px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
-  .menu button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 7px 10px; border: 0; border-radius: 5px; background: none; color: var(--text-soft); font-size: 13.5px; }
-  .menu button:hover { background: var(--bg-hover); color: var(--text); }
-  .menu button.danger:hover { color: var(--danger); }
-  .menu .group { display: grid; }
-  .group .label { padding: 6px 10px 2px; font: 600 10px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
-  hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
-</style>

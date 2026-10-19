@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Right-click a task in the task list to mark it done, set it to doing or waiting, give it a due
+  date or a priority, open it, or move it to the trash. In a note, right-clicking a task line can
+  move the task itself to the trash, or take just the line out of the note.
+
 ## 0.1.5 (2026-10-19)
 
 - **Linked folders:** link a folder of Markdown from another app and Quantos reads and writes those

@@ -3,6 +3,8 @@
   import { tasks, type TaskDto } from '../lib/tasks.svelte';
   import { openNode, whereFrom } from '../lib/links.svelte';
   import { app } from '../lib/state.svelte';
+  import { api } from '../lib/api';
+  import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
   import Icon from './Icon.svelte';
 
   let { task, showMyDay = true, draggable = false, ondragstart, compact = false }:
@@ -15,6 +17,9 @@
   const inMyDay = $derived(task.myDay === today);
   const projectName = $derived(task.project ? (/\|([^\]]+)\]\]$/.exec(task.project)?.[1] ?? task.project) : null);
 
+  /** The right-click menu for a task. */
+  let menu = $state<{ x: number; y: number } | null>(null);
+
   async function toggle() {
     try { await tasks.setStatus(task.id, closed ? 'todo' : 'done'); } catch (e) { app.error(e); }
   }
@@ -22,6 +27,49 @@
   async function toggleMyDay() {
     try { await tasks.update(task.id, { my_day: inMyDay ? null : today }); } catch (e) { app.error(e); }
   }
+
+  async function setStatus(status: TaskDto['status']) {
+    try { await tasks.setStatus(task.id, status); } catch (e) { app.error(e); }
+  }
+
+  async function setDue() {
+    const value = await app.ask('Due date', { placeholder: 'YYYY-MM-DD', value: task.due ?? '' });
+    if (value === null) return;
+    const clean = value.trim();
+    try { await tasks.update(task.id, clean ? { due: clean } : {}, clean ? [] : ['due']); } catch (e) { app.error(e); }
+  }
+
+  async function setPriority() {
+    const value = await app.ask('Priority', { placeholder: '1 (highest) to 4', value: task.priority ? String(task.priority) : '' });
+    if (value === null) return;
+    const n = Number(value.trim());
+    try { await tasks.update(task.id, n >= 1 && n <= 4 ? { priority: n } : {}, n >= 1 && n <= 4 ? [] : ['priority']); } catch (e) { app.error(e); }
+  }
+
+  /** A task is a note, so it goes to the trash like any other note, and can be brought back. */
+  async function trash() {
+    try {
+      await api.post(`nodes/${task.id}/trash`);
+      app.toast('Moved to trash.', 'ok', { label: 'Undo', run: async () => {
+        const entries = await api.get<{ entryId: string; id: string }[]>('trash');
+        const entry = entries.find((e) => e.id === task.id);
+        if (entry) await api.post(`trash/${entry.entryId}/restore`);
+        await tasks.load();
+      } });
+    } catch (e) { app.error(e); }
+  }
+
+  const items = $derived.by((): ContextMenuItem[] => [
+    { label: closed ? 'Mark as not done' : 'Mark as done', icon: 'check', run: toggle },
+    { label: 'Set to doing', icon: 'play', run: () => setStatus('doing') },
+    { label: 'Set to waiting', icon: 'clock', run: () => setStatus('waiting') },
+    { label: 'Set a due date…', icon: 'calendar', run: setDue },
+    { label: 'Set a priority…', icon: 'flag', run: setPriority },
+    { separator: true },
+    { label: 'Open the task', icon: 'file-text', run: () => openNode(task.id, 'current', task.title) },
+    { separator: true },
+    { label: 'Move to trash', icon: 'trash', danger: true, run: trash }
+  ]);
 
   function fmt(d: string) {
     const day = d.slice(0, 10);
@@ -34,7 +82,8 @@
   }
 </script>
 
-<div class="task p{task.priority ?? 0}" class:closed class:compact {draggable} {ondragstart} role="group" aria-label={task.title}>
+<div class="task p{task.priority ?? 0}" class:closed class:compact {draggable} {ondragstart} role="group" aria-label={task.title}
+  oncontextmenu={(e) => { e.preventDefault(); menu = { x: e.clientX, y: e.clientY }; }}>
   <span class="strip" aria-hidden="true"></span>
   <span class="main">
     <input type="checkbox" checked={task.status === 'done'} onchange={toggle} aria-label={closed ? 'Reopen task' : 'Complete task'} />
@@ -59,6 +108,10 @@
     <button class="myday" class:on={inMyDay} title={inMyDay ? 'Remove from My Day' : 'Add to My Day'} onclick={toggleMyDay}><Icon name="sun" size={14} /></button>
   {/if}
 </div>
+
+{#if menu}
+  <ContextMenu x={menu.x} y={menu.y} {items} onclose={() => (menu = null)} />
+{/if}
 
 <style>
   /* Narrow places (timeline, side panels): chips move under the title rather than squeezing it. */
