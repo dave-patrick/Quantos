@@ -5,7 +5,7 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-20, at version 0.1.5.4 (latest release)._
+_Last updated: 2026-10-20, at version 0.1.5.5 (latest release)._
 
 ## 1. Where things stand
 
@@ -100,6 +100,7 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Speed (0.1.5.2) | Core `Cache/CacheIndex.cs` (bounded queries, `aliases_id` index, schema v10), `Markdown/Frontmatter.cs` (parse once, cache `Get`/`Values`), `Storage/AtomicFile.cs` (retry capped at 7), `Storage/VaultWatcher.cs` (chunk size 50), `Structure/QueryService.cs` (bounded fetch, `FirstImages` scoped to results), `WriteService.cs` (no read-back after save); lib `docs.svelte.ts`, `state.svelte.ts`, `links.svelte.ts`, `editor/` (rebuild only on doc/viewport/line change) |
 | Fixes after 0.1.5.2 | Core `Structure/QueryService.cs` (every note in the vault is considered, not just the first page), `Cache/CacheIndex.cs` (`Excerpts` reads the body from the full-text table), `Markdown/Frontmatter.cs` (the parsed values are dropped when the document changes) |
 | Collapsible headings and spell check | Frontend `lib/editor/setup.ts` (heading fold compartment), `lib/editor/spellcheck.ts` (new), `lib/prefs.svelte.ts` (`collapsibleHeadings`, `spellCheck`), `components/views/SettingsView.svelte` (toggles), `lib/editor/theme.ts` (`cm-spell-error`) |
+| Single-exe build | Client hosts Kestrel in-process (`src/Quantos.Client/BackendConnection.cs` calls `Quantos.Backend.Program.Build`); no separate `Quantos.Backend.exe` to orphan |
 
 ## 4. Roadmap
 

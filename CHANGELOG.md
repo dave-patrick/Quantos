@@ -7,6 +7,13 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+## 0.1.5.5 — Single-exe build
+
+- **Single executable.** The Windows client now runs the backend in-process instead of launching
+  `Quantos.Backend.exe` as a separate service. Closing Quantos ends the whole application, so there's no
+  orphaned backend left behind and the next launch starts clean. One downside: browser sessions end when
+  the client closes (the backend no longer outlives it).
+
 ## 0.1.5.4
 
 - **Collapsible headings.** Markdown headings (`#`, `##`, …) can now be folded in the editor. On by default; turn it off in Settings › Writing.
