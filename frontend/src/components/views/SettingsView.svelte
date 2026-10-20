@@ -68,6 +68,8 @@
       <h2>Writing</h2>
       <label class="check"><input type="checkbox" bind:checked={prefs.typewriter} /> Typewriter scrolling (keep the current line centred)</label>
       <label class="check"><input type="checkbox" bind:checked={prefs.showWordCount} /> Show word count, characters and reading time</label>
+      <label class="check"><input type="checkbox" bind:checked={prefs.collapsibleHeadings} /> Collapsible headings</label>
+      <label class="check"><input type="checkbox" bind:checked={prefs.spellCheck} /> Spell check (underline unknown words)</label>
       <p class="faint">Set a writing target for a note from its ⋯ menu.</p>
     {:else if section === 'vault'}
       <h2>Vault</h2>

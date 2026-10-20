@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import type { EditorView } from '@codemirror/view';
-  import { createEditor, syncText, typewriter, editable } from '../lib/editor/setup';
+  import { createEditor, syncText, typewriter, editable, collapsibleHeadings, headingFold } from '../lib/editor/setup';
   import { refreshTasks } from '../lib/editor/tasks';
   import { typewriterScrolling } from '../lib/editor/writing';
   import { EditorState } from '@codemirror/state';
@@ -9,6 +9,7 @@
   import { linkHooks, taskHooks, tasksVersion } from '../lib/links.svelte';
   import { prefs } from '../lib/prefs.svelte';
   import { activeEditor, editorDocs } from '../lib/activeEditor';
+  import { toggleSpellCheck } from '../lib/editor/spellcheck';
 
   let {
     text,
@@ -76,6 +77,16 @@
   $effect(() => {
     const on = prefs.typewriter;
     view?.dispatch({ effects: typewriter.reconfigure(on ? typewriterScrolling : []) });
+  });
+
+  $effect(() => {
+    const on = prefs.collapsibleHeadings;
+    view?.dispatch({ effects: collapsibleHeadings.reconfigure(on ? [headingFold] : []) });
+  });
+
+  $effect(() => {
+    const on = prefs.spellCheck;
+    view?.dispatch({ effects: toggleSpellCheck.of(on) });
   });
 
   // Re-render task chips when task data changes.

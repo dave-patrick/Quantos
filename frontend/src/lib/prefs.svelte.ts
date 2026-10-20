@@ -16,6 +16,10 @@ class Prefs {
   accent = $state('blue');
   /** Reading mode (Release 1.1): every note opens read-only on this device until it's turned off. */
   reading = $state(false);
+  /** Collapse Markdown headings in the editor. */
+  collapsibleHeadings = $state(true);
+  /** Underline unknown words as you type. */
+  spellCheck = $state(false);
   /** Left sidebar: items and sections hidden, and the order of the items (keys; unknown keys are ignored). */
   sidebarHidden = $state<string[]>([]);
   sidebarOrder = $state<string[]>([]);
@@ -37,7 +41,7 @@ class Prefs {
     } catch { /* ignore */ }
     $effect.root(() => {
       $effect(() => {
-        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, dailyHideEmpty: this.dailyHideEmpty, notesTree: this.notesTree, scratchTargets: this.scratchTargets, look: this.look };
+        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, collapsibleHeadings: this.collapsibleHeadings, spellCheck: this.spellCheck, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, dailyHideEmpty: this.dailyHideEmpty, notesTree: this.notesTree, scratchTargets: this.scratchTargets, look: this.look };
         applyDensity(this.density);
         applyAccent(this.accent);
         // A custom background decides light or dark, so light-only details (diagrams, the accent preset) follow it.

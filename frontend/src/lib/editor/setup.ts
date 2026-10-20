@@ -20,6 +20,7 @@ import { runCode, runCodeTheme } from './runcode';
 import { attachmentDrop, inlineMedia, mediaTheme, type MediaHooks } from './attachments';
 import { blockMenu } from './blockmenu';
 import { slashCompletion } from './slash';
+import { spellCheckExtension } from './spellcheck';
 
 export interface EditorOptions {
   text: string;
@@ -71,6 +72,21 @@ function exitEmptyItem(view: EditorView): boolean {
 
 export const typewriter = new Compartment();
 export const editable = new Compartment();
+export const collapsibleHeadings = new Compartment();
+
+export const headingFold = foldService.of((state, lineStart) => {
+  const line = state.doc.lineAt(lineStart);
+  const m = /^(#{1,6})\s+/.exec(line.text);
+  if (!m) return null;
+  let end = line.to;
+  for (let n = line.number + 1; n <= state.doc.lines; n++) {
+    const next = state.doc.line(n);
+    if (next.text.trim() === '') continue;
+    if (/^(#{1,6})\s/.test(next.text)) break;
+    end = next.to;
+  }
+  return end > line.to ? { from: line.to, to: end } : null;
+});
 
 export function createEditor(parent: HTMLElement, options: EditorOptions): EditorView {
   const { hooks } = options;
@@ -111,6 +127,8 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     ]),
     editable.of([EditorState.readOnly.of(!!options.readOnly), EditorView.editable.of(!options.readOnly)]),
     typewriter.of([]),
+    collapsibleHeadings.of([headingFold]),
+    ...spellCheckExtension(),
     EditorView.updateListener.of((u) => {
       if (u.docChanged) hooks.onChange(u.state.doc.toString());
       if (u.focusChanged && u.view.hasFocus) hooks.onFocus?.();
