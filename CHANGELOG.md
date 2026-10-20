@@ -7,6 +7,11 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+## 0.1.5.4
+
+- **Collapsible headings.** Markdown headings (`#`, `##`, …) can now be folded in the editor. On by default; turn it off in Settings › Writing.
+- **Spell check.** Unknown words are underlined with a red wavy line as you type. Off by default; turn it on in Settings › Writing. Skips code blocks, quotes, lists and tables.
+
 ## 0.1.5.3 (2026-10-20)
 
 Fixes for three problems in 0.1.5.2.
