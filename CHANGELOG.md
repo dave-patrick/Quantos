@@ -7,6 +7,8 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+## 0.1.5.3 (2026-10-20)
+
 Fixes for three problems in 0.1.5.2.
 
 - **Queries see every note again.** 0.1.5.2 read only the first few thousand notes when filtering, so

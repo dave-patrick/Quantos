@@ -30,13 +30,13 @@ open threads and the machine.
 
 ## Open threads (as of 0.1.5.2)
 
-- **Three faults in 0.1.5.2, found and fixed, not yet released.** The speed work in 0.1.5.2 broke
-  three things: a query read only the first few thousand notes, so a filtered view left the rest out
-  and the count of results was short; the notes browser asked the cache for a column that isn't
-  there, so it showed no excerpts and its text search found nothing; and a note's parsed frontmatter
-  was kept after a change, so reading a field could give the value from before the change. All three
-  are fixed and covered by tests. They need a release (0.1.5.3) before the owner has them: the owner
-  is running 0.1.5.2 and will still see the notes browser without excerpts.
+- **Released 0.1.5.3** (tag `v0.1.5.3`): fixes three faults in the 0.1.5.2 speed work — a query read
+  only the first few thousand notes, so a filtered view left the rest out and the count of results was
+  short; the notes browser asked the cache for a column that isn't there, so it showed no excerpts
+  and its text search found nothing; and a note's parsed frontmatter was kept after a change, so
+  reading a field could give the value from before the change. All three are fixed and covered by
+  tests. **Ask the owner to update to 0.1.5.3** and to check that the notes browser shows the first
+  lines of each note again.
 - **Released 0.1.5.2** (tag `v0.1.5.2`): a patch release of speed fixes — a note's frontmatter is
   parsed once instead of on every lookup, saving no longer reads the note back off disk, the editor
   stops rebuilding on every keystroke, the cache's queries are bounded, and saving a file another
