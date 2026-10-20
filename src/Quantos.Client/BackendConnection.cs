@@ -2,6 +2,10 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Quantos.Backend;
+using Quantos.Backend.Hosting;
+using Quantos.Core;
 
 namespace Quantos.Client;
 
@@ -30,6 +34,9 @@ public sealed class BackendConnection : IDisposable
     public HttpClient Http { get; }
     public string Url => Info.Url;
 
+    /// <summary>In-process Kestrel host when this client started the backend itself.</summary>
+    private WebApplication? _ownedApp;
+
     public static async Task<BackendConnection> ConnectAsync(ClientPaths paths, Action<string> status)
     {
         var existing = Read(paths);
@@ -39,40 +46,26 @@ public sealed class BackendConnection : IDisposable
             return new BackendConnection(existing, null);
         }
 
-        var exe = FindBackend() ?? throw new InvalidOperationException("Quantos.Backend.exe wasn't found next to Quantos.exe.");
+        // No live backend: host Kestrel in this process so there's no separate service to orphan.
         status("Starting the Quantos backend…");
-        var psi = new ProcessStartInfo(exe)
-        {
-            UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden,
-            WorkingDirectory = Path.GetDirectoryName(exe)!
-        };
-        psi.ArgumentList.Add("--client-data"); psi.ArgumentList.Add(paths.ClientData);
-        psi.ArgumentList.Add("--parent"); psi.ArgumentList.Add(Environment.ProcessId.ToString());
-        var process = Process.Start(psi) ?? throw new InvalidOperationException("The backend didn't start.");
-        paths.Log($"Started backend {exe} as pid {process.Id}");
+        var corePaths = new QuantosPaths(paths.ClientData);
+        corePaths.EnsureCreated();
+        var options = new BackendOptions { ClientData = paths.ClientData, OpenBrowser = false };
+        var app = Quantos.Backend.Program.Build(Array.Empty<string>(), options, corePaths);
+        await app.StartAsync();
 
         var deadline = DateTime.UtcNow.AddSeconds(45);
         while (DateTime.UtcNow < deadline)
         {
-            if (process.HasExited)
-                throw new InvalidOperationException($"The backend stopped while starting (exit code {process.ExitCode}). See {paths.Logs}.");
             var info = Read(paths);
-            if (info is not null && info.Pid == process.Id && await IsAliveAsync(info)) return new BackendConnection(info, process);
+            if (info is not null && await IsAliveAsync(info))
+            {
+                paths.Log($"Started in-process backend {info.Url} (process {Environment.ProcessId})");
+                return new BackendConnection(info, null) { _ownedApp = app };
+            }
             await Task.Delay(150);
         }
         throw new TimeoutException("The backend didn't answer within 45 seconds.");
-    }
-
-    private static string? FindBackend()
-    {
-        var overridePath = Environment.GetEnvironmentVariable("QUANTOS_BACKEND_EXE");
-        if (!string.IsNullOrEmpty(overridePath) && File.Exists(overridePath)) return overridePath;
-        var dir = ClientPaths.AppDirectory;
-        var sibling = Path.Combine(dir, "Quantos.Backend.exe");
-        if (File.Exists(sibling)) return sibling;
-        // Development layout: src/Quantos.Client/bin/... next to src/Quantos.Backend/bin/...
-        var dev = Path.GetFullPath(Path.Combine(dir, "..", "..", "..", "..", "Quantos.Backend", "bin", "Debug", "net10.0", "Quantos.Backend.exe"));
-        return File.Exists(dev) ? dev : null;
     }
 
     public static Discovery? Read(ClientPaths paths)
@@ -115,9 +108,18 @@ public sealed class BackendConnection : IDisposable
 
     public async Task<bool> ShutdownAsync()
     {
-        if (Owned is null || Owned.HasExited) return true;
+        // Ask Kestrel to stop (works whether the backend is in this process or a separate one).
         try { await Http.PostAsync("api/system/shutdown", null); } catch (HttpRequestException) { }
-        return await Task.Run(() => Owned.WaitForExit(10_000));
+        if (_ownedApp is not null)
+        {
+            try { await Task.WhenAny(_ownedApp.StopAsync(), Task.Delay(TimeSpan.FromSeconds(10))); } catch { }
+            try { await _ownedApp.DisposeAsync(); } catch { }
+            _ownedApp = null;
+            return true;
+        }
+        if (Owned is not null && !Owned.HasExited)
+            return await Task.Run(() => Owned.WaitForExit(10_000));
+        return true;
     }
 
     /// <summary>Listens to the push channel for reminders and approval requests; reconnects on failure.</summary>
@@ -157,6 +159,12 @@ public sealed class BackendConnection : IDisposable
     public void Dispose()
     {
         _stop.Cancel();
+        if (_ownedApp is not null)
+        {
+            try { Task.WhenAny(_ownedApp.StopAsync(), Task.Delay(TimeSpan.FromSeconds(5))).GetAwaiter().GetResult(); } catch { }
+            try { _ownedApp.DisposeAsync().GetAwaiter().GetResult(); } catch { }
+            _ownedApp = null;
+        }
         Http.Dispose();
     }
 }

@@ -531,15 +531,7 @@ public sealed class MainForm : Form
         _status.BringToFront();
 
         // The backend has to stop so its program file can be replaced, even if a browser started it.
-        if (_backend is not null)
-        {
-            try { await _backend.Http.PostAsync("api/system/shutdown", null); } catch (HttpRequestException) { }
-            await Task.Run(() =>
-            {
-                try { using var p = System.Diagnostics.Process.GetProcessById(_backend.Info.Pid); p.WaitForExit(15_000); }
-                catch (ArgumentException) { }
-            });
-        }
+        if (_backend is not null) { await _backend.ShutdownAsync(); }
 
         try
         {
@@ -585,7 +577,7 @@ public sealed class MainForm : Form
         _status.Text = "Closing Quantos safely…";
         _status.Visible = true;
         _status.BringToFront();
-        if (_backend?.Owned is not null)
+        if (_backend is not null)
         {
             // Another client (e.g. a browser) may still be using it; the backend stops only after finishing writes.
             var stopped = await _backend.ShutdownAsync();
