@@ -66,7 +66,10 @@ export function wikiLinks(hooks: LinkHooks): Extension {
       decorations: DecorationSet;
       constructor(view: EditorView) { this.decorations = build(view, hooks); }
       update(u: ViewUpdate) {
-        if (u.docChanged || u.viewportChanged || u.selectionSet || u.transactions.some((t) => t.reconfigured)) this.decorations = build(u.view, hooks);
+        if (u.docChanged || u.viewportChanged || u.transactions.some((t) => t.reconfigured)) this.decorations = build(u.view, hooks);
+        // Only rebuild when the selection moves to a different line: every cursor move within a
+        // line is not worth re-running the whole scan (mirrors tasks.ts).
+        if (u.selectionSet && !u.docChanged && u.startState.doc.lineAt(u.startState.selection.main.head).number !== u.state.doc.lineAt(u.state.selection.main.head).number) this.decorations = build(u.view, hooks);
       }
     },
     {

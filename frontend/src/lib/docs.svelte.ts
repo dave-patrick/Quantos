@@ -348,10 +348,18 @@ class DocStore {
     // capture pop-up, say) shows even if its live update was missed. Unsaved edits merge as usual.
     if (typeof window !== 'undefined') {
       let last = 0;
+      let timer: ReturnType<typeof setTimeout> | null = null;
       const check = () => {
         if (document.visibilityState !== 'visible' || Date.now() - last < 1500) return;
         last = Date.now();
-        for (const d of this.docs.values()) if (d.node && d.status !== 'loading' && d.status !== 'conflict') d.refresh().catch(() => {});
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          for (const d of this.docs.values()) {
+            if (d.node && (d.dirty || d.status === 'saving' || d.status === 'error') && d.status !== 'loading' && d.status !== 'conflict') {
+              d.refresh().catch(() => {});
+            }
+          }
+        }, 300);
       };
       addEventListener('focus', check);
       document.addEventListener('visibilitychange', check);

@@ -230,7 +230,7 @@ public sealed class WriteService
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             TaskHooks?.AfterNoteWritten(node, actor);
             BodyWritten?.Invoke(node, actor);
-            return new SaveResult(SaveStatus.Saved, Get(id) ?? node, Ambiguous: ambiguous);
+            return new SaveResult(SaveStatus.Saved, node, Ambiguous: ambiguous);
         }
     }
 
@@ -247,6 +247,8 @@ public sealed class WriteService
                 return new SaveResult(SaveStatus.Conflict, null, disk, diskHash, "The file changed on disk since you opened it.");
             var doc = FrontmatterDocument.Parse(disk);
             if (doc.YamlError is not null) return new SaveResult(SaveStatus.Invalid, null, Message: "The frontmatter isn't valid YAML; edit it in source mode.");
+            // Capture the tags before the change, so RaiseTagsAdded knows what was added.
+            var tagsBefore = doc.GetStringList(NodeKeys.Tags);
             var protectedKeys = allowReserved ? new HashSet<string> { NodeKeys.Id } : new HashSet<string> { NodeKeys.Id, NodeKeys.Created, NodeKeys.Schema, NodeKeys.Workspace, NodeKeys.Archived };
             foreach (var (key, value) in set ?? new Dictionary<string, object?>())
             {
@@ -271,8 +273,8 @@ public sealed class WriteService
             var node = WriteFile(abs, id, disk, doc.ToString());
             Changes.Publish(new ChangeEvent(ChangeKind.Updated, id, node.Path, Hash: node.Hash, Origin: actor.ToString()));
             if (body is not null) { TaskHooks?.AfterNoteWritten(node, actor); BodyWritten?.Invoke(node, actor); }
-            if (set?.ContainsKey(NodeKeys.Tags) == true) RaiseTagsAdded(node, Node.FromText(node.Path, disk).Tags, actor);
-            return new SaveResult(SaveStatus.Saved, Get(id) ?? node);
+            if (set?.ContainsKey(NodeKeys.Tags) == true) RaiseTagsAdded(node, tagsBefore, actor);
+            return new SaveResult(SaveStatus.Saved, node);
         }
     }
 

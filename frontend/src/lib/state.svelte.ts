@@ -60,11 +60,19 @@ class AppState {
     $effect.root(() => {
       $effect(() => {
         document.documentElement.dataset.theme = this.theme;
-        try {
-          const wide = typeof innerWidth !== 'number' || innerWidth > 700;
-          const prev = JSON.parse(localStorage.getItem('quantos.ui') ?? '{}');
-          localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, rightTab2: this.rightTab2, rightSplit: this.rightSplit, theme: this.theme }));
-        } catch { /* ignore */ }
+      });
+      // Persist UI layout to localStorage, debounced so rapid changes (theme toggle, sidebar open/close)
+      // don't hammer the disk on every tick.
+      let uiTimer: ReturnType<typeof setTimeout> | null = null;
+      $effect(() => {
+        const wide = typeof innerWidth !== 'number' || innerWidth > 700;
+        if (uiTimer) clearTimeout(uiTimer);
+        uiTimer = setTimeout(() => {
+          try {
+            const prev = JSON.parse(localStorage.getItem('quantos.ui') ?? '{}');
+            localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, rightTab2: this.rightTab2, rightSplit: this.rightSplit, theme: this.theme }));
+          } catch { /* ignore */ }
+        }, 200);
       });
     });
     onChange((e) => {

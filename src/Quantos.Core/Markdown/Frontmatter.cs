@@ -104,25 +104,7 @@ public sealed partial class FrontmatterDocument
 
     public bool ContainsKey(string key) => _entries.Any(e => e.Key == key);
 
-    /// <summary>All values, parsed. Scalars are strings; sequences are lists; mappings are dictionaries.</summary>
-    public Dictionary<string, object?> Values()
-    {
-        if (!HasFrontmatter || YamlError is not null) return new();
-        var text = string.Join("\n", _entries.SelectMany(e => e.Lines).Select(l => l.TrimEnd('\r')));
-        return ParseYaml(text);
-    }
-
-    public object? Get(string key)
-    {
-        var entry = _entries.FirstOrDefault(e => e.Key == key);
-        if (entry is null) return null;
-        try
-        {
-            var parsed = ParseYaml(string.Join("\n", entry.Lines.Select(l => l.TrimEnd('\r'))));
-            return parsed.TryGetValue(key, out var value) ? value : null;
-        }
-        catch { return null; }
-    }
+    // Values() and Get() are now defined below with caching.
 
     public string? GetString(string key) => Get(key) switch
     {
@@ -338,4 +320,35 @@ public sealed partial class FrontmatterDocument
     private static partial Regex PlainSafe();
 
     private sealed record Entry(string? Key, List<string> Lines);
+
+    // Cache the parsed values so repeated Get()/GetString() calls don't re-parse YAML.
+    private Dictionary<string, object?>? _values;
+    private void EnsureValues()
+    {
+        if (_values is not null) return;
+        if (!HasFrontmatter || YamlError is not null) { _values = new(); return; }
+        var text = string.Join("\n", _entries.SelectMany(e => e.Lines).Select(l => l.TrimEnd('\r')));
+        try { _values = ParseYaml(text); }
+        catch { _values = new(); }
+    }
+
+    public object? Get(string key)
+    {
+        EnsureValues();
+        var entry = _entries.FirstOrDefault(e => e.Key == key);
+        if (entry is null) return null;
+        if (_values!.TryGetValue(key, out var cached)) return cached;
+        try
+        {
+            var parsed = ParseYaml(string.Join("\n", entry.Lines.Select(l => l.TrimEnd('\r'))));
+            return parsed.TryGetValue(key, out var value) ? value : null;
+        }
+        catch { return null; }
+    }
+
+    public Dictionary<string, object?> Values()
+    {
+        EnsureValues();
+        return _values!;
+    }
 }

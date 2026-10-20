@@ -132,8 +132,6 @@ public sealed class VaultWatcher : IDisposable
         if (paths.Length == 0 && !full) return;
         try
         {
-            // A folder that was deleted and made again needs a new watcher; the old one sees nothing.
-            Watch();
             if (full) paths = [.. ChangedSinceIndexed()];
             // Small chunks, each holding the write lock briefly: a big import (a copied folder of
             // thousands of notes) mustn't hold up the user's own saves until it finishes.
@@ -149,7 +147,7 @@ public sealed class VaultWatcher : IDisposable
         catch (Exception ex) { Failed?.Invoke(ex); }
     }
 
-    private const int ChunkSize = 10;
+    private const int ChunkSize = 50;
 
     /// <summary>
     /// Files that differ from the index, found by comparing timestamps and sizes (cheap): changed and
@@ -194,12 +192,13 @@ public sealed class VaultWatcher : IDisposable
             return;
         }
 
-        string content;
-        try { content = AtomicFile.ReadAllText(abs); }
+        byte[] bytes;
+        try { bytes = AtomicFile.ReadAllBytes(abs); }
         catch (IOException) { lock (_gate) _pending.Add(abs); Kick(); return; } // still being written; retry
-        var hash = Hashing.Sha256(content);
+        var hash = Hashing.Sha256(bytes);
         if (cached is not null && cached.Hash == hash) return; // our own write, or no real change
 
+        var content = AtomicFile.Decode(bytes);
         var node = Node.FromText(rel, content, hash);
         var owner = Ulid.IsValid(node.Id) ? _writes.Cache.PathOf(node.Id) : null;
         var duplicate = owner is not null && !string.Equals(owner, rel, StringComparison.OrdinalIgnoreCase) && File.Exists(vault.Absolute(owner));

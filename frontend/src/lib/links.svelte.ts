@@ -89,14 +89,22 @@ function fuzzyScore(title: string, query: string): number {
 }
 
 export function searchTitles(query: string, limit = 50): NodeSummary[] {
+  const q = query.trim().toLowerCase();
   const ws = app.workspace;
-  return app.titles
+  // Fast path: exact prefix matches first, then broader fuzzy matches.
+  // Avoid scoring every title when the query is a prefix of many.
+  const prefix = q.length > 0 ? app.titles.filter((n) => n.title.toLowerCase().startsWith(q)) : app.titles;
+  const rest = q.length > 0 ? app.titles.filter((n) => !n.title.toLowerCase().startsWith(q)) : [];
+  // Score only the rest (prefix matches already rank highest).
+  const scored = prefix.map((n) => ({ n, raw: 1000, s: 1000 + (n.workspace === ws ? 50 : 0) - (n.archived ? 100 : 0) }));
+  const fuzzy = rest
     .map((n) => {
-      let best = fuzzyScore(n.title, query);
+      let best = fuzzyScore(n.title, q);
       for (const alias of n.aliases ?? []) best = Math.max(best, fuzzyScore(String(alias), query) - 1);
       return { n, raw: best, s: best + (n.workspace === ws ? 50 : 0) - (n.archived ? 100 : 0) };
     })
-    .filter((x) => x.raw >= 0)
+    .filter((x) => x.raw >= 0);
+  return [...scored, ...fuzzy]
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)
     .map((x) => x.n);

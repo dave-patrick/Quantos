@@ -21,7 +21,7 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// </summary>
 public sealed partial class CacheIndex : IDisposable
 {
-    public const int Version = 9;
+    public const int Version = 10;
     private readonly SqliteConnection _db;
     private readonly Lock _gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -86,6 +86,7 @@ public sealed partial class CacheIndex : IDisposable
             CREATE INDEX nodes_type ON nodes(type, workspace);
             CREATE TABLE aliases(alias TEXT COLLATE NOCASE, id TEXT);
             CREATE INDEX aliases_alias ON aliases(alias);
+            CREATE INDEX aliases_id ON aliases(id);
             CREATE TABLE links(src TEXT, target TEXT, kind TEXT, fragment TEXT, context TEXT);
             CREATE INDEX links_target ON links(target);
             CREATE INDEX links_src ON links(src);
@@ -417,7 +418,7 @@ public sealed partial class CacheIndex : IDisposable
     {
         lock (_gate)
         {
-            using var cmd = Command(_db, "SELECT id, substr(body, 1, $n) FROM search", ("$n", length));
+            using var cmd = Command(_db, "SELECT id, substr(body, 1, $n) FROM nodes", ("$n", length));
             using var r = cmd.ExecuteReader();
             var map = new Dictionary<string, string>();
             while (r.Read()) if (!r.IsDBNull(1)) map[r.GetString(0)] = System.Text.RegularExpressions.Regex.Replace(r.GetString(1), @"\s+", " ").Trim();
@@ -460,6 +461,28 @@ public sealed partial class CacheIndex : IDisposable
         }
     }
 
+    /// <summary>First images for a specific set of nodes, avoiding a full table scan.</summary>
+    public IReadOnlyDictionary<string, string> FirstImages(IEnumerable<string> nodeIds)
+    {
+        var ids = nodeIds.Distinct().ToList();
+        if (ids.Count == 0) return new Dictionary<string, string>();
+        lock (_gate)
+        {
+            // Build an IN clause with parameters
+            var paramNames = ids.Select((_, i) => $"$id{i}").ToList();
+            var sql = "SELECT node_id, path FROM attachment_refs WHERE (" +
+                "lower(path) GLOB '*.png' OR lower(path) GLOB '*.jpg' OR lower(path) GLOB '*.jpeg' " +
+                "OR lower(path) GLOB '*.gif' OR lower(path) GLOB '*.webp' OR lower(path) GLOB '*.svg') " +
+                $"AND node_id IN ({string.Join(", ", paramNames)}) ORDER BY rowid";
+            var args = ids.Select((id, i) => ($"$id{i}", (object?)id)).ToArray();
+            using var cmd = Command(_db, sql, args);
+            using var r = cmd.ExecuteReader();
+            var map = new Dictionary<string, string>();
+            while (r.Read()) map.TryAdd(r.GetString(0), r.GetString(1));
+            return map;
+        }
+    }
+
     public IReadOnlyList<(string Key, int Count)> PropertyCounts(string? workspace = null)
     {
         lock (_gate)
@@ -488,16 +511,21 @@ public sealed partial class CacheIndex : IDisposable
 
     private List<NodeSummary> QueryNodes(string clause, params (string, object?)[] args)
     {
-        using var cmd = Command(_db, "SELECT id, path, title, type, workspace, tags, created, modified, archived, readonly, props, (SELECT group_concat(alias, char(31)) FROM aliases a WHERE a.id = nodes.id) FROM nodes " + clause, args);
+        using var cmd = Command(_db, $"""
+            SELECT n.id, n.path, n.title, n.type, n.workspace, n.tags, n.created, n.modified,
+                   n.archived, n.readonly, n.props,
+                   COALESCE((SELECT group_concat(a.alias, char(31)) FROM aliases a WHERE a.id = n.id), '') AS aliases
+            FROM nodes n {clause}
+""", args);
         using var r = cmd.ExecuteReader();
         var list = new List<NodeSummary>();
         while (r.Read())
         {
             list.Add(new NodeSummary(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4),
-                JsonSerializer.Deserialize<List<string>>(r.GetString(5), Json) ?? [],
+                r.IsDBNull(5) ? [] : JsonSerializer.Deserialize<List<string>>(r.GetString(5), Json) ?? [],
                 r.IsDBNull(6) ? null : r.GetString(6), r.IsDBNull(7) ? null : r.GetString(7), r.GetInt64(8) == 1, r.GetInt64(9) == 1,
                 JsonSerializer.Deserialize<Dictionary<string, object?>>(r.GetString(10), Json) ?? new(),
-                r.IsDBNull(11) ? [] : r.GetString(11).Split('\u001f')));
+                r.IsDBNull(11) ? [] : r.GetString(11).Split('\u001f', StringSplitOptions.RemoveEmptyEntries)));
         }
         return list;
     }
@@ -509,7 +537,7 @@ public sealed partial class CacheIndex : IDisposable
         var cmd = db.CreateCommand();
         cmd.CommandText = sql;
         foreach (var (name, value) in args)
-            if (sql.Contains(name)) cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);
+            cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);
         return cmd;
     }
 

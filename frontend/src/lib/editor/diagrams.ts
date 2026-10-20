@@ -70,7 +70,11 @@ function build(state: EditorState): DecorationSet {
 
 export const richBlocks = StateField.define<DecorationSet>({
   create: build,
-  update(value, tr) { return tr.docChanged || tr.selection ? build(tr.state) : value; },
+  update(value, tr) {
+    if (tr.docChanged) return build(tr.state);
+    if (tr.selection && tr.startState.doc.lineAt(tr.startState.selection.main.head).number !== tr.state.doc.lineAt(tr.state.selection.main.head).number) return build(tr.state);
+    return value;
+  },
   provide: (f) => EditorView.decorations.from(f)
 });
 

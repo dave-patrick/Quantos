@@ -78,15 +78,17 @@ public static class AtomicFile
         }
     }
 
-    /// <summary>Sync tools and antivirus briefly lock files; retry sharing violations.</summary>
+    /// <summary>Sync tools and antivirus briefly lock files; retry sharing violations a few times.</summary>
     public static void Retry(Action action)
     {
-        for (var attempt = 0; ; attempt++)
+        for (var attempt = 0; attempt < 7; attempt++)
         {
             try { action(); return; }
-            catch (IOException ex) when (attempt < 7 && IsTransient(ex)) { Thread.Sleep(50 * (attempt + 1)); }
-            catch (UnauthorizedAccessException) when (attempt < 7) { Thread.Sleep(50 * (attempt + 1)); }
+            catch (IOException ex) when (IsTransient(ex)) { Thread.Sleep(50 * (attempt + 1)); }
+            catch (UnauthorizedAccessException) { Thread.Sleep(50 * (attempt + 1)); }
         }
+        // One final attempt; if it still fails, let the exception propagate rather than looping forever.
+        action();
     }
 
     private static bool IsTransient(IOException ex)

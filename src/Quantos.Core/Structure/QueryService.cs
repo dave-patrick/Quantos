@@ -40,7 +40,9 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
 
     public QueryResult Run(QuerySpec spec, string activeWorkspace)
     {
-        IEnumerable<NodeSummary> nodes = writes.Cache.List(null, null, spec.IncludeArchived, 1_000_000);
+        // Load a bounded batch into memory, then filter/sort in LINQ. 1M was far too many for large vaults.
+        var fetchLimit = Math.Clamp((spec.Limit ?? 500) * 20, 1000, 50_000);
+        IEnumerable<NodeSummary> nodes = writes.Cache.List(null, null, spec.IncludeArchived, fetchLimit);
         var workspaces = WorkspaceList(spec.Workspaces, activeWorkspace);
         if (workspaces is not null) nodes = nodes.Where(n => workspaces.Contains(n.Workspace) || (n.Workspace.Length == 0 && n.Type is "template" or "supertag"));
         if (spec.Types is { Count: > 0 }) nodes = nodes.Where(n => spec.Types.Contains(n.Type, StringComparer.OrdinalIgnoreCase));
@@ -71,9 +73,11 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
         }
         var sorted = (ordered ?? list.OrderBy(n => n.Title)).ToList();
         var limit = Math.Clamp(spec.Limit ?? 500, 1, 5000);
-        // Cards show the cover property when it names an attachment, otherwise the first image in the note.
-        var images = writes.Cache.FirstImages();
-        var rows = sorted.Take(limit).Select(n => new QueryRow(n.Id, n.Title, n.Type, n.Workspace, n.Path, n.Tags, n.Created, n.Modified, n.Archived, n.Properties,
+        var top = sorted.Take(limit).ToList();
+        // Only look up images for the notes we're actually returning, not the whole vault.
+        var needImages = top.Where(n => !(n.Properties.TryGetValue("cover", out var c) && c is string s && s.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase))).Select(n => n.Id).ToList();
+        var images = needImages.Count > 0 ? writes.Cache.FirstImages(needImages) : new Dictionary<string, string>();
+        var rows = top.Select(n => new QueryRow(n.Id, n.Title, n.Type, n.Workspace, n.Path, n.Tags, n.Created, n.Modified, n.Archived, n.Properties,
             n.Properties.TryGetValue("cover", out var c) && c is string s && s.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase) ? s : images.GetValueOrDefault(n.Id))).ToList();
         var columns = spec.Columns is { Count: > 0 } ? spec.Columns : DefaultColumns(rows);
         return new QueryResult(rows, sorted.Count, columns, null);
