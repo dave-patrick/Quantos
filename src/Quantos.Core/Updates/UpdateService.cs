@@ -156,7 +156,12 @@ public sealed class UpdateService : IDisposable
         catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or QuantosException or TaskCanceledException)
         {
             TryDelete(zip + ".partial"); TryDelete(zip);
-            lock (_gate) { _state = "idle"; _progress = 0; _error = ex is QuantosException ? ex.Message : "The download failed: " + ex.Message; }
+            lock (_gate) { _state = "idle"; _progress = 0; _error = ex switch
+            {
+                QuantosException q => q.Message,
+                InvalidDataException d => d.Message,
+                _ => "The download failed: " + ex.Message
+            }; }
             throw ex as QuantosException ?? new QuantosException(_error!, 502);
         }
     }
@@ -177,7 +182,7 @@ public sealed class UpdateService : IDisposable
             entry.ExtractToFile(Path.Combine(app, parts[2]), overwrite: true);
         }
         foreach (var program in Programs)
-            if (!File.Exists(Path.Combine(app, program))) throw new InvalidDataException($"The download is missing {program}.");
+            if (!File.Exists(Path.Combine(app, program))) throw new InvalidDataException($"This isn't a Quantos package: it has no {program}.");
         File.WriteAllText(Path.Combine(target, "ready.json"), JsonSerializer.Serialize(new { version, at = DateTimeOffset.Now }));
     }
 

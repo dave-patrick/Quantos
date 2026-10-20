@@ -10,7 +10,7 @@
 param(
     [switch]$SkipTests,
     [string]$Runtime = 'win-x64',
-    [string]$Version = '0.1.5.1'
+    [string]$Version = '0.1.5.2'
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -64,6 +64,24 @@ Step 'Zip'
 $zip = Join-Path $out "Quantos-$Version-$Runtime.zip"
 if (Test-Path $zip) { Remove-Item -LiteralPath $zip -Force }
 Compress-Archive -Path $pkg -DestinationPath $zip -CompressionLevel Optimal
+
+Step 'Check the package'
+# The updater only installs a package laid out as Quantos\application\..., and it copies single files
+# from that folder, so the three programs have to be whole single-file executables there. A package
+# built any other way is refused on the owner's machine ("This isn't a Quantos package").
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
+try {
+    $names = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
+    $required = 'Quantos/application/Quantos.exe', 'Quantos/application/Quantos.Backend.exe',
+                'Quantos/application/quantos-cli.exe', 'Quantos/USER-GUIDE.md',
+                'Quantos/Start Quantos.cmd', 'Quantos/Example Vault/automations.json'
+    foreach ($name in $required) {
+        if ($names -notcontains $name) { throw "The package is missing $name, so the updater could not install it." }
+    }
+}
+finally { $archive.Dispose() }
+
 $size = '{0:N1} MB' -f ((Get-Item $zip).Length / 1MB)
 Write-Host "`nDone: $zip ($size)" -ForegroundColor Green
 Get-ChildItem $app | Select-Object Name, @{ n = 'MB'; e = { '{0:N1}' -f ($_.Length / 1MB) } } | Format-Table | Out-Host

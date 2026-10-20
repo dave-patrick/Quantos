@@ -7,6 +7,22 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+## 0.1.5.2 (2026-10-20)
+
+A patch release that makes Quantos quicker and stops it hanging.
+
+- **Quantos no longer hangs when a file is locked.** Saving a note retried for ever if Windows would
+  not let go of the file; it now gives up after a few tries and says what happened.
+- **Opening and saving notes is faster.** A note's frontmatter is parsed once and kept, instead of
+  being read and parsed again on every lookup, and saving a note no longer reads it back off disk
+  straight away.
+- **The editor stops rebuilding itself** on every keystroke, so typing stays smooth in long notes.
+- **The cache stays within bounds.** A query that would have read the whole vault now stops at
+  50,000 rows, the cache has an index for link aliases, and its schema moves to version 10.
+- **Watching a folder is quicker**, and the settings the app keeps are written less often, so the
+  interface stops stuttering.
+- **Finding a note by title is faster** when you type the start of the title.
+
 ## 0.1.5.1 (2026-10-19)
 
 A patch release with the work that came after 0.1.5.

@@ -10,7 +10,7 @@ namespace Quantos.Backend.Api;
 public static class SystemEndpoints
 {
     /// <summary>
-    /// The version this build reports. A patch release (0.1.5.1) is reported whole: with only the
+    /// The version this build reports. A patch release (0.1.5.2) is reported whole: with only the
     /// first three parts the app would think it was still 0.1.5 and offer the update again.
     /// </summary>
     public static readonly string Version = VersionOf(typeof(SystemEndpoints).Assembly);

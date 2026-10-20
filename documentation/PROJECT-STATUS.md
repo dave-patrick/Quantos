@@ -5,13 +5,13 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-19, at version 0.1.5.1 (latest release)._
+_Last updated: 2026-10-20, at version 0.1.5.2 (latest release)._
 
 ## 1. Where things stand
 
 | | |
 |---|---|
-| Latest release | [0.1.5.1](https://github.com/dave-patrick/Quantos/releases/tag/v0.1.5.1) (Windows x64 zip, SHA-256 digest published by GitHub) |
+| Latest release | [0.1.5.2](https://github.com/dave-patrick/Quantos/releases/tag/v0.1.5.2) (Windows x64 zip, SHA-256 digest published by GitHub) |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
 | Tests | 147 .NET (xUnit, `tests/Quantos.Tests`) and 85 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
@@ -97,6 +97,7 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Publishing a folder as a website | Core `Export/ExportService.cs` (`Publish`); Backend `POST /api/export/site`; `components/WorkspaceSwitcher.svelte` |
 | Slash commands and the block menu | lib `editor/slash.ts` (the `/` menu), `editor/blockinfo.ts`, `editor/blockmenu.ts`; `components/BlockMenu.svelte` |
 | MCP settings page | Core `Agents/McpTools.cs`, `Agents/McpService.cs`; Backend `GET/PUT /api/mcp`; `components/McpSettings.svelte` |
+| Speed (0.1.5.2) | Core `Cache/CacheIndex.cs` (bounded queries, `aliases_id` index, schema v10), `Markdown/Frontmatter.cs` (parse once, cache `Get`/`Values`), `Storage/AtomicFile.cs` (retry capped at 7), `Storage/VaultWatcher.cs` (chunk size 50), `Structure/QueryService.cs` (bounded fetch, `FirstImages` scoped to results), `WriteService.cs` (no read-back after save); lib `docs.svelte.ts`, `state.svelte.ts`, `links.svelte.ts`, `editor/` (rebuild only on doc/viewport/line change) |
 
 ## 4. Roadmap
 

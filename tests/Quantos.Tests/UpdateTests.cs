@@ -68,6 +68,23 @@ public class UpdateTests
     }
 
     [Fact]
+    public async Task A_package_that_isnt_laid_out_for_the_updater_is_refused_with_a_clear_reason()
+    {
+        // A package zipped by hand (no Quantos\ wrapper, loose DLLs) cannot be installed: the updater
+        // only takes Quantos\application\<file>, and copies single files from that folder.
+        var zip = Zip("application/Quantos.exe", "application/Quantos.Backend.exe", "application/quantos-cli.exe",
+            "application/Quantos.Backend.dll", "application/wwwroot/index.html");
+        var (updates, dir) = Service(zip, Sha(zip));
+        using var _ = updates;
+        await updates.CheckAsync();
+        var ex = await Assert.ThrowsAsync<QuantosException>(() => updates.DownloadAsync());
+        Assert.Contains("Quantos.exe", ex.Message);
+        Assert.Contains("isn't a Quantos package", ex.Message);
+        Assert.Null(updates.Status().Ready);
+        Directory.Delete(dir, true);
+    }
+
+    [Fact]
     public async Task A_download_that_doesnt_match_its_checksum_is_thrown_away()
     {
         var zip = Zip("Quantos/application/Quantos.exe", "Quantos/application/Quantos.Backend.exe", "Quantos/application/quantos-cli.exe");
