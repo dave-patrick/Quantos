@@ -32,6 +32,21 @@ public class FrontmatterTests
     }
 
     [Fact]
+    public void Changing_a_key_updates_what_is_read_back()
+    {
+        // The parsed values are kept, so a change has to put them back.
+        var doc = FrontmatterDocument.Parse("---\ntitle: Old\nstatus: open\n---\nBody\n");
+        Assert.Equal("Old", doc.GetString("title"));
+        doc.Set("title", "New");
+        Assert.Equal("New", doc.GetString("title"));
+        doc.Set("status", "done");
+        Assert.Equal("done", doc.GetString("status"));
+        doc.Remove("status");
+        Assert.Null(doc.Get("status"));
+        Assert.Equal("New", doc.Values()["title"]);
+    }
+
+    [Fact]
     public void Values_parse_and_quote_safely()
     {
         var doc = FrontmatterDocument.Create();

@@ -133,6 +133,29 @@ public class StructureTests
     }
 
     [Fact]
+    public void A_query_sees_every_note_in_the_vault()
+    {
+        // A query used to read only the first page of notes, so a filter quietly left out
+        // everything after it and the count shown was short.
+        using var v = new TestVault(start: false);
+        var dir = Path.Combine(v.VaultPath, "workspaces", "default", "nodes");
+        Directory.CreateDirectory(dir);
+        const int notes = 1050;
+        for (var i = 0; i < notes; i++)
+            File.WriteAllText(Path.Combine(dir, $"note_{i:D5}.md"),
+                $"---\nid: {Ulid.New()}\ntitle: Note {i}\ntype: note\nworkspace: default\nstatus: open\nschema: 1\n---\nBody {i}\n");
+        v.Session.Start();
+
+        var result = v.Session.Queries.Run(new QuerySpec
+        {
+            Limit = 1,
+            Filters = [new QueryFilter("status", "eq", "open")]
+        }, "default");
+        Assert.Equal(notes, result.Total);
+        Assert.Single(result.Rows);
+    }
+
+    [Fact]
     public void Queries_filter_sort_and_follow_tag_inheritance()
     {
         using var v = new TestVault();

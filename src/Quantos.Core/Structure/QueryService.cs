@@ -40,28 +40,42 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
 
     public QueryResult Run(QuerySpec spec, string activeWorkspace)
     {
-        // Load a bounded batch into memory, then filter/sort in LINQ. 1M was far too many for large vaults.
-        var fetchLimit = Math.Clamp((spec.Limit ?? 500) * 20, 1000, 50_000);
-        IEnumerable<NodeSummary> nodes = writes.Cache.List(null, null, spec.IncludeArchived, fetchLimit);
+        // Every note in the vault has to be considered. A filter that only saw the first page
+        // would quietly leave the rest out, and the number of results shown to the person would
+        // be wrong. The cache is read a page at a time, so the whole vault is seen without holding
+        // all of it at once, and only the notes that match are kept.
         var workspaces = WorkspaceList(spec.Workspaces, activeWorkspace);
-        if (workspaces is not null) nodes = nodes.Where(n => workspaces.Contains(n.Workspace) || (n.Workspace.Length == 0 && n.Type is "template" or "supertag"));
-        if (spec.Types is { Count: > 0 }) nodes = nodes.Where(n => spec.Types.Contains(n.Type, StringComparer.OrdinalIgnoreCase));
-        // Schema records (supertags, templates, synced block sources) appear only when asked for by type or browsed by folder.
-        else if (spec.Folder is not { Length: > 0 }) nodes = nodes.Where(n => n.Type is not (NodeTypes.Supertag or NodeTypes.Template or NodeTypes.SyncedBlock));
-        if (spec.Tags is { Count: > 0 })
-        {
-            var wanted = spec.Tags.Select(t => tags.WithDescendants(t)).ToList();
-            nodes = nodes.Where(n => wanted.All(set => n.Tags.Any(set.Contains)));
-        }
-        if (spec.Folder is { Length: > 0 } folder) nodes = nodes.Where(n => n.Path.StartsWith(folder.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase));
-        if (spec.Text is { Length: > 0 } text)
-        {
-            var hits = writes.Cache.Search(text, null, 5000).Select(h => h.Id).ToHashSet();
-            nodes = nodes.Where(n => hits.Contains(n.Id));
-        }
-        foreach (var f in spec.Filters ?? []) nodes = nodes.Where(n => Matches(n, f));
+        var wanted = spec.Tags is { Count: > 0 } ? spec.Tags.Select(t => tags.WithDescendants(t)).ToList() : null;
+        var hits = spec.Text is { Length: > 0 } text ? writes.Cache.Search(text, null, 5000).Select(h => h.Id).ToHashSet() : null;
 
-        var list = nodes.ToList();
+        bool Match(NodeSummary n)
+        {
+            if (workspaces is not null && !(workspaces.Contains(n.Workspace) || (n.Workspace.Length == 0 && n.Type is "template" or "supertag"))) return false;
+            if (spec.Types is { Count: > 0 })
+            {
+                if (!spec.Types.Contains(n.Type, StringComparer.OrdinalIgnoreCase)) return false;
+            }
+            // Schema records (supertags, templates, synced block sources) appear only when asked for by type or browsed by folder.
+            else if (spec.Folder is not { Length: > 0 } && n.Type is (NodeTypes.Supertag or NodeTypes.Template or NodeTypes.SyncedBlock)) return false;
+            if (wanted is not null && !wanted.All(set => n.Tags.Any(set.Contains))) return false;
+            if (spec.Folder is { Length: > 0 } folder && !n.Path.StartsWith(folder.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase)) return false;
+            if (hits is not null && !hits.Contains(n.Id)) return false;
+            foreach (var f in spec.Filters ?? []) if (!Matches(n, f)) return false;
+            return true;
+        }
+
+        var list = new List<NodeSummary>();
+        var matched = new HashSet<string>();
+        const int PageSize = 10_000;
+        for (var offset = 0; ; offset += PageSize)
+        {
+            var page = writes.Cache.List(null, null, spec.IncludeArchived, PageSize, offset);
+            if (page.Count == 0) break;
+            foreach (var n in page)
+                if (matched.Add(n.Id) && Match(n)) list.Add(n);
+            if (page.Count < PageSize) break;
+        }
+
         IOrderedEnumerable<NodeSummary>? ordered = null;
         foreach (var s in spec.Sort ?? [new QuerySort("modified", "desc")])
         {

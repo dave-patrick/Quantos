@@ -245,7 +245,7 @@ public sealed partial class CacheIndex : IDisposable
         lock (_gate) return QueryNodes("WHERE id=$id", ("$id", id)).FirstOrDefault();
     }
 
-    public IReadOnlyList<NodeSummary> List(string? workspace = null, string? type = null, bool includeArchived = false, int limit = 5000)
+    public IReadOnlyList<NodeSummary> List(string? workspace = null, string? type = null, bool includeArchived = false, int limit = 5000, int offset = 0)
     {
         lock (_gate)
         {
@@ -254,7 +254,9 @@ public sealed partial class CacheIndex : IDisposable
             if (workspace is not null) { where.Add("workspace=$ws"); args.Add(("$ws", workspace)); }
             if (type is not null) { where.Add("type=$type"); args.Add(("$type", type)); }
             if (!includeArchived) where.Add("archived=0");
-            var clause = (where.Count > 0 ? "WHERE " + string.Join(" AND ", where) : "") + $" ORDER BY modified DESC LIMIT {limit}";
+            // The id breaks ties so paging through the vault can neither skip nor repeat a note.
+            var clause = (where.Count > 0 ? "WHERE " + string.Join(" AND ", where) : "")
+                + $" ORDER BY modified DESC, id ASC LIMIT {limit} OFFSET {offset}";
             return QueryNodes(clause, [.. args]);
         }
     }
@@ -418,7 +420,8 @@ public sealed partial class CacheIndex : IDisposable
     {
         lock (_gate)
         {
-            using var cmd = Command(_db, "SELECT id, substr(body, 1, $n) FROM nodes", ("$n", length));
+            // The body lives in the full-text table; the nodes table has no body column.
+            using var cmd = Command(_db, "SELECT id, substr(body, 1, $n) FROM search", ("$n", length));
             using var r = cmd.ExecuteReader();
             var map = new Dictionary<string, string>();
             while (r.Read()) if (!r.IsDBNull(1)) map[r.GetString(0)] = System.Text.RegularExpressions.Regex.Replace(r.GetString(1), @"\s+", " ").Trim();

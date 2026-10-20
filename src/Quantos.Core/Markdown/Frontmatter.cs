@@ -142,11 +142,12 @@ public sealed partial class FrontmatterDocument
             _entries.Insert(insertAt, new Entry(key, lines));
         }
         _dirty = true;
+        _values = null; // the document changed, so the parsed values are no longer true
     }
 
     public void Remove(string key)
     {
-        if (_entries.RemoveAll(e => e.Key == key) > 0) _dirty = true;
+        if (_entries.RemoveAll(e => e.Key == key) > 0) { _dirty = true; _values = null; }
     }
 
     public void SetBody(string body)

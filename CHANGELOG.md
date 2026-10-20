@@ -7,6 +7,17 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+Fixes for three problems in 0.1.5.2.
+
+- **Queries see every note again.** 0.1.5.2 read only the first few thousand notes when filtering, so
+  on a big vault a filtered view left the rest out and the number of results was short. Every note in
+  the vault is considered now.
+- **The notes browser shows the first lines of each note again.** 0.1.5.2 asked the cache for a
+  column that isn't in that table, so the excerpts never arrived and the list's text search found
+  nothing. The list works again.
+- **A note's fields are read fresh after a change.** 0.1.5.2 kept the parsed frontmatter and didn't
+  put it back after a change, so reading a field could give the value from before the change.
+
 ## 0.1.5.2 (2026-10-20)
 
 A patch release that makes Quantos quicker and stops it hanging.

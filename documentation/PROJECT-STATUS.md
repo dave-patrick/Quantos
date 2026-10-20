@@ -98,6 +98,7 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Slash commands and the block menu | lib `editor/slash.ts` (the `/` menu), `editor/blockinfo.ts`, `editor/blockmenu.ts`; `components/BlockMenu.svelte` |
 | MCP settings page | Core `Agents/McpTools.cs`, `Agents/McpService.cs`; Backend `GET/PUT /api/mcp`; `components/McpSettings.svelte` |
 | Speed (0.1.5.2) | Core `Cache/CacheIndex.cs` (bounded queries, `aliases_id` index, schema v10), `Markdown/Frontmatter.cs` (parse once, cache `Get`/`Values`), `Storage/AtomicFile.cs` (retry capped at 7), `Storage/VaultWatcher.cs` (chunk size 50), `Structure/QueryService.cs` (bounded fetch, `FirstImages` scoped to results), `WriteService.cs` (no read-back after save); lib `docs.svelte.ts`, `state.svelte.ts`, `links.svelte.ts`, `editor/` (rebuild only on doc/viewport/line change) |
+| Fixes after 0.1.5.2 | Core `Structure/QueryService.cs` (every note in the vault is considered, not just the first page), `Cache/CacheIndex.cs` (`Excerpts` reads the body from the full-text table), `Markdown/Frontmatter.cs` (the parsed values are dropped when the document changes) |
 
 ## 4. Roadmap
 
