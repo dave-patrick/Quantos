@@ -122,8 +122,12 @@ Verified: everything listed in section 3 has unit or acceptance tests for its lo
 in a browser against the dev backend (screenshots and accessibility scans). The in-app update check and
 download were tested against the real GitHub release.
 
+Verified on the owner's machine: the update *install and restart* step in the Windows client. The
+owner updated 0.1.5.1 → 0.1.5.2 through *Settings › Updates* and the new version started. (The
+v0.1.5.2 asset first published was packed wrongly and the updater refused it; it was replaced with
+one built by `build/build.ps1`.)
+
 Not yet verified (needs the owner's Windows machine, or a real account):
-- The update *install and restart* step in the Windows client (first real run: 0.1.3 → 0.1.4).
 - The pop-up scratchpad window's send keys (the docked scratchpad is tested).
 - Real AI providers (tested only against a local fake OpenAI-style server); Claude via the Anthropic SDK.
 - The manual items in `RELEASE-CHECKLIST.md` on the target laptop (no admin rights): packaging,

@@ -37,9 +37,9 @@ open threads and the machine.
 - **The first published asset for v0.1.5.2 was packed by hand and was the wrong shape** (no
   `Quantos\` wrapper, the programs split into loose DLLs, and no documents or example vault), so the
   updater refused it and nobody could update to it. It has been replaced with one built by
-  `build/build.ps1`, which now checks its own package before it is published. Ask the owner to try
-  updating 0.1.5.1 → 0.1.5.2 through *Settings › Updates*: it is the first test of the updater
-  against a real release it can actually install.
+  `build/build.ps1`, which now checks its own package before it is published. **The owner updated
+  0.1.5.1 → 0.1.5.2 through *Settings › Updates* and the new version started**, so the updater's
+  install-and-restart step has now worked on a real machine.
 - **Released 0.1.5** (tag `v0.1.5`, zip `Quantos-0.1.5-win-x64.zip`, SHA-256
   `ac7c131a6af2974f71db4d82f913c6059469c05ce7e2db8783cce065a40525fe`): the split right sidebar,
   linked folders, the MCP settings page, slash commands, the block right-click menu, and
@@ -47,9 +47,9 @@ open threads and the machine.
 - **Linked folders (released, not yet used by the owner):** the owner keeps notes in a separate
   Markdown editor and wants both to work on the same files. *Link a folder…* in the workspace menu
   does it. Ask which editor they use and whether the two behave as expected on their real notes.
-- **First in-app update:** the owner was asked to update 0.1.3 → 0.1.4 through *Settings › Updates*,
-  and then to update 0.1.5.1 → 0.1.5.2. This is the first real run of the Windows client's
-  install-and-restart step (`Updater.cs`, `MainForm.ApplyUpdateAsync`). If it failed, the client log
+- **First in-app update:** done — the owner updated 0.1.5.1 → 0.1.5.2 on their machine and the new
+  version started. The Windows client's install-and-restart step (`Updater.cs`,
+  `MainForm.ApplyUpdateAsync`) has now worked for real. If a later update fails, the client log
   `client-data\logs\client-<date>.log` says why; the old program files are kept as `*.old` until a new
   version starts. The updater only accepts a package laid out as `Quantos\application\...`
   (`UpdateService.Unpack`), so the package must come from `build/build.ps1` and never be zipped by
