@@ -17,11 +17,12 @@ public sealed class MainForm : Form
     private readonly ClientPaths _paths;
     private readonly ClientPrefs _prefs;
     private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(12, 19, 29) };
-    private readonly Panel _titleBar = new() { Dock = DockStyle.Top, Height = 32, BackColor = Color.FromArgb(12, 19, 29) };
-    private readonly Label _title = new() { Text = "Quantos", ForeColor = Color.FromArgb(197, 208, 223), Font = new Font("Segoe UI", 10f), AutoSize = true, Location = new Point(12, 8) };
-    private readonly Button _btnMin = new() { Text = "—", Width = 46, Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29) };
-    private readonly Button _btnMax = new() { Text = "□", Width = 46, Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29) };
-    private readonly Button _btnClose = new() { Text = "×", Width = 46, Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29) };
+    private readonly Panel _titleBar = new() { Dock = DockStyle.Top, Height = 34, BackColor = Color.FromArgb(12, 19, 29) };
+    private readonly PictureBox _icon = new() { Size = new Size(16, 16), Location = new Point(10, 9), BackColor = Color.FromArgb(12, 19, 29) };
+    private readonly Label _title = new() { Text = "Quantos", ForeColor = Color.FromArgb(197, 208, 223), Font = new Font("Segoe UI", 9.5f), AutoSize = true, Location = new Point(32, 8) };
+    private readonly CaptionButton _btnMin = new(CaptionButton.Glyph.Minimize) { Dock = DockStyle.Right };
+    private readonly CaptionButton _btnMax = new(CaptionButton.Glyph.Maximize) { Dock = DockStyle.Right };
+    private readonly CaptionButton _btnClose = new(CaptionButton.Glyph.Close) { Dock = DockStyle.Right };
     private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Segoe UI", 12f) };
     private readonly NotifyIcon _tray = new();
     private readonly HotKeys _hotkeys = new();
@@ -62,15 +63,20 @@ public sealed class MainForm : Form
             Bounds = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)) ? saved : new Rectangle(100, 100, prefs.Width, prefs.Height);
         }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
-        FormBorderStyle = FormBorderStyle.None;
+        // A normal window with its caption hidden by WM_NCCALCSIZE: the frame stays, so Windows
+        // still draws the shadow and the rounded corners, but the caption itself is ours.
+        FormBorderStyle = FormBorderStyle.Sizable;
+        _icon.Image = Icon.ToBitmap();
         _titleBar.Controls.Add(_title);
+        _titleBar.Controls.Add(_icon);
         _titleBar.Controls.Add(_btnMin);
         _titleBar.Controls.Add(_btnMax);
         _titleBar.Controls.Add(_btnClose);
         _btnMin.Click += (_, _) => WindowState = FormWindowState.Minimized;
-        _btnMax.Click += (_, _) => WindowState = WindowState == FormWindowState.Maximized ? FormWindowState.Normal : FormWindowState.Maximized;
+        _btnMax.Click += (_, _) => ToggleMaximized();
         _btnClose.Click += async (_, _) => { if (!_exiting) await ExitAsync(); };
         _titleBar.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 2, 0); } };
+        _icon.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 2, 0); } };
         _titleBar.DoubleClick += (_, _) => _btnMax.PerformClick();
         Controls.Add(_web);
         Controls.Add(_titleBar);
@@ -78,6 +84,31 @@ public sealed class MainForm : Form
         _status.BringToFront();
         _status.Text = "Starting Quantos…";
         BuildTray();
+    }
+
+    /// <summary>Maximize or restore, keeping the caption button's glyph in step.</summary>
+    private void ToggleMaximized()
+    {
+        WindowState = WindowState == FormWindowState.Maximized ? FormWindowState.Normal : FormWindowState.Maximized;
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        _btnMax.Maximized = WindowState == FormWindowState.Maximized;
+        _btnMax.Invalidate();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        // Windows 11 rounds the corners of a window that still has a frame, and the app uses
+        // rounded corners everywhere else; the one-pixel system border is dropped so only our
+        // own title bar shows.
+        var corner = 2;                                     // DWMWCP_ROUND
+        DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
+        var none = unchecked((int)0xFFFFFFFE);                // DWMWA_COLOR_NONE
+        DwmSetWindowAttribute(Handle, 34, ref none, sizeof(int));
     }
 
     public static Icon LoadIcon()
@@ -618,11 +649,52 @@ public sealed class MainForm : Form
 
     [DllImport("user32.dll")] private static extern bool ReleaseCapture();
     [DllImport("user32.dll")] private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+    [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+    [DllImport("user32.dll")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int flags);
+    [DllImport("user32.dll")] private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
+    [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Rect { public int Left, Top, Right, Bottom; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MonitorInfo { public int cbSize; public Rect rcMonitor; public Rect rcWork; public uint dwFlags; }
+
+    /// <summary>The four rectangles WM_NCCALCSIZE carries; the third one is the client area.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NonClientCalcSize { public Rect Proposed, Old, Client, Reserved; }
 
     protected override void WndProc(ref Message m)
     {
+        const int WM_NCCALCSIZE = 0x83;
         const int WM_NCHITTEST = 0x84;
         const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17;
+        if (m.Msg == WM_NCCALCSIZE)
+        {
+            // Take over the caption: the client area becomes the whole window, so the system
+            // caption is not drawn and our own title bar sits at the very edge. The frame itself
+            // stays, so Windows keeps the shadow and the rounded corners.
+            if (WindowState == FormWindowState.Maximized && GetWindowRect(Handle, out var window))
+            {
+                // A maximized window is made larger than the screen by the frame thickness. Keep
+                // the content on the work area so it does not disappear under the taskbar.
+                var info = new MonitorInfo { cbSize = Marshal.SizeOf<MonitorInfo>() };
+                if (GetMonitorInfo(MonitorFromWindow(Handle, 2), ref info))
+                {
+                    var calc = Marshal.PtrToStructure<NonClientCalcSize>(m.LParam);
+                    calc.Client = new Rect
+                    {
+                        Left = info.rcWork.Left - window.Left,
+                        Top = info.rcWork.Top - window.Top,
+                        Right = info.rcWork.Right - window.Left,
+                        Bottom = info.rcWork.Bottom - window.Top
+                    };
+                    Marshal.StructureToPtr(calc, m.LParam, false);
+                }
+            }
+            m.Result = IntPtr.Zero;
+            return;
+        }
         if (m.Msg == WM_NCHITTEST && WindowState != FormWindowState.Maximized)
         {
             var pt = PointToClient(new Point(m.LParam.ToInt32() & 0xFFFF, m.LParam.ToInt32() >> 16));

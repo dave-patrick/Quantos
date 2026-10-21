@@ -8,6 +8,9 @@ const backend = process.env.QUANTOS_BACKEND ?? 'http://127.0.0.1:47821';
 export default defineConfig({
   plugins: [svelte()],
   base: '/',
+  // The build mark names the commit a package was built from. It is only set for a staging copy
+  // (build/build.ps1 -Mark); a released build has none.
+  define: { __QUANTOS_BUILD__: JSON.stringify(process.env.QUANTOS_BUILD ?? '') },
   build: {
     outDir: '../src/Quantos.Backend/wwwroot',
     emptyOutDir: true,

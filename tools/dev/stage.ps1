@@ -41,7 +41,8 @@ function ClientLogTail($lines) {
 
 if ($Build) {
     Step 'Building'
-    pwsh -NoProfile -File 'C:\repos\Quantos\build\build.ps1'
+    # A staging copy carries the build mark, so it is told apart from the released version.
+    pwsh -NoProfile -File 'C:\repos\Quantos\build\build.ps1' -Mark
     if ($LASTEXITCODE -ne 0) { throw "The build failed (exit $LASTEXITCODE)." }
 }
 if (-not (Test-Path (Join-Path $Package 'application\Quantos.exe'))) { throw "There is no built package at $Package. Run pwsh build/build.ps1 first." }
@@ -70,7 +71,12 @@ Step 'Replacing the program files'
 foreach ($file in Get-ChildItem (Join-Path $Package 'application') -File) {
     $target = Join-Path $app $file.Name
     $old = "$target.old"
-    if (Test-Path $old) { Remove-Item $old -Force }
+    # An old copy can still be running (the CLI is the MCP server), and then it cannot be
+    # deleted. Leave it: the client clears *.old once it starts.
+    if (Test-Path $old) {
+        try { Remove-Item $old -Force -ErrorAction Stop }
+        catch { $old = "$target.old-" + (Get-Date -Format 'yyyyMMdd-HHmmss') }
+    }
     if (Test-Path $target) { Move-Item $target $old -Force }
     Copy-Item $file.FullName $target -Force
     Write-Host "  $($file.Name)"

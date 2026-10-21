@@ -180,7 +180,8 @@ had no shortcut handling).
 1. Bump the version in six places: `build/build.ps1` (`$Version`), `frontend/package.json` and the top two
    `version` fields in `frontend/package-lock.json`, `<Version>` in the Backend, Cli and Client `.csproj`
    files, and the MCP `serverInfo` version in `src/Quantos.Cli/Mcp.cs`.
-2. `pwsh build/build.ps1` (must pass all tests).
+2. `pwsh build/build.ps1` (must pass all tests). A released build has no build mark: the mark that
+   names the commit is only for a staging copy (`-Mark`), so the app tells them apart.
 3. Commit "Version x.y.z", tag `vx.y.z`, push `main` and the tag.
 4. `gh release create vx.y.z publish/Quantos-x.y.z-win-x64.zip --title "Quantos x.y.z" --notes-file <notes>`.
    The asset must be named `Quantos-x.y.z-win-x64.zip`: the in-app updater looks for that name and needs

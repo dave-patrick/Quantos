@@ -3,12 +3,18 @@
   Builds the no-install Quantos package: Quantos\application\ (three self-contained single-file
   executables), the user guide, the example vault, and a zip of it all.
 
+.PARAMETER Mark
+  Puts a build mark (the commit the package was built from) next to the version in the app's
+  wordmark. Use it for a staging copy that is being tried out; a released build has no mark.
+
 .EXAMPLE
   pwsh build/build.ps1            # full build with tests
   pwsh build/build.ps1 -SkipTests
+  pwsh build/build.ps1 -Mark      # a staging copy, marked with the commit
 #>
 param(
     [switch]$SkipTests,
+    [switch]$Mark,
     [string]$Runtime = 'win-x64',
     [string]$Version = '0.1.5.7'
 )
@@ -20,6 +26,17 @@ $pkg = Join-Path $out 'Quantos'
 $app = Join-Path $pkg 'application'
 
 function Step($text) { Write-Host "`n== $text" -ForegroundColor Cyan }
+
+# The build mark is read by the frontend build; an unmarked build leaves it empty.
+if ($Mark) {
+    $commit = (& git -C $root rev-parse --short HEAD 2>$null | Select-Object -First 1)
+    if (-not $commit) { throw 'Could not read the commit for the build mark.' }
+    # Say so when the working tree has changes the commit does not have.
+    $dirty = (& git -C $root status --porcelain 2>$null | Select-Object -First 1)
+    $env:QUANTOS_BUILD = "build $commit$(if ($dirty) { '-dirty' })"
+    Write-Host "Build mark: $env:QUANTOS_BUILD"
+}
+else { $env:QUANTOS_BUILD = '' }
 
 Step 'Frontend'
 Push-Location frontend

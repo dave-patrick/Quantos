@@ -13,12 +13,11 @@
   let { date, node, workspace, isToday, isFuture, oncreated, contents = '' }:
     { date: string; node: NodeDto | null; workspace: string; isToday: boolean; isFuture: boolean; oncreated: (n: NodeDto) => void; contents?: string } = $props();
 
-  // Empty daily entries collapse (confirmed); today is always open.
+  // Days start closed and only today is open, so the stream opens with one open day rather than
+  // a wall of editors. A day never closes itself, so one the owner opens stays open.
   const empty = $derived(!node || node.body.trim() === '');
-  // Opens by itself when it has text (or is today), but never closes by itself: a note created by
-  // typing into an empty day is still "empty" for a moment and must stay open under the cursor.
   let expanded = $state(false);
-  $effect(() => { if (isToday || !empty) expanded = true; });
+  $effect(() => { if (isToday) expanded = true; });
 
   let doc = $state<Doc | null>(null);
   let pending = '';
