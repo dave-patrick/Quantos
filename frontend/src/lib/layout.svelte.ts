@@ -174,6 +174,30 @@ class Layout {
     this.persist();
   }
 
+  /** Move a tab to a named location (left/right/top/bottom), creating the split as needed. */
+  moveToLocation(fromPane: number, tabKey: string, location: 'left' | 'right' | 'top' | 'bottom') {
+    const horizontal = location === 'top' || location === 'bottom';
+    const dir: 'vertical' | 'horizontal' = horizontal ? 'horizontal' : 'vertical';
+    const targetIndex = (location === 'left' || location === 'top') ? 0 : 1;
+    if (this.panes.length < 2) this.splitPane(dir, false);
+    else this.split = dir;
+    // ensure two panes
+    if (this.panes.length < 2) this.panes.push(newPane());
+    const src = this.panes[fromPane];
+    const ti = src.tabs.findIndex((t) => t.key === tabKey);
+    if (ti < 0) return;
+    const [moved] = src.tabs.splice(ti, 1);
+    // avoid duplicate
+    const dst = this.panes[targetIndex];
+    if (!dst.tabs.some((t) => t.key === moved.key)) dst.tabs.push(moved);
+    if (src.tabs.length === 0 && this.panes.length > 1 && fromPane !== targetIndex) {
+      // keep pane but clear active
+    }
+    this.activePane = targetIndex;
+    dst.active = moved.key;
+    this.persist();
+  }
+
   closePane(index: number) {
     if (this.panes.length === 1) return;
     this.panes = this.panes.filter((_, i) => i !== index);

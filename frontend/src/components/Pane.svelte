@@ -107,6 +107,10 @@
   <div class="menu" style="left:{menu.x}px; top:{menu.y}px" role="menu" tabindex="-1" use:menuKeys={{ onclose: () => (menu = null) }}>
     <button role="menuitem" onclick={() => { layout.togglePin(index, menu!.tab.key); menu = null; }}>{menu.tab.pinned ? 'Unpin tab' : 'Pin tab'}</button>
     <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.open({ kind: t.kind, nodeId: t.nodeId, arg: t.arg, title: t.title }, 'other'); }}>Open in other pane</button>
+    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'left'); }}>Move to left</button>
+    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'right'); }}>Move to right</button>
+    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'top'); }}>Move to top</button>
+    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'bottom'); }}>Move to bottom</button>
     <button role="menuitem" onclick={() => { layout.closeOthers(index, menu!.tab.key); menu = null; }}>Close other tabs</button>
     <button role="menuitem" onclick={() => { layout.close(index, menu!.tab.key); menu = null; }}>Close tab</button>
   </div>

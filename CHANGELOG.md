@@ -7,6 +7,11 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+## 0.1.5.6
+
+- **Tab location via right-click.** Right-clicking a tab now offers Move to left/right/top/bottom to relocate it to that pane, creating the split as needed.
+- **MCP client points at the single-exe build.** (config) Updated OpenCode MCP config to use the installed single-exe CLI.
+
 ## 0.1.5.5 — Single-exe build
 
 - **Single executable.** The Windows client now runs the backend in-process instead of launching
