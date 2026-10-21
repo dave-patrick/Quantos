@@ -130,7 +130,7 @@
   .tab { display: flex; align-items: center; gap: 6px; max-width: 210px; min-width: 90px; padding: 0 6px 0 12px; border-right: 1px solid var(--line);
     color: var(--text-muted); font-size: 13px; cursor: default; user-select: none; position: relative; }
   .tab:hover { background: var(--bg-hover); color: var(--text-soft); }
-  .tab.active { background: var(--bg); color: var(--text); }
+  .tab.active { background: var(--bg); color: var(--text); outline: 1px solid var(--accent); outline-offset: -1px; }
   .pane.focused .tab.active::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--accent); }
   .tab.pinned { min-width: 0; max-width: 150px; padding-right: 10px; }
   .tab-button { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: default; }
