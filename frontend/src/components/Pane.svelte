@@ -68,7 +68,7 @@
       <div class="tab" class:active={tab.key === pane.active} class:pinned={tab.pinned} role="presentation" draggable="true"
         ondragstart={() => (dragKey = tab.key)} ondragover={(e) => e.preventDefault()} ondrop={(e) => drop(e, tab)}
         onauxclick={(e) => onAux(e, tab)}
-        oncontextmenu={(e) => { e.preventDefault(); menu = { tab, x: e.clientX, y: e.clientY }; }}>
+        oncontextmenu={(e) => { e.preventDefault(); const y = Math.min(e.clientY, window.innerHeight - 260); menu = { tab, x: e.clientX, y }; }}>
         <button class="tab-button" role="tab" tabindex={tab.key === pane.active ? 0 : -1} aria-selected={tab.key === pane.active}
           onclick={() => layout.activate(index, tab.key)} onkeydown={(e) => tabKeys(e, tab)} title={tab.title}>
           {#if tab.pinned}<Icon name="pin" size={12} />{/if}
