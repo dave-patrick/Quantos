@@ -2,18 +2,49 @@
   import { layout } from '../lib/layout.svelte';
   import Pane from './Pane.svelte';
   let { today }: { today: string } = $props();
+
+  let ratio = $state(0.5);
+  let dragging = $state(false);
+
+  function start(e: MouseEvent) {
+    e.preventDefault();
+    dragging = true;
+    const container = (e.currentTarget as HTMLElement).parentElement!;
+    const rect = container.getBoundingClientRect();
+    const horizontal = layout.split === 'horizontal';
+    const move = (ev: MouseEvent) => {
+      const pos = horizontal ? ev.clientY - rect.top : ev.clientX - rect.left;
+      const size = horizontal ? rect.height : rect.width;
+      ratio = Math.min(0.85, Math.max(0.15, pos / size));
+    };
+    const up = () => {
+      dragging = false;
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
 </script>
 
-<div class="panes {layout.split}">
-  {#each layout.panes as pane, i (pane.id)}
-    <Pane {pane} index={i} {today} />
-  {/each}
-</div>
+{#if layout.panes.length === 1}
+  <div class="panes single">
+    <Pane pane={layout.panes[0]} index={0} {today} />
+  </div>
+{:else}
+  <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: ${ratio*100}% 6px ${ (1-ratio)*100}%;` : `grid-template-columns: ${ratio*100}% 6px ${ (1-ratio)*100}%;`}>
+    <Pane pane={layout.panes[0]} index={0} {today} />
+    <div class="splitter" class:dragging onmousedown={start}></div>
+    <Pane pane={layout.panes[1]} index={1} {today} />
+  </div>
+{/if}
 
 <style>
   .panes { flex: 1; display: grid; min-height: 0; min-width: 0; }
-  .panes.vertical { grid-template-columns: 1fr 1fr; }
-  .panes.horizontal { grid-template-rows: 1fr 1fr; }
-  .panes.vertical > :global(.pane + .pane) { border-left: 1px solid var(--line); }
-  .panes.horizontal > :global(.pane + .pane) { border-top: 1px solid var(--line); }
+  .panes.single { grid-template-columns: 1fr; }
+  .panes.vertical { grid-template-columns: 1fr 6px 1fr; }
+  .panes.horizontal { grid-template-rows: 1fr 6px 1fr; }
+  .splitter { background: var(--line); cursor: col-resize; }
+  .panes.horizontal .splitter { cursor: row-resize; }
+  .splitter:hover, .splitter.dragging { background: var(--accent); }
 </style>
