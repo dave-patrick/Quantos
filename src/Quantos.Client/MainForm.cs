@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -16,6 +17,11 @@ public sealed class MainForm : Form
     private readonly ClientPaths _paths;
     private readonly ClientPrefs _prefs;
     private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(12, 19, 29) };
+    private readonly Panel _titleBar = new() { Dock = DockStyle.Top, Height = 32, BackColor = Color.FromArgb(12, 19, 29) };
+    private readonly Label _title = new() { Text = "Quantos", ForeColor = Color.FromArgb(197, 208, 223), Font = new Font("Segoe UI", 10f), AutoSize = true, Location = new Point(12, 8) };
+    private readonly Button _btnMin = new() { Text = "—", Width = 46, Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29) };
+    private readonly Button _btnMax = new() { Text = "□", Width = 46, Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29) };
+    private readonly Button _btnClose = new() { Text = "×", Width = 46, Dock = DockStyle.Right, FlatStyle = FlatStyle.Flat, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29) };
     private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Segoe UI", 12f) };
     private readonly NotifyIcon _tray = new();
     private readonly HotKeys _hotkeys = new();
@@ -56,7 +62,18 @@ public sealed class MainForm : Form
             Bounds = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)) ? saved : new Rectangle(100, 100, prefs.Width, prefs.Height);
         }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
+        FormBorderStyle = FormBorderStyle.None;
+        _titleBar.Controls.Add(_title);
+        _titleBar.Controls.Add(_btnMin);
+        _titleBar.Controls.Add(_btnMax);
+        _titleBar.Controls.Add(_btnClose);
+        _btnMin.Click += (_, _) => WindowState = FormWindowState.Minimized;
+        _btnMax.Click += (_, _) => WindowState = WindowState == FormWindowState.Maximized ? FormWindowState.Normal : FormWindowState.Maximized;
+        _btnClose.Click += async (_, _) => { if (!_exiting) await ExitAsync(); };
+        _titleBar.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 2, 0); } };
+        _titleBar.DoubleClick += (_, _) => _btnMax.PerformClick();
         Controls.Add(_web);
+        Controls.Add(_titleBar);
         Controls.Add(_status);
         _status.BringToFront();
         _status.Text = "Starting Quantos…";
@@ -597,6 +614,30 @@ public sealed class MainForm : Form
             _prefs.X = Left; _prefs.Y = Top; _prefs.Width = Width; _prefs.Height = Height;
         }
         _prefs.Save(_paths);
+    }
+
+    [DllImport("user32.dll")] private static extern bool ReleaseCapture();
+    [DllImport("user32.dll")] private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+    protected override void WndProc(ref Message m)
+    {
+        const int WM_NCHITTEST = 0x84;
+        const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17;
+        if (m.Msg == WM_NCHITTEST && WindowState != FormWindowState.Maximized)
+        {
+            var pt = PointToClient(new Point(m.LParam.ToInt32() & 0xFFFF, m.LParam.ToInt32() >> 16));
+            int b = 6;
+            bool left = pt.X <= b, right = pt.X >= Width - b, top = pt.Y <= b, bottom = pt.Y >= Height - b;
+            if (top && left) { m.Result = (IntPtr)HTTOPLEFT; return; }
+            if (top && right) { m.Result = (IntPtr)HTTOPRIGHT; return; }
+            if (bottom && left) { m.Result = (IntPtr)HTBOTTOMLEFT; return; }
+            if (bottom && right) { m.Result = (IntPtr)HTBOTTOMRIGHT; return; }
+            if (left) { m.Result = (IntPtr)HTLEFT; return; }
+            if (right) { m.Result = (IntPtr)HTRIGHT; return; }
+            if (top) { m.Result = (IntPtr)HTTOP; return; }
+            if (bottom) { m.Result = (IntPtr)HTBOTTOM; return; }
+        }
+        base.WndProc(ref m);
     }
 
     protected override void Dispose(bool disposing)
