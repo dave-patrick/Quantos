@@ -244,7 +244,7 @@
     <section>
       {#each shownItems as item (item.key)}
         {#if item.kind}
-          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)} {...dnd(item.key)}>
+          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)} oncontextmenu={(e) => { e.preventDefault(); layout.open({ kind: item.kind!, title: item.label }, 'other'); }} {...dnd(item.key)}>
             <Icon name={item.icon} size={15} /> <span>{item.label}</span>
           </button>
         {:else if item.key === 'capture'}
@@ -266,7 +266,7 @@
     {/each}
   </div>
   <footer>
-    <button class="item" onclick={(e) => open(e, 'settings', 'Settings')}><Icon name="settings" size={15} /> <span>Settings</span></button>
+    <button class="item" onclick={(e) => open(e, 'settings', 'Settings')} oncontextmenu={(e) => { e.preventDefault(); layout.open({ kind: 'settings', title: 'Settings' }, 'other'); }}><Icon name="settings" size={15} /> <span>Settings</span></button>
     <button class="icon-btn" title="Help (F1)" aria-label="Help" onclick={(e) => open(e, 'help', 'Help')}><Icon name="help" size={15} /></button>
     <button class="icon-btn" title="About Quantos" aria-label="About Quantos" onclick={(e) => open(e, 'about', 'About Quantos')}><Icon name="info" size={15} /></button>
     <button class="icon-btn" title="Customise the sidebar" aria-label="Customise the sidebar" aria-pressed={customizing} onclick={() => (customizing = !customizing)}><Icon name="sliders" size={15} /></button>

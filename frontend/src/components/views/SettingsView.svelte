@@ -22,12 +22,13 @@
   let { tab }: { tab?: Tab } = $props();
   type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates';
   let section = $state<Section>('general');
+  let navSide = $state<'left' | 'right' | 'top' | 'bottom'>('left');
   // A link can open a particular section ("Open AI settings").
   $effect(() => { if (tab?.arg) section = tab.arg as Section; });
   let switching = $state(false);
 </script>
 
-<div class="settings">
+<div class="settings" class:nav-left={navSide === 'left'} class:nav-right={navSide === 'right'} class:nav-top={navSide === 'top'} class:nav-bottom={navSide === 'bottom'}>
   <h1 class="visually-hidden">Settings</h1>
   <nav>
     {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
@@ -38,6 +39,9 @@
     {#if section === 'general'}
       <h2>Appearance</h2>
       <ThemeEditor />
+      <h3>Settings navigation</h3>
+      <div class="field"><span>Nav position</span>
+        <div class="seg">{#each [['left', 'Left'], ['top', 'Top'], ['right', 'Right'], ['bottom', 'Bottom']] as [key, label] (key)}<button class:on={navSide === key} onclick={() => (navSide = key as any)}>{label}</button>{/each}</div></div>
       <h3>Writing look</h3>
       <div class="field"><span>Editor text size</span><input type="range" aria-label="Editor text size" min="14" max="22" bind:value={prefs.editorSize} /> <span class="mono">{prefs.editorSize}px</span></div>
       <div class="field"><span>Editor typeface</span>
@@ -109,7 +113,14 @@
 </div>
 
 <style>
-  .settings { flex: 1; display: grid; grid-template-columns: 210px 1fr; min-height: 0; }
+  .settings { flex: 1; display: grid; grid-template-columns: 210px 1fr; min-height: 0; gap: 0; }
+
+  .settings.nav-top { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .settings.nav-top nav { border-right: 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 2px; }
+  .settings.nav-bottom { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .settings.nav-bottom nav { border-right: 0; border-top: 1px solid var(--line); order: 1; display: flex; flex-wrap: wrap; gap: 2px; }
+  .settings.nav-right { grid-template-columns: 1fr 210px; }
+  .settings.nav-right nav { border-right: 0; border-left: 1px solid var(--line); order: 1; }
   nav { border-right: 1px solid var(--line); padding: 16px 8px; display: grid; align-content: start; gap: 2px; }
   nav button { text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 12px; border-radius: 7px; }
   nav button:hover { background: var(--bg-hover); }

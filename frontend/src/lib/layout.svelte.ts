@@ -15,7 +15,7 @@ export interface Tab extends TabSpec {
   lastActive: number;
 }
 
-export interface Pane { id: string; tabs: Tab[]; active: string | null; back: TabSpec[]; forward: TabSpec[] }
+export interface Pane { id: string; tabs: Tab[]; active: string | null; back: TabSpec[]; forward: TabSpec[]; tabSide: 'top' | 'bottom' | 'left' | 'right' }
 
 export type Where = 'current' | 'new' | 'other';
 
@@ -33,7 +33,7 @@ export function tabKey(spec: TabSpec) {
   return [spec.kind, spec.nodeId ?? '', spec.arg ?? ''].join(':');
 }
 
-const newPane = (): Pane => ({ id: crypto.randomUUID(), tabs: [], active: null, back: [], forward: [] });
+const newPane = (): Pane => ({ id: crypto.randomUUID(), tabs: [], active: null, back: [], forward: [], tabSide: 'top' });
 
 /** Before closing a tab its unsaved content is saved (BUILD-PLAN section 7). Registered by the document store. */
 let flushTab: (tab: Tab) => Promise<void> = async () => {};
@@ -179,20 +179,17 @@ class Layout {
     const horizontal = location === 'top' || location === 'bottom';
     const dir: 'vertical' | 'horizontal' = horizontal ? 'horizontal' : 'vertical';
     const targetIndex = (location === 'left' || location === 'top') ? 0 : 1;
+    // already there: nothing to do (avoid stray panes)
+    if (this.panes.length >= 2 && fromPane === targetIndex && this.split === dir) return;
     if (this.panes.length < 2) this.splitPane(dir, false);
     else this.split = dir;
-    // ensure two panes
     if (this.panes.length < 2) this.panes.push(newPane());
     const src = this.panes[fromPane];
     const ti = src.tabs.findIndex((t) => t.key === tabKey);
     if (ti < 0) return;
     const [moved] = src.tabs.splice(ti, 1);
-    // avoid duplicate
     const dst = this.panes[targetIndex];
     if (!dst.tabs.some((t) => t.key === moved.key)) dst.tabs.push(moved);
-    if (src.tabs.length === 0 && this.panes.length > 1 && fromPane !== targetIndex) {
-      // keep pane but clear active
-    }
     this.activePane = targetIndex;
     dst.active = moved.key;
     this.persist();
@@ -218,7 +215,7 @@ class Layout {
     return {
       split: this.split,
       activePane: this.activePane,
-      panes: this.panes.map((p) => ({ tabs: p.tabs.map((t) => ({ kind: t.kind, nodeId: t.nodeId, arg: t.arg, title: t.title, pinned: t.pinned, scroll: t.scroll })), active: p.active }))
+      panes: this.panes.map((p) => ({ tabs: p.tabs.map((t) => ({ kind: t.kind, nodeId: t.nodeId, arg: t.arg, title: t.title, pinned: t.pinned, scroll: t.scroll })), active: p.active, tabSide: p.tabSide }))
     };
   }
 
@@ -232,6 +229,7 @@ class Layout {
           pinned: !!t.pinned, scroll: t.scroll ?? 0, lastActive: 0
         }));
         pane.active = pane.tabs.some((t) => t.key === p.active) ? p.active : pane.tabs[0]?.key ?? null;
+        pane.tabSide = (p.tabSide === 'left' || p.tabSide === 'right' || p.tabSide === 'bottom') ? p.tabSide : 'top';
         return pane;
       });
       this.panes = panes.length ? panes : [newPane()];

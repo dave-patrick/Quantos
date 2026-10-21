@@ -60,7 +60,7 @@
 
 <!-- Tracks which pane is active; focus changes already cover keyboard users. -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<section class="pane" class:focused onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
+<section class="pane" class:focused class:tabs-left={pane.tabSide === 'left'} class:tabs-right={pane.tabSide === 'right'} class:tabs-bottom={pane.tabSide === 'bottom'} onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
   <div class="tabs">
     <div class="strip" role="tablist" aria-label="Open tabs">
     {#each pane.tabs as tab (tab.key)}
@@ -107,10 +107,10 @@
   <div class="menu" style="left:{menu.x}px; top:{menu.y}px" role="menu" tabindex="-1" use:menuKeys={{ onclose: () => (menu = null) }}>
     <button role="menuitem" onclick={() => { layout.togglePin(index, menu!.tab.key); menu = null; }}>{menu.tab.pinned ? 'Unpin tab' : 'Pin tab'}</button>
     <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.open({ kind: t.kind, nodeId: t.nodeId, arg: t.arg, title: t.title }, 'other'); }}>Open in other pane</button>
-    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'left'); }}>Move to left</button>
-    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'right'); }}>Move to right</button>
-    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'top'); }}>Move to top</button>
-    <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.moveToLocation(index, t.key, 'bottom'); }}>Move to bottom</button>
+    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'left'; layout.persist(); menu = null; }}>Tabs on left</button>
+    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'right'; layout.persist(); menu = null; }}>Tabs on right</button>
+    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'top'; layout.persist(); menu = null; }}>Tabs on top</button>
+    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'bottom'; layout.persist(); menu = null; }}>Tabs on bottom</button>
     <button role="menuitem" onclick={() => { layout.closeOthers(index, menu!.tab.key); menu = null; }}>Close other tabs</button>
     <button role="menuitem" onclick={() => { layout.close(index, menu!.tab.key); menu = null; }}>Close tab</button>
   </div>
@@ -118,6 +118,12 @@
 
 <style>
   .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .pane.tabs-left, .pane.tabs-right { flex-direction: row; }
+  .pane.tabs-left .tabs { order: -1; flex-direction: column; width: 150px; height: auto; border-bottom: 0; border-right: 1px solid var(--line); overflow-y: auto; }
+  .pane.tabs-right .tabs { order: 1; flex-direction: column; width: 150px; height: auto; border-bottom: 0; border-left: 1px solid var(--line); overflow-y: auto; }
+  .pane.tabs-left .strip, .pane.tabs-right .strip { flex-direction: column; align-items: stretch; }
+  .pane.tabs-left .tab, .pane.tabs-right .tab { max-width: none; min-width: 0; width: 100%; padding: 8px 6px; }
+  .pane.tabs-bottom { flex-direction: column-reverse; }
   .tabs { display: flex; align-items: stretch; height: var(--tab-h); background: var(--bg-raised); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; flex: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .strip { display: flex; align-items: stretch; min-width: 0; }
