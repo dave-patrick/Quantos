@@ -41,8 +41,18 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 0.1.5.2)
+## Open threads (as of 0.1.5.7)
 
+- **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
+  own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)
+  and the app's icon, and the window keeps the Windows frame underneath, so it has the shadow and
+  the rounded corners. The daily stream now opens with only today expanded. A staging copy carries a
+  build mark next to the version on the splash and setup screens (`build/build.ps1 -Mark`); a
+  released build has none. The arrows on headings are easier to find now (bigger, brighter, and
+  brighter still on the hovered line). Worth asking the owner to look at: the rounded corners, the
+  caption buttons, the daily stream opening with only today, and the mark next to the version.
+  **A heading with nothing under it gets no arrow**, because there is nothing to fold — that is why
+  the owner's daily note (`# this is a test`, the last line) shows none.
 - **Editor: collapsible headings and block selection (unreleased, on `main`).** Headings now carry
   their own arrow and fold by level, and blocks can be selected together (`Ctrl`-click,
   `Ctrl`-`Shift`-click), dragged to a new place, and worked on from the right-click menu. The

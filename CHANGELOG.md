@@ -7,10 +7,17 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **The window has rounded corners and its own title bar.** The client draws its own caption
+  buttons — a thin dash, a square (two squares when the window is maximised) and a cross, each with a
+  rounded hover patch and a red close — and carries the app's icon in the corner. The window keeps
+  the Windows frame underneath, so it has the system shadow and Windows 11's rounded corners.
+- **The daily stream opens with only today expanded.** Every other day starts closed, including days
+  with writing in them; click a day to open it and it stays open.
 - **Headings fold by level, with an arrow on every heading.** Each heading now has a small arrow in
   front of it: click it and the section under that heading folds away, down to the next heading of
   the same level, and a deeper heading goes with it. The setting *Settings › Writing › Collapsible
-  headings* now really turns this off.
+  headings* now really turns this off. A heading with nothing under it has no arrow, because there is
+  nothing to fold.
 - **Select several blocks and move them.** `Ctrl`-click adds a block to the selection and
   `Ctrl`-`Shift`-click stretches it over the blocks between. The selected blocks are shaded, can be
   dragged to a new place (a line shows where they will land), and the right-click menu now works on
