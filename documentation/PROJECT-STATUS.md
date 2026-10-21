@@ -188,8 +188,9 @@ had no shortcut handling).
 5. Add the release to `CHANGELOG.md` and update this file.
 6. **Stage the new build into the owner's copy and restart it.** The owner runs Quantos from
    `C:\Users\davem\Quantos\Quantos\application` (their vault is `C:\Users\davem\Quantos\Vault`), so a
-   build that isn't put there isn't being used. Stop the running client, replace the three programs in
-   that `application` folder with the ones from `publish\Quantos\application` — rename the old files to
-   `*.old` first, because a running `.exe` can be renamed but not overwritten — copy the updated
-   documents across, and start `Quantos.exe` again. Confirm it came up from the `Startup:` line in
+   build that isn't put there isn't being used. `pwsh tools/dev/stage.ps1` closes the running client,
+   replaces the three programs in that `application` folder with the ones from
+   `publish\Quantos\application` — renaming the old files to `*.old` first, because a running `.exe`
+   can be renamed but not overwritten — copies the updated documents across, and starts `Quantos.exe`
+   again. Confirm it came up from the `Startup:` and `Page loaded` lines in
    `client-data\logs\client-<date>.log`.

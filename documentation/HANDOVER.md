@@ -25,13 +25,17 @@ open threads and the machine.
   fixed. Admit when something couldn't be reproduced or tested.
 - **Every new build is staged into the owner's copy of the app, and the app is restarted.** The owner
   runs Quantos from `C:\Users\davem\Quantos\Quantos\application` (their vault is
-  `C:\Users\davem\Quantos\Vault`). After `pwsh build/build.ps1`, shut the client down, replace the three
-  programs in that `application` folder with the ones from `publish\Quantos\application`, refresh the
-  documents, and start `Quantos.exe` again — the owner has asked for this to be done for each new
-  release without asking again. Rename the old files to `*.old` before copying the new ones over: a
-  running `.exe` can be renamed but not overwritten (this is what the updater does). Don't kill the
-  `quantos-cli.exe` processes; they are the MCP server. Afterwards read the `Startup:` line in
-  `client-data\logs\client-<date>.log` to confirm it came up.
+  `C:\Users\davem\Quantos\Vault`). `pwsh tools/dev/stage.ps1` does the whole thing: it closes the
+  running client, replaces the three programs in that `application` folder with the ones from
+  `publish\Quantos\application`, refreshes the documents, and starts `Quantos.exe` again. The owner
+  has asked for this to be done for each new release without asking again. Two things to know:
+  rename the old files to `*.old` before copying the new ones over, because a running `.exe` can be
+  renamed but not overwritten (this is what the updater does); and a hard-killed client leaves its
+  WebView2 processes behind, which lock the browser profile and make the next start fail with
+  `COMException 0x800700AA` ("The requested resource is in use") — the script closes the client
+  properly and, if that happens anyway, moves `client-data\webview2` aside and starts again on a
+  fresh profile. Don't kill the `quantos-cli.exe` processes; they are the MCP server. Afterwards read
+  the `Startup:` line in `client-data\logs\client-<date>.log` to confirm it came up.
 - **Workspace locations:** git repositories live in `C:\repos\` (this one is `C:\repos\Quantos`).
   Working files that aren't repository code (notes, drafts, exports, research) go in
   `D:\My Drive\Dev Projects\<project>\`.
