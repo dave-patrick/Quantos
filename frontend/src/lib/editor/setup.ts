@@ -19,8 +19,11 @@ import { blockExtras, blockTheme } from './blocks';
 import { runCode, runCodeTheme } from './runcode';
 import { attachmentDrop, inlineMedia, mediaTheme, type MediaHooks } from './attachments';
 import { blockMenu } from './blockmenu';
+import { blockSelection, blockSelectionAndDrag, dropLine } from './blockselect';
+import { headingArrows, headingFolding, headingsChanged } from './headings';
 import { slashCompletion } from './slash';
 import { spellCheckExtension } from './spellcheck';
+import { prefs } from '../prefs.svelte';
 
 export interface EditorOptions {
   text: string;
@@ -74,19 +77,12 @@ export const typewriter = new Compartment();
 export const editable = new Compartment();
 export const collapsibleHeadings = new Compartment();
 
-export const headingFold = foldService.of((state, lineStart) => {
-  const line = state.doc.lineAt(lineStart);
-  const m = /^(#{1,6})\s+/.exec(line.text);
-  if (!m) return null;
-  let end = line.to;
-  for (let n = line.number + 1; n <= state.doc.lines; n++) {
-    const next = state.doc.line(n);
-    if (next.text.trim() === '') continue;
-    if (/^(#{1,6})\s/.test(next.text)) break;
-    end = next.to;
-  }
-  return end > line.to ? { from: line.to, to: end } : null;
-});
+/** The Markdown language folds headings by itself; ours folds them by level, so that one is dropped. */
+const quantosMarkdown: Extension = (() => {
+  const md = markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true });
+  const support = (md.support as Extension[]).filter((e) => (e as { facet?: unknown }).facet !== foldService);
+  return [md.language, support];
+})();
 
 export function createEditor(parent: HTMLElement, options: EditorOptions): EditorView {
   const { hooks } = options;
@@ -112,13 +108,15 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
         el.textContent = open ? '▾' : '▸';
         el.title = open ? 'Fold' : 'Unfold';
         return el;
-      }
+      },
+      // The arrows follow the setting for collapsible headings.
+      foldingChanged: (update) => update.transactions.some((tr) => tr.effects.some((e) => e.is(headingsChanged)))
     }),
     listFolding,
     EditorView.lineWrapping,
     EditorView.contentAttributes.of({ 'aria-label': options.label ?? (options.raw ? 'Markdown source' : 'Note text') }),
     Prec.high(keymap.of([{ key: 'Enter', run: exitEmptyItem }])),
-    markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true }),
+    quantosMarkdown,
     quantosTheme,
     quantosHighlight,
     keymap.of([
@@ -127,7 +125,9 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     ]),
     editable.of([EditorState.readOnly.of(!!options.readOnly), EditorView.editable.of(!options.readOnly)]),
     typewriter.of([]),
-    collapsibleHeadings.of([headingFold]),
+    collapsibleHeadings.of(prefs.collapsibleHeadings ? [headingFolding, headingArrows] : []),
+    blockSelection,
+    dropLine,
     ...spellCheckExtension(),
     EditorView.updateListener.of((u) => {
       if (u.docChanged) hooks.onChange(u.state.doc.toString());
@@ -135,7 +135,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     })
   ];
   if (!options.raw) {
-    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, richBlocks, richTheme, blockExtras, blockTheme, runCode, runCodeTheme, attachmentDrop(hooks), inlineMedia(hooks), mediaTheme, blockMenu(), autocompletion({ override: [linkCompletion(hooks), slashCompletion()], icons: false }));
+    extensions.push(wikiLinks(hooks), taskLines(hooks), writingExtras(), queryBlocks, richBlocks, richTheme, blockExtras, blockTheme, runCode, runCodeTheme, attachmentDrop(hooks), inlineMedia(hooks), mediaTheme, blockMenu(), blockSelectionAndDrag(), autocompletion({ override: [linkCompletion(hooks), slashCompletion()], icons: false }));
   }
   if (options.placeholder) extensions.push(placeholderExt(options.placeholder));
   if (options.extra) extensions.push(...options.extra);

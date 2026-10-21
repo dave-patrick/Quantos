@@ -30,6 +30,12 @@ open threads and the machine.
 
 ## Open threads (as of 0.1.5.2)
 
+- **Editor: collapsible headings and block selection (unreleased, on `main`).** Headings now carry
+  their own arrow and fold by level, and blocks can be selected together (`Ctrl`-click,
+  `Ctrl`-`Shift`-click), dragged to a new place, and worked on from the right-click menu. The
+  *Collapsible headings* setting now really turns the arrows off; the Markdown language's own
+  heading folding is dropped in `lib/editor/setup.ts` so that ours decides. Worth asking the owner
+  to try: folding a section, dragging two blocks, and the right-click menu on a selection.
 - **Released 0.1.5.3** (tag `v0.1.5.3`): fixes three faults in the 0.1.5.2 speed work — a query read
   only the first few thousand notes, so a filtered view left the rest out and the count of results was
   short; the notes browser asked the cache for a column that isn't there, so it showed no excerpts

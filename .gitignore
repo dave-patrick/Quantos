@@ -20,3 +20,4 @@ TestResults/
 
 # local dev harness data (tools/dev): test vault, client data, browser profile, logs
 /.dev/
+/src/Quantos.Backend/.dev/

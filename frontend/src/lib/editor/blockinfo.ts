@@ -1,5 +1,5 @@
 import { syntaxTree } from '@codemirror/language';
-import type { EditorState } from '@codemirror/state';
+import type { EditorState, Text } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 
 /** What a block is: a task, a heading, a list item, a quote, a code block or plain text. */
@@ -66,6 +66,34 @@ function fenceAt(state: EditorState, pos: number): { from: number; to: number; l
     open = null;
   }
   return null;
+}
+
+/** The lines inside fenced code blocks, worked out once for each version of a document. */
+const fenceCache = new WeakMap<object, Set<number>>();
+
+/**
+ * The lines that sit inside a fenced code block. A "#" in there is code, not a heading, and a
+ * heading inside a code block has no section to fold.
+ */
+export function fencedLines(doc: Text): Set<number> {
+  const cached = fenceCache.get(doc);
+  if (cached) return cached;
+  const lines = new Set<number>();
+  let open: { char: string; len: number } | null = null;
+  for (let n = 1; n <= doc.lines; n++) {
+    const m = /^\s*(`{3,}|~{3,})/.exec(doc.line(n).text);
+    if (open) {
+      lines.add(n);
+      if (m && m[1][0] === open.char && m[1].length >= open.len) open = null;
+      continue;
+    }
+    if (m) {
+      open = { char: m[1][0], len: m[1].length };
+      lines.add(n);
+    }
+  }
+  fenceCache.set(doc, lines);
+  return lines;
 }
 
 /** The block at a position: the line it is on, or the whole code block it sits in. */

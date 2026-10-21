@@ -58,6 +58,16 @@ Windows-only features (below) works the same.
   delete it, or turn it into a task, a heading, a bullet or a quote. For a task there are more:
   mark it done, set it to doing or waiting, give it a due date or a priority. `Shift+F10` opens the
   same menu from the keyboard.
+- **Collapsible headings:** every heading has a small arrow in front of it. Click the arrow and the
+  section under that heading folds away, down to the next heading of the same level; a deeper
+  heading goes with it. Click again to bring it back. The arrow in the left margin does the same.
+  Turn the arrows off in *Settings › Writing › Collapsible headings*.
+- **Several blocks at once:** `Ctrl`-click a block to select it, and `Ctrl`-click others to add
+  them. `Ctrl`-`Shift`-click stretches the selection over everything between. The selected blocks
+  are shaded, and you can
+  - **drag** them to move them: the line under the pointer shows where they will land;
+  - **right-click** them for the same menu, now working on all of them at once: copy, duplicate,
+    move up or down, delete, or turn them into tasks, headings, bullets or quotes.
 - **Links:** type `[[` and pick a note. Links keep working when notes are renamed or moved, and a
   rename updates the link text everywhere, including links in properties like *Owner*. If two
   notes share a title, Quantos asks which one you mean; it never guesses.

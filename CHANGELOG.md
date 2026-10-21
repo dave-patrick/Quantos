@@ -7,6 +7,16 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **Headings fold by level, with an arrow on every heading.** Each heading now has a small arrow in
+  front of it: click it and the section under that heading folds away, down to the next heading of
+  the same level, and a deeper heading goes with it. The setting *Settings › Writing › Collapsible
+  headings* now really turns this off.
+- **Select several blocks and move them.** `Ctrl`-click adds a block to the selection and
+  `Ctrl`-`Shift`-click stretches it over the blocks between. The selected blocks are shaded, can be
+  dragged to a new place (a line shows where they will land), and the right-click menu now works on
+  all of them at once: copy, duplicate, move up or down, delete, or turn them into tasks, headings,
+  bullets or quotes.
+
 ## 0.1.5.6
 
 - **Tab location via right-click.** Right-clicking a tab now offers Move to left/right/top/bottom to relocate it to that pane, creating the split as needed.
