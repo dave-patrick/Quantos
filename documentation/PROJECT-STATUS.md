@@ -186,3 +186,10 @@ had no shortcut handling).
    The asset must be named `Quantos-x.y.z-win-x64.zip`: the in-app updater looks for that name and needs
    the SHA-256 `digest` GitHub records for it.
 5. Add the release to `CHANGELOG.md` and update this file.
+6. **Stage the new build into the owner's copy and restart it.** The owner runs Quantos from
+   `C:\Users\davem\Quantos\Quantos\application` (their vault is `C:\Users\davem\Quantos\Vault`), so a
+   build that isn't put there isn't being used. Stop the running client, replace the three programs in
+   that `application` folder with the ones from `publish\Quantos\application` — rename the old files to
+   `*.old` first, because a running `.exe` can be renamed but not overwritten — copy the updated
+   documents across, and start `Quantos.exe` again. Confirm it came up from the `Startup:` line in
+   `client-data\logs\client-<date>.log`.

@@ -24,6 +24,11 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   src/Quantos.Backend (API, security), src/Quantos.Client (Windows client, updater), src/Quantos.Cli
   (CLI + MCP + agent tool export), frontend (Svelte), tests/Quantos.Tests (xUnit), frontend/tests (Vitest).
 - Build with `pwsh build/build.ps1`; test with `dotnet test tests/Quantos.Tests` and `npx vitest run` in frontend.
+- The owner runs Quantos from `C:\Users\davem\Quantos\Quantos\application` (vault in
+  `C:\Users\davem\Quantos\Vault`). After every build, stage it there: stop the client, replace the three
+  programs with the ones from `publish\Quantos\application` (rename the old ones to `*.old` first — a
+  running `.exe` can be renamed but not overwritten), copy the documents across, and start
+  `Quantos.exe` again. The owner has asked for this on each new release, without asking again.
 
 ## Conventions
 - Every vault change goes through `WriteService`; never write vault files directly. Store feature data
