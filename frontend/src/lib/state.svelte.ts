@@ -4,7 +4,7 @@ import type { LinkedFolder, NodeSummary, Status } from './types';
 
 export interface Toast { id: number; message: string; kind: 'info' | 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 
-export type RightTab = 'files' | 'inspector' | 'links' | 'notifications' | 'graph' | 'scratch';
+export type RightTab = 'files' | 'inspector' | 'links' | 'notifications' | 'graph' | 'scratch' | 'tasks' | 'quickadd';
 
 class AppState {
   status = $state<Status | null>(null);
@@ -18,6 +18,10 @@ class AppState {
   /** The right sidebar split in two: the lower panel's tab (null when not split) and the upper panel's share of the height. */
   rightTab2 = $state<RightTab | null>(null);
   rightSplit = $state(0.5);
+  /** The right sidebar as a stack of panels, top to bottom. */
+  rightPanels = $state<RightTab[]>(['files']);
+  /** Each panel's share of the height (sums to 1). */
+  rightHeights = $state<number[]>([1]);
   toasts = $state<Toast[]>([]);
   theme = $state<'dark' | 'light'>('dark');
   paletteOpen = $state(false);
@@ -41,6 +45,17 @@ class AppState {
         this.rightTab2 = ui.rightTab2 ?? null;
         this.rightSplit = typeof ui.rightSplit === 'number' ? ui.rightSplit : 0.5;
         this.theme = ui.theme ?? 'dark';
+        // The new stack layout: migrate the old one/two-slot layout into a list.
+        if (Array.isArray(ui.rightPanels) && ui.rightPanels.length) {
+          this.rightPanels = ui.rightPanels.filter((t: string) => t);
+          if (!this.rightPanels.length) this.rightPanels = ['files'];
+          this.rightHeights = Array.isArray(ui.rightHeights) && ui.rightHeights.length === this.rightPanels.length
+            ? ui.rightHeights.map((n: number) => (typeof n === 'number' && n > 0 ? n : 1))
+            : this.rightPanels.map(() => 1);
+        } else {
+          this.rightPanels = this.rightTab2 ? [this.rightTab, this.rightTab2] : [this.rightTab];
+          this.rightHeights = this.rightPanels.map(() => 1);
+        }
       }
     } catch { /* storage unavailable */ }
     // Small windows start with the sidebars closed (they open as overlays). That isn't saved, and
@@ -70,7 +85,7 @@ class AppState {
         uiTimer = setTimeout(() => {
           try {
             const prev = JSON.parse(localStorage.getItem('quantos.ui') ?? '{}');
-            localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, rightTab2: this.rightTab2, rightSplit: this.rightSplit, theme: this.theme }));
+            localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, rightTab2: this.rightTab2, rightSplit: this.rightSplit, rightPanels: this.rightPanels, rightHeights: this.rightHeights, theme: this.theme }));
           } catch { /* ignore */ }
         }, 200);
       });
