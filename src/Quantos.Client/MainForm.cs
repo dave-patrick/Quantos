@@ -24,7 +24,7 @@ public sealed class MainForm : Form
     private readonly CaptionButton _btnMax = new(CaptionButton.Glyph.Maximize) { Dock = DockStyle.Right };
     private readonly CaptionButton _btnClose = new(CaptionButton.Glyph.Close) { Dock = DockStyle.Right };
     private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Segoe UI", 12f) };
-    private readonly Label _version = new() { Text = $"v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(90, 120, 150, 180), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Consolas", 8.5f), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 48, Padding = new Padding(0, 2, 4, 2), Anchor = AnchorStyles.Bottom | AnchorStyles.Right };
+    private readonly Label _version = new() { Text = $"v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(90, 120, 150, 180), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Consolas", 8.5f), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 64, Padding = new Padding(0, 2, 4, 2), Anchor = AnchorStyles.Bottom | AnchorStyles.Right };
     private readonly NotifyIcon _tray = new();
     private readonly HotKeys _hotkeys = new();
     private BackendConnection? _backend;
@@ -115,17 +115,18 @@ public sealed class MainForm : Form
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-        // Remove the system caption entirely so Windows doesn't draw its own title bar buttons.
-        // We draw our own caption bar; the shadow comes from DWM.
-        var style = GetWindowLong(Handle, GWL_STYLE);
-        style &= ~WS_CAPTION & ~WS_THICKFRAME;
-        SetWindowLong(Handle, GWL_STYLE, style);
-        SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
     }
 
-    [DllImport("user32.dll")] private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-    [DllImport("user32.dll")] private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-    [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var cp = base.CreateParams;
+            cp.Style &= ~0x00C00000; // WS_CAPTION
+            cp.Style &= ~0x00040000; // WS_THICKFRAME
+            return cp;
+        }
+    }
 
     public static Icon LoadIcon()
     {
