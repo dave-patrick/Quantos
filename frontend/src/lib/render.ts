@@ -61,6 +61,8 @@ export function renderMarkdown(body: string, options: { links?: boolean } = {}):
       return options.links === false ? label : `<a class="wikilink" data-target="${escapeAttr(t)}" href="#">${escapeHtml(label)}</a>`;
     });
   const html = (marked.parse(prepared, { async: false }) as string)
+    // A heading's fold mark ("## [-] Title") is a note to the app, not part of the heading.
+    .replace(/<h([1-6])>\s*\[([+-])\]\s*/g, '<h$1>')
     // Callouts: a quote that starts with [!type] gets a label instead of showing the marker.
     .replace(/<blockquote>\s*<p>\[!(\w+)\][+-]?\s*/g, '<blockquote class="callout"><p><span class="callout-label">$1</span> ')
     // Task checkboxes: inputs don't survive sanitising, so they become boxes drawn in CSS.

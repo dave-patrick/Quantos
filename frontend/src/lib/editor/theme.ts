@@ -18,6 +18,7 @@ export const quantosTheme = EditorView.theme({
   '.cm-fold-open, .cm-fold-closed': { fontSize: '14px', lineHeight: '1' },
   '.cm-heading-toggle': { cursor: 'pointer', color: 'var(--text-muted)', marginRight: '3px', fontSize: '0.85em', userSelect: 'none' },
   '.cm-heading-toggle:hover': { color: 'var(--accent)' },
+  '.cm-heading-mark': { fontSize: '0.72em', color: 'var(--text-faint)', letterSpacing: '.04em' },
   '.cm-line:hover .cm-heading-toggle': { color: 'var(--text-soft)' },
   '.cm-block-selected': { backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', boxShadow: 'inset 2px 0 0 var(--accent)' },
   '.cm-drop-line': { borderTop: '2px solid var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' },

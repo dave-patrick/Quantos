@@ -38,7 +38,6 @@ function ClientLogTail($lines) {
     if ($null -eq $log) { return @() }
     return @(Get-Content $log.FullName -Tail $lines)
 }
-
 if ($Build) {
     Step 'Building'
     # A staging copy carries the build mark, so it is told apart from the released version.
@@ -56,17 +55,28 @@ while ((Get-Process Quantos -ErrorAction SilentlyContinue) -and (Get-Date) -lt $
 foreach ($process in Get-Process Quantos -ErrorAction SilentlyContinue) { $process.Kill(); $process.WaitForExit(10000) | Out-Null }
 
 # A hard-killed client leaves its WebView2 browser processes behind, and they keep the browser
-# profile locked. Wait for them; end any that stay.
+# profile locked. Wait for them; end any that stay. The children (gpu, renderer, crashpad) do not
+# carry the exe name but do carry the profile path, so both are matched.
+function Get-QuantosWebViews {
+    return @(Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -like '*webview-exe-name=Quantos.exe*' -or $_.CommandLine -like '*Quantos\client-data\webview2*' -or -not $_.CommandLine })
+}
+
+function Stop-Quantos {
+    foreach ($process in Get-Process Quantos -ErrorAction SilentlyContinue) {
+        $process.Kill()
+        try { $process.WaitForExit(15000) | Out-Null } catch { }
+    }
+}
 $deadline = (Get-Date).AddSeconds(15)
 do {
-    $orphans = @(Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" -ErrorAction SilentlyContinue |
-        Where-Object { $_.CommandLine -like '*webview-exe-name=Quantos.exe*' })
+    $orphans = @(Get-QuantosWebViews)
     if ($orphans.Count -eq 0) { break }
     Start-Sleep -Seconds 2
 } while ((Get-Date) -lt $deadline)
 foreach ($orphan in $orphans) { Stop-Process -Id $orphan.ProcessId -Force -ErrorAction SilentlyContinue }
+Start-Sleep -Seconds 2
 Write-Host "Quantos stopped ($($orphans.Count) leftover WebView2 processes ended)."
-
 Step 'Replacing the program files'
 foreach ($file in Get-ChildItem (Join-Path $Package 'application') -File) {
     $target = Join-Path $app $file.Name
@@ -89,22 +99,34 @@ foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLU
 }
 
 function Start-Client {
+    # Only the lines this start writes matter, so remember where the log was.
+    $log = Get-ChildItem (Join-Path $logs 'client-*.log') -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $before = if ($log) { @(Get-Content $log.FullName).Count } else { 0 }
     Start-Process (Join-Path $app 'Quantos.exe')
     Start-Sleep -Seconds 20
-    return @(ClientLogTail 4)
+    $log = Get-ChildItem (Join-Path $logs 'client-*.log') -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($null -eq $log) { return @() }
+    return @(@(Get-Content $log.FullName) | Select-Object -Skip $before)
 }
 
 Step 'Starting the client'
 $lines = Start-Client
 $lines | Write-Host
-if (($lines -join "`n") -match '0x800700AA') {
+if (($lines -join "`n") -match 'Startup failed') {
     Step 'The browser profile is locked; starting on a fresh one'
+    # The client keeps the profile folder open itself, so it has to be gone before the folder
+    # can be moved aside.
+    Stop-Quantos
     $profile = Join-Path $clientData 'webview2'
-    if (Test-Path $profile) {
-        $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-        Rename-Item $profile "webview2.bak-$stamp"
-        Write-Host "Moved the old profile to webview2.bak-$stamp."
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    for ($i = 0; $i -lt 30; $i++) {
+        foreach ($orphan in @(Get-QuantosWebViews)) { Stop-Process -Id $orphan.ProcessId -Force -ErrorAction SilentlyContinue }
+        Start-Sleep -Seconds 1
+        if (-not (Test-Path $profile)) { break }
+        try { Rename-Item $profile "webview2.bak-$stamp" -ErrorAction Stop; break } catch { }
     }
+    if (Test-Path $profile) { throw 'The browser profile is still locked; close Quantos and try again.' }
+    Write-Host "Moved the old profile to webview2.bak-$stamp."
     $lines = Start-Client
     $lines | Write-Host
 }

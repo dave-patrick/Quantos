@@ -6,7 +6,7 @@ import { fencedLines } from './blockinfo';
 /** Sent when the heading folding is turned on or off, so the fold gutter looks again. */
 export const headingsChanged = StateEffect.define<null>();
 
-/** A heading on a line: how deep it is and where its text sits. */
+/** A heading on a line: how deep it is, where its text sits and the fold mark it carries. */
 export interface Heading {
   /** 1 for "#", 6 for "######". */
   level: number;
@@ -14,9 +14,18 @@ export interface Heading {
   from: number;
   /** Where the heading's text ends. */
   to: number;
+  /** The fold mark: "-" means the section starts folded, "+" means it starts open. */
+  mark?: '-' | '+';
+  /** Where the mark is written, so the editor can style it. */
+  markFrom?: number;
+  markTo?: number;
 }
 
-const HEADING = /^(#{1,6})(.*)$/;
+/**
+ * A heading, with the optional fold mark after the hashes: "## [-] Title" is a heading that
+ * starts folded. The mark is written in the note, so the section is still folded next time.
+ */
+const HEADING = /^(#{1,6})(\s*)?(?:\[([+-])\])?(\s*)?(.*)$/;
 
 /**
  * The heading on a line, if the line is one. A "#" inside a code block is code, not a heading.
@@ -26,9 +35,18 @@ export function headingOn(state: EditorState, lineNumber: number): Heading | nul
   const m = HEADING.exec(line.text);
   if (!m) return null;
   if (fencedLines(state.doc).has(lineNumber)) return null;
-  const gap = /^\s*/.exec(m[2])![0].length;
-  const from = line.from + m[1].length + gap;
-  return { level: m[1].length, from, to: from + m[2].slice(gap).length };
+  const level = m[1].length;
+  let at = line.from + level + (m[2]?.length ?? 0);
+  let markFrom = 0;
+  let markTo = 0;
+  if (m[3]) {
+    markFrom = at;
+    markTo = at + m[3].length + 2;
+    at = markTo;
+  }
+  const from = at + (m[4]?.length ?? 0);
+  const text = m[5] ?? '';
+  return { level, from, to: from + text.length, mark: m[3] as '-' | '+' | undefined, markFrom, markTo };
 }
 
 /**
@@ -63,6 +81,22 @@ export const headingFolding: Extension = Prec.highest(
     return sectionOf(state, line.number);
   })
 );
+
+/**
+ * A heading marked "[-]" is folded when the note opens, and stays folded because the mark is in
+ * the note. The same trick the collapsible callouts use.
+ */
+export const foldMarkedHeadings = ViewPlugin.define((view) => {
+  const effects: StateEffect<unknown>[] = [];
+  for (let n = 1; n <= view.state.doc.lines; n++) {
+    const head = headingOn(view.state, n);
+    if (!head || head.mark !== '-') continue;
+    const section = sectionOf(view.state, n);
+    if (section) effects.push(foldEffect.of({ from: section.from, to: section.to }));
+  }
+  if (effects.length) queueMicrotask(() => view.dispatch({ effects }));
+  return {};
+});
 
 /** The little arrow on a heading that folds and unfolds its section. */
 class HeadingToggle extends WidgetType {
@@ -112,7 +146,7 @@ function isFolded(state: EditorState, range: { from: number; to: number }): bool
   return folded;
 }
 
-/** The arrows on the headings that are on screen. */
+/** The arrows on the headings that are on screen, and the marks they carry. */
 function arrows(view: EditorView): DecorationSet {
   const state = view.state;
   const marks: Range<Decoration>[] = [];
@@ -126,6 +160,7 @@ function arrows(view: EditorView): DecorationSet {
       if (!section) continue;
       const open = !isFolded(state, section);
       marks.push(Decoration.widget({ widget: new HeadingToggle(head.level, open, section), side: -1 }).range(state.doc.line(n).from));
+      if (head.markFrom) marks.push(Decoration.mark({ class: 'cm-heading-mark' }).range(head.markFrom, head.markTo));
     }
   }
   return Decoration.set(marks, true);
@@ -148,3 +183,16 @@ class HeadingArrows {
 
 /** The arrows on headings, so a section can be folded without hunting for the gutter. */
 export const headingArrows: Extension = ViewPlugin.fromClass(HeadingArrows, { decorations: (v) => v.decorations });
+
+/**
+ * The heading that covers a place: the heading on that line, or the nearest one above it. Used by
+ * the command that folds the heading at the cursor.
+ */
+export function headingNear(state: EditorState, pos: number): { line: number; heading: Heading } | null {
+  const number = state.doc.lineAt(pos).number;
+  for (let n = number; n >= 1; n--) {
+    const heading = headingOn(state, n);
+    if (heading) return { line: n, heading };
+  }
+  return null;
+}

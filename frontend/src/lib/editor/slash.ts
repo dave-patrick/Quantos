@@ -1,5 +1,7 @@
+import { foldEffect } from '@codemirror/language';
 import type { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
 import type { EditorView } from '@codemirror/view';
+import { headingNear, sectionOf } from './headings';
 
 /**
  * The slash menu: type "/" and a list of things to put in the note appears. The menu is a plain
@@ -20,6 +22,16 @@ const insert = (text: string, place: (text: string) => string = (t) => t) => (vi
   view.focus();
 };
 
+/** Folds the section under the heading at the cursor. Nothing is written to the note. */
+const foldTheHeading = (view: EditorView) => {
+  const near = headingNear(view.state, view.state.selection.main.head);
+  if (!near) return;
+  const section = sectionOf(view.state, near.line);
+  if (!section) return;
+  view.dispatch({ effects: foldEffect.of(section) });
+  view.focus();
+};
+
 const today = new Date();
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -34,6 +46,10 @@ export const slashCommands: SlashCommand[] = [
   { id: 'heading1', title: 'Heading 1', hint: '# ', group: 'Blocks', apply: insert('# ') },
   { id: 'heading2', title: 'Heading 2', hint: '## ', group: 'Blocks', apply: insert('## ') },
   { id: 'heading3', title: 'Heading 3', hint: '### ', group: 'Blocks', apply: insert('### ') },
+  { id: 'collapsible-heading1', title: 'Collapsible heading 1', hint: '# [-] ', group: 'Blocks', apply: insert('# [-] ') },
+  { id: 'collapsible-heading2', title: 'Collapsible heading 2', hint: '## [-] ', group: 'Blocks', apply: insert('## [-] ') },
+  { id: 'collapsible-heading3', title: 'Collapsible heading 3', hint: '### [-] ', group: 'Blocks', apply: insert('### [-] ') },
+  { id: 'fold-heading', title: 'Fold the heading here', hint: '▸', group: 'Blocks', apply: (view) => foldTheHeading(view) },
   { id: 'code', title: 'Code block', hint: '```', group: 'Blocks', apply: insert('```\n') },
   { id: 'table', title: 'Table', hint: '| | |', group: 'Blocks', apply: insert('| | |\n|---|---|\n| | |') },
   { id: 'divider', title: 'Divider', hint: '---', group: 'Blocks', apply: insert('\n---\n') },

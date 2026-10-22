@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import type { EditorView } from '@codemirror/view';
   import { createEditor, syncText, typewriter, editable, collapsibleHeadings } from '../lib/editor/setup';
-  import { headingArrows, headingFolding, headingsChanged } from '../lib/editor/headings';
+  import { headingArrows, headingFolding, foldMarkedHeadings, headingsChanged } from '../lib/editor/headings';
   import { refreshTasks } from '../lib/editor/tasks';
   import { typewriterScrolling } from '../lib/editor/writing';
   import { EditorState } from '@codemirror/state';
@@ -82,7 +82,7 @@
 
   $effect(() => {
     const on = prefs.collapsibleHeadings;
-    view?.dispatch({ effects: [collapsibleHeadings.reconfigure(on ? [headingFolding, headingArrows] : []), headingsChanged.of(null)] });
+    view?.dispatch({ effects: [collapsibleHeadings.reconfigure(on ? [headingFolding, headingArrows, foldMarkedHeadings] : []), headingsChanged.of(null)] });
   });
 
   $effect(() => {

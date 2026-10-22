@@ -20,7 +20,7 @@ import { runCode, runCodeTheme } from './runcode';
 import { attachmentDrop, inlineMedia, mediaTheme, type MediaHooks } from './attachments';
 import { blockMenu } from './blockmenu';
 import { blockSelection, blockSelectionAndDrag, dropLine } from './blockselect';
-import { headingArrows, headingFolding, headingsChanged } from './headings';
+import { headingArrows, headingFolding, foldMarkedHeadings, headingsChanged } from './headings';
 import { slashCompletion } from './slash';
 import { spellCheckExtension } from './spellcheck';
 import { prefs } from '../prefs.svelte';
@@ -125,7 +125,7 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     ]),
     editable.of([EditorState.readOnly.of(!!options.readOnly), EditorView.editable.of(!options.readOnly)]),
     typewriter.of([]),
-    collapsibleHeadings.of(prefs.collapsibleHeadings ? [headingFolding, headingArrows] : []),
+    collapsibleHeadings.of(prefs.collapsibleHeadings ? [headingFolding, headingArrows, foldMarkedHeadings] : []),
     blockSelection,
     dropLine,
     ...spellCheckExtension(),
