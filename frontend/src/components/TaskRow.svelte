@@ -11,6 +11,7 @@
     { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean } = $props();
 
   const today = $derived(day.today);
+  const minute = $derived(day.minute); // forces re-check when the minute ticks
   const closed = $derived(task.status === 'done' || task.status === 'cancelled');
   const dueDay = $derived(task.due?.slice(0, 10) ?? null);
   const overdue = $derived(!closed && !!dueDay && dueDay < today);
@@ -129,7 +130,7 @@
   .closed .title { color: var(--text-faint); text-decoration: line-through; }
   .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; min-width: 0; }
   .chip { display: inline-flex; align-items: center; gap: 3px; font: 11px/18px var(--font-mono); color: var(--text-muted); border: 1px solid var(--line); border-radius: 9px; padding: 0 6px; white-space: nowrap; }
-  .chip.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+  .chip.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 60%, transparent); font-weight: 600; }
   .chip.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
   .chip.accent { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
   .myday { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; }

@@ -842,6 +842,7 @@ This goes in the user guide until configurable backups arrive in Release 1.1.
 4. Multiuser accounts and sign-in.
 5. Broader content importing.
 6. Offline caching and sync for remote use.
+7. Google Calendar and Tasks integration — OAuth2, two-way calendar and task sync, calendar view UI, conflict resolution. Needs a scope decision before assignment.
 
 Don't assign these to a release until there's a separate scope decision.
 
