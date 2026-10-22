@@ -102,6 +102,20 @@
     try { await api.post(`trash/${doc.trashed.entryId}/restore`); } catch (e) { app.error(e); }
   }
 
+  async function trashDoc() {
+    if (!doc.node) return;
+    const ok = await app.confirm(`Move “${doc.node.title}” to the trash?`, 'You can restore it from the trash.', 'Move to trash', 'danger');
+    if (!ok) return;
+    await doc.flush();
+    await api.post(`nodes/${doc.id}/trash`);
+    app.toast('Moved to trash.', 'ok', { label: 'Undo', run: async () => {
+      const entries = await api.get<any[]>('trash');
+      const entry = entries.find((e) => e.id === doc.id);
+      if (entry) await api.post(`trash/${entry.entryId}/restore`);
+    } });
+    layout.open({ kind: 'notes', title: 'Notes' }, 'current');
+  }
+
   function onKey(e: KeyboardEvent) {
     if (e.key === 'F2') { editingTitle = true; }
   }
@@ -168,6 +182,7 @@
       <button class="icon-btn" aria-pressed={doc.raw} title={doc.raw ? 'Back to the editor' : 'Edit the Markdown source'} disabled={doc.node?.readOnly || noEdit}
         onclick={() => doc.setRaw(!doc.raw)}><Icon name="code" /></button>
       <button class="icon-btn" title="Version history" onclick={() => layout.open({ kind: 'history', nodeId: id, title: `History: ${doc.node?.title ?? ''}` }, 'new')}><Icon name="history" /></button>
+      <button class="icon-btn icon-btn-danger" title="Move to trash" onclick={trashDoc}><Icon name="trash" size={14} /></button>
       <NodeMenu {doc} {paneIndex} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
     </div>
   </div>
@@ -273,6 +288,8 @@
   .crumb.link { border: 0; background: none; color: var(--text-faint); padding: 0; font-size: inherit; cursor: pointer; }
   .crumb.link:hover, .crumb.link:focus-visible { color: var(--accent); text-decoration: underline; }
   .actions { display: flex; align-items: center; gap: 2px; }
+  .icon-btn-danger { color: var(--danger); }
+  .icon-btn-danger:hover { color: var(--danger); background: var(--danger-wash); }
   .save-state { font: 11px var(--font-mono); color: var(--text-faint); margin-right: 6px; min-width: 52px; text-align: right; }
   .save-state.saving, .save-state.dirty { color: var(--text-muted); }
   .save-state.conflict, .save-state.error { color: var(--danger); }

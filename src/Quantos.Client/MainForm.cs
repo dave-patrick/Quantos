@@ -24,7 +24,7 @@ public sealed class MainForm : Form
     private readonly CaptionButton _btnMax = new(CaptionButton.Glyph.Maximize) { Dock = DockStyle.Right };
     private readonly CaptionButton _btnClose = new(CaptionButton.Glyph.Close) { Dock = DockStyle.Right };
     private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Segoe UI", 12f) };
-    private readonly Label _version = new() { Text = $"v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(90, 120, 150, 180), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Consolas", 8.5f), AutoSize = true, Anchor = AnchorStyles.Bottom | AnchorStyles.Right, Padding = new Padding(4, 2, 4, 2) };
+    private readonly Label _version = new() { Text = $"v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(90, 120, 150, 180), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Consolas", 8.5f), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 48, Padding = new Padding(0, 2, 4, 2), Anchor = AnchorStyles.Bottom | AnchorStyles.Right };
     private readonly NotifyIcon _tray = new();
     private readonly HotKeys _hotkeys = new();
     private BackendConnection? _backend;
