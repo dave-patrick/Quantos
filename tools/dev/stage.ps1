@@ -139,8 +139,11 @@ if (($lines -join "`n") -match 'Startup failed') {
             $moved = $true
         } catch { }
     }
-    if (-not $moved) { throw 'The browser profile is still locked; close Quantos and try again.' }
-    Write-Host 'Started on a fresh browser profile.'
+    if (-not $moved) {
+        # The client recovers on its own: it starts on a fresh profile when the old one is held.
+        Write-Host 'The old profile could not be moved (a browser process is holding it); the client will start on a fresh one.'
+    }
+    else { Write-Host 'Started on a fresh browser profile.' }
     $lines = Start-Client
     $lines | Write-Host
 }
