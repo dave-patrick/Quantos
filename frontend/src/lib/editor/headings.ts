@@ -85,17 +85,32 @@ export const headingFolding: Extension = Prec.highest(
 /**
  * A heading marked "[-]" is folded when the note opens, and stays folded because the mark is in
  * the note. The same trick the collapsible callouts use.
+ *
+ * The editor is made before the note's text arrives, so the headings are looked for again
+ * whenever the text changes. A heading is only folded once: unfolding it by hand sticks.
  */
 export const foldMarkedHeadings = ViewPlugin.define((view) => {
-  const effects: StateEffect<unknown>[] = [];
-  for (let n = 1; n <= view.state.doc.lines; n++) {
-    const head = headingOn(view.state, n);
-    if (!head || head.mark !== '-') continue;
-    const section = sectionOf(view.state, n);
-    if (section) effects.push(foldEffect.of({ from: section.from, to: section.to }));
-  }
-  if (effects.length) queueMicrotask(() => view.dispatch({ effects }));
-  return {};
+  const folded = new Set<string>();
+  const foldNew = () => {
+    const effects: StateEffect<unknown>[] = [];
+    for (let n = 1; n <= view.state.doc.lines; n++) {
+      const head = headingOn(view.state, n);
+      if (!head || head.mark !== '-') continue;
+      const key = view.state.doc.sliceString(head.from, head.to);
+      if (folded.has(key)) continue;
+      const section = sectionOf(view.state, n);
+      if (!section) continue;
+      folded.add(key);
+      effects.push(foldEffect.of({ from: section.from, to: section.to }));
+    }
+    if (effects.length) queueMicrotask(() => view.dispatch({ effects }));
+  };
+  queueMicrotask(foldNew);
+  return {
+    update(update: ViewUpdate) {
+      if (update.docChanged) foldNew();
+    }
+  };
 });
 
 /** The little arrow on a heading that folds and unfolds its section. */

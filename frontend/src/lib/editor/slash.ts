@@ -49,7 +49,11 @@ export const slashCommands: SlashCommand[] = [
   { id: 'collapsible-heading1', title: 'Collapsible heading 1', hint: '# [-] ', group: 'Blocks', apply: insert('# [-] ') },
   { id: 'collapsible-heading2', title: 'Collapsible heading 2', hint: '## [-] ', group: 'Blocks', apply: insert('## [-] ') },
   { id: 'collapsible-heading3', title: 'Collapsible heading 3', hint: '### [-] ', group: 'Blocks', apply: insert('### [-] ') },
-  { id: 'fold-heading', title: 'Fold the heading here', hint: '▸', group: 'Blocks', apply: (view) => foldTheHeading(view) },
+  { id: 'fold-heading', title: 'Fold the heading here', hint: '▸', group: 'Blocks', apply: (view, from, to) => {
+    // The command puts nothing in the note, so the typed "/fold" goes away again.
+    view.dispatch({ changes: { from, to, insert: '' } });
+    foldTheHeading(view);
+  } },
   { id: 'code', title: 'Code block', hint: '```', group: 'Blocks', apply: insert('```\n') },
   { id: 'table', title: 'Table', hint: '| | |', group: 'Blocks', apply: insert('| | |\n|---|---|\n| | |') },
   { id: 'divider', title: 'Divider', hint: '---', group: 'Blocks', apply: insert('\n---\n') },

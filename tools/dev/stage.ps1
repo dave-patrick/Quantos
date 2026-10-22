@@ -119,14 +119,21 @@ if (($lines -join "`n") -match 'Startup failed') {
     Stop-Quantos
     $profile = Join-Path $clientData 'webview2'
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-    for ($i = 0; $i -lt 30; $i++) {
-        foreach ($orphan in @(Get-QuantosWebViews)) { Stop-Process -Id $orphan.ProcessId -Force -ErrorAction SilentlyContinue }
+    $moved = $false
+    for ($i = 0; $i -lt 30 -and -not $moved; $i++) {
+        foreach ($orphan in @(Get-QuantosWebViews)) { & taskkill /PID $orphan.ProcessId /T /F 2>&1 | Out-Null }
         Start-Sleep -Seconds 1
-        if (-not (Test-Path $profile)) { break }
-        try { Rename-Item $profile "webview2.bak-$stamp" -ErrorAction Stop; break } catch { }
+        # The profile itself sits in webview2\EBWebView; moving that aside is enough, and it can
+        # work when the folder above it cannot be moved.
+        $inner = Join-Path $profile 'EBWebView'
+        try {
+            if (Test-Path $inner) { Rename-Item $inner "EBWebView.bak-$stamp" -ErrorAction Stop }
+            elseif (Test-Path $profile) { Rename-Item $profile "webview2.bak-$stamp" -ErrorAction Stop }
+            $moved = $true
+        } catch { }
     }
-    if (Test-Path $profile) { throw 'The browser profile is still locked; close Quantos and try again.' }
-    Write-Host "Moved the old profile to webview2.bak-$stamp."
+    if (-not $moved) { throw 'The browser profile is still locked; close Quantos and try again.' }
+    Write-Host 'Started on a fresh browser profile.'
     $lines = Start-Client
     $lines | Write-Host
 }
