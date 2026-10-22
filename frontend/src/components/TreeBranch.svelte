@@ -12,9 +12,8 @@
   } = $props();
 
   const labels: Record<string, string> = { nodes: 'Notes', daily: 'Daily', tasks: 'Tasks', archive: 'Archive', supertags: 'Supertags' };
-  // Daily and Supertags start closed. Decided once: the tree reloads on every change, and a folder
-  // the user opened must stay open.
-  const startsClosed = () => !root && depth === 1 && (folder.name === 'daily' || folder.name === 'supertags');
+  // All folders start closed unless the user opens them.
+  const startsClosed = () => !root;
   let open = $state(!startsClosed());
   let over = $state(false);
 
