@@ -138,19 +138,45 @@ public sealed class MainForm : Form
         };
     }
 
-    protected override async void OnLoad(EventArgs e)
+    /// <summary>
+    /// Attaches the window to the browser engine. A browser process left over from an earlier copy
+    /// can still be holding the profile, and then the engine refuses with "The requested resource is
+    /// in use" (0x800700AA). When that happens the app starts on a fresh profile instead of
+    /// refusing to open.
+    /// </summary>
+    private async Task AttachToBrowser(CoreWebView2Environment env)
     {
-        base.OnLoad(e);
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                await _web.EnsureCoreWebView2Async(env);
+                return;
+            }
+            catch (COMException ex) when (ex.HResult == unchecked((int)0x800700AA) && attempt < 3)
+            {
+                var next = Path.Combine(_paths.ClientData, $"webview2-{DateTime.Now:yyyyMMdd-HHmmss}");
+                Directory.CreateDirectory(next);
+                _paths.Log($"The browser profile was in use; starting on a new one ({next}).");
+                _status.Text = "Starting on a fresh browser profile…";
+                env = await CoreWebView2Environment.CreateAsync(null, next);
+            }
+        }
+    }
+
+    protected override async void OnLoad(EventArgs e)
+    {        base.OnLoad(e);
         try
         {
             // The backend and the page's browser engine start at the same time; each takes a moment on a cold start.
             var clock = System.Diagnostics.Stopwatch.StartNew();
-            Directory.CreateDirectory(_paths.WebView2);
+            var profile = _paths.WebView2;
+            Directory.CreateDirectory(profile);
             // Started on the UI thread (WebView2 wants that) but not awaited yet, so it runs alongside the backend start.
             var webview = CreateEnvironment();
             async Task<(CoreWebView2Environment env, long ms)> CreateEnvironment()
             {
-                var env = await CoreWebView2Environment.CreateAsync(null, _paths.WebView2);
+                var env = await CoreWebView2Environment.CreateAsync(null, profile);
                 return (env, clock.ElapsedMilliseconds);
             }
             _backend = await BackendConnection.ConnectAsync(_paths, s => _status.Text = s);
@@ -160,7 +186,7 @@ public sealed class MainForm : Form
             _status.Text = "Opening…";
             var (env, envMs) = await webview;
             _env = env;
-            await _web.EnsureCoreWebView2Async(_env);
+            await AttachToBrowser(env);
             var viewMs = clock.ElapsedMilliseconds;
             _web.NavigationCompleted += (_, _) =>
             {

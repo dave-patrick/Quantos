@@ -33,10 +33,20 @@ $clientData = Join-Path $OwnerRoot 'client-data'
 $logs = Join-Path $clientData 'logs'
 
 function Step($text) { Write-Host "`n== $text" -ForegroundColor Cyan }
-function ClientLogTail($lines) {
-    $log = Get-ChildItem (Join-Path $logs 'client-*.log') -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($null -eq $log) { return @() }
-    return @(Get-Content $log.FullName -Tail $lines)
+
+# The client writes to client-<date>.log, so the file can change between two reads (at midnight).
+# This remembers how much of each file has been read and gives back only what is new.
+$seen = @{}
+function New-LogText {
+    $text = @()
+    foreach ($log in Get-ChildItem (Join-Path $logs 'client-*.log') -ErrorAction SilentlyContinue) {
+        $all = Get-Content $log.FullName -Raw -ErrorAction SilentlyContinue
+        if ($null -eq $all) { continue }
+        $from = if ($seen.ContainsKey($log.FullName)) { $seen[$log.FullName] } else { 0 }
+        if ($all.Length -gt $from) { $text += $all.Substring($from) }
+        $seen[$log.FullName] = $all.Length
+    }
+    return ($text -join '')
 }
 if ($Build) {
     Step 'Building'
@@ -99,14 +109,11 @@ foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLU
 }
 
 function Start-Client {
-    # Only the lines this start writes matter, so remember where the log was.
-    $log = Get-ChildItem (Join-Path $logs 'client-*.log') -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    $before = if ($log) { @(Get-Content $log.FullName).Count } else { 0 }
+    # Remember what the log already says, so only this start's lines are looked at.
+    New-LogText | Out-Null
     Start-Process (Join-Path $app 'Quantos.exe')
     Start-Sleep -Seconds 20
-    $log = Get-ChildItem (Join-Path $logs 'client-*.log') -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($null -eq $log) { return @() }
-    return @(@(Get-Content $log.FullName) | Select-Object -Skip $before)
+    return @(New-LogText -split "`r?`n")
 }
 
 Step 'Starting the client'

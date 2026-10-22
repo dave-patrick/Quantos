@@ -34,8 +34,11 @@ open threads and the machine.
   WebView2 processes behind, which lock the browser profile and make the next start fail with
   `COMException 0x800700AA` ("The requested resource is in use") — the script closes the client
   properly and, if that happens anyway, moves `client-data\webview2` aside and starts again on a
-  fresh profile. Don't kill the `quantos-cli.exe` processes; they are the MCP server. Afterwards read
-  the `Startup:` line in `client-data\logs\client-<date>.log` to confirm it came up.
+  fresh profile. The client also does this for itself: when the browser engine reports that the
+  profile is in use, it starts on a new folder (`client-data\webview2-<time>`) and carries on, so a
+  leftover browser process can never stop the app from opening. Don't kill the `quantos-cli.exe`
+  processes; they are the MCP server. Afterwards read the `Startup:` line in
+  `client-data\logs\client-<date>.log` to confirm it came up.
 - **Workspace locations:** git repositories live in `C:\repos\` (this one is `C:\repos\Quantos`).
   Working files that aren't repository code (notes, drafts, exports, research) go in
   `D:\My Drive\Dev Projects\<project>\`.
