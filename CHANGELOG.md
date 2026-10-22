@@ -5,6 +5,11 @@ The plan these releases implement is [BUILD-PLAN.md](BUILD-PLAN.md); the current
 and how to work on it is [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md).
 Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
+## Unreleased
+
+- **The title bar keeps its own buttons.** Dropping the system menu removed the duplicate min/max/close buttons, so only the app's caption bar shows, with Windows 11's rounded corners.
+- **The version sits in the bottom-right corner** of the window.
+
 ## 0.1.6
 
 - **Collapsible headings as slash commands.** Type `/` and choose *Collapsible heading 1*, *2* or
