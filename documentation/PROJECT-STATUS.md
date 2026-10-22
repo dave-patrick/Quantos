@@ -5,13 +5,13 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-22, at version 0.1.6 (being prepared; 0.1.5.7 is the latest release)._
+_Last updated: 2026-10-22, at version 0.1.6 (released as v0.1.6)._
 
 ## 1. Where things stand
 
 | | |
 |---|---|
-| Latest release | [0.1.5.7](https://github.com/dave-patrick/Quantos/releases/tag/v0.1.5.7) (Windows x64 zip, SHA-256 digest published by GitHub). 0.1.6 is on `main`, being tried out as a staging copy. |
+| Latest release | [0.1.6](https://github.com/dave-patrick/Quantos/releases/tag/v0.1.6) (Windows x64 zip, SHA-256 `969ec1b4131f7732bb65ee8da4ed8c6b80b03582387ae648c26092992715c53a`) |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
 | Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
