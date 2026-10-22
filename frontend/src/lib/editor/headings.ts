@@ -1,6 +1,6 @@
-import { foldEffect, foldService, foldedRanges, unfoldEffect } from '@codemirror/language';
+import { foldEffect, foldService } from '@codemirror/language';
 import { Prec, StateEffect, type EditorState, type Extension, type Range } from '@codemirror/state';
-import { Decoration, EditorView, ViewPlugin, WidgetType, type DecorationSet, type ViewUpdate } from '@codemirror/view';
+import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { fencedLines } from './blockinfo';
 
 /** Sent when the heading folding is turned on or off, so the fold gutter looks again. */
@@ -113,91 +113,41 @@ export const foldMarkedHeadings = ViewPlugin.define((view) => {
   };
 });
 
-/** The little arrow on a heading that folds and unfolds its section. */
-class HeadingToggle extends WidgetType {
-  constructor(readonly level: number, readonly open: boolean, readonly range: { from: number; to: number }) {
-    super();
-  }
-
-  eq(other: HeadingToggle) {
-    return other.level === this.level && other.open === this.open && other.range.from === this.range.from && other.range.to === this.range.to;
-  }
-
-  toDOM(view: EditorView) {
-    const el = document.createElement('span');
-    el.className = 'cm-heading-toggle';
-    el.textContent = this.open ? '▾' : '▸';
-    el.title = this.open ? 'Collapse this section' : 'Expand this section';
-    el.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleSection(view, this.range, this.open);
-    });
-    return el;
-  }
-
-  ignoreEvent() { return true; }
-}
-
-/** Folds the section, or unfolds it again when it is already folded. */
-function toggleSection(view: EditorView, range: { from: number; to: number }, open: boolean) {
-  if (open) {
-    view.dispatch({ effects: foldEffect.of(range) });
-    return;
-  }
-  let target: { from: number; to: number } | null = null;
-  foldedRanges(view.state).between(range.from, range.to, (from, to) => {
-    if (from <= range.from && to >= range.to) target = { from, to };
-  });
-  if (target) view.dispatch({ effects: unfoldEffect.of(target) });
-}
-
-/** True when the section is folded away. */
-function isFolded(state: EditorState, range: { from: number; to: number }): boolean {
-  let folded = false;
-  foldedRanges(state).between(range.from, range.to, (from, to) => {
-    if (from <= range.from && to >= range.to) folded = true;
-  });
-  return folded;
-}
-
-/** The arrows on the headings that are on screen, and the marks they carry. */
-function arrows(view: EditorView): DecorationSet {
+/**
+ * The fold marks on the headings that are on screen: the "[-]" that says a section starts folded.
+ * The arrow itself lives in the fold gutter, so a heading only ever has one.
+ */
+function marks(view: EditorView): DecorationSet {
   const state = view.state;
-  const marks: Range<Decoration>[] = [];
+  const ranges: Range<Decoration>[] = [];
   for (const { from, to } of view.visibleRanges) {
     const first = state.doc.lineAt(from).number;
     const last = state.doc.lineAt(to).number;
     for (let n = first; n <= last; n++) {
       const head = headingOn(state, n);
-      if (!head) continue;
-      const section = sectionOf(state, n);
-      if (!section) continue;
-      const open = !isFolded(state, section);
-      marks.push(Decoration.widget({ widget: new HeadingToggle(head.level, open, section), side: -1 }).range(state.doc.line(n).from));
-      if (head.markFrom) marks.push(Decoration.mark({ class: 'cm-heading-mark' }).range(head.markFrom, head.markTo));
+      if (!head?.markFrom) continue;
+      ranges.push(Decoration.mark({ class: 'cm-heading-mark' }).range(head.markFrom, head.markTo));
     }
   }
-  return Decoration.set(marks, true);
+  return Decoration.set(ranges, true);
 }
 
-class HeadingArrows {
+class HeadingMarks {
   decorations: DecorationSet;
 
   constructor(view: EditorView) {
-    this.decorations = arrows(view);
+    this.decorations = marks(view);
   }
 
   update(update: ViewUpdate) {
-    const folded = update.transactions.some((tr) => tr.effects.some((e) => e.is(foldEffect) || e.is(unfoldEffect)));
-    if (update.docChanged || update.viewportChanged || update.selectionSet || folded) {
-      this.decorations = arrows(update.view);
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = marks(update.view);
     }
   }
 }
 
-/** The arrows on headings, so a section can be folded without hunting for the gutter. */
-export const headingArrows: Extension = ViewPlugin.fromClass(HeadingArrows, { decorations: (v) => v.decorations });
+/** The fold marks on the headings, so a section can be told apart from the rest at a glance. */
+export const headingArrows: Extension = ViewPlugin.fromClass(HeadingMarks, { decorations: (v) => v.decorations });
 
 /**
  * The heading that covers a place: the heading on that line, or the nearest one above it. Used by

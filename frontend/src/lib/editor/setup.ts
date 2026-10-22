@@ -100,13 +100,25 @@ export function createEditor(parent: HTMLElement, options: EditorOptions): Edito
     closeBrackets(),
     highlightSelectionMatches(),
     search({ top: true }),
-    // Open sections show their arrow on hover; folded ones always do, so hidden text is never lost from view.
+    // The fold arrow is the app's own chevron, so it looks like the arrows everywhere else.
     foldGutter({
       markerDOM(open) {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '20');
+        svg.setAttribute('height', '20');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('stroke-width', '1.6');
+        svg.setAttribute('stroke-linecap', 'round');
+        svg.setAttribute('stroke-linejoin', 'round');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', open ? 'M6 9l6 6 6-6' : 'M9 6l6 6-6 6');
+        svg.appendChild(path);
         const el = document.createElement('span');
         el.className = open ? 'cm-fold-open' : 'cm-fold-closed';
-        el.textContent = open ? '▾' : '▸';
-        el.title = open ? 'Fold' : 'Unfold';
+        el.title = open ? 'Fold this section' : 'Expand this section';
+        el.appendChild(svg);
         return el;
       },
       // The arrows follow the setting for collapsible headings.
