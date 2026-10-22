@@ -714,8 +714,15 @@ public sealed class MainForm : Form
     protected override void WndProc(ref Message m)
     {
         const int WM_NCCALCSIZE = 0x83;
+        const int WM_NCPAINT = 0x0085;
         const int WM_NCHITTEST = 0x84;
         const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17;
+        if (m.Msg == WM_NCPAINT)
+        {
+            // Suppress system non-client painting so only our own title bar shows.
+            m.Result = IntPtr.Zero;
+            return;
+        }
         if (m.Msg == WM_NCCALCSIZE)
         {
             // Take over the caption: the client area becomes the whole window, so the system
