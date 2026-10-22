@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **Version number no longer cut off** in the bottom-right corner of the window.
+- **Delete notes from the editor.** The note header now has a "Move to trash" button next to version history; trashed notes live in the trash until you delete them permanently.
+
+
 ## 0.1.6.1
 
 - **Red overdue pill for past-due tasks.** The due chip now reads red when a task's due date has passed, and overdue tasks roll forward into today's daily note until they're done or retargeted.
