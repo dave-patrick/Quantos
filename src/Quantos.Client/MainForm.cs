@@ -711,7 +711,7 @@ public sealed class MainForm : Form
         const int WM_NCCALCSIZE = 0x83;
         const int WM_NCPAINT = 0x0085;
         const int WM_NCHITTEST = 0x84;
-        const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17;
+        const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17, HTCAPTION = 2;
         if (m.Msg == WM_NCPAINT)
         {
             // Suppress system non-client painting so only our own title bar shows.
@@ -747,6 +747,7 @@ public sealed class MainForm : Form
         if (m.Msg == WM_NCHITTEST && WindowState != FormWindowState.Maximized)
         {
             var pt = PointToClient(new Point(m.LParam.ToInt32() & 0xFFFF, m.LParam.ToInt32() >> 16));
+            if (pt.Y < 34) { m.Result = (IntPtr)HTCAPTION; return; }
             int b = 6;
             bool left = pt.X <= b, right = pt.X >= Width - b, top = pt.Y <= b, bottom = pt.Y >= Height - b;
             if (top && left) { m.Result = (IntPtr)HTTOPLEFT; return; }
