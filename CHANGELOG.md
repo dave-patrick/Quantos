@@ -7,8 +7,11 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
-- **The title bar keeps its own buttons.** Dropping the system menu removed the duplicate min/max/close buttons, so only the app's caption bar shows, with Windows 11's rounded corners.
-- **The version sits in the bottom-right corner** of the window.
+## 0.1.6.1
+
+- **Red overdue pill for past-due tasks.** The due chip now reads red when a task's due date has passed, and overdue tasks roll forward into today's daily note until they're done or retargeted.
+- **Title bar fix.** Dropping the system menu removed the duplicate min/max/close buttons, so only the app's caption bar shows, with Windows 11's rounded corners.
+- **Version in the corner.** The version sits in the bottom-right corner of the window.
 
 ## 0.1.6
 
