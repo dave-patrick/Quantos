@@ -115,17 +115,11 @@ public sealed class MainForm : Form
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-    }
-
-    protected override CreateParams CreateParams
-    {
-        get
-        {
-            var cp = base.CreateParams;
-            cp.Style &= ~0x00C00000; // WS_CAPTION
-            cp.Style &= ~0x00040000; // WS_THICKFRAME
-            return cp;
-        }
+        // Rounded corners from DWM (Windows 11).
+        int corner = 2; // DWMWCP_ROUND
+        DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
+        int none = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
+        DwmSetWindowAttribute(Handle, 34, ref none, sizeof(int));
     }
 
     public static Icon LoadIcon()
