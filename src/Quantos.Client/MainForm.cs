@@ -24,6 +24,7 @@ public sealed class MainForm : Form
     private readonly CaptionButton _btnMax = new(CaptionButton.Glyph.Maximize) { Dock = DockStyle.Right };
     private readonly CaptionButton _btnClose = new(CaptionButton.Glyph.Close) { Dock = DockStyle.Right };
     private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Segoe UI", 12f) };
+    private readonly Label _version = new() { Text = $"v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(90, 120, 150, 180), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Consolas", 8.5f), AutoSize = true, Anchor = AnchorStyles.Bottom | AnchorStyles.Right, Padding = new Padding(4, 2, 4, 2) };
     private readonly NotifyIcon _tray = new();
     private readonly HotKeys _hotkeys = new();
     private BackendConnection? _backend;
@@ -81,7 +82,10 @@ public sealed class MainForm : Form
         Controls.Add(_web);
         Controls.Add(_titleBar);
         Controls.Add(_status);
+        Controls.Add(_version);
         _status.BringToFront();
+        _version.BringToFront();
+        _version.Location = new Point(Width - _version.Width - 8, Height - _version.Height - 6);
         _status.Text = "Starting Quantos…";
         BuildTray();
     }
@@ -97,6 +101,7 @@ public sealed class MainForm : Form
         base.OnResize(e);
         _btnMax.Maximized = WindowState == FormWindowState.Maximized;
         _btnMax.Invalidate();
+        _version.Location = new Point(Width - _version.Width - 8, Height - _version.Height - 6);
     }
 
     protected override void OnHandleCreated(EventArgs e)
