@@ -16,7 +16,7 @@ export const quantosTheme = EditorView.theme({
   '.cm-gutters:hover .cm-foldGutter .cm-gutterElement': { opacity: '1' },
   '.cm-foldGutter .cm-gutterElement:has(.cm-fold-closed)': { opacity: '1', color: 'var(--accent)' },
   '.cm-fold-open, .cm-fold-closed': { fontSize: '14px', lineHeight: '1' },
-  '.cm-heading-toggle': { cursor: 'pointer', color: 'var(--text-muted)', marginRight: '3px', fontSize: '0.85em', userSelect: 'none' },
+  '.cm-heading-toggle': { cursor: 'pointer', color: 'var(--text-muted)', marginRight: '3px', fontSize: '1.05em', userSelect: 'none' },
   '.cm-heading-toggle:hover': { color: 'var(--accent)' },
   '.cm-heading-mark': { fontSize: '0.72em', color: 'var(--text-faint)', letterSpacing: '.04em' },
   '.cm-line:hover .cm-heading-toggle': { color: 'var(--text-soft)' },

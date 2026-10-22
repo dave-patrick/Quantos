@@ -5,7 +5,16 @@ The plan these releases implement is [BUILD-PLAN.md](BUILD-PLAN.md); the current
 and how to work on it is [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md).
 Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
-## Unreleased
+## 0.1.5.7
+
+- **Tabs can sit on any side of a pane.** Right-click a tab and choose *Move to left/right/top/bottom*;
+  the split is made as needed. The settings navigation moves the same way.
+- **Split panes with a draggable splitter.** The divider between the two panes can be dragged to
+  give one side more room.
+- **The window draws its own title bar.** The minimise, maximise and close buttons are drawn by
+  the app instead of the system ones, and the version now sits next to the wordmark.
+
+## 0.1.6
 
 - **Collapsible headings as slash commands.** Type `/` and choose *Collapsible heading 1*, *2* or
   *3* to write a heading that starts folded (`## [-] Title`); it is still folded when you open the
