@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **Collapsible headings as slash commands.** Type `/` and choose *Collapsible heading 1*, *2* or
+  *3* to write a heading that starts folded (`## [-] Title`); it is still folded when you open the
+  note again, because the mark is saved in the file. *Fold the heading here* folds the section under
+  the nearest heading, without writing anything to the note.
 - **The window has rounded corners and its own title bar.** The client draws its own caption
   buttons — a thin dash, a square (two squares when the window is maximised) and a cross, each with a
   rounded hover patch and a red close — and carries the app's icon in the corner. The window keeps

@@ -62,6 +62,12 @@ Windows-only features (below) works the same.
   section under that heading folds away, down to the next heading of the same level; a deeper
   heading goes with it. Click again to bring it back. The arrow in the left margin does the same.
   Turn the arrows off in *Settings › Writing › Collapsible headings*.
+  - **A heading that starts folded:** type `/` and choose *Collapsible heading 1*, *2* or *3*. It
+    writes `## [-] Title`: the section under it is folded, and stays folded when you come back to
+    the note, because the mark is saved in the file.
+  - **Fold the heading you are in:** type `/` and choose *Fold the heading here*. The section under
+    the nearest heading above the cursor folds. Nothing is written to the note, so it opens again
+    next time.
 - **Several blocks at once:** `Ctrl`-click a block to select it, and `Ctrl`-click others to add
   them. `Ctrl`-`Shift`-click stretches the selection over everything between. The selected blocks
   are shaded, and you can
