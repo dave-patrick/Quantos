@@ -112,17 +112,6 @@ public sealed class MainForm : Form
     private const int SWP_NOZORDER = 0x0004;
     private const int SWP_FRAMECHANGED = 0x0020;
 
-    protected override CreateParams CreateParams
-    {
-        get
-        {
-            var cp = base.CreateParams;
-            cp.Style &= ~0x00C00000; // WS_CAPTION
-            cp.Style &= ~0x00040000; // WS_THICKFRAME
-            return cp;
-        }
-    }
-
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
