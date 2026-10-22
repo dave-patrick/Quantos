@@ -108,6 +108,10 @@ public sealed class MainForm : Form
     private const int WS_SYSMENU = 0x00080000;
     private const int WS_MINIMIZEBOX = 0x00020000;
     private const int WS_MAXIMIZEBOX = 0x00010000;
+    private const int SWP_NOMOVE = 0x0002;
+    private const int SWP_NOSIZE = 0x0001;
+    private const int SWP_NOZORDER = 0x0004;
+    private const int SWP_FRAMECHANGED = 0x0020;
 
     protected override void OnHandleCreated(EventArgs e)
     {
@@ -116,6 +120,8 @@ public sealed class MainForm : Form
         // rounded corners; drop the system menu and its buttons so only our own title bar shows.
         var style = GetWindowLong(Handle, GWL_STYLE);
         SetWindowLong(Handle, GWL_STYLE, style & ~WS_SYSMENU & ~WS_MINIMIZEBOX & ~WS_MAXIMIZEBOX);
+        // FrameChanged tells Windows to recalculate the non-client area so the button changes take effect.
+        SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
         var corner = 2;                                     // DWMWCP_ROUND
         DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
         var none = unchecked((int)0xFFFFFFFE);                // DWMWA_COLOR_NONE
@@ -124,6 +130,7 @@ public sealed class MainForm : Form
 
     [DllImport("user32.dll")] private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
     [DllImport("user32.dll")] private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
     public static Icon LoadIcon()
     {
