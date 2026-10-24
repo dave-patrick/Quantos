@@ -37,6 +37,11 @@ public sealed class MainForm : Form
     private int _resizeHit;
     private Rectangle _resizeStartBounds;
     private Point _resizeStartCursor;
+    private bool _windowDragActive;
+    private bool _windowDragStartedMaximized;
+    private Rectangle _windowDragStartBounds;
+    private Point _windowDragStartCursor;
+    private double _windowDragAnchorX;
     private TaskCompletionSource<int>? _flush;
     private string? _lastNotificationNode;
     private readonly SemaphoreSlim _reconnect = new(1, 1);
@@ -79,8 +84,8 @@ public sealed class MainForm : Form
         _btnMin.Click += (_, _) => WindowState = FormWindowState.Minimized;
         _btnMax.Click += (_, _) => ToggleMaximized();
         _btnClose.Click += async (_, _) => { if (!_exiting) await ExitAsync(); };
-        _titleBar.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 2, 0); } };
-        _icon.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, 0xA1, 2, 0); } };
+        _titleBar.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) BeginWindowDrag(); };
+        _icon.MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) BeginWindowDrag(); };
         _titleBar.DoubleClick += (_, _) => _btnMax.PerformClick();
         Controls.Add(_web);
         Controls.Add(_titleBar);
@@ -777,6 +782,19 @@ public sealed class MainForm : Form
                 return;
             }
         }
+        if (_windowDragActive && m.Msg == WM_MOUSEMOVE)
+        {
+            if (GetCursorPos(out var cursor)) MoveFromTitleBar(cursor);
+            m.Result = IntPtr.Zero;
+            return;
+        }
+        if (_windowDragActive && m.Msg is WM_LBUTTONUP or WM_CAPTURECHANGED)
+        {
+            _windowDragActive = false;
+            if (m.Msg == WM_LBUTTONUP) ReleaseCapture();
+            m.Result = IntPtr.Zero;
+            return;
+        }
         if (_resizeHit != 0 && m.Msg == WM_MOUSEMOVE)
         {
             if (GetCursorPos(out var cursor)) ResizeFromEdge(cursor, _resizeHit);
@@ -863,6 +881,36 @@ public sealed class MainForm : Form
         if (hit is 12 or 13 or 14) top = Math.Min(_resizeStartBounds.Bottom - MinimumSize.Height, _resizeStartBounds.Top + dy);
         if (hit is 15 or 16 or 17) bottom = Math.Max(_resizeStartBounds.Top + MinimumSize.Height, _resizeStartBounds.Bottom + dy);
         Bounds = Rectangle.FromLTRB(left, top, right, bottom);
+    }
+
+    private void BeginWindowDrag()
+    {
+        _windowDragActive = true;
+        _windowDragStartedMaximized = WindowState == FormWindowState.Maximized;
+        _windowDragStartBounds = _windowDragStartedMaximized ? RestoreBounds : Bounds;
+        GetCursorPos(out _windowDragStartCursor);
+        _windowDragAnchorX = Width <= 0 ? 0.5 : Math.Clamp((double)(_windowDragStartCursor.X - Left) / Width, 0, 1);
+        SetCapture(Handle);
+    }
+
+    private void MoveFromTitleBar(Point cursor)
+    {
+        int dx = cursor.X - _windowDragStartCursor.X;
+        int dy = cursor.Y - _windowDragStartCursor.Y;
+        if (_windowDragStartedMaximized)
+        {
+            if (Math.Abs(dx) + Math.Abs(dy) < 4) return;
+            WindowState = FormWindowState.Normal;
+            int left = cursor.X - (int)(_windowDragStartBounds.Width * _windowDragAnchorX);
+            int top = cursor.Y - _titleBar.Height / 2;
+            Bounds = new Rectangle(left, top, _windowDragStartBounds.Width, _windowDragStartBounds.Height);
+            _windowDragStartedMaximized = false;
+            _windowDragStartBounds = Bounds;
+            _windowDragStartCursor = cursor;
+            return;
+        }
+        Bounds = new Rectangle(_windowDragStartBounds.Left + dx, _windowDragStartBounds.Top + dy,
+            _windowDragStartBounds.Width, _windowDragStartBounds.Height);
     }
 
     protected override void Dispose(bool disposing)

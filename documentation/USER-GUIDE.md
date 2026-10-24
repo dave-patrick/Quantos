@@ -36,6 +36,8 @@ Quantos\
 Closing the window **minimizes** Quantos; it keeps running for reminders and quick capture. To quit,
 use **Exit** from the tray icon menu. Exit saves your open notes first and warns you if anything
 couldn't be saved.
+Drag the blank strip above the app toolbar to move the window. Drag it while maximized to restore
+the window under the pointer and continue moving it.
 
 The top bar has a taller header with a larger Quantos wordmark and an 8px gap before the main
 content. The dark appearance uses a slightly lighter neutral gray background. Its quick actions can
