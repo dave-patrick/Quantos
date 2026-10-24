@@ -191,9 +191,11 @@ is still in the command palette (`Ctrl+Shift+P`).
 
 ### Tabs and panes
 
-Each pane holds up to ten tabs. Pin tabs you want to keep; when a pane is full, the least recently
-used unpinned tab closes (after saving). Split the window with `Ctrl+\`. Each workspace remembers its
-own tabs, splits and scroll positions.
+Each pane holds up to ten tabs. The active view has a small close button at the upper-right corner;
+tab names do not take up space above the view. Pin tabs you want to keep; when a pane is full, the
+least recently used unpinned tab closes (after saving). Split the window with `Ctrl+\`; a visible
+divider separates the panes and can be dragged or keyboard-resized. Each workspace remembers its own
+tabs, splits and scroll positions.
 
 ---
 

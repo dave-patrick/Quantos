@@ -25,6 +25,15 @@
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
   }
+
+  function resizeByKey(e: KeyboardEvent) {
+    const delta = layout.split === 'horizontal'
+      ? (e.key === 'ArrowUp' ? -0.03 : e.key === 'ArrowDown' ? 0.03 : 0)
+      : (e.key === 'ArrowLeft' ? -0.03 : e.key === 'ArrowRight' ? 0.03 : 0);
+    if (!delta) return;
+    e.preventDefault();
+    ratio = Math.min(0.85, Math.max(0.15, ratio + delta));
+  }
 </script>
 
 {#if layout.panes.length === 1}
@@ -34,7 +43,7 @@
 {:else}
   <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: ${ratio*100}% 8px ${ (1-ratio)*100}%;` : `grid-template-columns: ${ratio*100}% 8px ${ (1-ratio)*100}%;`}>
     <Pane pane={layout.panes[0]} index={0} {today} />
-    <div class="spacer" class:dragging onmousedown={start}></div>
+    <button class="spacer" class:dragging type="button" aria-label="Resize split panes" aria-orientation={layout.split === 'horizontal' ? 'horizontal' : 'vertical'} onmousedown={start} onkeydown={resizeByKey}></button>
     <Pane pane={layout.panes[1]} index={1} {today} />
   </div>
 {/if}
@@ -44,7 +53,7 @@
   .panes.single { grid-template-columns: 1fr; }
   .panes.vertical { grid-template-columns: 1fr 8px 1fr; }
   .panes.horizontal { grid-template-rows: 1fr 8px 1fr; }
-  .spacer { background: transparent; cursor: col-resize; width: 8px; touch-action: none; }
-  .panes.horizontal .spacer { cursor: row-resize; height: 8px; }
-  .splitter:hover, .splitter.dragging { background: var(--accent); }
+  .spacer { appearance: none; border: 0; padding: 0; background: linear-gradient(90deg, transparent calc(50% - .5px), var(--line-strong) calc(50% - .5px), var(--line-strong) calc(50% + .5px), transparent calc(50% + .5px)); cursor: col-resize; width: 8px; touch-action: none; }
+  .panes.horizontal .spacer { cursor: row-resize; height: 8px; width: auto; background: linear-gradient(180deg, transparent calc(50% - .5px), var(--line-strong) calc(50% - .5px), var(--line-strong) calc(50% + .5px), transparent calc(50% + .5px)); }
+  .spacer:hover, .spacer.dragging, .spacer:focus-visible { background: var(--accent); outline: none; }
 </style>

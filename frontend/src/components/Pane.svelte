@@ -60,11 +60,11 @@
 
 <!-- Tracks which pane is active; focus changes already cover keyboard users. -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<section class="pane" class:focused class:tabs-left={pane.tabSide === 'left'} class:tabs-right={pane.tabSide === 'right'} class:tabs-bottom={pane.tabSide === 'bottom'} onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
-  <div class="tabs">
+<section class="pane" class:focused onfocusin={() => (layout.activePane = index)} onmousedown={() => (layout.activePane = index)} aria-label="Pane {index + 1}">
+  <div class="tabs-accessible">
     <div class="strip" role="tablist" aria-label="Open tabs">
     {#each pane.tabs as tab (tab.key)}
-      <!-- The tab is a button; the close button sits beside it, not inside (one control can't contain another). -->
+      <!-- Keep tab navigation available to keyboard and screen-reader users without a visible name strip. -->
       <div class="tab" class:active={tab.key === pane.active} class:pinned={tab.pinned} role="presentation" draggable="true"
         ondragstart={() => (dragKey = tab.key)} ondragover={(e) => e.preventDefault()} ondrop={(e) => drop(e, tab)}
         onauxclick={(e) => onAux(e, tab)}
@@ -79,6 +79,9 @@
     {/each}
     </div>
   </div>
+  {#if active}
+    <button class="close-active" aria-label="Close {active.title}" title="Close tab" onclick={() => layout.close(index, active!.key)}>×</button>
+  {/if}
 
   <div class="content">
     {#if active}
@@ -99,39 +102,23 @@
   <div class="menu" style="left:{menu.x}px; top:{menu.y}px" role="menu" tabindex="-1" use:menuKeys={{ onclose: () => (menu = null) }}>
     <button role="menuitem" onclick={() => { layout.togglePin(index, menu!.tab.key); menu = null; }}>{menu.tab.pinned ? 'Unpin tab' : 'Pin tab'}</button>
     <button role="menuitem" onclick={() => { const t = menu!.tab; menu = null; layout.open({ kind: t.kind, nodeId: t.nodeId, arg: t.arg, title: t.title }, 'other'); }}>Open in other pane</button>
-    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'left'; layout.persist(); menu = null; }}>Tabs on left</button>
-    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'right'; layout.persist(); menu = null; }}>Tabs on right</button>
-    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'top'; layout.persist(); menu = null; }}>Tabs on top</button>
-    <button role="menuitem" onclick={() => { layout.panes[index].tabSide = 'bottom'; layout.persist(); menu = null; }}>Tabs on bottom</button>
     <button role="menuitem" onclick={() => { layout.closeOthers(index, menu!.tab.key); menu = null; }}>Close other tabs</button>
     <button role="menuitem" onclick={() => { layout.close(index, menu!.tab.key); menu = null; }}>Close tab</button>
   </div>
 {/if}
 
 <style>
-  .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-  .pane.tabs-left, .pane.tabs-right { flex-direction: row; }
-  .pane.tabs-left .tabs { order: -1; flex-direction: column; width: 150px; height: auto; border-bottom: 0; border-right: 1px solid var(--line); overflow-y: auto; }
-  .pane.tabs-right .tabs { order: 1; flex-direction: column; width: 150px; height: auto; border-bottom: 0; border-left: 1px solid var(--line); overflow-y: auto; }
-  .pane.tabs-left .strip, .pane.tabs-right .strip { flex-direction: column; align-items: stretch; }
-  .pane.tabs-left .tab, .pane.tabs-right .tab { max-width: none; min-width: 0; width: 100%; padding: 8px 6px; }
-  .pane.tabs-bottom { flex-direction: column-reverse; }
-  .tabs { display: flex; align-items: center; height: var(--tab-h); background: transparent; border-bottom: none; overflow-x: auto; scrollbar-width: none; flex: none; padding: 4px 8px; gap: 10px; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .strip { display: flex; align-items: center; min-width: 0; gap: 10px; }
-  .tab { display: flex; align-items: center; justify-content: center; gap: 6px; max-width: 220px; min-width: 70px; height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px;
-    color: var(--text-muted); font-size: 13.5px; font-weight: 600; cursor: default; user-select: none; position: relative; background: var(--bg-raised); box-shadow: none; margin: 2px 4px; }
-  .tab:hover { background: var(--bg-hover); color: var(--text); border-color: var(--line-strong); box-shadow: none; }
-  .tab.active { background: var(--bg-active); color: var(--accent-strong); border-color: var(--accent); box-shadow: none; }
-  .pane.focused .tab.active::before { content: none; }
-  .tab.pinned { min-width: 0; max-width: 150px; padding-right: 10px; }
-  .tab-button { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: default; }
+  .pane { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .pane.focused { border-color: var(--line-strong); }
+  .tabs-accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+  .strip { display: flex; align-items: center; min-width: 0; gap: 4px; }
+  .tab { display: flex; align-items: center; }
+  .tab-button { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: var(--text); font: inherit; cursor: default; }
   .tab-button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 3px; }
-  .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; display: flex; justify-content: center; align-items: center; }
+  .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .close-active { position: absolute; top: 6px; right: 7px; z-index: 5; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--text-faint); font-size: 17px; line-height: 1; opacity: .7; cursor: pointer; }
+  .close-active:hover, .close-active:focus-visible { opacity: 1; background: var(--bg-hover); color: var(--text); outline: none; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
-  .spacer { flex: 1; }
-  .count { align-self: center; padding: 0 8px; font: 11px var(--font-mono); color: var(--text-faint); }
-  .tabs .icon-btn { align-self: center; margin-right: 4px; }
   /* Views size themselves to the pane, not the window: a split pane is often half as wide. */  
   .content { flex: 1; min-height: 0; display: flex; flex-direction: column; container: pane / inline-size; }
   .backdrop { position: fixed; inset: 0; border: 0; background: transparent; z-index: 45; cursor: default; }

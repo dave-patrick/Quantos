@@ -119,8 +119,10 @@ public sealed class MainForm : Form
         base.OnHandleCreated(e);
         int corner = 3; // DWMWCP_ROUNDSMALL keeps the custom frame's corners subtle.
         DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
-        int none = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
-        DwmSetWindowAttribute(Handle, 34, ref none, sizeof(int));
+        // COLORREF is 0x00BBGGRR. Match the client background so the native sizing frame
+        // doesn't appear as a bright strip above the custom title bar.
+        int border = BackColor.R | (BackColor.G << 8) | (BackColor.B << 16);
+        DwmSetWindowAttribute(Handle, 34, ref border, sizeof(int));
     }
 
     public static Icon LoadIcon()

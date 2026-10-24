@@ -59,8 +59,13 @@ open threads and the machine.
   rows and a wider left gutter. Sidebar toggles now use directional panel icons, scrollbars are hidden
   without disabling scrolling, and the titlebar chrome matches the neutral gray app background.
   Border resizing is available along every edge, including the top edge, and at all four corners.
-  The test copy has been rebuilt and relaunched with this update; its log
-  confirms a successful page load (HTTP 200). No release was published.
+  Split panes now have no visible tab-name strip; the active view has only a small close button at
+  the upper-right. The main pane is vertically aligned with the navigation card, while a visible
+  resize divider and neutral pane outlines make the split clear. The native frame border matches the
+  app background to remove the bright top strip. Frontend checks, all 97 frontend tests, and all 151
+  .NET tests pass. Version 0.1.6.1 was rebuilt and package-validated; the previous client was closed,
+  the test copy updated, and the new client relaunched with a successful page load (HTTP 200). No
+  release was published.
 
 - **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
   own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)
