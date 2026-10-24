@@ -75,6 +75,11 @@ open threads and the machine.
   `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
   Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its
   page loaded successfully (HTTP 200). No release was published.
+  In build `9fcce4c`, the Notes List uses single-line rows and a Preview toggle that remembers the
+  user's choice. Task priority strips are red for P1, orange for P2, green for P3 and blue for P4.
+  Frontend check reports 0 errors and 10 warnings; all 97 frontend tests and 151 .NET tests pass.
+  The Windows x64 package validated, the old app closed, and the new client relaunched successfully
+  with page load HTTP 200.
   The latest UI polish removes the duplicate heading from the right Tasks panel, uses a single compact
   quick-add field and flat task rows, puts Add a panel inside the last card, restores an 8px inset at
   the far right edge, and rearranges the header with New beside the workspace, Split and Quick Capture
