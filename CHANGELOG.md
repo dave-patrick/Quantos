@@ -7,8 +7,14 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
-- **Version number no longer cut off** in the bottom-right corner of the window.
-- **Delete notes from the editor.** The note header now has a "Move to trash" button next to version history; trashed notes live in the trash until you delete them permanently.
+## 0.2.0 (2026-10-24)
+
+- **A more usable split workspace.** The header and panes align, split views read as separate cards, and active panes are easier to identify. The right sidebar supports multiple resizable panels and remembers their layout automatically.
+- **Notes list and preview controls.** List rows stay on one line, and the preview pane can be toggled on or off with the choice remembered.
+- **Compact task cards.** My Day rows preserve the task title while showing key status and date details without letting metadata take over the card. Priority colors are distinct: red P1, orange P2, green P3 and blue P4.
+- **Frameless window drawing and resizing.** The app removes the unwanted silver Windows edge, supports resizing on every edge and corner, and refreshes the native frame/layout after maximize, restore, hide and reopen so controls stay aligned.
+- **Delete a note from its editor.** The note header has a *Move to trash* action; trashed notes remain recoverable until permanently deleted.
+- **Version number no longer gets cut off** in the bottom-right corner of the window.
 
 
 ## 0.1.6.1
