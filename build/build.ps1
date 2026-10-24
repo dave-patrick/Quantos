@@ -42,6 +42,7 @@ Step 'Frontend'
 Push-Location frontend
 if (-not (Test-Path node_modules)) { npm ci --no-audit --no-fund | Out-Host }
 npx vite build | Out-Host
+if ($LASTEXITCODE -ne 0) { throw "Frontend build failed (exit $LASTEXITCODE)" }
 if (-not $SkipTests) { npx vitest run | Out-Host; if ($LASTEXITCODE -ne 0) { throw 'Frontend tests failed' } }
 Pop-Location
 if (-not (Test-Path 'src/Quantos.Backend/wwwroot/index.html')) { throw 'Frontend build produced no index.html' }

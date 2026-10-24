@@ -5,6 +5,7 @@
 
   let ratio = $state(0.5);
   let dragging = $state(false);
+  const gutter = 8;
 
   function start(e: MouseEvent) {
     e.preventDefault();
@@ -41,7 +42,7 @@
     <Pane pane={layout.panes[0]} index={0} {today} />
   </div>
 {:else}
-  <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: ${ratio*100}% 8px ${ (1-ratio)*100}%;` : `grid-template-columns: ${ratio*100}% 8px ${ (1-ratio)*100}%;`}>
+  <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: calc(${ratio*100}% - ${gutter*ratio}px) ${gutter}px calc(${(1-ratio)*100}% - ${gutter*(1-ratio)}px);` : `grid-template-columns: calc(${ratio*100}% - ${gutter*ratio}px) ${gutter}px calc(${(1-ratio)*100}% - ${gutter*(1-ratio)}px);`}>
     <Pane pane={layout.panes[0]} index={0} {today} />
     <button class="spacer" class:dragging type="button" aria-label="Resize split panes" aria-orientation={layout.split === 'horizontal' ? 'horizontal' : 'vertical'} onmousedown={start} onkeydown={resizeByKey}></button>
     <Pane pane={layout.panes[1]} index={1} {today} />
@@ -51,9 +52,9 @@
 <style>
   .panes { flex: 1; display: grid; min-height: 0; min-width: 0; }
   .panes.single { grid-template-columns: 1fr; }
-  .panes.vertical { grid-template-columns: 1fr 8px 1fr; }
-  .panes.horizontal { grid-template-rows: 1fr 8px 1fr; }
-  .spacer { appearance: none; border: 0; padding: 0; background: linear-gradient(90deg, transparent calc(50% - .5px), var(--line-strong) calc(50% - .5px), var(--line-strong) calc(50% + .5px), transparent calc(50% + .5px)); cursor: col-resize; width: 8px; touch-action: none; }
-  .panes.horizontal .spacer { cursor: row-resize; height: 8px; width: auto; background: linear-gradient(180deg, transparent calc(50% - .5px), var(--line-strong) calc(50% - .5px), var(--line-strong) calc(50% + .5px), transparent calc(50% + .5px)); }
-  .spacer:hover, .spacer.dragging, .spacer:focus-visible { background: var(--accent); outline: none; }
+  .panes.vertical { grid-template-columns: minmax(0, 1fr) 8px minmax(0, 1fr); }
+  .panes.horizontal { grid-template-rows: minmax(0, 1fr) 8px minmax(0, 1fr); }
+  .spacer { appearance: none; border: 0; padding: 0; background: transparent; cursor: col-resize; width: 8px; touch-action: none; }
+  .panes.horizontal .spacer { cursor: row-resize; height: 8px; width: auto; }
+  .spacer:hover, .spacer.dragging, .spacer:focus-visible { background: color-mix(in srgb, var(--accent) 60%, transparent); outline: none; border-radius: 2px; }
 </style>

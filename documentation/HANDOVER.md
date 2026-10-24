@@ -61,13 +61,15 @@ open threads and the machine.
   Border resizing is available along every edge, including the top edge, and at all four corners.
   Split panes now have no visible tab-name strip; the active view has only a small close button at
   the upper-right. Use `Ctrl+Shift+P`, then *Next tab* or *Previous tab* to switch tabs. The shell no
-  longer has a redundant spacer row; the main view and navigation align vertically. Pane borders
-  are removed to prevent a doubled seam; the divider separates split panes and a thin accent line
-  highlights the focused pane. The Files panel uses matching vertical spacing. The native frame
-  border color is reapplied on activation changes. `svelte-check` reports 0 errors, all 97 frontend
-  tests pass, and all 151 .NET tests pass on this build. The Windows package was rebuilt and staged;
-  the previous client closed, the updated copy relaunched, and the startup log confirms HTTP 200. No
-  release was published.
+  longer has a redundant spacer row; the main view and navigation align vertically. Split panes are
+  separate neutral cards with an 8px gutter and no resting divider line; the active pane uses a quiet
+  neutral outline and surface tint. The right sidebar has no full-height divider and uses the same
+  neutral card surface. Header toggles use gray pressed backgrounds rather than the blue accent wash.
+  The bright native DWM frame edge is suppressed while preserving all-edge resizing. The package
+  script now stops if Vite fails, preventing an old frontend from slipping into a new package.
+  `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
+  Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its
+  page loaded successfully (HTTP 200). No release was published.
 
 - **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
   own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)

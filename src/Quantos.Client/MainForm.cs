@@ -64,7 +64,8 @@ public sealed class MainForm : Form
         }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
         // Draw our own title bar and buttons. CreateParams keeps the native sizing frame without
-        // restoring the system caption; DWM supplies the subtle outer corner shape below.
+        // restoring the system caption; DWM keeps the subtle outer corner shape while the custom
+        // chrome draws its own border.
         FormBorderStyle = FormBorderStyle.None;
         _icon.Image = Icon.ToBitmap();
         // Title text hidden per user preference; icon remains in the title bar.
@@ -136,9 +137,10 @@ public sealed class MainForm : Form
 
     private void ApplyFrameBorderColor()
     {
-        // Windows can restore its active/inactive frame color as activation changes.
-        // COLORREF is 0x00BBGGRR; keep the native sizing frame matched to our client chrome.
-        int border = BackColor.R | (BackColor.G << 8) | (BackColor.B << 16);
+        // The custom title bar draws its own chrome. Suppress DWM's separate border so the
+        // bright native top edge does not appear around the custom frame. WS_THICKFRAME and
+        // WM_NCHITTEST still provide native resizing on every edge.
+        int border = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
         DwmSetWindowAttribute(Handle, 34, ref border, sizeof(int));
     }
 

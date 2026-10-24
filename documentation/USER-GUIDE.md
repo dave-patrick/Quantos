@@ -45,6 +45,10 @@ but are no longer offered as top-bar actions.
 The left navigation sits in one softly raised panel. Its rows are unboxed; the current view and
 hovered row use a light fill to show their state.
 
+Split views appear as two separate cards with a clear gutter between them. Drag the center handle to
+resize the panes. The focused pane has a quiet neutral emphasis on its outline; each pane has its own close
+button. The right sidebar keeps its panels on the same neutral card color as the rest of the app.
+
 ### If something blocks Quantos
 
 Run `Self-check.cmd`. It checks the things a managed work laptop can block: whether the programs
