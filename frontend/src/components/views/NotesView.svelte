@@ -263,7 +263,7 @@
     <label class="check"><input type="checkbox" bind:checked={everywhere} /> All workspaces</label>
   </div>
 
-  <div class="panes" class:stacked bind:this={panesElement} style={`--left-w:${leftWidth * 100}%;--upper-h:${upperHeight * 100}%`}>
+  <div class="panes" class:stacked class:no-preview={!prefs.notesPreview} bind:this={panesElement} style={`--left-w:${leftWidth * 100}%;--upper-h:${upperHeight * 100}%`}>
     <section class="left">
       <div class="bar">
         <label class="check"><input type="checkbox" aria-label="Select all shown" checked={allPicked} onchange={pickAll} /> {shown.length} {shown.length === 1 ? 'note' : 'notes'}</label>
@@ -271,6 +271,7 @@
           <button role="radio" aria-checked={!prefs.notesTree} class:on={!prefs.notesTree} onclick={() => (prefs.notesTree = false)}>List</button>
           <button role="radio" aria-checked={prefs.notesTree} class:on={prefs.notesTree} onclick={() => (prefs.notesTree = true)}>Tree</button>
         </span>
+        <button class="btn ghost preview-toggle" aria-pressed={prefs.notesPreview} title={prefs.notesPreview ? 'Hide note preview' : 'Show note preview'} onclick={() => (prefs.notesPreview = !prefs.notesPreview)}><Icon name="eye" size={14} /> Preview</button>
         {#if picked.size}
           <span class="sel">{picked.size} selected</span>
           <button class="btn ghost" onclick={() => bulk('tag')}><Icon name="hash" size={13} /> Tag</button>
@@ -310,6 +311,7 @@
       </ul>
       {/if}
     </section>
+    {#if prefs.notesPreview}
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <div class="divider" class:dragging={divider === 0} onpointerdown={startDivider} onkeydown={resizeByKey} role="separator" aria-orientation={stacked ? 'horizontal' : 'vertical'} aria-label="Resize note list and preview" aria-valuemin="15" aria-valuemax="85" aria-valuenow={Math.round((stacked ? upperHeight : leftWidth) * 100)} tabindex="0"></div>
@@ -333,6 +335,7 @@
         <p class="faint pick">Select a note to preview it. Double-click or press Enter to open it; Space ticks it for the actions above.</p>
       {/if}
     </section>
+    {/if}
   </div>
   {#if noteMenu}
     <ContextMenu x={noteMenu.x} y={noteMenu.y} items={noteMenuItems} onclose={() => (noteMenu = null)} />
@@ -349,6 +352,7 @@
   .panes { flex: 1; min-height: 0; display: flex; gap: 0; }
   .panes > section.left { flex: 0 0 var(--left-w); min-width: 200px; }
   .panes > section.right { flex: 1 1 0; min-width: 200px; background: var(--bg); }
+  .panes.no-preview > section.left { flex: 1 1 0; min-width: 0; }
   .left { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
   .divider { width: 14px; cursor: col-resize; touch-action: none; user-select: none; background: transparent; margin: 0; border: 0; padding: 0; display: block; flex: 0 0 14px; }
   .divider:hover { background: var(--accent); opacity: 0.3; }
@@ -372,19 +376,19 @@
   .lname { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: 13.5px var(--font-body); padding: 4px 0; cursor: pointer; text-align: left; }
   .lname span:first-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lname .when { margin-left: auto; font: 11px var(--font-mono); white-space: nowrap; }
-  .row { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; padding: 8px 10px; border-bottom: 1px solid var(--line); }
-  .pick { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; min-width: 0; }
+  .row { display: flex; gap: 8px; align-items: center; min-width: 0; padding: 5px 10px; border-bottom: 1px solid var(--line); }
+  .pick { display: flex; align-items: center; gap: 8px; flex: 1; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; min-width: 0; overflow: hidden; }
   .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-  .row :global(.icon) { margin-top: 3px; color: var(--text-faint); }
-  .row input { margin-top: 3px; }
+  .row :global(.icon) { flex: none; color: var(--text-faint); }
+  .row input { flex: none; }
   .row:hover { background: var(--bg-hover); }
   .row.on { background: var(--bg-active); }
   .row.arch .t { color: var(--text-faint); }
-  .txt { min-width: 0; display: block; }
-  .t, .x, .meta { display: block; }
-  .t { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .x { font-size: 12.5px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 1px; }
-  .pick .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 11px var(--font-mono); color: var(--text-faint); margin-top: 3px; }
+  .txt { display: flex; align-items: baseline; gap: 12px; flex: 1; min-width: 0; overflow: hidden; }
+  .t, .x { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t { flex: 0 1 32%; min-width: 5em; font-weight: 600; font-size: 14px; }
+  .x { flex: 1 1 8em; min-width: 0; font-size: 12.5px; color: var(--text-muted); }
+  .pick .meta { display: flex; flex: 0 1 auto; flex-wrap: nowrap; gap: 4px 10px; max-width: 38%; overflow: hidden; white-space: nowrap; font: 11px var(--font-mono); color: var(--text-faint); }
   .tag { color: var(--accent); }
   .empty { padding: 16px; font-size: 13px; }
   .right { border: 1px solid var(--line); border-radius: 10px; padding: 16px 22px; background: var(--bg); }
@@ -395,11 +399,22 @@
   .props dt { color: var(--text-muted); }
   .props dd { margin: 0; overflow-wrap: anywhere; }
   .md { font-size: 15px; line-height: 1.6; }
-  .pick { margin-top: 30px; text-align: center; font-size: 13.5px; }
+  .right > .pick { margin-top: 30px; text-align: center; font-size: 13.5px; }
   @container pane (max-width: 820px) {
     .panes { flex-direction: column; }
     .panes > section.left { flex: 0 0 var(--upper-h); min-height: 120px; }
+    .panes.no-preview > section.left { flex: 1 1 0%; min-height: 0; }
     .panes > section.right { flex: 1 1 0; min-height: 120px; max-height: none; }
     .divider { width: auto; height: 14px; flex: 0 0 14px; cursor: row-resize; }
+  }
+  @container pane (max-width: 520px) {
+    .txt { gap: 7px; }
+    .t { flex-basis: 42%; min-width: 4em; }
+    .x { display: none; }
+    .pick .meta { max-width: 48%; gap: 4px 6px; }
+  }
+  @container pane (max-width: 380px) {
+    .pick .meta > span { display: none; }
+    .pick .meta > span:first-child { display: block; }
   }
 </style>

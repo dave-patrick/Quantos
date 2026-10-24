@@ -203,10 +203,11 @@ in them; tick *Hide empty days* to leave out the rest. Quick capture adds to tod
 
 ### Browsing notes
 
-*Notes* at the top of the sidebar (`Ctrl+Shift+B`) lists every note with its first lines, newest
-edits first. Filter by words, type, tag or folder, sort by edited, created or title, and include
-archived notes or other workspaces. Click a note to preview it beside the list; double-click or press
-Enter to open it. Tick notes (or press Space) to tag, archive or trash several at once. *Tree* shows the same notes
+*Notes* at the top of the sidebar (`Ctrl+Shift+B`) lists every note in compact, single-line rows,
+newest edits first. Filter by words, type, tag or folder, sort by edited, created or title, and include
+archived notes or other workspaces. Click a note to preview it beside the list; use *Preview* to show
+or hide the pane (your choice is remembered), and double-click or press Enter to open a note. Tick notes
+(or press Space) to tag, archive or trash several at once. *Tree* shows the same notes
 nested in their folders (empty folders included); drag a note onto a folder to move it there.
 
 ### The sidebar
@@ -231,7 +232,7 @@ workspace remembers its own tabs, splits and scroll positions.
 ## 3. Tasks and planning
 
 - **Quick add:** `Call Sam due:fri !2 ~30m #client every week`
-  - `!1` to `!4` priority (coloured strip), `due:` deadline, `@tomorrow` or `plan:` planned day,
+  - `!1` to `!4` priority (red, orange, green, blue), `due:` deadline, `@tomorrow` or `plan:` planned day,
     `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month`,
     `!myday`. The same words work in task lines in notes and in quick capture to a task.
 - **Gantt:** *Gantt* in the sidebar shows tasks on a timeline, grouped by project. A bar runs from a

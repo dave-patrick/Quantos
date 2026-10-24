@@ -28,6 +28,8 @@ class Prefs {
   dailyHideEmpty = $state(false);
   /** Notes browser: folders tree instead of a flat list. */
   notesTree = $state(false);
+  /** Notes browser: show the note preview pane. */
+  notesPreview = $state(true);
   /** Scratchpad "send to" shortcuts. */
   scratchTargets = $state<ScratchTarget[]>(DEFAULT_SCRATCH_TARGETS.map((t) => ({ ...t })));
   /** Theme: background, text, accent and fonts (see lib/look.ts). */
@@ -41,7 +43,7 @@ class Prefs {
     } catch { /* ignore */ }
     $effect.root(() => {
       $effect(() => {
-        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, collapsibleHeadings: this.collapsibleHeadings, spellCheck: this.spellCheck, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, dailyHideEmpty: this.dailyHideEmpty, notesTree: this.notesTree, scratchTargets: this.scratchTargets, look: this.look };
+        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, collapsibleHeadings: this.collapsibleHeadings, spellCheck: this.spellCheck, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, dailyHideEmpty: this.dailyHideEmpty, notesTree: this.notesTree, notesPreview: this.notesPreview, scratchTargets: this.scratchTargets, look: this.look };
         applyDensity(this.density);
         applyAccent(this.accent);
         // A custom background decides light or dark, so light-only details (diagrams, the accent preset) follow it.
