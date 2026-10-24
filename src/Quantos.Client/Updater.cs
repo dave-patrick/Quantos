@@ -9,7 +9,7 @@ public static class Updater
 {
     public static string UpdatesFolder(ClientPaths paths) => Path.Combine(paths.ClientData, "updates");
 
-    public static string CurrentVersion => typeof(Updater).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+    public static string CurrentVersion => typeof(Updater).Assembly.GetName().Version?.ToString(4) ?? "0.0.0";
 
     /// <summary>The newest verified download newer than this build, or null.</summary>
     public static (string Version, string Folder)? Staged(ClientPaths paths)

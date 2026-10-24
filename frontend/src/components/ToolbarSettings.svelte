@@ -1,12 +1,12 @@
 <script lang="ts">
   import { commandList } from '../lib/commands.svelte';
   import { saveToolbar } from '../lib/customize.svelte';
-  import { defaultToolbar, toolbar, type ToolbarItem } from '../lib/toolbar.svelte';
+  import { defaultToolbar, hiddenToolbarActionIds, toolbar, type ToolbarItem, visibleToolbarItems } from '../lib/toolbar.svelte';
   import { app } from '../lib/state.svelte';
   import Icon from './Icon.svelte';
 
-  let items = $state<ToolbarItem[]>(toolbar.items.map((i) => ({ ...i })));
-  const available = $derived(commandList.items.filter((c) => !items.some((i) => i.id === c.id)).sort((a, b) => a.title.localeCompare(b.title)));
+  let items = $state<ToolbarItem[]>(visibleToolbarItems(toolbar.items).map((i) => ({ ...i })));
+  const available = $derived(commandList.items.filter((c) => !hiddenToolbarActionIds.has(c.id) && !items.some((i) => i.id === c.id)).sort((a, b) => a.title.localeCompare(b.title)));
 
   function move(i: number, d: number) {
     const j = i + d;

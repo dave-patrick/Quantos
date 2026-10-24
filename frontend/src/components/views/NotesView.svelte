@@ -8,6 +8,8 @@
   import { renderMarkdown } from '../../lib/render';
   import type { NodeDto, NodeSummary, TreeFolder } from '../../lib/types';
   import Icon from '../Icon.svelte';
+  import ContextMenu from '../ContextMenu.svelte';
+  import type { ContextMenuItem } from '../ContextMenu.svelte';
   import { prefs } from '../../lib/prefs.svelte';
 
   /** Notes browser: every note in a filterable, sortable list with a preview beside it. */
@@ -22,6 +24,60 @@
   let current = $state<string | null>(null);
   let preview = $state<NodeDto | null>(null);
   let picked = $state<Set<string>>(new Set());
+  let noteMenu = $state<{ x: number; y: number; id: string } | null>(null);
+  let divider = $state<number | null>(null); // index of divider being dragged
+  let leftWidth = $state(0.42); // fraction of panes width given to the left (tree) side
+
+  function openNoteMenu(e: MouseEvent, id: string) {
+    e.preventDefault();
+    noteMenu = { x: e.clientX, y: e.clientY, id };
+  }
+
+  async function trashNote(id: string) {
+    const n = app.titleIndex.get(id);
+    if (!n) return;
+    if (!(await app.confirm(`Move “${n.title}” to the trash?`, 'You can restore it from the trash.', 'Move to trash'))) return;
+    try {
+      await api.post(`nodes/${id}/trash`);
+      if (current === id) { current = null; preview = null; }
+      app.toast(`Moved “${n.title}” to the trash.`, 'ok');
+      app.scheduleTitles();
+    } catch (e) { app.error(e); }
+  }
+
+  // Draggable vertical divider between the note list (left) and preview (right).
+  function startDivider(e: MouseEvent) {
+    e.preventDefault();
+    divider = 0;
+    const panes = (e.currentTarget as HTMLElement).parentElement!;
+    const box = panes.getBoundingClientRect();
+    const startX = e.clientX;
+    const startLeft = leftWidth;
+    const move = (ev: MouseEvent) => {
+      const dx = ev.clientX - startX;
+      const fraction = startLeft + dx / box.width;
+      leftWidth = Math.min(0.85, Math.max(0.15, fraction));
+    };
+    const up = () => {
+      divider = null;
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
+
+  const noteMenuItems = $derived.by((): ContextMenuItem[] => {
+    if (!noteMenu) return [];
+    const id = noteMenu.id;
+    const n = app.titleIndex.get(id);
+    return [
+      { label: 'Open', icon: 'file-text', run: () => { openNode(id); noteMenu = null; } },
+      { label: 'Open in other pane', icon: 'split', run: () => { openNode(id, 'other'); noteMenu = null; } },
+      { separator: true },
+      { label: 'Move to trash', icon: 'trash', danger: true, run: () => { noteMenu = null; void trashNote(id); } },
+    ];
+  });
 
   // Tree layout: the same notes, nested in their folders. Dragging a note onto a folder moves it there.
   interface Folder { name: string; path: string; folders: Folder[]; notes: NodeSummary[] }
@@ -157,14 +213,15 @@
     <li class="folder" class:drop={dropFolder === sub.path}
       ondragover={(e) => { if (dragging) { e.preventDefault(); dropFolder = sub.path; } }} ondragleave={() => { if (dropFolder === sub.path) dropFolder = null; }}
       ondrop={(e) => { e.preventDefault(); const id = dragging; dragging = null; dropFolder = null; if (id) moveTo(id, sub); }}>
-      <button class="fold" aria-expanded={!closed[sub.path]} style={`padding-left:${8 + depth * 16}px`} onclick={() => (closed[sub.path] = !closed[sub.path])}>
-        <Icon name={closed[sub.path] ? 'chevron-right' : 'chevron-down'} size={12} /><Icon name={closed[sub.path] ? 'folder' : 'folder-open'} size={14} /> {sub.name} <span class="faint n">{count(sub)}</span>
+      <button class="fold" aria-expanded={!(closed[sub.path] ?? true)} style={`padding-left:${8 + depth * 16}px`} onclick={() => (closed[sub.path] = !(closed[sub.path] ?? true))}>
+        <Icon name={(closed[sub.path] ?? true) ? 'chevron-right' : 'chevron-down'} size={12} /><Icon name={(closed[sub.path] ?? true) ? 'folder' : 'folder-open'} size={14} /> {sub.name} <span class="faint n">{count(sub)}</span>
       </button>
-      {#if !closed[sub.path]}<ul class="sub">{@render branch(sub, depth + 1)}</ul>{/if}
+      {#if !(closed[sub.path] ?? true)}<ul class="sub">{@render branch(sub, depth + 1)}</ul>{/if}
     </li>
   {/each}
   {#each f.notes as n (n.id)}
-    <li class="leaf" class:on={current === n.id} style={`padding-left:${26 + depth * 16}px`}>
+    <li class="leaf" class:on={current === n.id} style={`padding-left:${26 + depth * 16}px`}
+      oncontextmenu={(e) => openNoteMenu(e, n.id)}>
       <input type="checkbox" aria-label={`Select ${n.title}`} checked={picked.has(n.id)} onchange={() => togglePick(n.id)} />
       <button class="lname" draggable="true" ondragstart={(e) => { dragging = n.id; e.dataTransfer?.setData('text/plain', n.title); }} ondragend={() => { dragging = null; dropFolder = null; }}
         onclick={() => select(n.id)} ondblclick={(e) => openNode(n.id, whereFrom(e), n.title)}>
@@ -186,7 +243,7 @@
     <label class="check"><input type="checkbox" bind:checked={everywhere} /> All workspaces</label>
   </div>
 
-  <div class="panes">
+  <div class="panes" style={`--left-w:${leftWidth * 100}%`}>
     <section class="left">
       <div class="bar">
         <label class="check"><input type="checkbox" aria-label="Select all shown" checked={allPicked} onchange={pickAll} /> {shown.length} {shown.length === 1 ? 'note' : 'notes'}</label>
@@ -209,7 +266,8 @@
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <ul class="scroll list" bind:this={list} aria-label="Notes" onkeydown={keys}>
         {#each shown.slice(0, 600) as n (n.id)}
-          <li class="row" class:on={current === n.id} class:arch={n.archived} data-id={n.id}>
+          <li class="row" class:on={current === n.id} class:arch={n.archived} data-id={n.id}
+            oncontextmenu={(e) => openNoteMenu(e, n.id)}>
             <input type="checkbox" aria-label={`Select ${n.title}`} checked={picked.has(n.id)} onchange={() => togglePick(n.id)} />
             <button class="pick" aria-current={current === n.id ? 'true' : undefined} onclick={() => select(n.id)} ondblclick={(e) => openNode(n.id, whereFrom(e), n.title)}>
             <Icon name={icons[n.type] ?? 'file-text'} size={14} />
@@ -232,11 +290,12 @@
       </ul>
       {/if}
     </section>
-
+    <div class="divider" class:dragging={divider === 0} onmousedown={startDivider} role="separator" aria-orientation="vertical" aria-label="Resize note list and preview" tabindex="0"></div>
     <section class="right scroll">
       {#if preview}
         <header>
           <h2>{preview.title}</h2>
+          <button class="btn ghost" onclick={async () => { if (!preview) return; if (!(await app.confirm(`Move “${preview.title}” to the trash?`, 'You can restore it from the trash.', 'Move to trash'))) return; try { await api.post(`nodes/${preview.id}/trash`); app.toast('Moved to the trash.', 'ok'); current = null; preview = null; app.scheduleTitles(); } catch (e) { app.error(e); } }}><Icon name="trash" size={13} /> Trash</button>
           <button class="btn primary" onclick={(e) => openNode(preview!.id, whereFrom(e), preview!.title)}>Open</button>
         </header>
         <p class="faint path">{preview.type} · {preview.path} · edited {ago(preview.modified)}</p>
@@ -253,6 +312,9 @@
       {/if}
     </section>
   </div>
+  {#if noteMenu}
+    <ContextMenu x={noteMenu.x} y={noteMenu.y} items={noteMenuItems} onclose={() => (noteMenu = null)} />
+  {/if}
 </div>
 
 <style>
@@ -262,8 +324,13 @@
   .tools .input { width: auto; }
   .tools .q { flex: 1 1 220px; }
   .check { display: inline-flex; gap: 5px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .panes { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 12px; }
-  .left { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); }
+  .panes { flex: 1; min-height: 0; display: flex; gap: 0; }
+  .panes > section.left { flex: 0 0 var(--left-w); min-width: 200px; }
+  .panes > section.right { flex: 1 1 0; min-width: 200px; background: var(--bg); }
+  .left { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+  .divider { width: 14px; cursor: col-resize; touch-action: none; user-select: none; background: transparent; margin: 0; border: 0; padding: 0; display: block; flex: 0 0 14px; }
+  .divider:hover { background: var(--accent); opacity: 0.3; }
+  .right { border: 1px solid var(--line); border-radius: 10px; padding: 16px 22px; background: var(--bg); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
   .bar { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; min-height: 38px; }
   .sel { font-size: 12.5px; color: var(--accent); margin-left: auto; }
   .list { flex: 1; list-style: none; margin: 0; padding: 0; }
@@ -308,7 +375,9 @@
   .md { font-size: 15px; line-height: 1.6; }
   .pick { margin-top: 30px; text-align: center; font-size: 13.5px; }
   @container pane (max-width: 820px) {
-    .panes { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    .panes { flex-direction: column; }
+    .panes > section.left { flex: 1 1 auto; }
+    .panes > section.right { flex: 0 0 auto; }
     .right { max-height: 40%; }
   }
 </style>

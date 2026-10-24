@@ -37,6 +37,14 @@ Closing the window **minimizes** Quantos; it keeps running for reminders and qui
 use **Exit** from the tray icon menu. Exit saves your open notes first and warns you if anything
 couldn't be saved.
 
+The top bar has a taller header with a larger Quantos wordmark. The dark appearance uses a slightly
+lighter neutral gray background. Its quick actions can be changed in *Settings › Toolbar*. Daily
+stream, My Day and Tasks remain available through their navigation shortcuts and app navigation,
+but are no longer offered as top-bar actions.
+
+The left navigation sits in one softly raised panel. Its rows are unboxed; the current view and
+hovered row use a light fill to show their state.
+
 ### If something blocks Quantos
 
 Run `Self-check.cmd`. It checks the things a managed work laptop can block: whether the programs
@@ -430,6 +438,11 @@ approval in the Windows client.
     only when you choose *Replace* or *Insert below*.
 - **Theme** (*Settings › Appearance*): start from a theme (Quantos Dark and Light, Midnight, Graphite,
   Nord, Forest, Rosé, Solarized, Paper, Sky, High contrast), then change anything:
+  - **Quantos Dark:** a lighter neutral gray page background with darker gray cards; the Windows app's
+    title bar uses the same background colour.
+  - **Window size:** drag any edge or corner of the Windows app window to resize it.
+  - Scrollbars are hidden to keep the workspace clear; wheel, touchpad, keyboard and touch scrolling
+    continue to work.
   - **Background:** any colour. Panels, lines and softer text are worked out from it, light or dark,
     and kept readable.
   - **Text:** any colour, nudged if it would be hard to read.

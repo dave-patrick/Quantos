@@ -32,9 +32,9 @@
     <Pane pane={layout.panes[0]} index={0} {today} />
   </div>
 {:else}
-  <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: ${ratio*100}% 6px ${ (1-ratio)*100}%;` : `grid-template-columns: ${ratio*100}% 6px ${ (1-ratio)*100}%;`}>
+  <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: ${ratio*100}% 8px ${ (1-ratio)*100}%;` : `grid-template-columns: ${ratio*100}% 8px ${ (1-ratio)*100}%;`}>
     <Pane pane={layout.panes[0]} index={0} {today} />
-    <div class="splitter" class:dragging onmousedown={start}></div>
+    <div class="spacer" class:dragging onmousedown={start}></div>
     <Pane pane={layout.panes[1]} index={1} {today} />
   </div>
 {/if}
@@ -42,9 +42,9 @@
 <style>
   .panes { flex: 1; display: grid; min-height: 0; min-width: 0; }
   .panes.single { grid-template-columns: 1fr; }
-  .panes.vertical { grid-template-columns: 1fr 6px 1fr; }
-  .panes.horizontal { grid-template-rows: 1fr 6px 1fr; }
-  .splitter { background: var(--line); cursor: col-resize; }
-  .panes.horizontal .splitter { cursor: row-resize; }
+  .panes.vertical { grid-template-columns: 1fr 8px 1fr; }
+  .panes.horizontal { grid-template-rows: 1fr 8px 1fr; }
+  .spacer { background: transparent; cursor: col-resize; width: 8px; touch-action: none; }
+  .panes.horizontal .spacer { cursor: row-resize; height: 8px; }
   .splitter:hover, .splitter.dragging { background: var(--accent); }
 </style>

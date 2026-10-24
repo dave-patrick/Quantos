@@ -15,6 +15,7 @@
 </script>
 
 <footer class="status">
+  <span class="item version">v{app.status?.version ?? ''}</span>
   <span class="item conn" class:off={!app.connected} title={app.connected ? 'Live updates connected' : 'Reconnecting to the backend…'}>
     <span class="dot"></span>{app.connected ? 'Connected' : 'Reconnecting…'}
   </span>
@@ -46,6 +47,7 @@
 <style>
   .status { grid-area: status; display: flex; align-items: center; gap: 2px; padding: 0 8px; border-top: 1px solid var(--line); background: var(--bg-raised); font: 11.5px/1 var(--font-mono); color: var(--text-faint); min-width: 0; overflow: hidden; }
   .item { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; white-space: nowrap; }
+  .item.version { color: var(--text-muted); font-weight: 600; }
   .item.warn { color: var(--danger); }
   .spacer { flex: 1; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }

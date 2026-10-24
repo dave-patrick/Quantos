@@ -44,7 +44,23 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 0.1.5.7)
+## Open threads (as of 2026-10-23; latest release 0.1.6)
+
+- **Top-bar test build (unreleased).** The header row is 60px on desktop and mobile; the wordmark is
+  23.75px. Daily stream, My Day and Tasks are removed from the default toolbar and filtered from
+  older `toolbar.json` settings and *Settings › Toolbar*. Their commands and views remain available
+  elsewhere. The dark background is a lighter neutral gray (`#2a2b2d`), with darker tinted gray
+  cards (`#202123`); the native window bar matches the page background. Frontend check and all 97
+  frontend tests pass; all 151 .NET tests pass.
+  Windows x64 version 0.1.6.1 was rebuilt and package-validated, and its three application files
+  copied to `C:\Users\davem\Apps\Quantos\Quantos\application`; previous executables are preserved
+  as backups. The prior process was closed, the updated copy was relaunched, and its log confirms the
+  page loaded successfully with HTTP 200. The sidebar is now one subtly lighter card with unboxed
+  rows and a wider left gutter. Sidebar toggles now use directional panel icons, scrollbars are hidden
+  without disabling scrolling, and the titlebar chrome matches the neutral gray app background.
+  Border resizing is available along every edge, including the top edge, and at all four corners.
+  The test copy has been rebuilt and relaunched with this update; its log
+  confirms a successful page load (HTTP 200). No release was published.
 
 - **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
   own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)

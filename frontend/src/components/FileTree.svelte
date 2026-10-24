@@ -202,7 +202,10 @@
   .batch span { flex: 1; }
   .batch .btn { height: 24px; padding: 0 8px; font-size: 12px; }
   .list { flex: 1; padding: 0 4px 20px; }
-  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: calc(4px * var(--d)) 8px; border: 0; background: none; border-radius: 5px; color: var(--text-soft); font-size: 13.5px; text-align: left; }
+  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: calc(4px * var(--d)) 8px; border: 1px solid var(--line); background: var(--bg-raised); border-radius: 6px; color: var(--text-soft); font-size: 13.5px; text-align: left; margin: 1px 4px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+  .row:hover { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: 0 2px 4px rgb(0 0 0 / 0.12); }
+  .row.on { background: var(--bg-active); color: var(--text); border-color: var(--accent); box-shadow: 0 2px 6px rgb(0 0 0 / 0.15); }
+  .row.sel { background: color-mix(in srgb, var(--accent) 22%, transparent); }
   .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row:hover { background: var(--bg-hover); }
   .row.on { background: var(--bg-active); color: var(--text); }

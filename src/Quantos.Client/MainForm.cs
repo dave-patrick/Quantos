@@ -16,15 +16,14 @@ public sealed class MainForm : Form
 {
     private readonly ClientPaths _paths;
     private readonly ClientPrefs _prefs;
-    private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(12, 19, 29) };
-    private readonly Panel _titleBar = new() { Dock = DockStyle.Top, Height = 34, BackColor = Color.FromArgb(12, 19, 29) };
-    private readonly PictureBox _icon = new() { Size = new Size(16, 16), Location = new Point(10, 9), BackColor = Color.FromArgb(12, 19, 29) };
-    private readonly Label _title = new() { Text = "Quantos", ForeColor = Color.FromArgb(197, 208, 223), Font = new Font("Segoe UI", 9.5f), AutoSize = true, Location = new Point(32, 8) };
+    private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(42, 43, 45) };
+    private readonly Panel _titleBar = new() { Dock = DockStyle.Top, Height = 34, BackColor = Color.FromArgb(42, 43, 45) };
+    private readonly PictureBox _icon = new() { Size = new Size(16, 16), Location = new Point(10, 9), BackColor = Color.FromArgb(42, 43, 45), SizeMode = PictureBoxSizeMode.Zoom };
+    private readonly Label _title = new() { Text = $"Quantos  v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(197, 208, 223), Font = new Font("Segoe UI", 9.5f), AutoSize = true, Location = new Point(32, 8) };
     private readonly CaptionButton _btnMin = new(CaptionButton.Glyph.Minimize) { Dock = DockStyle.Right };
     private readonly CaptionButton _btnMax = new(CaptionButton.Glyph.Maximize) { Dock = DockStyle.Right };
     private readonly CaptionButton _btnClose = new(CaptionButton.Glyph.Close) { Dock = DockStyle.Right };
-    private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Segoe UI", 12f) };
-    private readonly Label _version = new() { Text = $"v{Updater.CurrentVersion}", ForeColor = Color.FromArgb(90, 120, 150, 180), BackColor = Color.FromArgb(12, 19, 29), Font = new Font("Consolas", 8.5f), AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Width = 64, Padding = new Padding(0, 2, 4, 2), Anchor = AnchorStyles.Bottom | AnchorStyles.Right };
+    private readonly Label _status = new() { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.FromArgb(197, 208, 223), BackColor = Color.FromArgb(42, 43, 45), Font = new Font("Segoe UI", 12f) };
     private readonly NotifyIcon _tray = new();
     private readonly HotKeys _hotkeys = new();
     private BackendConnection? _backend;
@@ -46,7 +45,7 @@ public sealed class MainForm : Form
         _prefs = prefs;
         Text = "Quantos";
         Icon = LoadIcon();
-        BackColor = Color.FromArgb(12, 19, 29);
+        BackColor = Color.FromArgb(42, 43, 45);
         MinimumSize = LogicalToDeviceUnits(new Size(720, 480));
         if (prefs.X is null)
         {
@@ -64,12 +63,12 @@ public sealed class MainForm : Form
             Bounds = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)) ? saved : new Rectangle(100, 100, prefs.Width, prefs.Height);
         }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
-        // No system frame: we draw our own title bar, so Windows doesn't draw its own
-        // buttons or caption. Rounded corners come from DWM below.
+        // Draw our own title bar and buttons. CreateParams keeps the native sizing frame without
+        // restoring the system caption; DWM supplies the subtle outer corner shape below.
         FormBorderStyle = FormBorderStyle.None;
         _icon.Image = Icon.ToBitmap();
-        _titleBar.Controls.Add(_title);
-        _titleBar.Controls.Add(_icon);
+        // Title text hidden per user preference; icon remains in the title bar.
+// _titleBar.Controls.Add(_title);
         _titleBar.Controls.Add(_btnMin);
         _titleBar.Controls.Add(_btnMax);
         _titleBar.Controls.Add(_btnClose);
@@ -82,10 +81,7 @@ public sealed class MainForm : Form
         Controls.Add(_web);
         Controls.Add(_titleBar);
         Controls.Add(_status);
-        Controls.Add(_version);
         _status.BringToFront();
-        _version.BringToFront();
-        _version.Location = new Point(Width - _version.Width - 8, Height - _version.Height - 6);
         _status.Text = "Starting Quantos…";
         BuildTray();
     }
@@ -101,21 +97,27 @@ public sealed class MainForm : Form
         base.OnResize(e);
         _btnMax.Maximized = WindowState == FormWindowState.Maximized;
         _btnMax.Invalidate();
-        _version.Location = new Point(Width - _version.Width - 8, Height - _version.Height - 6);
     }
 
-    private const int GWL_STYLE = -16;
     private const int WS_CAPTION = 0x00C00000;
     private const int WS_THICKFRAME = 0x00040000;
-    private const int SWP_NOMOVE = 0x0002;
-    private const int SWP_NOSIZE = 0x0001;
-    private const int SWP_NOZORDER = 0x0004;
-    private const int SWP_FRAMECHANGED = 0x0020;
+
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var parameters = base.CreateParams;
+            // Keep the native sizing frame while removing the system caption. WM_NCHITTEST below
+            // supplies custom drag and resize zones for our own title bar and borderless surface.
+            parameters.Style = (parameters.Style & ~WS_CAPTION) | WS_THICKFRAME;
+            return parameters;
+        }
+    }
 
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-        int corner = 2; // DWMWCP_ROUND
+        int corner = 3; // DWMWCP_ROUNDSMALL keeps the custom frame's corners subtle.
         DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
         int none = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
         DwmSetWindowAttribute(Handle, 34, ref none, sizeof(int));
@@ -740,9 +742,11 @@ public sealed class MainForm : Form
         }
         if (m.Msg == WM_NCHITTEST && WindowState != FormWindowState.Maximized)
         {
-            var pt = PointToClient(new Point(m.LParam.ToInt32() & 0xFFFF, m.LParam.ToInt32() >> 16));
-            if (pt.Y < 34) { m.Result = (IntPtr)HTCAPTION; return; }
-            int b = 6;
+            int packed = m.LParam.ToInt32();
+            int screenX = unchecked((short)(packed & 0xFFFF));
+            int screenY = unchecked((short)((packed >> 16) & 0xFFFF));
+            var pt = PointToClient(new Point(screenX, screenY));
+            int b = 10;
             bool left = pt.X <= b, right = pt.X >= Width - b, top = pt.Y <= b, bottom = pt.Y >= Height - b;
             if (top && left) { m.Result = (IntPtr)HTTOPLEFT; return; }
             if (top && right) { m.Result = (IntPtr)HTTOPRIGHT; return; }
@@ -752,6 +756,7 @@ public sealed class MainForm : Form
             if (right) { m.Result = (IntPtr)HTRIGHT; return; }
             if (top) { m.Result = (IntPtr)HTTOP; return; }
             if (bottom) { m.Result = (IntPtr)HTBOTTOM; return; }
+            if (pt.Y < 34) { m.Result = (IntPtr)HTCAPTION; return; }
         }
         base.WndProc(ref m);
     }

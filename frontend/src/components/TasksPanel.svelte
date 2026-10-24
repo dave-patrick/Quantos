@@ -30,12 +30,24 @@
 </section>
 
 <style>
-  .panel { display: flex; flex-direction: column; min-height: 0; flex: 1; }
-  .head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex: none; }
+  .panel { display: flex; flex-direction: column; min-height: 0; flex: 1; background: var(--bg-raised); border-left: 1px solid var(--line); }
+  .head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); flex: none; }
   .title { font: 600 13px var(--font-body); color: var(--text-soft); }
-  .count { font: 11px var(--font-mono); margin-left: auto; }
-  .body { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; }
-  .list { display: flex; flex-direction: column; gap: 2px; }
-  .empty { font-size: 12.5px; margin: 6px 0; }
-  .done { font-size: 11.5px; margin: 8px 0 0; }
+  .count { font: 11px var(--font-mono); margin-left: auto; color: var(--text-muted); }
+  .body { flex: 1; min-height: 0; overflow: auto; padding: 0; }
+  .list { display: flex; flex-direction: column; gap: 1px; }
+  .empty { font-size: 12.5px; margin: 6px 0; padding: 0 12px; color: var(--text-muted); }
+  .done { font-size: 11.5px; margin: 8px 0 0; padding: 0 12px; color: var(--text-muted); }
+  /* Compact task rows in the sidebar: tight, readable, chips wrap under title. */
+  .list :global(.task.compact) { min-height: calc(34px * var(--d)); padding-top: calc(5px * var(--d)); padding-bottom: calc(5px * var(--d)); border-radius: 8px; margin: 4px 8px; border: 1px solid var(--line); background: var(--bg-raised); box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+  .list :global(.task.compact:hover) { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: 0 2px 4px rgb(0 0 0 / 0.15); }
+  .list :global(.task.compact:hover) { background: var(--bg-hover); }
+  .list :global(.task.compact .strip) { left: 4px; top: 5px; bottom: 5px; width: 3px; }
+  .list :global(.task.compact .main) { gap: 8px; }
+  .list :global(.task.compact .title) { font-size: 13px; }
+  .list :global(.task.compact .chips) { gap: 4px; }
+  .list :global(.task.compact .chip) { font-size: 10px; padding: 0 5px; border-radius: 8px; }
+  .list :global(.task.compact .chip.warn), .list :global(.task.compact .chip.danger) { font-size: 10px; }
+  .list :global(.task.compact .del) { opacity: 0; }
+  .list :global(.task.compact:hover .del) { opacity: 1; }
 </style>

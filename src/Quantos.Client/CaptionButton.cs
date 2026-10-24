@@ -13,11 +13,11 @@ public sealed class CaptionButton : Control
 {
     public enum Glyph { Minimize, Maximize, Close }
 
-    public static readonly Color Chrome = Color.FromArgb(12, 19, 29);       // --bg
+    public static readonly Color Chrome = Color.FromArgb(42, 43, 45);        // --bg
     public static readonly Color Ink = Color.FromArgb(197, 208, 223);        // --text-soft
     public static readonly Color InkBright = Color.FromArgb(237, 242, 250);  // --text
-    public static readonly Color HoverFill = Color.FromArgb(23, 38, 59);    // --bg-hover
-    public static readonly Color PressFill = Color.FromArgb(28, 46, 66);    // --bg-active
+    public static readonly Color HoverFill = Color.FromArgb(48, 49, 51);     // --bg-hover
+    public static readonly Color PressFill = Color.FromArgb(57, 58, 60);     // --bg-active
     public static readonly Color CloseFill = Color.FromArgb(196, 43, 28);
 
     private readonly Glyph _glyph;

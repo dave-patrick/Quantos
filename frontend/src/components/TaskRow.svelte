@@ -119,8 +119,8 @@
 
 <style>
   /* Narrow places (timeline, side panels): chips move under the title rather than squeezing it. */
-  .task { position: relative; display: flex; flex-wrap: wrap; align-items: center; row-gap: 2px; column-gap: 10px; padding: calc(7px * var(--d)) 10px calc(7px * var(--d)) 14px; border-radius: 7px; min-height: calc(38px * var(--d)); }
-  .task:hover { background: var(--bg-hover); }
+  .task { position: relative; display: flex; flex-wrap: wrap; align-items: center; row-gap: 2px; column-gap: 10px; padding: calc(7px * var(--d)) 10px calc(7px * var(--d)) 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-raised); min-height: calc(38px * var(--d)); box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+  .task:hover { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: 0 2px 5px rgb(0 0 0 / 0.15); }
   .strip { position: absolute; left: 3px; top: 7px; bottom: 7px; width: 3px; border-radius: 3px; background: transparent; }
   .p1 .strip { background: var(--p1); } .p2 .strip { background: var(--p2); } .p3 .strip { background: var(--p3); } .p4 .strip { background: var(--p4); }
   input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--accent); flex: none; cursor: pointer; }

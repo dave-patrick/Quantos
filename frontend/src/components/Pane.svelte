@@ -75,17 +75,9 @@
           <span class="title">{tab.title}</span>
           {#if dirty(tab)}<span class="dot" title="Unsaved changes"></span>{/if}
         </button>
-        {#if !tab.pinned}
-          <button class="close" tabindex="-1" aria-hidden="true" title="Close (Delete)" onclick={(e) => { e.stopPropagation(); layout.close(index, tab.key); }}><Icon name="x" size={12} /></button>
-        {/if}
       </div>
     {/each}
     </div>
-    <div class="spacer"></div>
-    <span class="count" title="Tabs in this pane (limit 10)">{pane.tabs.length}/10</span>
-    {#if layout.panes.length > 1}
-      <button class="icon-btn" aria-label="Close this pane" onclick={() => layout.closePane(index)}><Icon name="x" size={14} /></button>
-    {/if}
   </div>
 
   <div class="content">
@@ -124,22 +116,19 @@
   .pane.tabs-left .strip, .pane.tabs-right .strip { flex-direction: column; align-items: stretch; }
   .pane.tabs-left .tab, .pane.tabs-right .tab { max-width: none; min-width: 0; width: 100%; padding: 8px 6px; }
   .pane.tabs-bottom { flex-direction: column-reverse; }
-  .tabs { display: flex; align-items: stretch; height: var(--tab-h); background: var(--bg-raised); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; flex: none; }
+  .tabs { display: flex; align-items: center; height: var(--tab-h); background: transparent; border-bottom: none; overflow-x: auto; scrollbar-width: none; flex: none; padding: 4px 8px; gap: 10px; }
   .tabs::-webkit-scrollbar { display: none; }
-  .strip { display: flex; align-items: stretch; min-width: 0; }
-  .tab { display: flex; align-items: center; gap: 6px; max-width: 210px; min-width: 90px; padding: 0 6px 0 12px; border-right: 1px solid var(--line);
-    color: var(--text-muted); font-size: 13px; cursor: default; user-select: none; position: relative; }
-  .tab:hover { background: var(--bg-hover); color: var(--text-soft); }
-  .tab.active { background: var(--bg); color: var(--text); outline: 1px solid var(--accent); outline-offset: -1px; }
-  .pane.focused .tab.active::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--accent); }
+  .strip { display: flex; align-items: center; min-width: 0; gap: 10px; }
+  .tab { display: flex; align-items: center; justify-content: center; gap: 6px; max-width: 220px; min-width: 70px; height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px;
+    color: var(--text-muted); font-size: 13.5px; font-weight: 600; cursor: default; user-select: none; position: relative; background: var(--bg-raised); box-shadow: none; margin: 2px 4px; }
+  .tab:hover { background: var(--bg-hover); color: var(--text); border-color: var(--line-strong); box-shadow: none; }
+  .tab.active { background: var(--bg-active); color: var(--accent-strong); border-color: var(--accent); box-shadow: none; }
+  .pane.focused .tab.active::before { content: none; }
   .tab.pinned { min-width: 0; max-width: 150px; padding-right: 10px; }
-  .tab-button { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: default; }
+  .tab-button { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: default; }
   .tab-button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 3px; }
-  .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; display: flex; justify-content: center; align-items: center; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
-  .close { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 4px; border: 0; background: none; color: var(--text-faint); opacity: 0; }
-  .tab:hover .close, .tab.active .close { opacity: 1; }
-  .close:hover { background: var(--bg-active); color: var(--text); }
   .spacer { flex: 1; }
   .count { align-self: center; padding: 0 8px; font: 11px var(--font-mono); color: var(--text-faint); }
   .tabs .icon-btn { align-self: center; margin-right: 4px; }

@@ -126,8 +126,8 @@
   nav button:hover { background: var(--bg-hover); }
   nav button.on { background: var(--bg-active); color: var(--accent-strong); }
   .body { padding: 24px 32px 80px; max-width: 860px; }
-  h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 18px; }
-  h3 { font: 700 16px/1.3 var(--font-display); margin: 26px 0 6px; }
+  .body > h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .body > h3 { font: 700 16px/1.3 var(--font-display); margin: 26px 0 6px; padding: 10px 14px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; }
   .field { display: flex; align-items: center; gap: 14px; margin: 12px 0; }
   .field > span:first-child { width: 160px; color: var(--text-soft); }
   .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }

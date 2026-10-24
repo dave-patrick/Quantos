@@ -8,15 +8,15 @@
   --font-mono: 'IBM Plex Mono', 'Cascadia Mono', Consolas, monospace;
   --font-display: 'Chakra Petch', 'Source Sans 3', sans-serif;
 
-  --bg: #0c131d;
-  --bg-raised: #101824;
-  --bg-panel: #111d2b;
-  --bg-hover: #17263b;
-  --bg-active: #1c2e42;
+  --bg: #2a2b2d;
+  --bg-raised: #252628;
+  --bg-panel: #202123;
+  --bg-hover: #303133;
+  --bg-active: #393a3c;
   --bg-select: #254a70;
-  --bg-input: #0e1621;
-  --line: #2c394a;
-  --line-strong: #334258;
+  --bg-input: #1b1c1e;
+  --line: #414244;
+  --line-strong: #505153;
   --line-focus: #78b6ff;
   --text: #edf2fa;
   --text-soft: #c5d0df;

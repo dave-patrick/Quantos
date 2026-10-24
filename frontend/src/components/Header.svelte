@@ -16,7 +16,7 @@
 <header class="header">
   <div class="brand">
     <button class="icon-btn" aria-label="Toggle left sidebar" aria-pressed={app.leftOpen} onclick={() => (app.leftOpen = !app.leftOpen)}>
-      <Icon name="panel-left" />
+      <Icon name={app.leftOpen ? 'panel-left-close' : 'panel-left-open'} size={18} stroke={2} />
     </button>
     <span class="wordmark" role="img" aria-label="Quantos">{@html wordmark}</span>
     <WorkspaceSwitcher />
@@ -31,8 +31,8 @@
         <Icon name={item.icon ?? 'zap'} size={15} /><span>{item.label}</span>
       </button>
     {/each}
-    <button class="tool" title="Quick capture" onclick={() => capture.show()}>
-      <Icon name="inbox" size={15} /><span>Capture</span>
+    <button class="tool" title="Quick Capture" onclick={() => capture.show()}>
+      <Icon name="inbox" size={15} /><span>Quick Capture</span>
     </button>
   </nav>
 
@@ -42,16 +42,17 @@
     </button>
     {#if !isWindowsClient}<span class="requires-windows" title="Global capture shortcuts, the always-on-top scratchpad, native notifications and the terminal need the Windows client.">Browser</span>{/if}
     <button class="icon-btn" aria-label="Toggle right sidebar" aria-pressed={app.rightOpen} onclick={() => (app.rightOpen = !app.rightOpen)}>
-      <Icon name="panel-right" />
+      <Icon name={app.rightOpen ? 'panel-right-close' : 'panel-right-open'} size={18} stroke={2} />
     </button>
   </div>
 </header>
 
 <style>
   .header { grid-area: header; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 8px;
-    border-bottom: 1px solid var(--line); background: var(--bg-raised); min-width: 0; }
+    border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--bg-raised), color-mix(in srgb, var(--bg-raised) 85%, black 5%)); min-width: 0; margin: 8px 8px 4px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.2), 0 1px 3px rgb(0 0 0 / 0.15); }
   .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .wordmark { display: inline-flex; height: 19px; margin: 0 4px 0 2px; color: var(--text); flex: none; }
+  .brand > .icon-btn, .right > .icon-btn { width: 32px; height: 32px; border-radius: 8px; }
+  .wordmark { display: inline-flex; height: 23.75px; margin: 0 4px 0 2px; color: var(--text); flex: none; }
   .wordmark :global(svg) { height: 100%; width: auto; }
   .toolbar { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
   .toolbar .icon-btn:disabled { opacity: .35; cursor: default; background: none; }

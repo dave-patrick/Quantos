@@ -93,7 +93,7 @@ export function readable(color: string, bg: string, min: number): string {
 export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, string> {
   const v: Record<string, string> = {};
   const bg = look.bg && parseHex(look.bg) ? toHex(parseHex(look.bg)!) : null;
-  const surface = bg ?? (base === 'light' ? '#f5f7fb' : '#0c131d');
+  const surface = bg ?? (base === 'light' ? '#f5f7fb' : '#2a2b2d');
   if (bg) {
     const light = isLight(bg);
     const text = look.text && parseHex(look.text) ? readable(look.text, bg, 7) : light ? '#141b24' : '#edf2fa';

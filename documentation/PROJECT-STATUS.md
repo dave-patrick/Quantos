@@ -5,7 +5,7 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-22, at version 0.1.6 (released as v0.1.6)._
+_Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); 0.1.6.1 local test build running with a wider left sidebar gutter and resize hit areas along all window edges._
 
 ## 1. Where things stand
 
@@ -15,6 +15,7 @@ _Last updated: 2026-10-22, at version 0.1.6 (released as v0.1.6)._
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
 | Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
+| Current test build | Version 0.1.6.1, marked `build ee2916d-dirty`, includes a lighter neutral gray background (`#2a2b2d`), darker gray cards (`#202123`), matching native window bar, refined sidebar toggles, hidden scrollbar visuals, unified sidebar with wider left gutter, and native resizing from all edges and corners. Rebuilt and package-validated on 2026-10-23; three application files staged to `C:\Users\davem\Apps\Quantos\Quantos\application`. Old client closed and new one relaunched; log confirms page loaded with HTTP 200. Not published. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
 Version numbers are product versions (0.1.x) and are separate from the plan's "Release 1.x" names.
@@ -102,6 +103,10 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Collapsible headings and spell check | Frontend `lib/editor/setup.ts` (heading fold compartment), `lib/editor/headings.ts` (level-aware folding and the arrow on each heading), `lib/editor/spellcheck.ts` (new), `lib/prefs.svelte.ts` (`collapsibleHeadings`, `spellCheck`), `components/views/SettingsView.svelte` (toggles), `lib/editor/theme.ts` (`cm-spell-error`, `cm-heading-toggle`) |
 | Block selection, dragging blocks and the block menu on a selection | Frontend `lib/editor/blockselect.ts` (Ctrl-click selection, drag to move, the drop line), `lib/editor/blockinfo.ts` (`fencedLines`), `lib/editor/blockmenu.ts` and `components/BlockMenu.svelte` (the menu works on every selected block), `lib/editorMenu.svelte.ts` (`blocks`) |
 | Single-exe build | Client hosts Kestrel in-process (`src/Quantos.Client/BackendConnection.cs` calls `Quantos.Backend.Program.Build`); no separate `Quantos.Backend.exe` to orphan |
+| Header and toolbar test update (2026-10-23) | `components/Shell.svelte` (60px header row, including mobile), `components/Header.svelte` (23.75px wordmark); `lib/toolbar.svelte.ts` and `lib/customize.svelte.ts` remove three navigation actions from defaults and clean persisted toolbar settings; `components/ToolbarSettings.svelte` excludes them from editor options. Daily stream, My Day and Tasks remain commands and views. |
+| Neutral dark background (2026-10-23) | `styles/tokens.css` uses a lighter neutral gray page background (`#2a2b2d`) with darker tinted gray cards (`#202123`); `lib/look.ts` uses the same neutral base when deriving custom accents. `Quantos.Client/MainForm.cs` matches the native window bar to the page background. |
+| Unified sidebar card (2026-10-23) | `components/LeftSidebar.svelte` uses a subtly lighter single panel with unboxed navigation rows and quiet hover/active fills. |
+| Window and scrollbar refinements (2026-10-23) | `CaptionButton.cs` matches the neutral gray chrome; `MainForm.cs` keeps a native sizing frame with working edge hit-tests and subtle DWM corners; shared CSS hides scrollbar visuals while keeping scrolling; `Header.svelte` shows directional sidebar toggle glyphs. |
 
 ## 4. Roadmap
 
