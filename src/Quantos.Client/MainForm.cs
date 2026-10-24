@@ -741,14 +741,9 @@ public sealed class MainForm : Form
     [DllImport("user32.dll")] private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
     [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     [DllImport("user32.dll", SetLastError = true)] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr insertAfter, int x, int y, int cx, int cy, uint flags);
-    [DllImport("user32.dll")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int flags);
-    [DllImport("user32.dll")] private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Rect { public int Left, Top, Right, Bottom; }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MonitorInfo { public int cbSize; public Rect rcMonitor; public Rect rcWork; public uint dwFlags; }
 
     /// <summary>The three rectangles and WINDOWPOS pointer carried by WM_NCCALCSIZE.</summary>
     [StructLayout(LayoutKind.Sequential)]
@@ -817,20 +812,12 @@ public sealed class MainForm : Form
         }
         if (m.Msg == WM_NCCALCSIZE)
         {
-            // Use the full proposed window rectangle as the client rectangle. The previous
-            // implementation wrote the maximized result into rgrc[2], leaving DWM's top edge.
+            // This frameless window uses the proposed rectangle as its client area. Preserve
+            // Windows' proposal across maximize/restore transitions; WindowState can still
+            // describe the old state here, and substituting the monitor work area shifts hit
+            // testing away from the visible controls.
             var calc = m.WParam == IntPtr.Zero ? default : Marshal.PtrToStructure<NonClientCalcSize>(m.LParam);
             var client = m.WParam == IntPtr.Zero ? Marshal.PtrToStructure<Rect>(m.LParam) : calc.Proposed;
-            if (WindowState == FormWindowState.Maximized)
-            {
-                // A maximized window is made larger than the screen by the frame thickness. Keep
-                // the content on the work area so it does not disappear under the taskbar.
-                var info = new MonitorInfo { cbSize = Marshal.SizeOf<MonitorInfo>() };
-                if (GetMonitorInfo(MonitorFromWindow(Handle, 2), ref info))
-                {
-                    client = info.rcWork;
-                }
-            }
             if (m.WParam == IntPtr.Zero)
                 Marshal.StructureToPtr(client, m.LParam, false);
             else
