@@ -5,7 +5,7 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-24, at version 0.1.6 (released as v0.1.6); local test build 0.1.6.1 updated and relaunched._
+_Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); local test build 0.1.6.1 updated and relaunched._
 
 ## 1. Where things stand
 
