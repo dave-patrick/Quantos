@@ -88,7 +88,7 @@
         <!-- Keys come from the focusable controls inside the row (checkbox, title). -->
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <div role="listitem" title="Drag, or Alt+Up / Alt+Down, to reorder" ondragover={(e) => e.preventDefault()} ondrop={() => drop(t)} onkeydown={(e) => moveKey(e, t)}>
-          <TaskRow task={t} draggable ondragstart={() => (dragId = t.id)} />
+          <TaskRow task={t} draggable dense={docked} ondragstart={() => (dragId = t.id)} />
         </div>
       {:else}
         <div class="empty-state"><h3>Nothing picked for today yet</h3><p>{overdue.length || dueToday.length || plannedToday.length ? 'Choose from the suggestions below, add a task above, or press the sun on any task.' : 'Add a task above, or press the sun on any task to pick it for today.'}</p></div>

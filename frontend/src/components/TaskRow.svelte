@@ -7,8 +7,8 @@
   import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
   import Icon from './Icon.svelte';
 
-  let { task, showMyDay = true, draggable = false, ondragstart, compact = false }:
-    { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean } = $props();
+  let { task, showMyDay = true, draggable = false, ondragstart, compact = false, dense = false }:
+    { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean; dense?: boolean } = $props();
 
   const today = $derived(day.today);
   const minute = $derived(day.minute); // forces re-check when the minute ticks
@@ -83,7 +83,7 @@
   }
 </script>
 
-<div class="task p{task.priority ?? 0}" class:closed class:compact {draggable} {ondragstart} role="group" aria-label={task.title}
+<div class="task p{task.priority ?? 0}" class:closed class:compact class:dense {draggable} {ondragstart} role="group" aria-label={task.title}
   oncontextmenu={(e) => { e.preventDefault(); menu = { x: e.clientX, y: e.clientY }; }}>
   <span class="strip" aria-hidden="true"></span>
   <span class="main">
@@ -96,14 +96,14 @@
     {#if task.blocked}<span class="chip warn" title="Waiting on another task"><Icon name="lock" size={11} /> blocked</span>{/if}
     {#if task.status === 'doing'}<span class="chip accent">doing</span>{/if}
     {#if task.status === 'waiting' || task.waitingOn}<span class="chip" title="Waiting on">⏳ {task.waitingOn ?? 'waiting'}</span>{/if}
-    {#if task.recurrence}<span class="chip" title={task.recurrence}><Icon name="repeat" size={11} /></span>{/if}
-    {#if task.subtaskCount}<span class="chip" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
-    {#if task.effortRollup ?? task.effort}<span class="chip" title="Effort">{task.effortRollup ?? task.effort}m</span>{/if}
+    {#if !dense && task.recurrence}<span class="chip" title={task.recurrence}><Icon name="repeat" size={11} /></span>{/if}
+    {#if !dense && task.subtaskCount}<span class="chip" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
+    {#if !dense && (task.effortRollup ?? task.effort)}<span class="chip" title="Effort">{task.effortRollup ?? task.effort}m</span>{/if}
     {#if projectName && !compact}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
     {#if task.assignees.length && !compact}<span class="chip"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
-    {#if task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
+    {#if !dense && task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
     {#if task.due}<span class="chip" class:danger={overdue} title="Due">⚑ {fmt(task.due)}</span>{/if}
-    {#if task.reminders.some((r) => !r.fired)}<span class="chip" title="Reminder set"><Icon name="bell" size={11} /></span>{/if}
+    {#if !dense && task.reminders.some((r) => !r.fired)}<span class="chip" title="Reminder set"><Icon name="bell" size={11} /></span>{/if}
   </span>
   {#if showMyDay && !closed}
     <button class="myday" class:on={inMyDay} title={inMyDay ? 'Remove from My Day' : 'Add to My Day'} onclick={toggleMyDay}><Icon name="sun" size={14} /></button>
@@ -142,4 +142,10 @@
   .task:hover .del, .del:focus-visible { opacity: 1; }
   .del:hover { color: var(--danger); background: var(--bg-hover); }
   .compact { min-height: calc(32px * var(--d)); padding-top: calc(4px * var(--d)); padding-bottom: calc(4px * var(--d)); }
+  .dense { flex-wrap: nowrap; gap: 6px; min-height: 36px; padding: 4px 8px 4px 12px; }
+  .dense .main { flex: 1 1 auto; gap: 7px; }
+  .dense .title { font-size: 13.5px; }
+  .dense .chips { flex: none; flex-wrap: nowrap; margin-left: 0; }
+  .dense .chip { font-size: 10px; line-height: 16px; padding: 0 4px; }
+  .dense .strip { top: 5px; bottom: 5px; }
 </style>

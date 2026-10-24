@@ -74,7 +74,6 @@ Copy-Item documentation/AGENT-ADAPTERS.md $pkg
 Copy-Item examples/agents/quantos_tools.py $pkg
 Copy-Item LICENSE $pkg -ErrorAction SilentlyContinue
 Copy-Item -Recurse 'examples/Example Vault' (Join-Path $pkg 'Example Vault')
-Copy-Item -Recurse 'examples/Feature Demo Vault' (Join-Path $pkg 'Feature Demo Vault')
 Set-Content (Join-Path $pkg 'Start Quantos.cmd') -Encoding ascii -Value "@echo off`r`nstart `"`" `"%~dp0application\Quantos.exe`""
 Set-Content (Join-Path $pkg 'Open in browser.cmd') -Encoding ascii -Value "@echo off`r`n`"%~dp0application\Quantos.Backend.exe`" --open"
 Set-Content (Join-Path $pkg 'Self-check.cmd') -Encoding ascii -Value "@echo off`r`n`"%~dp0application\Quantos.Backend.exe`" --selfcheck`r`npause"
@@ -94,8 +93,7 @@ try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
     $required = 'Quantos/application/Quantos.exe', 'Quantos/application/Quantos.Backend.exe',
                 'Quantos/application/quantos-cli.exe', 'Quantos/USER-GUIDE.md',
-                'Quantos/Start Quantos.cmd', 'Quantos/Example Vault/automations.json',
-                'Quantos/Feature Demo Vault/workspaces/default/tasks/prepare beta release.md'
+                'Quantos/Start Quantos.cmd', 'Quantos/Example Vault/automations.json'
     foreach ($name in $required) {
         if ($names -notcontains $name) { throw "The package is missing $name, so the updater could not install it." }
     }

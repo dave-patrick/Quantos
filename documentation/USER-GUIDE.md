@@ -21,7 +21,6 @@ Quantos\
   Open in browser.cmd   starts Quantos and opens it in your browser instead
   Self-check.cmd        checks this computer can run Quantos
   Example Vault\        a small vault to explore
-  Feature Demo Vault\   feature-rich dummy records for testing
 ```
 
 - **Windows client:** double-click `Start Quantos.cmd` (or `application\Quantos.exe`).
@@ -54,7 +53,8 @@ to the same gutter as the center view. Drag the center handle to resize the pane
 has a quiet neutral emphasis on its outline; each pane has its own close button. The right sidebar
 keeps its panels on the same neutral card color as the rest of the app, with an 8px inset at the
 window edge. Its Tasks panel uses one heading, a compact add field, and a simple list rather than
-nested task cards. Sidebar cards have an 8px gap. Drag the small grip between two cards to resize
+nested task cards. My Day task rows in the docked sidebar stay compact, showing essential status and
+due information. Sidebar cards have an 8px gap. Drag the small grip between two cards to resize
 them; it appears on hover or keyboard focus. The left and right sidebar toggle icons in the top bar
 stay unboxed.
 
@@ -62,10 +62,13 @@ Use **Add a panel** at the bottom of the right sidebar to add **My Day** alongsi
 Scratchpad and the other available panels. Each panel is its own card; drag the subtle grip between
 cards to give them more or less room. The right sidebar can hold three or more panels at once.
 Quantos automatically saves the panels, their order, and their relative heights for the next launch.
-For a safe walkthrough, open `Feature Demo Vault` (beside the application folder in the test copy)
-as a separate vault. The source is `examples/Feature Demo Vault`. It has two sample
-items for each built-in note type and the shipped goal, sprint and canvas types; the records include
+The Notes browser shows the selected note in the lower card when the layout stacks vertically. Drag
+the horizontal grip between the list and preview to adjust their heights; in a side-by-side layout,
+drag the vertical grip to adjust their widths.
+
+The active vault may contain `Demo —` sample records for each supported item type. They include
 representative properties, links, schedules, trackers, reminders, focus details and canvas edges.
+They are ordinary vault records and can be edited or moved to the trash from Quantos.
 
 ### If something blocks Quantos
 

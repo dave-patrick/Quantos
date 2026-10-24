@@ -5,7 +5,7 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); local test build 0.1.6.1 updated and relaunched._
+_Last updated: 2026-10-24, at version 0.1.6 (released as v0.1.6); local test build 0.1.6.1 updated and relaunched._
 
 ## 1. Where things stand
 
@@ -15,7 +15,7 @@ _Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); local test bui
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
 | Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
-| Current test build | Version 0.1.6.1; the top bar and card gaps are aligned. The right sidebar supports three or more stacked panels, including My Day, with subtle resize grips and automatic persistence of panel choice, order and height proportions. The save effect now snapshots reactive state before its debounce so changes are actually written. The native frame border and caption colors are explicitly set to the titlebar neutral gray after Windows redraws; edge and corner resizing remain available. `svelte-check` reports 0 errors (12 warnings); all 97 frontend tests and 151 .NET tests pass. Windows x64 package validation succeeded. The app files were staged to `C:\Users\davem\Apps\Quantos\Quantos\application`; the old process was closed and the new client loaded successfully (HTTP 200). A separate 18-record demo vault is staged at `C:\Users\davem\Apps\Quantos\Quantos\Feature Demo Vault`. No release published.
+| Current test build | Version 0.1.6.1; right sidebar panels (including My Day) resize and save their order and proportions. Notes' separator resizes both side-by-side and stacked layouts; selected notes render in the lower preview card when stacked. Docked My Day task rows now stay compact. The native frame now lets DWM apply the matching neutral gray while retaining resize hit zones. The silver edge could not be independently confirmed from this session's screen capture because the Codex window covered part of the Quantos window. Eighteen `Demo —` records (two each for notes, daily notes, tasks, people, projects, events, goals, sprints and canvases) are in the owner's active vault and link to one another; no separate demo vault is included. `svelte-check`: 0 errors, 12 warnings; 97 frontend tests and 151 .NET tests pass. Windows x64 package validation succeeded; the old client closed, files were staged, and the new client relaunched with page load HTTP 200. No release published.
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
 Version numbers are product versions (0.1.x) and are separate from the plan's "Release 1.x" names.

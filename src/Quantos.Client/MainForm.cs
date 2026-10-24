@@ -122,6 +122,9 @@ public sealed class MainForm : Form
         int corner = 3; // DWMWCP_ROUNDSMALL keeps the custom frame's corners subtle.
         DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
         ApplyFrameBorderColor();
+        // Recalculate the non-client area after removing the caption so Windows does not
+        // retain a stale, light resize strip above the client surface.
+        SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0004 | 0x0010 | 0x0020);
     }
 
     protected override void OnShown(EventArgs e)
@@ -155,13 +158,9 @@ public sealed class MainForm : Form
 
     private void ApplyFrameBorderColor()
     {
-        // DWM can restore its silver non-client frame after a redraw. The app draws its own
-        // chrome; keep DWM's non-client renderer off while WM_NCHITTEST supplies resize zones.
-        int ncrpDisabled = 1; // DWMNCRP_DISABLED
-        DwmSetWindowAttribute(Handle, 2, ref ncrpDisabled, sizeof(int)); // DWMWA_NCRENDERING_POLICY
-        // COLOR_NONE can be ignored for a resizable borderless WinForms window on some Windows
-        // builds. Match both the resize frame and caption to the custom title bar instead, so a
-        // DWM redraw cannot bring back the bright silver edge.
+        // Let DWM render the resize frame and give it the same neutral gray as the app surface.
+        // Disabling DWM non-client rendering here makes some Windows builds ignore the color
+        // attributes and leaves a bright system-colored strip around the borderless form.
         int surface = 0x002D2B2A; // COLORREF for RGB(42, 43, 45).
         DwmSetWindowAttribute(Handle, 34, ref surface, sizeof(int)); // DWMWA_BORDER_COLOR
         DwmSetWindowAttribute(Handle, 35, ref surface, sizeof(int)); // DWMWA_CAPTION_COLOR
@@ -732,6 +731,7 @@ public sealed class MainForm : Form
     [DllImport("user32.dll")] private static extern bool ReleaseCapture();
     [DllImport("user32.dll")] private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
     [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+    [DllImport("user32.dll", SetLastError = true)] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr insertAfter, int x, int y, int cx, int cy, uint flags);
     [DllImport("user32.dll")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int flags);
     [DllImport("user32.dll")] private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
 

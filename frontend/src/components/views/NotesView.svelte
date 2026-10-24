@@ -27,6 +27,9 @@
   let noteMenu = $state<{ x: number; y: number; id: string } | null>(null);
   let divider = $state<number | null>(null); // index of divider being dragged
   let leftWidth = $state(0.42); // fraction of panes width given to the left (tree) side
+  let upperHeight = $state(0.62); // fraction given to the note list while panes are stacked
+  let stacked = $state(false);
+  let panesElement = $state<HTMLDivElement | null>(null);
 
   function openNoteMenu(e: MouseEvent, id: string) {
     e.preventDefault();
@@ -45,26 +48,40 @@
     } catch (e) { app.error(e); }
   }
 
-  // Draggable vertical divider between the note list (left) and preview (right).
-  function startDivider(e: MouseEvent) {
+  // The separator resizes columns in wide panes and rows in stacked panes.
+  function startDivider(e: PointerEvent) {
     e.preventDefault();
     divider = 0;
-    const panes = (e.currentTarget as HTMLElement).parentElement!;
+    const panes = panesElement;
+    if (!panes) return;
     const box = panes.getBoundingClientRect();
-    const startX = e.clientX;
-    const startLeft = leftWidth;
-    const move = (ev: MouseEvent) => {
-      const dx = ev.clientX - startX;
-      const fraction = startLeft + dx / box.width;
-      leftWidth = Math.min(0.85, Math.max(0.15, fraction));
+    const vertical = stacked;
+    const startPoint = vertical ? e.clientY : e.clientX;
+    const startFraction = vertical ? upperHeight : leftWidth;
+    const extent = vertical ? box.height : box.width;
+    const move = (ev: PointerEvent) => {
+      const delta = (vertical ? ev.clientY : ev.clientX) - startPoint;
+      const fraction = Math.min(0.85, Math.max(0.15, startFraction + delta / Math.max(1, extent)));
+      if (vertical) upperHeight = fraction;
+      else leftWidth = fraction;
     };
     const up = () => {
       divider = null;
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
     };
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up, { once: true });
+  }
+
+  function resizeByKey(e: KeyboardEvent) {
+    const increase = stacked ? e.key === 'ArrowDown' : e.key === 'ArrowRight';
+    const decrease = stacked ? e.key === 'ArrowUp' : e.key === 'ArrowLeft';
+    if (!increase && !decrease) return;
+    e.preventDefault();
+    const next = Math.min(0.85, Math.max(0.15, (stacked ? upperHeight : leftWidth) + (increase ? 0.03 : -0.03)));
+    if (stacked) upperHeight = next;
+    else leftWidth = next;
   }
 
   const noteMenuItems = $derived.by((): ContextMenuItem[] => {
@@ -137,9 +154,12 @@
 
   async function loadExcerpts() { try { excerpts = await api.get<Record<string, string>>('nodes/excerpts'); } catch { /* the list still works */ } }
   onMount(() => {
+    const observer = new ResizeObserver(([entry]) => { stacked = entry.contentRect.width <= 820; });
+    if (panesElement) observer.observe(panesElement);
     loadExcerpts();
     let t: ReturnType<typeof setTimeout>;
-    return onChange((e) => { if (['Created', 'Updated', 'Moved'].includes(e.kind)) { clearTimeout(t); t = setTimeout(loadExcerpts, 800); } });
+    const off = onChange((e) => { if (['Created', 'Updated', 'Moved'].includes(e.kind)) { clearTimeout(t); t = setTimeout(loadExcerpts, 800); } });
+    return () => { observer.disconnect(); off(); clearTimeout(t); };
   });
 
   const TYPES: [string, string][] = [['', 'All types'], ['note', 'Notes'], ['task', 'Tasks'], ['person', 'People'], ['project', 'Projects'], ['daily', 'Daily notes'], ['canvas', 'Whiteboards'], ['event', 'Events'], ['template', 'Templates']];
@@ -243,7 +263,7 @@
     <label class="check"><input type="checkbox" bind:checked={everywhere} /> All workspaces</label>
   </div>
 
-  <div class="panes" style={`--left-w:${leftWidth * 100}%`}>
+  <div class="panes" class:stacked bind:this={panesElement} style={`--left-w:${leftWidth * 100}%;--upper-h:${upperHeight * 100}%`}>
     <section class="left">
       <div class="bar">
         <label class="check"><input type="checkbox" aria-label="Select all shown" checked={allPicked} onchange={pickAll} /> {shown.length} {shown.length === 1 ? 'note' : 'notes'}</label>
@@ -290,7 +310,9 @@
       </ul>
       {/if}
     </section>
-    <div class="divider" class:dragging={divider === 0} onmousedown={startDivider} role="separator" aria-orientation="vertical" aria-label="Resize note list and preview" tabindex="0"></div>
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <div class="divider" class:dragging={divider === 0} onpointerdown={startDivider} onkeydown={resizeByKey} role="separator" aria-orientation={stacked ? 'horizontal' : 'vertical'} aria-label="Resize note list and preview" aria-valuemin="15" aria-valuemax="85" aria-valuenow={Math.round((stacked ? upperHeight : leftWidth) * 100)} tabindex="0"></div>
     <section class="right scroll">
       {#if preview}
         <header>
@@ -376,8 +398,8 @@
   .pick { margin-top: 30px; text-align: center; font-size: 13.5px; }
   @container pane (max-width: 820px) {
     .panes { flex-direction: column; }
-    .panes > section.left { flex: 1 1 auto; }
-    .panes > section.right { flex: 0 0 auto; }
-    .right { max-height: 40%; }
+    .panes > section.left { flex: 0 0 var(--upper-h); min-height: 120px; }
+    .panes > section.right { flex: 1 1 0; min-height: 120px; max-height: none; }
+    .divider { width: auto; height: 14px; flex: 0 0 14px; cursor: row-resize; }
   }
 </style>
