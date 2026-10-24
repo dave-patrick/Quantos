@@ -33,7 +33,7 @@ public sealed class MainForm : Form
     private readonly HashSet<string> _approvedTerminals = [];
     private readonly HashSet<string> _promptedApprovals = [];
     private bool _exiting, _recovering;
-    private bool _frameBorderColorQueued;
+    private bool _dwmBorderResetQueued;
     private int _resizeHit;
     private Rectangle _resizeStartBounds;
     private Point _resizeStartCursor;
@@ -128,7 +128,7 @@ public sealed class MainForm : Form
         base.OnHandleCreated(e);
         int corner = 3; // DWMWCP_ROUNDSMALL keeps the custom frame's corners subtle.
         DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
-        ApplyFrameBorderColor();
+        SuppressDwmNativeBorder();
         // Recalculate the non-client area after removing the caption so Windows does not
         // retain a stale, light resize strip above the client surface.
         SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0004 | 0x0010 | 0x0020);
@@ -137,40 +137,40 @@ public sealed class MainForm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
-        QueueFrameBorderColor();
+        QueueDwmBorderReset();
     }
 
     protected override void OnActivated(EventArgs e)
     {
         base.OnActivated(e);
-        QueueFrameBorderColor();
+        QueueDwmBorderReset();
     }
 
     protected override void OnDeactivate(EventArgs e)
     {
         base.OnDeactivate(e);
-        QueueFrameBorderColor();
+        QueueDwmBorderReset();
     }
 
-    private void QueueFrameBorderColor()
+    private void QueueDwmBorderReset()
     {
-        if (!IsHandleCreated || IsDisposed || Disposing || _frameBorderColorQueued) return;
-        _frameBorderColorQueued = true;
+        if (!IsHandleCreated || IsDisposed || Disposing || _dwmBorderResetQueued) return;
+        _dwmBorderResetQueued = true;
         BeginInvoke((MethodInvoker)(() =>
         {
-            _frameBorderColorQueued = false;
-            if (!IsDisposed && !Disposing) ApplyFrameBorderColor();
+            _dwmBorderResetQueued = false;
+            if (!IsDisposed && !Disposing) SuppressDwmNativeBorder();
         }));
     }
 
-    private void ApplyFrameBorderColor()
+    private void SuppressDwmNativeBorder()
     {
-        // Let DWM render the resize frame and give it the same neutral gray as the app surface.
-        // Disabling DWM non-client rendering here makes some Windows builds ignore the color
-        // attributes and leaves a bright system-colored strip around the borderless form.
-        int surface = 0x002D2B2A; // COLORREF for RGB(42, 43, 45).
-        DwmSetWindowAttribute(Handle, 34, ref surface, sizeof(int)); // DWMWA_BORDER_COLOR
-        DwmSetWindowAttribute(Handle, 35, ref surface, sizeof(int)); // DWMWA_CAPTION_COLOR
+        // The client draws its own title bar and edge resizing, so ask DWM not to draw
+        // a border or caption at all. A colored DWM border remains visibly silver on some
+        // Windows builds even when its COLORREF matches the client surface.
+        int none = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
+        DwmSetWindowAttribute(Handle, 34, ref none, sizeof(int)); // DWMWA_BORDER_COLOR
+        DwmSetWindowAttribute(Handle, 35, ref none, sizeof(int)); // DWMWA_CAPTION_COLOR
     }
 
     public static Icon LoadIcon()
@@ -810,9 +810,8 @@ public sealed class MainForm : Form
         }
         if (m.Msg == WM_NCPAINT)
         {
-            // Suppress system non-client painting and restore DWM's frame color in case
-            // Windows reset it during a theme, composition, or activation redraw.
-            ApplyFrameBorderColor();
+            // Suppress system non-client painting and reassert that DWM should draw no border.
+            SuppressDwmNativeBorder();
             m.Result = IntPtr.Zero;
             return;
         }
@@ -845,8 +844,8 @@ public sealed class MainForm : Form
         if (m.Msg is WM_NCACTIVATE or WM_WINDOWPOSCHANGED or WM_DWMCOMPOSITIONCHANGED or WM_THEMECHANGED or WM_DWMCOLORIZATIONCOLORCHANGED)
         {
             base.WndProc(ref m);
-            ApplyFrameBorderColor();
-            QueueFrameBorderColor();
+            SuppressDwmNativeBorder();
+            QueueDwmBorderReset();
             return;
         }
         if (m.Msg == WM_NCHITTEST && WindowState != FormWindowState.Maximized)
