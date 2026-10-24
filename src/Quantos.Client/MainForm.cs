@@ -34,6 +34,8 @@ public sealed class MainForm : Form
     private readonly HashSet<string> _promptedApprovals = [];
     private bool _exiting, _recovering;
     private bool _dwmBorderResetQueued;
+    private bool _windowLayoutRefreshQueued;
+    private FormWindowState _observedWindowState;
     private int _resizeHit;
     private Rectangle _resizeStartBounds;
     private Point _resizeStartCursor;
@@ -106,6 +108,28 @@ public sealed class MainForm : Form
         base.OnResize(e);
         _btnMax.Maximized = WindowState == FormWindowState.Maximized;
         _btnMax.Invalidate();
+        if (_observedWindowState != WindowState)
+        {
+            _observedWindowState = WindowState;
+            if (WindowState != FormWindowState.Minimized) QueueWindowLayoutRefresh();
+        }
+    }
+
+    private void QueueWindowLayoutRefresh()
+    {
+        if (!IsHandleCreated || IsDisposed || Disposing || _windowLayoutRefreshQueued) return;
+        _windowLayoutRefreshQueued = true;
+        BeginInvoke((MethodInvoker)(() =>
+        {
+            _windowLayoutRefreshQueued = false;
+            if (IsDisposed || Disposing || !IsHandleCreated) return;
+            // Re-run client-area calculation after a state change. The full frameless client
+            // rectangle keeps WebView2 rendering and mouse hit targets in the same coordinates.
+            SetWindowPos(Handle, IntPtr.Zero, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0004 | 0x0010 | 0x0020);
+            PerformLayout();
+            Invalidate(true);
+            _web.Invalidate();
+        }));
     }
 
     private const int WS_CAPTION = 0x00C00000;
@@ -539,9 +563,11 @@ public sealed class MainForm : Form
 
     public void ShowMain()
     {
+        bool restoring = !Visible || WindowState == FormWindowState.Minimized;
         if (WindowState == FormWindowState.Minimized) WindowState = _prefs.Maximized ? FormWindowState.Maximized : FormWindowState.Normal;
         Show();
         Activate();
+        if (restoring) QueueWindowLayoutRefresh();
     }
 
     private void ShowCapture()
