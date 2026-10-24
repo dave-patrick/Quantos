@@ -44,9 +44,16 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 2026-10-23; latest release 0.1.6)
+## Open threads (as of 2026-10-24; latest release 0.2.0)
 
-- **Top-bar test build (unreleased).** The header row is 60px on desktop and mobile; the wordmark is
+- **Released 0.2.0** (tag `v0.2.0`, Windows x64 zip, SHA-256
+  `3fafdba7f3b0f2606855155e22814b771e333baf2479809578b381f95771ce1c`). The release includes the
+  split workspace, persistent multi-panel sidebar, single-line Notes list with remembered Preview
+  toggle, compact My Day cards and task priority colors, frameless resizing and restore/reopen drawing
+  fixes, editor trash action, and version label correction. The release build passed 97 frontend and
+  151 .NET tests plus the package self-check. The package was published, staged into the owner's
+  application folder, and the relaunched client loaded with HTTP 200.
+- **Top-bar layout and window refinements (included in 0.2.0).** The header row is 60px on desktop and mobile; the wordmark is
   23.75px. Daily stream, My Day and Tasks are removed from the default toolbar and filtered from
   older `toolbar.json` settings and *Settings › Toolbar*. Their commands and views remain available
   elsewhere. The dark background is a lighter neutral gray (`#2a2b2d`), with darker tinted gray
@@ -74,12 +81,12 @@ open threads and the machine.
   script now stops if Vite fails, preventing an old frontend from slipping into a new package.
   `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
   Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its
-  page loaded successfully (HTTP 200). No release was published.
+  page loaded successfully (HTTP 200). At that point, no release had been published.
   Maximize/restore and tray hide/reopen could leave the frameless window's drawn client area out of
   alignment with edge hit targets. Build `fe96398` keeps the OS-proposed client rectangle through
   `WM_NCCALCSIZE` and forces a deferred native frame/layout refresh after state changes and re-show.
   The Windows x64 package validated and was staged; the old process closed and the new client loaded
-  successfully (HTTP 200). No release was published.
+  successfully (HTTP 200). At that point, no release had been published.
   In build `9fcce4c`, the Notes List uses single-line rows and a Preview toggle that remembers the
   user's choice. Task priority strips are red for P1, orange for P2, green for P3 and blue for P4.
   Frontend check reports 0 errors and 10 warnings; all 97 frontend tests and 151 .NET tests pass.
@@ -98,7 +105,7 @@ open threads and the machine.
   direction is reversed. The silver top edge persisted with DWM frame color overrides; the client
   now omits the native sizing style and resizes through its own edge hit zones.
 
-- **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
+- **Window chrome and build mark (included in 0.2.0).** The client draws its
   own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)
   and the app's icon; edge resizing is handled by the client to avoid the silver native frame, so
   the Windows shadow may differ from the framed version. The daily stream now opens with only today
@@ -108,7 +115,7 @@ open threads and the machine.
   rounded corners, the caption buttons, the daily stream opening with only today, and the mark next to
   the version. **A heading with nothing under it gets no arrow**, because there is nothing to fold —
   that is why the owner's daily note (`# this is a test`, the last line) shows none.
-- **Editor: collapsible headings and block selection (unreleased, on `main`).** Headings now carry
+- **Editor: collapsible headings and block selection (released in 0.1.6).** Headings now carry
   their own arrow and fold by level, and blocks can be selected together (`Ctrl`-click,
   `Ctrl`-`Shift`-click), dragged to a new place, and worked on from the right-click menu. The
   *Collapsible headings* setting now really turns the arrows off; the Markdown language's own

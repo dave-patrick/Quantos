@@ -5,20 +5,20 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); local test build 0.1.6.1._
+_Last updated: 2026-10-24, at version 0.2.0 (released as v0.2.0)._
 
 ## 1. Where things stand
 
 | | |
 |---|---|
-| Latest release | [0.1.6](https://github.com/dave-patrick/Quantos/releases/tag/v0.1.6) (Windows x64 zip, SHA-256 `969ec1b4131f7732bb65ee8da4ed8c6b80b03582387ae648c26092992715c53a`) |
+| Latest release | [0.2.0](https://github.com/dave-patrick/Quantos/releases/tag/v0.2.0) (Windows x64 zip, SHA-256 `3fafdba7f3b0f2606855155e22814b771e333baf2479809578b381f95771ce1c`) |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
-| Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
-| Current test build | Version 0.1.6.1 (build fe96398); the DWM border and caption are explicitly disabled to remove the silver top edge; custom edge resizing remains active. Frameless client geometry now preserves Windows' proposed client rectangle during sizing transitions, and queues a native frame/layout refresh after maximize/restore and tray hide/reopen to keep pixels aligned with hit targets. Notes List rows stay on one line, and a Preview toggle hides/shows the preview pane while remembering the choice. Task priority strips are red (P1), orange (P2), green (P3), and blue (P4). Right sidebar panels (including My Day) resize and save their order and proportions. Notes separator resizes both side-by-side and stacked layouts; selected notes render in the lower preview card when stacked. Docked My Day task rows keep the title visible and show essential status/date without project and assignee chips. Titlebar move and restore use form-level pointer capture to keep drags out of WebView2 text. Eighteen Demo records (two each for notes, daily notes, tasks, people, projects, events, goals, sprints and canvases) remain in the active vault; no separate demo vault is included. All 97 frontend tests and 151 .NET tests pass. The Windows x64 build and package validation succeeded; the old client closed, the new files were staged, and the new client relaunched with page load HTTP 200. No release published. |
+| Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass in the 0.2.0 release build. |
+| Current build | Version 0.2.0 (commit `a8b51fa`, tag `v0.2.0`). The Windows x64 release package passed validation and self-check, was published to GitHub Releases, and is staged in the owner's test copy; startup completed with HTTP 200. Split panes are distinct cards with a clear active state and individual close buttons. The right sidebar supports multiple resizable panels and saves layout automatically. Notes List rows are single-line; Preview can be toggled and remembers the choice. My Day task cards are compact; priority colors are red (P1), orange (P2), green (P3), and blue (P4). The frameless window resizes on every edge and corner and recalculates its layout after maximize/restore and tray hide/reopen to keep controls aligned. The active editor can move a note to Trash; the version label no longer clips. Eighteen Demo records remain in the active vault; no separate demo vault is included. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
-Version numbers are product versions (0.1.x) and are separate from the plan's "Release 1.x" names.
+Version numbers are product versions (0.x.y) and are separate from the plan's "Release 1.x" names.
 0.1.1 was the first public release and contained Releases 1.0 to 1.2.
 
 ## 2. Documents
