@@ -60,11 +60,13 @@ open threads and the machine.
   without disabling scrolling, and the titlebar chrome matches the neutral gray app background.
   Border resizing is available along every edge, including the top edge, and at all four corners.
   Split panes now have no visible tab-name strip; the active view has only a small close button at
-  the upper-right. The main pane is vertically aligned with the navigation card, while a visible
-  resize divider and neutral pane outlines make the split clear. The native frame border matches the
-  app background to remove the bright top strip. Frontend checks, all 97 frontend tests, and all 151
-  .NET tests pass. Version 0.1.6.1 was rebuilt and package-validated; the previous client was closed,
-  the test copy updated, and the new client relaunched with a successful page load (HTTP 200). No
+  the upper-right. Use `Ctrl+Shift+P`, then *Next tab* or *Previous tab* to switch tabs. The shell no
+  longer has a redundant spacer row; the main view and navigation align vertically. Pane borders
+  are removed to prevent a doubled seam; the divider separates split panes and a thin accent line
+  highlights the focused pane. The Files panel uses matching vertical spacing. The native frame
+  border color is reapplied on activation changes. `svelte-check` reports 0 errors, all 97 frontend
+  tests pass, and all 151 .NET tests pass on this build. The Windows package was rebuilt and staged;
+  the previous client closed, the updated copy relaunched, and the startup log confirms HTTP 200. No
   release was published.
 
 - **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its

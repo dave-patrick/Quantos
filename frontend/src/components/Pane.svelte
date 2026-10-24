@@ -108,8 +108,8 @@
 {/if}
 
 <style>
-  .pane { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
-  .pane.focused { border-color: var(--line-strong); }
+  .pane { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+  .pane.focused::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; z-index: 4; background: var(--accent-strong); opacity: .88; pointer-events: none; }
   .tabs-accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
   .strip { display: flex; align-items: center; min-width: 0; gap: 4px; }
   .tab { display: flex; align-items: center; }

@@ -194,8 +194,9 @@ is still in the command palette (`Ctrl+Shift+P`).
 Each pane holds up to ten tabs. The active view has a small close button at the upper-right corner;
 tab names do not take up space above the view. Pin tabs you want to keep; when a pane is full, the
 least recently used unpinned tab closes (after saving). Split the window with `Ctrl+\`; a visible
-divider separates the panes and can be dragged or keyboard-resized. Each workspace remembers its own
-tabs, splits and scroll positions.
+divider separates the panes and can be dragged or keyboard-resized. To switch tabs without a visible
+tab strip, open the command palette with `Ctrl+Shift+P` and run *Next tab* or *Previous tab*. Each
+workspace remembers its own tabs, splits and scroll positions.
 
 ---
 

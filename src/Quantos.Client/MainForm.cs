@@ -119,8 +119,25 @@ public sealed class MainForm : Form
         base.OnHandleCreated(e);
         int corner = 3; // DWMWCP_ROUNDSMALL keeps the custom frame's corners subtle.
         DwmSetWindowAttribute(Handle, 33, ref corner, sizeof(int));
-        // COLORREF is 0x00BBGGRR. Match the client background so the native sizing frame
-        // doesn't appear as a bright strip above the custom title bar.
+        ApplyFrameBorderColor();
+    }
+
+    protected override void OnActivated(EventArgs e)
+    {
+        base.OnActivated(e);
+        ApplyFrameBorderColor();
+    }
+
+    protected override void OnDeactivate(EventArgs e)
+    {
+        base.OnDeactivate(e);
+        ApplyFrameBorderColor();
+    }
+
+    private void ApplyFrameBorderColor()
+    {
+        // Windows can restore its active/inactive frame color as activation changes.
+        // COLORREF is 0x00BBGGRR; keep the native sizing frame matched to our client chrome.
         int border = BackColor.R | (BackColor.G << 8) | (BackColor.B << 16);
         DwmSetWindowAttribute(Handle, 34, ref border, sizeof(int));
     }

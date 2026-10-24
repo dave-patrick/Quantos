@@ -141,8 +141,8 @@
 </aside>
 
 <style>
-  .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; background: var(--bg-raised); border-left: 1px solid var(--line); }
-  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; margin: 6px 8px; background: var(--bg); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+  .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; padding: 8px; background: var(--bg-raised); border-left: 1px solid var(--line); }
+  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; margin: 0 0 8px; background: var(--bg); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
   .part.dragging { opacity: .6; }
   .head { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid var(--line); flex: none; background: var(--bg-raised); cursor: grab; user-select: none; }
   .head:active { cursor: grabbing; }

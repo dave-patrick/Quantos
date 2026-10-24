@@ -102,6 +102,14 @@ export function openToday(where: 'current' | 'new' | 'other' = 'current') {
   return layout.open({ kind: 'daily', title: 'Daily' }, where);
 }
 
+function cycleTab(step: number) {
+  const pane = layout.pane;
+  if (pane.tabs.length < 2) return;
+  const current = pane.tabs.findIndex((tab) => tab.key === pane.active);
+  const next = (current + step + pane.tabs.length) % pane.tabs.length;
+  layout.activate(layout.activePane, pane.tabs[next].key);
+}
+
 register(
   { id: 'palette.files', title: 'Quick open', group: 'Navigate', keys: 'Mod+P', icon: 'search', run: () => { app.paletteMode = 'files'; app.paletteOpen = true; } },
   { id: 'palette.commands', title: 'Command palette', group: 'Navigate', keys: 'Mod+Shift+P', icon: 'command', run: () => { app.paletteMode = 'commands'; app.paletteOpen = true; } },
@@ -139,6 +147,8 @@ register(
   { id: 'pane.split.down', title: 'Split down', group: 'Layout', icon: 'split-h', run: () => layout.splitPane('horizontal') },
   { id: 'pane.close', title: 'Close split', group: 'Layout', icon: 'x', run: () => layout.closePane(layout.activePane), when: () => layout.panes.length > 1 },
   { id: 'pane.focus.other', title: 'Focus other pane', group: 'Layout', keys: 'Mod+Alt+ArrowRight', run: () => { if (layout.panes.length > 1) layout.activePane = layout.activePane ? 0 : 1; } },
+  { id: 'tab.next', title: 'Next tab', group: 'Layout', icon: 'arrow-right', when: () => layout.pane.tabs.length > 1, run: () => cycleTab(1) },
+  { id: 'tab.previous', title: 'Previous tab', group: 'Layout', icon: 'arrow-left', when: () => layout.pane.tabs.length > 1, run: () => cycleTab(-1) },
   { id: 'tab.close', title: 'Close tab', group: 'Layout', keys: 'Mod+W', icon: 'x', run: () => { const p = layout.pane; if (p.active) layout.close(layout.activePane, p.active); } },
   { id: 'tab.pin', title: 'Pin or unpin tab', group: 'Layout', icon: 'pin', run: () => { const p = layout.pane; if (p.active) layout.togglePin(layout.activePane, p.active); } },
   { id: 'sidebar.left', title: 'Toggle left sidebar', group: 'Layout', keys: 'Mod+[', icon: 'panel-left', run: () => (app.leftOpen = !app.leftOpen) },
