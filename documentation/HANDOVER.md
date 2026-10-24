@@ -53,8 +53,8 @@ open threads and the machine.
   cards (`#202123`); the native window bar matches the page background. Frontend check and all 97
   frontend tests pass; all 151 .NET tests pass.
   The latest adjustment restores an 8px gap below the header to match card spacing, aligns the right
-  sidebar card to the same gutter as the center pane, and reapplies the DWM sizing-frame color after
-  Windows redraws the frame while retaining edge and corner resizing. The updated source passed
+  sidebar card to the same gutter as the center pane, and uses custom edge and corner resizing with
+  no native sizing frame. The updated source passed
   `svelte-check` (0 errors, 14 warnings), all 97 frontend tests and 151 .NET tests; the Windows x64
   build and package validation succeeded. Its three application files were staged to
   `C:\Users\davem\Apps\Quantos\Quantos\application`; previous executables are preserved
@@ -69,7 +69,8 @@ open threads and the machine.
   separate neutral cards with an 8px gutter and no resting divider line; the active pane uses a quiet
   neutral outline and surface tint. The right sidebar has no full-height divider and uses the same
   neutral card surface. Header sidebar toggle icons stay unboxed in active and hover states, and the extra blank space below the header was removed.
-  The bright native DWM frame edge is suppressed after the window is shown while preserving all-edge resizing. The package
+  The native sizing frame is removed to prevent DWM from drawing a silver edge; custom code preserves
+  all-edge resizing. The package
   script now stops if Vite fails, preventing an old frontend from slipping into a new package.
   `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
   Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its
@@ -80,20 +81,19 @@ open threads and the machine.
   before Search. One Toolbar setting toggles labels on New, Split, Quick Capture and Search together.
   The right sidebar resize grip is now a hover/focus-only 8px divider with pointer capture and
   adjacent-card height adjustment; keyboard arrows also resize the focused pair. Its toggle glyph
-  direction is reversed. The silver top edge was caused by writing the maximized client rectangle to
-  the wrong NCCALCSIZE entry; the app now fills the proposed client rect and disables DWM non-client
-  rendering while keeping native resize hit zones.
+  direction is reversed. The silver top edge persisted with DWM frame color overrides; the client
+  now omits the native sizing style and resizes through its own edge hit zones.
 
 - **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
   own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)
-  and the app's icon, and the window keeps the Windows frame underneath, so it has the shadow and
-  the rounded corners. The daily stream now opens with only today expanded. A staging copy carries a
-  build mark next to the version on the splash and setup screens (`build/build.ps1 -Mark`); a
-  released build has none. The arrows on headings are easier to find now (bigger, brighter, and
-  brighter still on the hovered line). Worth asking the owner to look at: the rounded corners, the
-  caption buttons, the daily stream opening with only today, and the mark next to the version.
-  **A heading with nothing under it gets no arrow**, because there is nothing to fold — that is why
-  the owner's daily note (`# this is a test`, the last line) shows none.
+  and the app's icon; edge resizing is handled by the client to avoid the silver native frame, so
+  the Windows shadow may differ from the framed version. The daily stream now opens with only today
+  expanded. A staging copy carries a build mark next to the version on the splash and setup screens
+  (`build/build.ps1 -Mark`); a released build has none. The arrows on headings are easier to find now
+  (bigger, brighter, and brighter still on the hovered line). Worth asking the owner to look at: the
+  rounded corners, the caption buttons, the daily stream opening with only today, and the mark next to
+  the version. **A heading with nothing under it gets no arrow**, because there is nothing to fold —
+  that is why the owner's daily note (`# this is a test`, the last line) shows none.
 - **Editor: collapsible headings and block selection (unreleased, on `main`).** Headings now carry
   their own arrow and fold by level, and blocks can be selected together (`Ctrl`-click,
   `Ctrl`-`Shift`-click), dragged to a new place, and worked on from the right-click menu. The
@@ -164,6 +164,8 @@ first importers), updating RELEASE-CHECKLIST.md for 1.1/1.2, code signing (needs
   control their desktop. Verify client changes by building, by a short launch that reads the startup log,
   and by asking the owner to try them.
 
-- **Active-vault samples, Notes preview and frame (2026-10-23).** The owner asked to put the feature samples in their active vault, not ship a separate demo vault. Eighteen `Demo —` records now live in `C:\Users\davem\Quantos\Vault` (two per supported type); they were created and linked through the authenticated API/WriteService. The separate `Feature Demo Vault` was removed from the source, package and app folder. Notes' list/preview separator is now intended to drag horizontally in side-by-side mode and vertically when cards stack; selecting a row fetches and renders its Markdown in the preview card. The My Day task rows in the docked sidebar use a dense single-row variant. DWM's non-client renderer is left enabled so it can apply the matching gray frame color; verify the silver edge visually on the owner's Windows desktop after staging, since a content-only capture cannot show DWM chrome.
+- **Active-vault samples and Notes preview (2026-10-23).** The owner asked to put the feature samples in their active vault, not ship a separate demo vault. Eighteen `Demo —` records now live in `C:\Users\davem\Quantos\Vault` (two per supported type); they were created and linked through the authenticated API/WriteService. The separate `Feature Demo Vault` was removed from the source, package and app folder. Notes' list/preview separator is intended to drag horizontally in side-by-side mode and vertically when cards stack; selecting a row fetches and renders its Markdown in the preview card. The My Day task rows in the docked sidebar use a dense single-row variant.
   The panel layout save effect was also corrected: it now snapshots reactive state before the debounce timer,
   so changes to panel membership, ordering and height weights are saved instead of resetting on relaunch.
+
+- **Latest task row and frame correction (2026-10-23).** Dense My Day rows no longer show project or assignee chips; their title receives the available width and status/date chips are constrained. The client removes WS_THICKFRAME and uses custom drag resizing on all four edges and corners to avoid the silver DWM border. Rebuild and visually confirm the edge and resize behavior after staging.

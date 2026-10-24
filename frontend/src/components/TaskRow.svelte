@@ -99,8 +99,8 @@
     {#if !dense && task.recurrence}<span class="chip" title={task.recurrence}><Icon name="repeat" size={11} /></span>{/if}
     {#if !dense && task.subtaskCount}<span class="chip" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
     {#if !dense && (task.effortRollup ?? task.effort)}<span class="chip" title="Effort">{task.effortRollup ?? task.effort}m</span>{/if}
-    {#if projectName && !compact}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
-    {#if task.assignees.length && !compact}<span class="chip"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
+    {#if projectName && !compact && !dense}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
+    {#if task.assignees.length && !compact && !dense}<span class="chip"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
     {#if !dense && task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
     {#if task.due}<span class="chip" class:danger={overdue} title="Due">⚑ {fmt(task.due)}</span>{/if}
     {#if !dense && task.reminders.some((r) => !r.fired)}<span class="chip" title="Reminder set"><Icon name="bell" size={11} /></span>{/if}
@@ -143,9 +143,9 @@
   .del:hover { color: var(--danger); background: var(--bg-hover); }
   .compact { min-height: calc(32px * var(--d)); padding-top: calc(4px * var(--d)); padding-bottom: calc(4px * var(--d)); }
   .dense { flex-wrap: nowrap; gap: 6px; min-height: 36px; padding: 4px 8px 4px 12px; }
-  .dense .main { flex: 1 1 auto; gap: 7px; }
+  .dense .main { flex: 1 1 0%; gap: 7px; }
   .dense .title { font-size: 13.5px; }
-  .dense .chips { flex: none; flex-wrap: nowrap; margin-left: 0; }
+  .dense .chips { flex: 0 1 auto; flex-wrap: nowrap; margin-left: 0; max-width: 42%; overflow: hidden; }
   .dense .chip { font-size: 10px; line-height: 16px; padding: 0 4px; }
   .dense .strip { top: 5px; bottom: 5px; }
 </style>

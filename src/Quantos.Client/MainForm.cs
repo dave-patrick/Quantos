@@ -34,6 +34,9 @@ public sealed class MainForm : Form
     private readonly HashSet<string> _promptedApprovals = [];
     private bool _exiting, _recovering;
     private bool _frameBorderColorQueued;
+    private int _resizeHit;
+    private Rectangle _resizeStartBounds;
+    private Point _resizeStartCursor;
     private TaskCompletionSource<int>? _flush;
     private string? _lastNotificationNode;
     private readonly SemaphoreSlim _reconnect = new(1, 1);
@@ -64,9 +67,8 @@ public sealed class MainForm : Form
             Bounds = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)) ? saved : new Rectangle(100, 100, prefs.Width, prefs.Height);
         }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
-        // Draw our own title bar and buttons. CreateParams keeps the native sizing frame without
-        // restoring the system caption; DWM keeps the subtle outer corner shape while the custom
-        // chrome draws its own border.
+        // Draw our own title bar and buttons. The window has no native frame; edge resizing is
+        // handled from the same hit zones below so Windows cannot add its silver sizing strip.
         FormBorderStyle = FormBorderStyle.None;
         _icon.Image = Icon.ToBitmap();
         // Title text hidden per user preference; icon remains in the title bar.
@@ -109,9 +111,9 @@ public sealed class MainForm : Form
         get
         {
             var parameters = base.CreateParams;
-            // Keep the native sizing frame while removing the system caption. WM_NCHITTEST below
-            // supplies custom drag and resize zones for our own title bar and borderless surface.
-            parameters.Style = (parameters.Style & ~WS_CAPTION) | WS_THICKFRAME;
+            // Remove both caption and native sizing frame. A native thick frame is painted by
+            // DWM as a silver edge on some Windows versions even when its color is overridden.
+            parameters.Style &= ~(WS_CAPTION | WS_THICKFRAME);
             return parameters;
         }
     }
@@ -729,6 +731,8 @@ public sealed class MainForm : Form
     }
 
     [DllImport("user32.dll")] private static extern bool ReleaseCapture();
+    [DllImport("user32.dll")] private static extern IntPtr SetCapture(IntPtr hwnd);
+    [DllImport("user32.dll", SetLastError = true)] private static extern bool GetCursorPos(out Point point);
     [DllImport("user32.dll")] private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
     [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     [DllImport("user32.dll", SetLastError = true)] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr insertAfter, int x, int y, int cx, int cy, uint flags);
@@ -755,7 +759,37 @@ public sealed class MainForm : Form
         const int WM_THEMECHANGED = 0x031A;
         const int WM_DWMCOLORIZATIONCOLORCHANGED = 0x0320;
         const int WM_NCHITTEST = 0x84;
+        const int WM_NCLBUTTONDOWN = 0x00A1;
+        const int WM_MOUSEMOVE = 0x0200;
+        const int WM_LBUTTONUP = 0x0202;
+        const int WM_CAPTURECHANGED = 0x0215;
         const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17, HTCAPTION = 2;
+        if (m.Msg == WM_NCLBUTTONDOWN && WindowState != FormWindowState.Maximized)
+        {
+            int hit = unchecked((int)m.WParam.ToInt64());
+            if (hit is HTLEFT or HTRIGHT or HTTOP or HTTOPLEFT or HTTOPRIGHT or HTBOTTOM or HTBOTTOMLEFT or HTBOTTOMRIGHT)
+            {
+                _resizeHit = hit;
+                _resizeStartBounds = Bounds;
+                GetCursorPos(out _resizeStartCursor);
+                SetCapture(Handle);
+                m.Result = IntPtr.Zero;
+                return;
+            }
+        }
+        if (_resizeHit != 0 && m.Msg == WM_MOUSEMOVE)
+        {
+            if (GetCursorPos(out var cursor)) ResizeFromEdge(cursor, _resizeHit);
+            m.Result = IntPtr.Zero;
+            return;
+        }
+        if (_resizeHit != 0 && m.Msg is WM_LBUTTONUP or WM_CAPTURECHANGED)
+        {
+            _resizeHit = 0;
+            if (m.Msg == WM_LBUTTONUP) ReleaseCapture();
+            m.Result = IntPtr.Zero;
+            return;
+        }
         if (m.Msg == WM_NCPAINT)
         {
             // Suppress system non-client painting and restore DWM's frame color in case
@@ -816,6 +850,19 @@ public sealed class MainForm : Form
             if (pt.Y < 34) { m.Result = (IntPtr)HTCAPTION; return; }
         }
         base.WndProc(ref m);
+    }
+
+    private void ResizeFromEdge(Point cursor, int hit)
+    {
+        int dx = cursor.X - _resizeStartCursor.X;
+        int dy = cursor.Y - _resizeStartCursor.Y;
+        int left = _resizeStartBounds.Left, top = _resizeStartBounds.Top;
+        int right = _resizeStartBounds.Right, bottom = _resizeStartBounds.Bottom;
+        if (hit is 10 or 13 or 16) left = Math.Min(_resizeStartBounds.Right - MinimumSize.Width, _resizeStartBounds.Left + dx);
+        if (hit is 11 or 14 or 17) right = Math.Max(_resizeStartBounds.Left + MinimumSize.Width, _resizeStartBounds.Right + dx);
+        if (hit is 12 or 13 or 14) top = Math.Min(_resizeStartBounds.Bottom - MinimumSize.Height, _resizeStartBounds.Top + dy);
+        if (hit is 15 or 16 or 17) bottom = Math.Max(_resizeStartBounds.Top + MinimumSize.Height, _resizeStartBounds.Bottom + dy);
+        Bounds = Rectangle.FromLTRB(left, top, right, bottom);
     }
 
     protected override void Dispose(bool disposing)

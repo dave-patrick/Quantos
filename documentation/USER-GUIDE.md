@@ -53,8 +53,9 @@ to the same gutter as the center view. Drag the center handle to resize the pane
 has a quiet neutral emphasis on its outline; each pane has its own close button. The right sidebar
 keeps its panels on the same neutral card color as the rest of the app, with an 8px inset at the
 window edge. Its Tasks panel uses one heading, a compact add field, and a simple list rather than
-nested task cards. My Day task rows in the docked sidebar stay compact, showing essential status and
-due information. Sidebar cards have an 8px gap. Drag the small grip between two cards to resize
+nested task cards. My Day task rows in the docked sidebar keep the title visible and show essential
+status and due information; project and assignee details remain in the full task views. Sidebar
+cards have an 8px gap. Drag the small grip between two cards to resize
 them; it appears on hover or keyboard focus. The left and right sidebar toggle icons in the top bar
 stay unboxed.
 
