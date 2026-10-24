@@ -108,6 +108,15 @@ foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLU
     if (Test-Path $from) { Copy-Item $from (Join-Path $OwnerRoot $doc) -Force }
 }
 
+$demoVault = Join-Path $OwnerRoot 'Feature Demo Vault'
+if (-not (Test-Path $demoVault)) {
+    $packagedDemoVault = Join-Path $Package 'Feature Demo Vault'
+    if (Test-Path $packagedDemoVault) {
+        Copy-Item -LiteralPath $packagedDemoVault -Destination $demoVault -Recurse
+        Write-Host "Copied the isolated Feature Demo Vault to $demoVault"
+    }
+}
+
 function Start-Client {
     # Remember what the log already says, so only this start's lines are looked at.
     New-LogText | Out-Null

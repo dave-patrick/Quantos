@@ -7,7 +7,7 @@
   import QuickAdd from '../QuickAdd.svelte';
   import Icon from '../Icon.svelte';
 
-  let { today: watched }: { today: string } = $props();
+  let { today: watched, docked = false }: { today: string; docked?: boolean } = $props();
   const today = $derived(watched || isoDate());
 
   const mine = $derived(tasks.list.filter((t) => t.workspace === app.workspace && !t.archived));
@@ -64,7 +64,7 @@
   }
 </script>
 
-<div class="scroll view">
+<div class="scroll view" class:docked>
   <div class="inner">
     <header>
       <div>
@@ -108,7 +108,9 @@
 
 <style>
   .view { flex: 1; padding: 0 28px; }
+  .view.docked { padding: 0 10px; }
   .inner { max-width: 820px; margin: 0 auto; padding: 26px 0 80px; }
+  .docked .inner { padding: 12px 0 24px; }
   h1 { font: 700 28px/1.2 var(--font-display); display: flex; gap: 10px; align-items: center; }
   h1 :global(.icon) { color: var(--warn); }
   header p { margin: 4px 0 10px; }

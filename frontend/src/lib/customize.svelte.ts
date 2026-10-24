@@ -10,11 +10,12 @@ export async function loadCustomizations() {
     shortcutOverrides.map = s?.shortcuts ?? {};
   } catch { shortcutOverrides.map = {}; }
   try {
-    const t = await api.get<{ items?: ToolbarItem[] } | null>('config/toolbar.json');
+    const t = await api.get<{ items?: ToolbarItem[]; showLabels?: boolean } | null>('config/toolbar.json');
     const savedItems = Array.isArray(t?.items) ? t.items : [];
     const items = visibleToolbarItems(savedItems);
     toolbar.items = items.length ? items : defaultToolbar;
-    if (items.length !== savedItems.length) await api.put('config/toolbar.json', { items: toolbar.items });
+    toolbar.showLabels = t?.showLabels ?? false;
+    if (items.length !== savedItems.length) await api.put('config/toolbar.json', { items: toolbar.items, showLabels: toolbar.showLabels });
   } catch { toolbar.items = defaultToolbar; }
 }
 
@@ -28,8 +29,9 @@ export async function saveShortcuts(map: Record<string, string>) {
   await api.put('config/shortcuts.json', { shortcuts: map });
 }
 
-export async function saveToolbar(items: ToolbarItem[]) {
+export async function saveToolbar(items: ToolbarItem[], showLabels = toolbar.showLabels) {
   const visibleItems = visibleToolbarItems(items);
   toolbar.items = visibleItems;
-  await api.put('config/toolbar.json', { items: visibleItems });
+  toolbar.showLabels = showLabels;
+  await api.put('config/toolbar.json', { items: visibleItems, showLabels });
 }

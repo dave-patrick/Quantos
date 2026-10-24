@@ -4,7 +4,7 @@ import type { LinkedFolder, NodeSummary, Status } from './types';
 
 export interface Toast { id: number; message: string; kind: 'info' | 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 
-export type RightTab = 'files' | 'inspector' | 'links' | 'notifications' | 'graph' | 'scratch' | 'tasks' | 'quickadd';
+export type RightTab = 'files' | 'inspector' | 'links' | 'notifications' | 'graph' | 'scratch' | 'tasks' | 'quickadd' | 'myday';
 
 class AppState {
   status = $state<Status | null>(null);
@@ -81,11 +81,21 @@ class AppState {
       let uiTimer: ReturnType<typeof setTimeout> | null = null;
       $effect(() => {
         const wide = typeof innerWidth !== 'number' || innerWidth > 700;
+        // Capture reactive state before scheduling: reads inside setTimeout aren't tracked by
+        // Svelte effects, which otherwise leaves panel changes unsaved after the first render.
+        const leftOpen = this.leftOpen;
+        const rightOpen = this.rightOpen;
+        const rightTab = this.rightTab;
+        const rightTab2 = this.rightTab2;
+        const rightSplit = this.rightSplit;
+        const rightPanels = [...this.rightPanels];
+        const rightHeights = [...this.rightHeights];
+        const theme = this.theme;
         if (uiTimer) clearTimeout(uiTimer);
         uiTimer = setTimeout(() => {
           try {
             const prev = JSON.parse(localStorage.getItem('quantos.ui') ?? '{}');
-            localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? this.leftOpen : prev.leftOpen ?? true, rightOpen: wide ? this.rightOpen : prev.rightOpen ?? true, rightTab: this.rightTab, rightTab2: this.rightTab2, rightSplit: this.rightSplit, rightPanels: this.rightPanels, rightHeights: this.rightHeights, theme: this.theme }));
+            localStorage.setItem('quantos.ui', JSON.stringify({ leftOpen: wide ? leftOpen : prev.leftOpen ?? true, rightOpen: wide ? rightOpen : prev.rightOpen ?? true, rightTab, rightTab2, rightSplit, rightPanels, rightHeights, theme }));
           } catch { /* ignore */ }
         }, 200);
       });

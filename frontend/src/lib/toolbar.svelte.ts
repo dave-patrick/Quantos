@@ -11,6 +11,7 @@ export const defaultToolbar: ToolbarItem[] = [
 
 class Toolbar {
   items = $state<ToolbarItem[]>(defaultToolbar);
+  showLabels = $state(false);
 }
 
 export const toolbar = new Toolbar();

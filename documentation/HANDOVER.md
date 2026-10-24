@@ -74,6 +74,15 @@ open threads and the machine.
   `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
   Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its
   page loaded successfully (HTTP 200). No release was published.
+  The latest UI polish removes the duplicate heading from the right Tasks panel, uses a single compact
+  quick-add field and flat task rows, puts Add a panel inside the last card, restores an 8px inset at
+  the far right edge, and rearranges the header with New beside the workspace, Split and Quick Capture
+  before Search. One Toolbar setting toggles labels on New, Split, Quick Capture and Search together.
+  The right sidebar resize grip is now a hover/focus-only 8px divider with pointer capture and
+  adjacent-card height adjustment; keyboard arrows also resize the focused pair. Its toggle glyph
+  direction is reversed. The silver top edge was caused by writing the maximized client rectangle to
+  the wrong NCCALCSIZE entry; the app now fills the proposed client rect and disables DWM non-client
+  rendering while keeping native resize hit zones.
 
 - **Window chrome, daily stream and the build mark (unreleased, on `main`).** The client draws its
   own caption buttons (a thin dash, a square, a cross, with rounded hover patches and a red close)
@@ -154,3 +163,7 @@ first importers), updating RELEASE-CHECKLIST.md for 1.1/1.2, code signing (needs
 - **The Windows client can't be clicked through headlessly**, and the owner prefers not to have agents
   control their desktop. Verify client changes by building, by a short launch that reads the startup log,
   and by asking the owner to try them.
+
+- **Right-sidebar and demo-vault update (2026-10-23).** The right sidebar can stack three or more panels and now offers My Day in the Add a panel menu. Its cards resize using the subtle inter-card grip. Windows frame/caption colors are both set to the app's neutral gray to address the recurring silver edge. `examples/Feature Demo Vault` contains two feature-rich samples for each built-in node kind (`note`, `daily`, `task`, `person`, `project`, `event`) and each shipped custom feature kind (`goal`, `sprint`, `canvas`). Open it as a separate vault; never copy its dummy records into the owner's personal vault by default.
+  The panel layout save effect was also corrected: it now snapshots reactive state before the debounce timer,
+  so changes to panel membership, ordering and height weights are saved instead of resetting on relaunch.

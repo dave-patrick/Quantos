@@ -21,6 +21,7 @@ Quantos\
   Open in browser.cmd   starts Quantos and opens it in your browser instead
   Self-check.cmd        checks this computer can run Quantos
   Example Vault\        a small vault to explore
+  Feature Demo Vault\   feature-rich dummy records for testing
 ```
 
 - **Windows client:** double-click `Start Quantos.cmd` (or `application\Quantos.exe`).
@@ -41,6 +42,9 @@ The top bar has a taller header with a larger Quantos wordmark and an 8px gap be
 content. The dark appearance uses a slightly lighter neutral gray background. Its quick actions can
 be changed in *Settings › Toolbar*. Daily stream, My Day and Tasks remain available through their navigation shortcuts and app navigation,
 but are no longer offered as top-bar actions.
+The *New* action sits beside the workspace on the left. *Split* and *Quick Capture* sit beside Search on
+the right. In *Settings › Toolbar*, one *Show button labels* option controls labels on all four buttons;
+when it is off, each button shows only its icon.
 
 The left navigation sits in one softly raised panel. Its rows are unboxed; the current view and
 hovered row use a light fill to show their state.
@@ -48,8 +52,20 @@ hovered row use a light fill to show their state.
 Split views appear as two separate cards with a clear gutter between them. The right sidebar aligns
 to the same gutter as the center view. Drag the center handle to resize the panes. The focused pane
 has a quiet neutral emphasis on its outline; each pane has its own close button. The right sidebar
-keeps its panels on the same neutral card color as the rest of the app. The left and right sidebar
-toggle icons in the top bar stay unboxed.
+keeps its panels on the same neutral card color as the rest of the app, with an 8px inset at the
+window edge. Its Tasks panel uses one heading, a compact add field, and a simple list rather than
+nested task cards. Sidebar cards have an 8px gap. Drag the small grip between two cards to resize
+them; it appears on hover or keyboard focus. The left and right sidebar toggle icons in the top bar
+stay unboxed.
+
+Use **Add a panel** at the bottom of the right sidebar to add **My Day** alongside Files, Tasks,
+Scratchpad and the other available panels. Each panel is its own card; drag the subtle grip between
+cards to give them more or less room. The right sidebar can hold three or more panels at once.
+Quantos automatically saves the panels, their order, and their relative heights for the next launch.
+For a safe walkthrough, open `Feature Demo Vault` (beside the application folder in the test copy)
+as a separate vault. The source is `examples/Feature Demo Vault`. It has two sample
+items for each built-in note type and the shipped goal, sprint and canvas types; the records include
+representative properties, links, schedules, trackers, reminders, focus details and canvas edges.
 
 ### If something blocks Quantos
 
@@ -364,8 +380,8 @@ You don't need to back up `client-data\cache\`; it's rebuilt automatically.
 
 The scratchpad is one note for quick jotting. Open it as an always-on-top window with `Ctrl+Alt+J`
 (Windows client), or dock it in the right sidebar (its pencil tab); it's the same note in both.
-The square button at the end of the right sidebar's tabs splits it into two panels, each with its own
-tabs (say, the scratchpad above the file tree); drag the bar between them to resize. Keys
+Use **Add a panel** at the bottom of the right sidebar to stack panels (say, the scratchpad above the
+file tree); drag the grip between cards to resize. Keys
 move text out of it: the selection, or the paragraph the cursor is in, goes to a place and leaves the
 scratchpad. By default `Ctrl+Enter` sends to today's daily note, `Ctrl+Shift+Enter` makes a new note
 and `Ctrl+Alt+Enter` a new task; *Send to…* at the bottom lists them. Add your own in *Settings ›

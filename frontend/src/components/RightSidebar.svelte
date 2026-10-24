@@ -9,6 +9,8 @@
   import Scratchpad from './Scratchpad.svelte';
   import TasksPanel from './TasksPanel.svelte';
   import QuickAdd from './QuickAdd.svelte';
+  import MyDayView from './views/MyDayView.svelte';
+  import { isoDate } from '../lib/dates';
   import Icon from './Icon.svelte';
 
   // The panels that can live in the right sidebar.
@@ -20,7 +22,8 @@
     { key: 'scratch', icon: 'edit', label: 'Scratchpad' },
     { key: 'notifications', icon: 'bell', label: 'Notifications' },
     { key: 'tasks', icon: 'check-square', label: 'Tasks' },
-    { key: 'quickadd', icon: 'plus', label: 'Quick add' }
+    { key: 'quickadd', icon: 'plus', label: 'Quick add' },
+    { key: 'myday', icon: 'sun', label: 'My Day' }
   ];
   const typeOf = (k: RightTab) => types.find((t) => t.key === k)!;
 
@@ -49,39 +52,40 @@
     draggingIndex = null;
   }
 
-  // Per-panel height handles: dragging a divider changes the two adjacent flex ratios.
+  // Drag the grip between two cards to divide their combined height.
   let box = $state<HTMLElement | null>(null);
-  let resizing = $state<number | null>(null); // index of the divider (between panel i and i+1)
-  function down(e: PointerEvent, i: number) {
-    resizing = i;
+  let resizing = $state<{ index: number; startY: number; upper: number; lower: number } | null>(null);
+  function down(e: PointerEvent, index: number) {
+    resizing = { index, startY: e.clientY, upper: app.rightHeights[index] ?? 1, lower: app.rightHeights[index + 1] ?? 1 };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
   function move(e: PointerEvent) {
-    if (resizing === null || !box) return;
-    const r = box.getBoundingClientRect();
-    const total = r.height;
-    const splitY = e.clientY - r.top;
-    // The split point as a fraction of the total height, clamped so neither side vanishes.
-    const frac = Math.min(0.9, Math.max(0.1, splitY / total));
-    // Convert: panels 0..i share [0, frac], panels i+1..end share [frac, 1].
-    const before = app.rightHeights.slice(0, resizing + 1).reduce((a, b) => a + b, 0);
-    const after = app.rightHeights.slice(resizing + 1).reduce((a, b) => a + b, 0);
-    const left = frac * (before + after);
-    const right = (1 - frac) * (before + after);
-    const sum = before + after;
+    if (!resizing || !box) return;
+    const weights = app.rightHeights.reduce((sum, value) => sum + value, 0);
+    const availableHeight = box.clientHeight - 8 - 8 * (app.rightPanels.length - 1);
+    if (availableHeight <= 0 || weights <= 0) return;
+    const pair = resizing.upper + resizing.lower;
+    const delta = (e.clientY - resizing.startY) * weights / availableHeight;
+    const upper = Math.min(pair * 0.9, Math.max(pair * 0.1, resizing.upper + delta));
     const next = [...app.rightHeights];
-    next[resizing] = left * (next[resizing] / before);
-    next[resizing + 1] = right * (next[resizing + 1] / after);
-    // Renormalise so the two sides keep their internal ratios.
-    const leftSum = next.slice(0, resizing + 1).reduce((a, b) => a + b, 0);
-    const rightSum = next.slice(resizing + 1).reduce((a, b) => a + b, 0);
-    if (leftSum > 0 && rightSum > 0) {
-      for (let k = 0; k <= resizing; k++) next[k] = next[k] * (left / leftSum);
-      for (let k = resizing + 1; k < next.length; k++) next[k] = next[k] * (right / rightSum);
-    }
+    next[resizing.index] = upper;
+    next[resizing.index + 1] = pair - upper;
     app.rightHeights = next;
   }
   function up() { resizing = null; }
+  function resizeByKey(e: KeyboardEvent, index: number) {
+    const fraction = e.key === 'ArrowUp' ? -0.05 : e.key === 'ArrowDown' ? 0.05 : 0;
+    if (!fraction) return;
+    e.preventDefault();
+    const upper = app.rightHeights[index] ?? 1;
+    const lower = app.rightHeights[index + 1] ?? 1;
+    const pair = upper + lower;
+    const nextUpper = Math.min(pair * 0.9, Math.max(pair * 0.1, upper + pair * fraction));
+    const next = [...app.rightHeights];
+    next[index] = nextUpper;
+    next[index + 1] = pair - nextUpper;
+    app.rightHeights = next;
+  }
 
   // Add panel menu.
   let addMenu = $state(false);
@@ -118,31 +122,32 @@
         {:else if tab === 'scratch'}<Scratchpad docked />
         {:else if tab === 'tasks'}<TasksPanel />
         {:else if tab === 'quickadd'}<div class="quick"><QuickAdd placeholder="Add a task…" /></div>
+        {:else if tab === 'myday'}<MyDayView today={isoDate()} docked />
         {:else}<NotificationsPanel />{/if}
       </div>
-    </section>
-    {#if i < app.rightPanels.length - 1}
-      <div class="divider" role="separator" aria-orientation="horizontal" aria-label="Resize panels" tabindex="0"
-        onpointerdown={(e) => down(e, i)} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydown={(e) => { const s = e.key === 'ArrowUp' ? -0.05 : e.key === 'ArrowDown' ? 0.05 : 0; if (!s) return; e.preventDefault(); app.rightHeights = app.rightHeights.map((h, j) => j === i ? Math.max(0.05, h + s) : j === i + 1 ? Math.max(0.05, h - s) : h); }}></div>
-    {/if}
-  {/each}
-  {#if available.length}
-    <div class="addwrap">
-      <button class="addbtn" onclick={() => (addMenu = !addMenu)} aria-expanded={addMenu} aria-haspopup="menu"><Icon name="plus" size={14} /> Add a panel</button>
-      {#if addMenu}
-        <div class="addmenu" role="menu">
-          {#each available as t (t.key)}
-            <button role="menuitem" onclick={() => addPanel(t.key)}><Icon name={t.icon} size={14} /> {t.label}</button>
-          {/each}
+      {#if i === app.rightPanels.length - 1 && available.length}
+        <div class="addwrap">
+          <button class="addbtn" onclick={() => (addMenu = !addMenu)} aria-expanded={addMenu} aria-haspopup="menu"><Icon name="plus" size={14} /> Add a panel</button>
+          {#if addMenu}
+            <div class="addmenu" role="menu">
+              {#each available as t (t.key)}
+                <button role="menuitem" onclick={() => addPanel(t.key)}><Icon name={t.icon} size={14} /> {t.label}</button>
+              {/each}
+            </div>
+          {/if}
         </div>
       {/if}
-    </div>
-  {/if}
+    </section>
+    {#if i < app.rightPanels.length - 1}
+      <button class="divider" type="button" aria-label="Resize {typeOf(tab).label} and {typeOf(app.rightPanels[i + 1]).label} panels"
+        title="Drag to resize adjacent panels" onpointerdown={(e) => down(e, i)} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydown={(e) => resizeByKey(e, i)}></button>
+    {/if}
+  {/each}
 </aside>
 
 <style>
-  .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; padding: 0 0 8px; background: transparent; }
-  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; margin: 0 0 8px; background: var(--bg-panel); }
+  .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; padding: 0 8px 8px 0; background: transparent; }
+  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-panel); }
   .part.dragging { opacity: .6; }
   .head { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid var(--line); flex: none; background: var(--bg-panel); cursor: grab; user-select: none; }
   .head:active { cursor: grabbing; }
@@ -153,8 +158,9 @@
   .close:hover { color: var(--danger); background: var(--bg-hover); }
   .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .quick { padding: 8px; }
-  .divider { flex: none; height: 6px; cursor: row-resize; background: var(--line); border-block: 2px solid var(--bg-raised); touch-action: none; }
-  .divider:hover, .divider:focus-visible { background: var(--accent); outline: none; }
+  .divider { flex: none; height: 8px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; cursor: row-resize; touch-action: none; outline: none; }
+  .divider::after { content: ''; width: 34px; height: 2px; border-radius: 2px; background: var(--line-strong); opacity: 0; transition: opacity .12s ease; }
+  .divider:hover::after, .divider:focus-visible::after { opacity: 1; background: var(--text-faint); }
   .addwrap { flex: none; padding: 6px; position: relative; }
   .addbtn { width: 100%; height: 30px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px dashed var(--line-strong); border-radius: 6px; background: none; color: var(--text-faint); cursor: pointer; font-size: 12.5px; }
   .addbtn:hover { color: var(--text); background: var(--bg-hover); border-style: solid; }

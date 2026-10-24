@@ -155,11 +155,16 @@ public sealed class MainForm : Form
 
     private void ApplyFrameBorderColor()
     {
-        // Match DWM's separate sizing frame to the custom window surface. On systems that do
-        // not honor DWMWA_COLOR_NONE, an explicit neutral color still prevents the silver edge.
-        // WS_THICKFRAME and WM_NCHITTEST keep native resizing on every edge.
-        int border = 0x002D2B2A; // COLORREF for RGB(42, 43, 45), the window surface color.
-        DwmSetWindowAttribute(Handle, 34, ref border, sizeof(int));
+        // DWM can restore its silver non-client frame after a redraw. The app draws its own
+        // chrome; keep DWM's non-client renderer off while WM_NCHITTEST supplies resize zones.
+        int ncrpDisabled = 1; // DWMNCRP_DISABLED
+        DwmSetWindowAttribute(Handle, 2, ref ncrpDisabled, sizeof(int)); // DWMWA_NCRENDERING_POLICY
+        // COLOR_NONE can be ignored for a resizable borderless WinForms window on some Windows
+        // builds. Match both the resize frame and caption to the custom title bar instead, so a
+        // DWM redraw cannot bring back the bright silver edge.
+        int surface = 0x002D2B2A; // COLORREF for RGB(42, 43, 45).
+        DwmSetWindowAttribute(Handle, 34, ref surface, sizeof(int)); // DWMWA_BORDER_COLOR
+        DwmSetWindowAttribute(Handle, 35, ref surface, sizeof(int)); // DWMWA_CAPTION_COLOR
     }
 
     public static Icon LoadIcon()
@@ -729,7 +734,6 @@ public sealed class MainForm : Form
     [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     [DllImport("user32.dll")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int flags);
     [DllImport("user32.dll")] private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
-    [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Rect { public int Left, Top, Right, Bottom; }
@@ -737,9 +741,9 @@ public sealed class MainForm : Form
     [StructLayout(LayoutKind.Sequential)]
     private struct MonitorInfo { public int cbSize; public Rect rcMonitor; public Rect rcWork; public uint dwFlags; }
 
-    /// <summary>The four rectangles WM_NCCALCSIZE carries; the third one is the client area.</summary>
+    /// <summary>The three rectangles and WINDOWPOS pointer carried by WM_NCCALCSIZE.</summary>
     [StructLayout(LayoutKind.Sequential)]
-    private struct NonClientCalcSize { public Rect Proposed, Old, Client, Reserved; }
+    private struct NonClientCalcSize { public Rect Proposed, Old, Client; public IntPtr WindowPos; }
 
     protected override void WndProc(ref Message m)
     {
@@ -747,41 +751,46 @@ public sealed class MainForm : Form
         const int WM_NCPAINT = 0x0085;
         const int WM_NCACTIVATE = 0x0086;
         const int WM_WINDOWPOSCHANGED = 0x0047;
+        const int WM_DWMCOMPOSITIONCHANGED = 0x031E;
+        const int WM_THEMECHANGED = 0x031A;
+        const int WM_DWMCOLORIZATIONCOLORCHANGED = 0x0320;
         const int WM_NCHITTEST = 0x84;
         const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17, HTCAPTION = 2;
         if (m.Msg == WM_NCPAINT)
         {
-            // Suppress system non-client painting so only our own title bar shows.
+            // Suppress system non-client painting and restore DWM's frame color in case
+            // Windows reset it during a theme, composition, or activation redraw.
+            ApplyFrameBorderColor();
             m.Result = IntPtr.Zero;
             return;
         }
         if (m.Msg == WM_NCCALCSIZE)
         {
-            // Take over the caption: the client area becomes the whole window, so the system
-            // caption is not drawn and our own title bar sits at the very edge. The frame itself
-            // stays, so Windows keeps the shadow and the rounded corners.
-            if (WindowState == FormWindowState.Maximized && GetWindowRect(Handle, out var window))
+            // Use the full proposed window rectangle as the client rectangle. The previous
+            // implementation wrote the maximized result into rgrc[2], leaving DWM's top edge.
+            var calc = m.WParam == IntPtr.Zero ? default : Marshal.PtrToStructure<NonClientCalcSize>(m.LParam);
+            var client = m.WParam == IntPtr.Zero ? Marshal.PtrToStructure<Rect>(m.LParam) : calc.Proposed;
+            if (WindowState == FormWindowState.Maximized)
             {
                 // A maximized window is made larger than the screen by the frame thickness. Keep
                 // the content on the work area so it does not disappear under the taskbar.
                 var info = new MonitorInfo { cbSize = Marshal.SizeOf<MonitorInfo>() };
                 if (GetMonitorInfo(MonitorFromWindow(Handle, 2), ref info))
                 {
-                    var calc = Marshal.PtrToStructure<NonClientCalcSize>(m.LParam);
-                    calc.Client = new Rect
-                    {
-                        Left = info.rcWork.Left - window.Left,
-                        Top = info.rcWork.Top - window.Top,
-                        Right = info.rcWork.Right - window.Left,
-                        Bottom = info.rcWork.Bottom - window.Top
-                    };
-                    Marshal.StructureToPtr(calc, m.LParam, false);
+                    client = info.rcWork;
                 }
+            }
+            if (m.WParam == IntPtr.Zero)
+                Marshal.StructureToPtr(client, m.LParam, false);
+            else
+            {
+                calc.Proposed = client;
+                Marshal.StructureToPtr(calc, m.LParam, false);
             }
             m.Result = IntPtr.Zero;
             return;
         }
-        if (m.Msg is WM_NCACTIVATE or WM_WINDOWPOSCHANGED)
+        if (m.Msg is WM_NCACTIVATE or WM_WINDOWPOSCHANGED or WM_DWMCOMPOSITIONCHANGED or WM_THEMECHANGED or WM_DWMCOLORIZATIONCOLORCHANGED)
         {
             base.WndProc(ref m);
             ApplyFrameBorderColor();
