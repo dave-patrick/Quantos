@@ -80,6 +80,10 @@ open threads and the machine.
   Frontend check reports 0 errors and 10 warnings; all 97 frontend tests and 151 .NET tests pass.
   The Windows x64 package validated, the old app closed, and the new client relaunched successfully
   with page load HTTP 200.
+  The silver top edge appeared again because the client re-applied a DWM border color on activation
+  and window-position changes. Build `86f7a94` sets DWM border and caption colors to `DWMWA_COLOR_NONE`
+  and continues to suppress non-client painting. The Windows x64 package passed validation; 97
+  frontend and 151 .NET tests passed; the old client closed, and the updated app relaunched with HTTP 200.
   The latest UI polish removes the duplicate heading from the right Tasks panel, uses a single compact
   quick-add field and flat task rows, puts Add a panel inside the last card, restores an 8px inset at
   the far right edge, and rearranges the header with New beside the workspace, Split and Quick Capture
