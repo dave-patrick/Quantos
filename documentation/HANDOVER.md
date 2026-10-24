@@ -64,8 +64,8 @@ open threads and the machine.
   longer has a redundant spacer row; the main view and navigation align vertically. Split panes are
   separate neutral cards with an 8px gutter and no resting divider line; the active pane uses a quiet
   neutral outline and surface tint. The right sidebar has no full-height divider and uses the same
-  neutral card surface. Header toggles use gray pressed backgrounds rather than the blue accent wash.
-  The bright native DWM frame edge is suppressed while preserving all-edge resizing. The package
+  neutral card surface. Header sidebar toggle icons stay unboxed in active and hover states, and the extra blank space below the header was removed.
+  The bright native DWM frame edge is suppressed after the window is shown while preserving all-edge resizing. The package
   script now stops if Vite fails, preventing an old frontend from slipping into a new package.
   `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
   Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its

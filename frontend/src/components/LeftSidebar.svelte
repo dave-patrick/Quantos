@@ -278,7 +278,7 @@
   section { display: grid; gap: 1px; margin-bottom: 14px; }
   .heading { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 0; background: none; font: 600 10.5px/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); text-align: left; }
   .heading:hover { color: var(--text-muted); }
-  .sidebar { grid-area: left; display: flex; flex-direction: column; min-height: 0; background: var(--bg-panel); border: 1px solid var(--line); box-shadow: 0 4px 14px rgb(0 0 0 / 0.16); border-radius: 14px; margin: 8px 0 8px 14px; overflow: hidden; }
+  .sidebar { grid-area: left; display: flex; flex-direction: column; min-height: 0; background: var(--bg-panel); border: 1px solid var(--line); box-shadow: 0 4px 14px rgb(0 0 0 / 0.16); border-radius: 14px; margin: 0 0 8px 14px; overflow: hidden; }
   .item { display: flex; align-items: center; gap: 9px; width: 100%; padding: calc(6px * var(--d)) 10px calc(6px * var(--d)) 12px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--text-soft); font-size: 14px; text-align: left; margin-bottom: 0; box-shadow: none; }
   .item:hover { background: var(--bg-hover); color: var(--text); border-color: transparent; box-shadow: none; }
   .item.active { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent-strong); border-color: transparent; box-shadow: none; }

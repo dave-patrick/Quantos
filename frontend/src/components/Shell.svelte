@@ -70,7 +70,7 @@
   .shell.left { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0; }
   .shell.right { grid-template-columns: 0 minmax(0, 1fr) var(--rightbar-w); }
   .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--rightbar-w); }
-  .center { grid-area: center; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: transparent; margin: 8px 0; overflow: visible; }
+  .center { grid-area: center; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: transparent; margin: 0 0 8px; overflow: visible; }
   @media (max-width: 700px) {
     .shell, .shell.left, .shell.right, .shell.left.right { grid-template-columns: 0 minmax(0, 1fr) 0; grid-template-rows: 60px minmax(0, 1fr) var(--statusbar-h); }
     .shell.left :global(.sidebar), .shell.right :global(.rightbar) {

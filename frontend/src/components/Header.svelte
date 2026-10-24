@@ -49,10 +49,12 @@
 
 <style>
   .header { grid-area: header; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 8px;
-    border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--bg-raised), color-mix(in srgb, var(--bg-raised) 85%, black 5%)); min-width: 0; margin: 8px 8px 4px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.2), 0 1px 3px rgb(0 0 0 / 0.15); }
+    border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--bg-raised), color-mix(in srgb, var(--bg-raised) 85%, black 5%)); min-width: 0; margin: 8px 8px 0; box-shadow: 0 4px 12px rgb(0 0 0 / 0.2), 0 1px 3px rgb(0 0 0 / 0.15); }
   .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .brand > .icon-btn, .right > .icon-btn { width: 32px; height: 32px; border-radius: 8px; }
-  .header .icon-btn[aria-pressed='true'] { background: var(--bg-active); color: var(--accent-strong); }
+  .header .brand > .icon-btn, .header .right > .icon-btn { background: transparent; }
+  .header .brand > .icon-btn:hover, .header .right > .icon-btn:hover { background: transparent; color: var(--text); }
+  .header .icon-btn[aria-pressed='true'] { background: transparent; color: var(--accent-strong); }
   .wordmark { display: inline-flex; height: 23.75px; margin: 0 4px 0 2px; color: var(--text); flex: none; }
   .wordmark :global(svg) { height: 100%; width: auto; }
   .toolbar { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }

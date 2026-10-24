@@ -123,6 +123,13 @@ public sealed class MainForm : Form
         ApplyFrameBorderColor();
     }
 
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        // Reapply after Windows finishes composing the visible custom frame.
+        ApplyFrameBorderColor();
+    }
+
     protected override void OnActivated(EventArgs e)
     {
         base.OnActivated(e);
