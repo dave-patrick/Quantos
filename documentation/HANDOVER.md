@@ -52,11 +52,11 @@ open threads and the machine.
   elsewhere. The dark background is a lighter neutral gray (`#2a2b2d`), with darker tinted gray
   cards (`#202123`); the native window bar matches the page background. Frontend check and all 97
   frontend tests pass; all 151 .NET tests pass.
-  The latest adjustment reduces the vertical gap between the header and content, aligns the right
-  sidebar card to the same gutter as the center pane, and colors the DWM sizing frame to match the
-  app's neutral background while retaining edge and corner resizing. These newest adjustments still
-  passed `svelte-check` (0 errors, 14 existing warnings), all 97 frontend tests and 151 .NET tests;
-  the Windows x64 build and package validation succeeded. Its three application files were copied to
+  The latest adjustment restores an 8px gap below the header to match card spacing, aligns the right
+  sidebar card to the same gutter as the center pane, and reapplies the DWM sizing-frame color after
+  Windows redraws the frame while retaining edge and corner resizing. The updated source passed
+  `svelte-check` (0 errors, 14 warnings), all 97 frontend tests and 151 .NET tests; the Windows x64
+  build and package validation succeeded. Its three application files were staged to
   `C:\Users\davem\Apps\Quantos\Quantos\application`; previous executables are preserved
   as backups. The prior process was closed, the updated copy was relaunched, and its log confirms the
   page loaded successfully with HTTP 200. The sidebar is now one subtly lighter card with unboxed

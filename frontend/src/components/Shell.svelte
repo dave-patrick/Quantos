@@ -65,7 +65,7 @@
     grid-template-columns: 0 minmax(0, 1fr) 0;
     grid-template-rows: 60px minmax(0, 1fr) var(--statusbar-h);
     grid-template-areas: 'header header header' 'left center right' 'status status status';
-    gap: 4px 8px;
+    gap: 8px;
   }
   .shell.left { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0; }
   .shell.right { grid-template-columns: 0 minmax(0, 1fr) var(--rightbar-w); }

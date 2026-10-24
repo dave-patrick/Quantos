@@ -33,6 +33,7 @@ public sealed class MainForm : Form
     private readonly HashSet<string> _approvedTerminals = [];
     private readonly HashSet<string> _promptedApprovals = [];
     private bool _exiting, _recovering;
+    private bool _frameBorderColorQueued;
     private TaskCompletionSource<int>? _flush;
     private string? _lastNotificationNode;
     private readonly SemaphoreSlim _reconnect = new(1, 1);
@@ -126,20 +127,30 @@ public sealed class MainForm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
-        // Reapply after Windows finishes composing the visible custom frame.
-        ApplyFrameBorderColor();
+        QueueFrameBorderColor();
     }
 
     protected override void OnActivated(EventArgs e)
     {
         base.OnActivated(e);
-        ApplyFrameBorderColor();
+        QueueFrameBorderColor();
     }
 
     protected override void OnDeactivate(EventArgs e)
     {
         base.OnDeactivate(e);
-        ApplyFrameBorderColor();
+        QueueFrameBorderColor();
+    }
+
+    private void QueueFrameBorderColor()
+    {
+        if (!IsHandleCreated || IsDisposed || Disposing || _frameBorderColorQueued) return;
+        _frameBorderColorQueued = true;
+        BeginInvoke((MethodInvoker)(() =>
+        {
+            _frameBorderColorQueued = false;
+            if (!IsDisposed && !Disposing) ApplyFrameBorderColor();
+        }));
     }
 
     private void ApplyFrameBorderColor()
@@ -734,6 +745,8 @@ public sealed class MainForm : Form
     {
         const int WM_NCCALCSIZE = 0x83;
         const int WM_NCPAINT = 0x0085;
+        const int WM_NCACTIVATE = 0x0086;
+        const int WM_WINDOWPOSCHANGED = 0x0047;
         const int WM_NCHITTEST = 0x84;
         const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17, HTCAPTION = 2;
         if (m.Msg == WM_NCPAINT)
@@ -766,6 +779,13 @@ public sealed class MainForm : Form
                 }
             }
             m.Result = IntPtr.Zero;
+            return;
+        }
+        if (m.Msg is WM_NCACTIVATE or WM_WINDOWPOSCHANGED)
+        {
+            base.WndProc(ref m);
+            ApplyFrameBorderColor();
+            QueueFrameBorderColor();
             return;
         }
         if (m.Msg == WM_NCHITTEST && WindowState != FormWindowState.Maximized)

@@ -37,7 +37,7 @@ Closing the window **minimizes** Quantos; it keeps running for reminders and qui
 use **Exit** from the tray icon menu. Exit saves your open notes first and warns you if anything
 couldn't be saved.
 
-The top bar has a taller header with a larger Quantos wordmark and a compact gap before the main
+The top bar has a taller header with a larger Quantos wordmark and an 8px gap before the main
 content. The dark appearance uses a slightly lighter neutral gray background. Its quick actions can
 be changed in *Settings › Toolbar*. Daily stream, My Day and Tasks remain available through their navigation shortcuts and app navigation,
 but are no longer offered as top-bar actions.
