@@ -75,6 +75,11 @@ open threads and the machine.
   `svelte-check` reports 0 errors, all 97 frontend tests pass, and all 151 .NET tests pass. The latest
   Windows package was rebuilt and staged; the old client closed, the updated copy relaunched, and its
   page loaded successfully (HTTP 200). No release was published.
+  Maximize/restore and tray hide/reopen could leave the frameless window's drawn client area out of
+  alignment with edge hit targets. Build `fe96398` keeps the OS-proposed client rectangle through
+  `WM_NCCALCSIZE` and forces a deferred native frame/layout refresh after state changes and re-show.
+  The Windows x64 package validated and was staged; the old process closed and the new client loaded
+  successfully (HTTP 200). No release was published.
   In build `9fcce4c`, the Notes List uses single-line rows and a Preview toggle that remembers the
   user's choice. Task priority strips are red for P1, orange for P2, green for P3 and blue for P4.
   Frontend check reports 0 errors and 10 warnings; all 97 frontend tests and 151 .NET tests pass.
