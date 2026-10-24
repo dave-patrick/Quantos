@@ -144,10 +144,10 @@ public sealed class MainForm : Form
 
     private void ApplyFrameBorderColor()
     {
-        // The custom title bar draws its own chrome. Suppress DWM's separate border so the
-        // bright native top edge does not appear around the custom frame. WS_THICKFRAME and
-        // WM_NCHITTEST still provide native resizing on every edge.
-        int border = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
+        // Match DWM's separate sizing frame to the custom window surface. On systems that do
+        // not honor DWMWA_COLOR_NONE, an explicit neutral color still prevents the silver edge.
+        // WS_THICKFRAME and WM_NCHITTEST keep native resizing on every edge.
+        int border = 0x002D2B2A; // COLORREF for RGB(42, 43, 45), the window surface color.
         DwmSetWindowAttribute(Handle, 34, ref border, sizeof(int));
     }
 

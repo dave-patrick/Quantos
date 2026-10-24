@@ -24,7 +24,7 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   src/Quantos.Backend (API, security), src/Quantos.Client (Windows client, updater), src/Quantos.Cli
   (CLI + MCP + agent tool export), frontend (Svelte), tests/Quantos.Tests (xUnit), frontend/tests (Vitest).
 - Build with `pwsh build/build.ps1`; test with `dotnet test tests/Quantos.Tests` and `npx vitest run` in frontend.
-- The owner runs Quantos from `C:\Users\davem\Quantos\Quantos\application` (vault in
+- The owner tests Quantos from `C:\Users\davem\Apps\Quantos\Quantos\application` (vault in
   `C:\Users\davem\Quantos\Vault`). After every build, stage it there with
   `pwsh tools/dev/stage.ps1`: it closes the client, replaces the three programs with the ones from
   `publish\Quantos\application` (rename the old ones to `*.old` first — a running `.exe` can be

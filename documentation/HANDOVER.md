@@ -23,9 +23,9 @@ open threads and the machine.
   the owner how to do something in the app, give the exact place (*Settings › Shortcuts*) and keys.
 - **Explain cause and effect** when something was broken: what was actually wrong, not just that it's
   fixed. Admit when something couldn't be reproduced or tested.
-- **Every new build is staged into the owner's copy of the app, and the app is restarted.** The owner
-  runs Quantos from `C:\Users\davem\Quantos\Quantos\application` (their vault is
-  `C:\Users\davem\Quantos\Vault`). `pwsh tools/dev/stage.ps1` does the whole thing: it closes the
+- **Every new test build is staged into the owner's test copy of the app, and the app is restarted.**
+  The owner currently tests from `C:\Users\davem\Apps\Quantos\Quantos\application`; the vault stays
+  at `C:\Users\davem\Quantos\Vault`. `pwsh tools/dev/stage.ps1` closes the
   running client, replaces the three programs in that `application` folder with the ones from
   `publish\Quantos\application`, refreshes the documents, and starts `Quantos.exe` again. The owner
   has asked for this to be done for each new release without asking again. Two things to know:
@@ -52,8 +52,12 @@ open threads and the machine.
   elsewhere. The dark background is a lighter neutral gray (`#2a2b2d`), with darker tinted gray
   cards (`#202123`); the native window bar matches the page background. Frontend check and all 97
   frontend tests pass; all 151 .NET tests pass.
-  Windows x64 version 0.1.6.1 was rebuilt and package-validated, and its three application files
-  copied to `C:\Users\davem\Apps\Quantos\Quantos\application`; previous executables are preserved
+  The latest adjustment reduces the vertical gap between the header and content, aligns the right
+  sidebar card to the same gutter as the center pane, and colors the DWM sizing frame to match the
+  app's neutral background while retaining edge and corner resizing. These newest adjustments still
+  passed `svelte-check` (0 errors, 14 existing warnings), all 97 frontend tests and 151 .NET tests;
+  the Windows x64 build and package validation succeeded. Its three application files were copied to
+  `C:\Users\davem\Apps\Quantos\Quantos\application`; previous executables are preserved
   as backups. The prior process was closed, the updated copy was relaunched, and its log confirms the
   page loaded successfully with HTTP 200. The sidebar is now one subtly lighter card with unboxed
   rows and a wider left gutter. Sidebar toggles now use directional panel icons, scrollbars are hidden

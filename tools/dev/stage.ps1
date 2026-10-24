@@ -3,7 +3,7 @@
   Stages a freshly built Quantos into the owner's copy of the app and starts it again.
 
 .DESCRIPTION
-  The owner runs Quantos from C:\Users\davem\Quantos\Quantos\application (their vault is
+  The owner tests Quantos from C:\Users\davem\Apps\Quantos\Quantos\application (their vault is
   C:\Users\davem\Quantos\Vault), so a build that isn't put there isn't being used. This script:
     1. optionally runs build/build.ps1,
     2. closes the running client and waits for its WebView2 browser processes to go,
@@ -24,7 +24,7 @@
 #>
 param(
     [switch]$Build,
-    [string]$OwnerRoot = 'C:\Users\davem\Quantos\Quantos',
+    [string]$OwnerRoot = 'C:\Users\davem\Apps\Quantos\Quantos',
     [string]$Package = 'C:\repos\Quantos\publish\Quantos'
 )
 $ErrorActionPreference = 'Stop'

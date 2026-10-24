@@ -5,7 +5,7 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); 0.1.6.1 local test build running with refined split-pane tabs and resize divider._
+_Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); local test build 0.1.6.1 updated and relaunched._
 
 ## 1. Where things stand
 
@@ -15,7 +15,7 @@ _Last updated: 2026-10-23, at version 0.1.6 (released as v0.1.6); 0.1.6.1 local 
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
 | Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass. `svelte-check` 0 errors. |
-| Current test build | Version 0.1.6.1; latest source removes the redundant shell spacer row, aligns panel margins, separates split panes into neutral cards with an 8px gutter, and highlights the active card with a quiet neutral outline and surface tint, with less empty space below the header. The tab-name strip stays hidden, with Next tab/Previous tab commands in the command palette. The right sidebar has no full-height divider and uses the same neutral card surface. Header sidebar toggles stay unboxed in active and hover states. The bright native frame edge is suppressed and the no-border setting is reapplied after the window appears, while preserving native resizing on all sides. Also includes the lighter neutral gray background (`#2a2b2d`), darker gray cards (`#202123`), hidden scrollbar visuals, unified sidebar with wider left gutter, and native resizing from all edges and corners. `svelte-check` reports 0 errors, all 97 frontend tests and 151 .NET tests pass. The Windows x64 package was rebuilt and staged to `C:\Users\davem\Apps\Quantos\Quantos\application`; the relaunched client loaded successfully (HTTP 200). No release published. |
+| Current test build | Version 0.1.6.1; latest source keeps the header row at 60px, reduces the vertical shell gap and header top margin, and removes the right sidebar's extra horizontal inset so its card aligns with the 8px center gutter. DWM's outer sizing border matches the neutral app surface, with native resize hit zones on every edge and corner. The split-pane cards, active-card emphasis, unboxed toolbar toggles, and neutral surfaces remain as documented below. `svelte-check` reports 0 errors (14 existing warnings), all 97 frontend tests and 151 .NET tests pass. Windows x64 build/package validation succeeded. The three application files were staged to `C:\Users\davem\Apps\Quantos\Quantos\application`; previous files were preserved as `.old` backups, the old process was closed, and the relaunched client loaded successfully (HTTP 200). No release published. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
 Version numbers are product versions (0.1.x) and are separate from the plan's "Release 1.x" names.
@@ -194,8 +194,8 @@ had no shortcut handling).
    The asset must be named `Quantos-x.y.z-win-x64.zip`: the in-app updater looks for that name and needs
    the SHA-256 `digest` GitHub records for it.
 5. Add the release to `CHANGELOG.md` and update this file.
-6. **Stage the new build into the owner's copy and restart it.** The owner runs Quantos from
-   `C:\Users\davem\Quantos\Quantos\application` (their vault is `C:\Users\davem\Quantos\Vault`), so a
+6. **Stage the new test build into the owner's app copy and restart it.** The owner tests from
+   `C:\Users\davem\Apps\Quantos\Quantos\application` (their vault is `C:\Users\davem\Quantos\Vault`), so a
    build that isn't put there isn't being used. `pwsh tools/dev/stage.ps1` closes the running client,
    replaces the three programs in that `application` folder with the ones from
    `publish\Quantos\application` — renaming the old files to `*.old` first, because a running `.exe`
