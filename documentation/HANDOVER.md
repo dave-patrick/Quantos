@@ -55,8 +55,12 @@ open threads and the machine.
   runtime files, never in the repo. All 167 .NET tests pass. Android phone/tablet x64 runtime tests
   verified local edits/restart, actual offline edit/reconnect to Windows, server MCP write on/off and
   native Copy, tablet splits, native PDF page rendering, a valid 13-file portable ZIP export, import
-  into a separate vault preserving the original, and approved Android shell execution. Physical ARM64
-  testing, microphone/notification delivery and native printing remain separate acceptance checks.
+  into a separate vault preserving the original, and approved Android shell execution. On 2026-10-25,
+  the ARM64 APK was installed on the owner's SM-S948U phone and connected to production. All 24 nodes
+  synced with zero conflicts/errors; app restart preserved the connection and the phone confirmed
+  enabled server MCP write access. Tailscale's included-app VPN list must include Quantos; the new
+  app initially could not resolve the private server hostname until it was included. Microphone/
+  notification delivery, native printing and broader physical-device acceptance remain separate checks.
   No public APK release was made.
   Emulator 37.2.12 software GPU modes crashed the whole VM on this Windows/Arc host; `-gpu host`
   works. Run one emulator at a time to avoid memory pressure. Native evidence is in ignored

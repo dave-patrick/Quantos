@@ -36,6 +36,11 @@ editing continues offline and synchronises on reconnect. The server MCP works wh
 are closed. **Settings › MCP › Shared server MCP** controls its note/task write access and copies
 its connection configuration.
 
+For a Tailscale-only server, Quantos must be allowed through the phone's VPN. If Tailscale uses
+an included-app list, open **Tailscale › Settings › App split tunneling** and include **Quantos**
+(`com.atomic22.quantos`). Otherwise the private server hostname may fail to resolve even while
+Tailscale shows Connected.
+
 ## Build
 
 Install .NET 10, the .NET Android workload (`dotnet workload install android`), JDK 17+, Android

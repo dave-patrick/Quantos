@@ -43,8 +43,12 @@ _Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/ser
   uploaded, zero conflicts. MCP write access is enabled and persisted across a server restart;
   real authenticated MCP initialize/tools-list returned all nine tools. The synthetic QA server
   is stopped; its volume is retained.
-- Test APKs are debug-signed, not a public release. No physical ARM64 handset acceptance, real
-  microphone/notification delivery, full backup restore or every inherited view has been manually
+- Physical ARM64 install/connection verified on the owner's SM-S948U phone (2026-10-25): 24 nodes,
+  successful production sync, zero conflicts/errors, and saved connection/MCP write status confirmed
+  after app restart. The phone's Tailscale included-app list includes Quantos; this is necessary for
+  its private server DNS/routing.
+- Test APKs are debug-signed, not a public release. Broader physical-device acceptance, real
+  microphone/notification delivery, full backup restore or every inherited view has not been manually
   exercised. Android may stop background work; reminders/sync resume when reopened. Server migration
   is documented and preserves the server id/data, but a hosted migration has not been performed.
 
