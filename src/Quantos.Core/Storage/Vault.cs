@@ -26,6 +26,8 @@ public sealed partial class Vault
     /// the same files. A linked folder is a scope of its own, named like a workspace but never the
     /// same as one, so the two can be told apart.</summary>
     public Dictionary<string, string> LinkedRoots { get; } = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>Explicit folder-bridge opt-in only. Ordinary device links remain private and never sync.</summary>
+    public HashSet<string> SyncLinkedFolders { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public string Workspaces => Path.Combine(Root, "workspaces");
     public string Attachments => Path.Combine(Root, "attachments");

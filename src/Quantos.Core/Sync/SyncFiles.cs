@@ -29,6 +29,20 @@ public static class SyncFiles
         if (IsDeviceState(path)) throw new QuantosException("Workspace layout belongs to this device and is not synced.");
         if (parts.Any(p => p is "" or "." or ".." || p.Any(char.IsControl) || p.EndsWith('.') || p.EndsWith(' ')))
             throw new QuantosException("Invalid sync path.");
+        if (vault.SyncLinkedFolders.Count > 0)
+        {
+            if (parts.Length < 4 || parts[0] != "workspaces" || !vault.SyncLinkedFolders.Contains(parts[1]) || parts[2] != "nodes" || !path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                throw new QuantosException("The folder bridge only syncs Markdown in its selected workspace.");
+            var linked = vault.Absolute($"{Vault.LinkedPrefix}/{parts[1]}/{string.Join('/', parts.Skip(3))}");
+            var root = Path.GetFullPath(vault.LinkedRoots[parts[1]]);
+            if (!Directory.Exists(root)) throw new QuantosException("The linked source folder is unavailable. Folder sync is paused.", 503);
+            for (FileSystemInfo? item = new FileInfo(linked); item is not null; item = item is FileInfo file ? file.Directory : ((DirectoryInfo)item).Parent)
+            {
+                if (item.LinkTarget is not null) throw new QuantosException("The folder bridge cannot follow symbolic links.");
+                if (Vault.PathEquals(item.FullName, root)) break;
+            }
+            return linked;
+        }
         if (!(parts.Length == 1 && Configs.Contains(path)) && !(parts.Length > 1 && Roots.Contains(parts[0])))
             throw new QuantosException("This file belongs to the device and cannot be synced.");
         if (path.EndsWith(AtomicFile.TempSuffix, StringComparison.OrdinalIgnoreCase)) throw new QuantosException("Temporary files cannot be synced.");
@@ -53,6 +67,28 @@ public static class SyncFiles
     public static IReadOnlyList<SyncFile> Manifest(WriteService writes) => writes.Exclusive(() =>
     {
         var entries = new List<SyncFile>();
+        if (writes.Vault.SyncLinkedFolders.Count > 0)
+        {
+            var folderOptions = new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = false };
+            foreach (var name in writes.Vault.SyncLinkedFolders)
+            {
+                var root = writes.Vault.LinkedRoots[name];
+                if (!Directory.Exists(root)) throw new QuantosException("The linked source folder is unavailable. Folder sync is paused.", 503);
+                var count = 0;
+                foreach (var file in Directory.EnumerateFiles(root, "*", folderOptions).Where(f => f.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var path = $"workspaces/{name}/nodes/{Path.GetRelativePath(root, file).Replace('\\', '/')}";
+                    Validate(writes.Vault, path);
+                    var size = new FileInfo(file).Length;
+                    if (size > MaxFileBytes) throw new QuantosException("A source note is too large to sync.");
+                    var hash = HashFile(file) ?? throw new QuantosException("A source note changed while scanning. Retry folder sync.", 409);
+                    entries.Add(new(path, hash, size));
+                    if (++count > 100000) throw new QuantosException("The linked folder has too many notes.");
+                }
+                if (count == 0) throw new QuantosException("The linked source folder is empty or unavailable. Folder sync is paused to protect existing notes.", 503);
+            }
+            return (IReadOnlyList<SyncFile>)entries;
+        }
         void Add(string file)
         {
             var path = writes.Vault.Relative(file);

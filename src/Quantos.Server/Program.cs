@@ -30,6 +30,7 @@ var mcpHash = mcpToken.Length >= 32 ? SHA256.HashData(Encoding.UTF8.GetBytes(mcp
 var paths = new QuantosPaths(Path.Combine(data, "client-data"));
 var vault = new VaultSession(Path.Combine(data, "Vault"), paths);
 vault.Start();
+vault.StartWatching();
 var identityFile = Path.Combine(data, "server-id");
 if (!File.Exists(identityFile)) AtomicFile.WriteAllText(identityFile, Guid.NewGuid().ToString());
 var identity = File.ReadAllText(identityFile).Trim();

@@ -6,6 +6,43 @@ all their local features and continue editing when disconnected. They sync every
 while running and connected. The first sync combines the two vaults; back up an existing vault
 before connecting it.
 
+## Link a folder managed by Google Drive or another app
+
+Run the optional **folder bridge on the host that has the original folder**. It keeps the shared
+server's workspace and the original Markdown files in sync in both directions. Windows and Android
+then use that shared workspace normally, including offline edits. Other programs can keep using the
+original folder. JSON, text files, application configuration and other non-Markdown files are excluded.
+The server stores its own copy in its persistent volume; Google Drive is not used for its database,
+locks, checkpoints or recovery records.
+
+Build with `pwsh build/folder-bridge.ps1`, copy the executable to the server host, and run
+`server/install-folder-bridge.ps1` there with `-Folder`, `-Workspace`, `-Server`, `-TokenFile`,
+`-Binary` and `-Start`. The token file is the existing protected **app server key**, not the MCP key.
+For example, use folder `G:\My Drive\Notes` and workspace `shared-notes`. The installer registers a
+hidden task for the current user's interactive session, where Google Drive is available; it starts
+at sign-in and polls every 15 seconds while running. Keep that user signed in. Configure each folder
+as a separate workspace/task. State defaults to `~/Apps/QuantosFolderBridge/<workspace>/` with private
+ACLs. Source, workspace and pinned server identity cannot silently change under an old checkpoint.
+
+Before the first connection, back up both copies. If a Windows app already links the same source
+through Google Drive, unlink that **local Quantos link**, leaving its files intact, then use the shared
+workspace instead. Otherwise the same note identities would be indexed twice.
+
+Transfers use persisted three-way hashes and conditional writes. Outside edits and app edits made
+concurrently keep both versions for review, including edit-versus-delete. Replaced versions remain
+in recovery outside the source folder. An unavailable/empty source, an emptied established server
+workspace, or a large removal batch pauses the bridge instead of propagating a mass deletion.
+Ordinary Quantos note adoption still applies on the server: Markdown without a note identity can
+receive one; unknown frontmatter and content are otherwise preserved by exact file transfers.
+
+`status.json` records transfer counts, conflict count or the reason for a pause. Full conflict versions
+are retained under `sync/conflicts/`. Stop the folder's scheduled task before running a manual check
+with the same arguments plus `--once`, or resolving a reviewed conflict with
+`--resolve <id> --keep folder` / `--keep server`. Restart the task afterwards. Never delete checkpoints
+to dismiss conflicts or an unavailable-drive warning. Unlinking is done by stopping the task; it leaves
+both the original folder and the server workspace intact. When migrating hosts, transfer bridge state,
+recovery and access to the original folder too, and keep only one running bridge for that folder.
+
 ## Connect and review changes
 
 In **Settings › Shared vault**, enter the server's HTTPS address and app server key, then choose

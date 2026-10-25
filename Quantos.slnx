@@ -4,6 +4,7 @@
     <Project Path="src/Quantos.Cli/Quantos.Cli.csproj" />
     <Project Path="src/Quantos.Client/Quantos.Client.csproj" />
     <Project Path="src/Quantos.Core/Quantos.Core.csproj" />
+    <Project Path="src/Quantos.FolderBridge/Quantos.FolderBridge.csproj" />
     <Project Path="src/Quantos.Server/Quantos.Server.csproj" />
   </Folder>
   <Folder Name="/tests/">

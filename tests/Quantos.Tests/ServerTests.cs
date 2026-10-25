@@ -14,6 +14,35 @@ namespace Quantos.Tests;
 public sealed class ServerTests
 {
     [Fact]
+    public async Task Synced_notes_enter_the_live_server_index_without_a_restart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "quantos-server-test", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var tokenFile = Path.Combine(root, "server-token");
+        var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        await File.WriteAllTextAsync(tokenFile, token);
+        try
+        {
+            await using var app = Quantos.Server.Program.Build(["--urls", "http://127.0.0.1:0"], root, tokenFile);
+            await app.StartAsync();
+            var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
+            using var http = new HttpClient { BaseAddress = new Uri(address) };
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var id = Quantos.Core.Ulid.New();
+            var text = $"---\nid: {id}\ntitle: Live shared note\ntype: note\nworkspace: videos\n---\nBridge content";
+            using var request = new HttpRequestMessage(HttpMethod.Put, "sync/file?path=workspaces/videos/nodes/live.md") { Content = new ByteArrayContent(Encoding.UTF8.GetBytes(text)) };
+            request.Headers.TryAddWithoutValidation("If-Match", "\"missing\"");
+            (await http.SendAsync(request)).EnsureSuccessStatusCode();
+            var session = app.Services.GetRequiredService<Quantos.Core.VaultSession>();
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (session.Cache.PathOf(id) is null && DateTime.UtcNow < deadline) await Task.Delay(50);
+            Assert.Contains("Bridge content", session.Writes.Require(id).Body);
+            await app.StopAsync();
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } }
+    }
+
+    [Fact]
     public async Task Server_requires_auth_and_conditional_writes_and_keeps_identity_after_restart()
     {
         var root = Path.Combine(Path.GetTempPath(), "quantos-server-test", Guid.NewGuid().ToString("N"));

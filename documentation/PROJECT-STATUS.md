@@ -9,6 +9,12 @@ _Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/ser
 
 ### Android and shared vault (owner-approved scope, 2026-10-24)
 
+- `src/Quantos.FolderBridge/` adds an optional host worker for a folder managed by Google Drive or
+  another app. It exposes only that folder's Markdown as one shared workspace using the existing
+  conditional three-way sync and WriteService. Runtime state/recovery stay outside the source;
+  unavailable/empty folders and large removal batches pause. Ordinary device links remain local.
+  Four bridge tests and the live server-index integration test pass. Host deployment and verification
+  against the owner's Videos folder are in progress; see HANDOVER and SERVER.md.
 - **Phone navigation** settings now select and order one to four bottom-bar shortcuts; More stays
   last. Defaults follow the owner's choice: Daily notes, Tasks, Capture and Today. Capture opens
   quick capture without navigating away. Choices persist locally in device preferences, leaving

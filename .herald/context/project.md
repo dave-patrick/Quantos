@@ -30,6 +30,10 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   deployed separately with a persistent vault. `Core/Sync` uses persisted three-way file hashes,
   conditional writes, retained recovery copies and explicit conflict review. App keys and MCP agent
   keys are separate; only app-authenticated requests can change server MCP write grants.
+- `Quantos.FolderBridge` is a separately installed host worker for externally managed Markdown
+  folders (including Google Drive). It explicitly opts one source into portable workspace paths,
+  reuses WriteService/SyncEngine, preserves conflicts/recovery outside the source and stops on
+  unavailable/empty folders or large deletion batches. Ordinary linked folders still never sync.
 - Compact Android renders PhoneShell with Notes/Tasks/Today/More and PhonePanel for Details;
   the existing editor stays mounted beneath those temporary pages. Tablets retain the expanded
   workspace. PhoneNotes is a simpler entry point; the original notes browser remains in More.

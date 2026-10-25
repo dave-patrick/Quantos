@@ -46,6 +46,18 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-25; latest release 0.2.0)
 
+- **Google Drive server folder bridge (2026-10-25, deployment in progress).** The owner approved
+  `G:\My Drive\Thymer\Videos` on T580 with edits going back to the originals, and emphasized other
+  systems modify it. `Quantos.FolderBridge` uses the existing three-way sync engine and WriteService
+  for a single Markdown-only workspace. Explicit runtime opt-in leaves ordinary client links private.
+  Conflicts/recovery/state live outside the Google Drive folder. Empty/unavailable folders and large
+  removal batches pause it. Server now starts its watcher so replicated files enter MCP's live index.
+  All 172 .NET tests pass, including four bridge tests and both server integration tests.
+  The win-x64 bridge builds. A protected source ZIP
+  backup on T580 contains 617 Markdown files and matches the current file set (initial inventory was
+  618; other systems are active). Deployment, replacing this PC's local `videos` link with the shared
+  workspace, and end-to-end phone verification remain to do.
+
 - **Custom phone navigation (2026-10-25, unreleased).** The owner wants Daily notes, Tasks, quick
   Capture and Today first; these are now the defaults, followed by permanent More. In More › Settings,
   choose Phone navigation to select one to four shortcuts, remove them, reorder with left/right arrows

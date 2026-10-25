@@ -30,6 +30,12 @@ and app server key, then choose **Connect**. You can keep editing offline. Chang
 server is reachable; simultaneous edits keep both versions under **Versions to review**. Choosing
 **Disconnect** keeps the device's vault and pending changes. A server is optional.
 
+A folder managed by Google Drive or another app can also feed a shared workspace through the
+optional **folder bridge** running on the server host. It syncs Markdown in both directions while
+other programs continue using the original folder. Conflicting versions are kept, and an unavailable
+drive pauses the bridge. See the **Shared vault & server** Help guide for installation and recovery.
+Use the shared workspace in the Windows app instead of also linking the same originals locally.
+
 The server's MCP works independently of the apps. In **Settings › MCP › Shared server MCP**, turn
 **Allow the server MCP to create and edit notes and tasks** on or off, then choose **Save server
 permissions**. The saved state is confirmed by the server. **Copy MCP connection** includes the

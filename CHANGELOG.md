@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Optional host folder bridge shares externally managed Markdown folders through the server with
+  offline clients, exact transfers, conflict/recovery copies and unavailable-drive/deletion guards.
+  Server sync changes now enter its live index for MCP without requiring a restart.
+
 - Android phones: choose and order bottom-bar shortcuts in Settings › Phone navigation. More stays
   available; choices persist on the device and leave tablet navigation unchanged.
 
