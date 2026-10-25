@@ -48,7 +48,7 @@
   const delay = $derived(mode === 'meaning' ? 600 : 200);
 </script>
 
-<div class="scroll view">
+<div class="scroll view phone-search">
   <div class="inner">
     <div class="box">
       <Icon name="search" size={18} />

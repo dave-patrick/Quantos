@@ -178,12 +178,13 @@
       <span class="save-state {doc.status}">
         {#if doc.status === 'saving'}Saving…{:else if doc.status === 'dirty'}Edited{:else if doc.status === 'saved'}Saved{:else if doc.status === 'conflict'}Conflict{:else if doc.status === 'error'}Not saved{:else if doc.status === 'readonly'}Read-only{/if}
       </span>
+      <button class="btn ghost phone-details" onclick={() => { app.rightTab = 'inspector'; app.rightOpen = true; }}>Details</button>
       <button class="icon-btn" aria-pressed={showToc} title="Table of contents" onclick={() => (showToc = !showToc)}><Icon name="list" /></button>
       <button class="icon-btn" aria-pressed={doc.raw} title={doc.raw ? 'Back to the editor' : 'Edit the Markdown source'} disabled={doc.node?.readOnly || noEdit}
         onclick={() => doc.setRaw(!doc.raw)}><Icon name="code" /></button>
       <button class="icon-btn" title="Version history" onclick={() => layout.open({ kind: 'history', nodeId: id, title: `History: ${doc.node?.title ?? ''}` }, 'new')}><Icon name="history" /></button>
       <button class="icon-btn icon-btn-danger" title="Move to trash" onclick={trashDoc}><Icon name="trash" size={14} /></button>
-      <NodeMenu {doc} {paneIndex} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
+      <NodeMenu {doc} {paneIndex} onoutline={() => (showToc = !showToc)} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
     </div>
   </div>
 
@@ -232,7 +233,7 @@
           {#if doc.node.type !== 'canvas'}
             <fieldset class="plain" disabled={noEdit}>
               {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
-              <Properties {doc} />
+              <div class="node-properties"><Properties {doc} /></div>
             </fieldset>
           {/if}
           {#if doc.node.type === 'canvas'}
@@ -288,6 +289,7 @@
   .crumb.link { border: 0; background: none; color: var(--text-faint); padding: 0; font-size: inherit; cursor: pointer; }
   .crumb.link:hover, .crumb.link:focus-visible { color: var(--accent); text-decoration: underline; }
   .actions { display: flex; align-items: center; gap: 2px; }
+  .phone-details { display: none; }
   .icon-btn-danger { color: var(--danger); }
   .icon-btn-danger:hover { color: var(--danger); background: var(--danger-wash); }
   .save-state { font: 11px var(--font-mono); color: var(--text-faint); margin-right: 6px; min-width: 52px; text-align: right; }

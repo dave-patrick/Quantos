@@ -10,6 +10,46 @@
 :root[data-platform='android'] .panes > .spacer { position: relative; }
 :root[data-platform='android'] .panes > .spacer::after { content: ''; position: absolute; inset: 0 -20px; }
 :root[data-platform='android'] .panes.horizontal > .spacer::after { inset: -20px 0; }
+:root[data-platform='android'] .rightbar .close { min-width: 48px; }
+
+/* Phone navigation is a separate shell; expanded Android windows retain the workspace. */
+.phone-shell .phone-workspace > .pane { flex: 1; border: 0; border-radius: 0; background: var(--bg-panel); }
+.phone-shell .pane > .close-active { display: none; }
+.phone-shell .pane .empty-state { padding: 24px 16px; }
+.phone-shell .node-view .bar { min-height: 48px; padding: 4px 16px; }
+.phone-shell .node-view .crumbs { display: none; }
+.phone-shell .node-view .actions { flex: 1; justify-content: flex-end; gap: 8px; }
+.phone-shell .node-view .save-state { margin-right: auto; text-align: left; }
+.phone-shell .node-view .actions > .icon-btn { display: none; }
+.phone-shell .node-view .phone-details { display: inline-flex; }
+.phone-shell .node-view .body { padding: 0 16px; }
+.phone-shell .node-view .title { font-size: 28px; padding: 16px 0 8px; }
+.phone-shell .node-view .meta { margin-bottom: 12px; }
+.phone-shell .node-view .node-properties { display: none; }
+.phone-shell .node-view .menu { position: fixed; inset: 112px 12px 80px; min-width: 0; overflow-y: auto; align-content: start; }
+.phone-shell .node-view .menu .phone-note-action { display: flex; }
+.phone-shell .view { padding-left: 16px; padding-right: 16px; }
+.phone-shell .phone-workspace .phone-task-options { display: inline-flex; }
+.phone-shell .controls.phone-collapsed { display: none; }
+.phone-shell .settings, .phone-shell .settings.nav-right, .phone-shell .settings.nav-bottom { grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr); }
+.phone-shell .phone-workspace .pane .settings > nav { display: none; }
+.phone-shell .settings .phone-settings-select { display: grid; gap: 8px; padding: 12px 16px; color: var(--text-muted); border-bottom: 1px solid var(--line); }
+.phone-shell .settings .phone-settings-select select { width: 100%; }
+.phone-shell .settings .body { padding: 16px 16px 32px; }
+.phone-shell .settings .field { flex-wrap: wrap; }
+.phone-shell .settings .workspace-settings-nav { display: none; }
+.phone-shell .phone-more .current .label { display: none; }
+.phone-shell .phone-main .task { display: grid; grid-template-columns: minmax(0,1fr) 48px; gap: 4px 8px; padding: 8px; min-height: 0; }
+.phone-shell .phone-main .task .main { grid-column: 1; min-width: 0; gap: 8px; }
+.phone-shell .phone-main .task .task-check { width: 48px; height: 48px; }
+.phone-shell .phone-main .task .task-check input { width: 20px; height: 20px; }
+.phone-shell .phone-main .task .title { font-size: 16px; line-height: 1.4; white-space: normal; }
+.phone-shell .phone-main .task .myday { grid-column: 2; grid-row: 1; width: 48px; min-width: 48px; height: 48px; opacity: 1; }
+.phone-shell .phone-main .task .chips { grid-row: 2; grid-column: 1 / -1; max-width: none; flex-wrap: wrap; margin: 0 0 0 56px; }
+.phone-shell .phone-main .task .del { display: none; }
+.phone-shell .phone-main .phone-search .box { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+.phone-shell .phone-main .phone-search .q { min-width: 0; flex: 1 1 calc(100% - 40px); }
+.phone-shell .phone-main .phone-search .scope { flex: 1; min-width: 0; }
 @media (min-width: 701px) and (max-width: 1100px) {
   :root[data-platform='android'] .header { grid-template-columns: minmax(0, 1fr) auto; }
   :root[data-platform='android'] .header .toolbar { display: none; }

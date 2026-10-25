@@ -46,6 +46,22 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-25; latest release 0.2.0)
 
+- **Phone navigation and panel close (2026-10-25, unreleased).** The last right-sidebar panel's X
+  previously returned without doing anything; it now hides the sidebar while preserving its panel
+  configuration. Compact Android uses Notes, Tasks, Today and More, one visible page, and a separate
+  Details screen. More retains advanced views, open pages, workspace switching and Settings. The editor
+  stays mounted behind More/Details. Phone task options and secondary note actions are tucked away;
+  full-text search and Capture remain in the header. Tablets keep the expanded split workspace.
+  Native x64 checks covered 360px width, real IME/caret visibility, 1.3 text scale, task checkbox touch,
+  More/Back, Details close, body-only search and the tablet sidebar close/reopen. Independent review
+  passed the surface, then scored full-text search and touch Capture copy resolved (ship).
+  The ARM64 update was installed over the owner's SM-S948U app, preserving 24 nodes, production sync
+  with zero errors/conflicts, and enabled MCP writes. A real native tap closed Details successfully.
+  Both APK builds had zero warnings/errors; the Windows build passed 97 frontend / 167 .NET tests,
+  archive checks and self-check (zero warnings), and was staged/restarted with Page loaded / HTTP 200.
+  Native revision evidence is in ignored
+  `.impeccable/review/phone-revision/`. This remains a private test build, not a public release.
+
 - **Android / shared server / frontend MCP permission (2026-10-25, unreleased).** The owner's approved
   scope is recorded at the top of BUILD-PLAN. The Android app shares the full existing backend and
   frontend rather than implementing a reduced note app. Build with `pwsh build/android.ps1`; ARM64

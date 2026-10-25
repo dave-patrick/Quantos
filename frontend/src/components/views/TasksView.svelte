@@ -7,6 +7,7 @@
   import TaskRow from '../TaskRow.svelte';
   import QuickAdd from '../QuickAdd.svelte';
   import Icon from '../Icon.svelte';
+  import { isCompactAndroid } from '../../lib/platform';
 
   let { tab }: { tab: Tab } = $props();
   void tab;
@@ -17,6 +18,7 @@
   let mode = $state<'list' | 'board'>('list');
   let filter = $state('');
   let showDone = $state(false);
+  let optionsOpen = $state(false);
   const today = $derived(day.today);
 
   const label = (v: string | null) => (v ? (/\|([^\]]+)\]\]$/.exec(v)?.[1] ?? v) : null);
@@ -97,7 +99,8 @@
   <div class="inner" class:wide={mode === 'board'}>
     <header>
       <h1>Tasks</h1>
-      <div class="controls">
+      <button class="btn ghost phone-task-options" aria-expanded={optionsOpen} onclick={() => (optionsOpen = !optionsOpen)}><Icon name="sliders" size={18} /> Options</button>
+      <div class="controls" class:phone-collapsed={!optionsOpen}>
         <input class="input" aria-label="Filter tasks" placeholder="Filter" bind:value={filter} />
         <select class="input" bind:value={group} aria-label="Group by">
           <option value="due">By date</option><option value="project">By project</option><option value="priority">By priority</option>
@@ -112,7 +115,7 @@
       </div>
     </header>
 
-    <QuickAdd />
+    <QuickAdd placeholder={isCompactAndroid() ? 'Add a task…' : undefined} />
 
     {#if mode === 'list'}
       {#each groups as [name, list] (name)}
@@ -150,6 +153,7 @@
 </div>
 
 <style>
+  .phone-task-options { display: none; }
   .view { flex: 1; padding: 0 28px; }
   .inner { max-width: 920px; margin: 0 auto; padding: 22px 0 80px; }
   .inner.wide { max-width: none; }

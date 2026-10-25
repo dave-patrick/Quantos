@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Simplified Android phone navigation with Notes, Tasks, Today and More, a focused notes list,
+  separate Details screen, task Options and a settings section picker; tablets retain the workspace.
+- Fixed the last right-panel close button: it now hides the sidebar and preserves it for reopening.
+
 - An Android host for the existing Quantos interface and core, with phone/tablet layouts, touch
   splitters, system Back, Android Keystore, file import/export, PDF rendering/printing, notifications
   and an Android shell. Test APKs are separate from the Windows release.

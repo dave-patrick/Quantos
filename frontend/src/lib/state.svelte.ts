@@ -1,6 +1,7 @@
 import { api, instanceId } from './api';
 import { onChange } from './events';
 import type { LinkedFolder, NodeSummary, Status } from './types';
+import { isCompactAndroid } from './platform';
 
 export interface Toast { id: number; message: string; kind: 'info' | 'ok' | 'warn' | 'error'; action?: { label: string; run: () => void } }
 
@@ -61,7 +62,7 @@ class AppState {
     // Small windows start with the sidebars closed (they open as overlays). That isn't saved, and
     // the saved layout comes back when the window is wide again.
     const saved = { left: this.leftOpen, right: this.rightOpen };
-    const narrow = () => typeof innerWidth === 'number' && innerWidth <= 700;
+    const narrow = () => typeof innerWidth === 'number' && (innerWidth <= 700 || isCompactAndroid());
     if (narrow()) { this.leftOpen = false; this.rightOpen = false; }
     if (typeof window !== 'undefined') {
       let wasNarrow = narrow();
@@ -80,7 +81,7 @@ class AppState {
       // don't hammer the disk on every tick.
       let uiTimer: ReturnType<typeof setTimeout> | null = null;
       $effect(() => {
-        const wide = typeof innerWidth !== 'number' || innerWidth > 700;
+        const wide = typeof innerWidth !== 'number' || innerWidth > 700 && !isCompactAndroid();
         // Capture reactive state before scheduling: reads inside setTimeout aren't tracked by
         // Svelte effects, which otherwise leaves panel changes unsaved after the first render.
         const leftOpen = this.leftOpen;

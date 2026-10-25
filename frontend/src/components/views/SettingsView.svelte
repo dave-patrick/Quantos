@@ -31,6 +31,13 @@
 
 <div class="settings" class:nav-left={navSide === 'left'} class:nav-right={navSide === 'right'} class:nav-top={navSide === 'top'} class:nav-bottom={navSide === 'bottom'}>
   <h1 class="visually-hidden">Settings</h1>
+  <label class="phone-settings-select">Settings section
+    <select class="input" bind:value={section}>
+      <option value="general">Appearance</option><option value="editor">Writing</option><option value="vault">Vault</option><option value="sync">Shared vault</option>
+      <option value="shortcuts">Shortcuts</option><option value="toolbar">Toolbar</option><option value="plugins">Plugins & permissions</option><option value="ai">AI</option>
+      <option value="agents">MCP</option><option value="backups">Backups</option><option value="updates">Updates</option>
+    </select>
+  </label>
   <nav>
     {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['sync', 'Shared vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
       <button class:on={section === key} onclick={() => (section = key as typeof section)}>{label}</button>
@@ -40,8 +47,8 @@
     {#if section === 'general'}
       <h2>Appearance</h2>
       <ThemeEditor />
-      <h3>Settings navigation</h3>
-      <div class="field"><span>Nav position</span>
+      <h3 class="workspace-settings-nav">Settings navigation</h3>
+      <div class="field workspace-settings-nav"><span>Nav position</span>
         <div class="seg">{#each [['left', 'Left'], ['top', 'Top'], ['right', 'Right'], ['bottom', 'Bottom']] as [key, label] (key)}<button class:on={navSide === key} onclick={() => (navSide = key as any)}>{label}</button>{/each}</div></div>
       <h3>Writing look</h3>
       <div class="field"><span>Editor text size</span><input type="range" aria-label="Editor text size" min="14" max="22" bind:value={prefs.editorSize} /> <span class="mono">{prefs.editorSize}px</span></div>
@@ -116,6 +123,7 @@
 </div>
 
 <style>
+  .phone-settings-select { display: none; }
   .settings { flex: 1; display: grid; grid-template-columns: 210px 1fr; min-height: 0; gap: 0; }
 
   .settings.nav-top { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }

@@ -87,7 +87,7 @@
   oncontextmenu={(e) => { e.preventDefault(); menu = { x: e.clientX, y: e.clientY }; }}>
   <span class="strip" aria-hidden="true"></span>
   <span class="main">
-    <input type="checkbox" checked={task.status === 'done'} onchange={toggle} aria-label={closed ? 'Reopen task' : 'Complete task'} />
+    <label class="task-check"><input type="checkbox" checked={task.status === 'done'} onchange={toggle} aria-label={closed ? 'Reopen task' : 'Complete task'} /></label>
     <button class="title" onclick={(e) => openNode(task.id, whereFrom(e), task.title)}>
       {task.title}
     </button>
@@ -124,6 +124,7 @@
   .strip { position: absolute; left: 3px; top: 7px; bottom: 7px; width: 3px; border-radius: 3px; background: transparent; }
   .p1 .strip { background: var(--p1); } .p2 .strip { background: var(--p2); } .p3 .strip { background: var(--p3); } .p4 .strip { background: var(--p4); }
   input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--accent); flex: none; cursor: pointer; }
+  .task-check { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; height: 16px; }
   .main { display: flex; align-items: center; gap: 10px; flex: 1 1 11em; min-width: 0; }
   .title { flex: 1; min-width: 0; text-align: left; border: 0; background: none; color: var(--text); padding: 0; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .title:hover { color: var(--accent-strong); }

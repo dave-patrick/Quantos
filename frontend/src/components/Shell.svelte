@@ -3,7 +3,8 @@
   import { app } from '../lib/state.svelte';
   import { handleGlobalKey } from '../lib/commands.svelte';
   import { watchDate } from '../lib/dates';
-  import { isNativeClient } from '../lib/platform';
+  import { isNativeClient, isCompactAndroid } from '../lib/platform';
+  import PhoneShell from './PhoneShell.svelte';
   import { terminal } from '../lib/terminal.svelte';
   import Header from './Header.svelte';
   import LeftSidebar from './LeftSidebar.svelte';
@@ -26,6 +27,12 @@
 
   let today = $state('');
   onMount(() => watchDate((d) => (today = d)));
+  let compact = $state(isCompactAndroid());
+  onMount(() => {
+    const resize = () => compact = isCompactAndroid();
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  });
 
   function onkeydown(e: KeyboardEvent) {
     if (app.dialog || app.asking || aiJob.open) return;
@@ -35,6 +42,9 @@
 
 <svelte:window {onkeydown} />
 
+{#if compact}
+  <PhoneShell {today} />
+{:else}
 <div class="shell" class:left={app.leftOpen} class:right={app.rightOpen}>
   <Header />
   {#if app.leftOpen}<LeftSidebar />{/if}
@@ -45,6 +55,7 @@
   {#if app.rightOpen}<RightSidebar />{/if}
   <StatusBar />
 </div>
+{/if}
 
 <CommandPalette />
 <HoverPreview />

@@ -10,9 +10,9 @@
   import { presenter } from '../lib/present.svelte';
   import { focus } from '../lib/focus.svelte';
   import { recorder } from '../lib/recorder.svelte';
-  import { bridge, isAndroidClient } from '../lib/platform';
+  import { bridge, isAndroidClient, isCompactAndroid } from '../lib/platform';
 
-  let { doc, paneIndex, oncopymd, oncopyrich }: { doc: Doc; paneIndex: number; oncopymd: () => void; oncopyrich: () => void } = $props();
+  let { doc, paneIndex, oncopymd, oncopyrich, onoutline }: { doc: Doc; paneIndex: number; oncopymd: () => void; oncopyrich: () => void; onoutline?: () => void } = $props();
   let open = $state(false);
   let moving = $state(false);
   let applying = $state(false);
@@ -144,6 +144,11 @@
           <button role="menuitem" onclick={() => moveTo(ws)}><Icon name="layers" size={14} /> {ws}</button>
         {/each}
       {:else}
+        {#if isCompactAndroid()}
+        <button class="phone-note-action" role="menuitem" onclick={() => { open = false; onoutline?.(); }}><Icon name="list" size={14} /> Table of contents</button>
+        <button class="phone-note-action" role="menuitem" disabled={doc.node?.readOnly || prefs.reading || doc.node?.locked} onclick={() => { open = false; doc.setRaw(!doc.raw); }}><Icon name="code" size={14} /> {doc.raw ? 'Back to the editor' : 'Edit Markdown source'}</button>
+        <button class="phone-note-action" role="menuitem" onclick={() => { open = false; layout.open({ kind: 'history', nodeId: doc.id, title: 'Version history' }); }}><Icon name="history" size={14} /> Version history</button>
+        {/if}
         <button role="menuitem" onclick={() => { open = false; layout.open({ kind: 'node', nodeId: doc.id, title: doc.node?.title }, paneIndex === 0 ? 'other' : 'other'); }}><Icon name="split" size={14} /> Open in other pane</button>
         {#if doc.node?.type === 'task'}<button role="menuitem" onclick={() => { open = false; focus.start(focus.lastLength, { id: doc.id, title: doc.node?.title ?? '', workspace: doc.node?.workspace }); }}><Icon name="timer" size={14} /> Focus on this task ({focus.lastLength} min)</button>{/if}
         <button role="menuitem" onclick={() => { open = false; layout.open({ kind: 'mindmap', nodeId: doc.id, title: `Mind map: ${doc.node?.title ?? ''}` }, 'new'); }}><Icon name="graph" size={14} /> Mind map</button>
@@ -171,6 +176,7 @@
 
 <style>
   .wrap { position: relative; }
+  .menu .phone-note-action { display: none; }
   .backdrop { position: fixed; inset: 0; border: 0; background: transparent; z-index: 30; cursor: default; }
   .menu { position: absolute; right: 0; top: 32px; z-index: 31; min-width: 220px; padding: 5px; border-radius: 9px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
   .menu button { display: flex; align-items: center; gap: 9px; text-align: left; padding: 7px 10px; border: 0; border-radius: 5px; background: none; color: var(--text-soft); font-size: 13.5px; }

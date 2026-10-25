@@ -9,8 +9,16 @@ when configured, just as on Windows.
 ## Phone and tablet
 
 The existing Quantos wordmark, icon, fonts, charcoal surfaces, blue accent and user themes are
-preserved. Phones use a two-row toolbar, overlay sidebars and scrollable settings navigation.
+preserved. Phones use one page at a time, with **Notes, Tasks, Today and More** at the bottom.
+**Capture** stays in the top bar; Notes has a readable recent-note list and **New note** action.
+Open **More** for advanced tools, saved views, workspace switching and settings. The advanced notes
+browser remains available there for filters, bulk actions and preview. Task grouping and board
+controls are behind **Options**. Note properties and files open in **Details**, with an explicit
+close button; note source, history and other secondary actions live in the note's overflow menu.
+Settings uses a section picker on phones. For server setup, open **More › Settings**, then choose
+**Shared vault** in **Settings section**; choose **MCP** there for agent write access.
 Tablets retain the wider workspace, persistent sidebars where space permits, and split panes.
+Closing the final right-hand panel hides the sidebar and keeps its configuration for reopening.
 Pane dividers support touch as well as mouse and keyboard. Touch controls have 48 dp targets.
 System bars, display cutouts, the keyboard and Android Back are handled by the native host.
 

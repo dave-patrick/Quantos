@@ -96,7 +96,7 @@
     addMenu = false;
   }
   function removePanel(i: number) {
-    if (app.rightPanels.length <= 1) return;
+    if (app.rightPanels.length <= 1) { app.rightOpen = false; return; }
     app.rightPanels = app.rightPanels.filter((_, j) => j !== i);
     app.rightHeights = app.rightHeights.filter((_, j) => j !== i);
   }
@@ -112,7 +112,7 @@
         <Icon name={typeOf(tab).icon} size={14} />
         <span class="title">{typeOf(tab).label}</span>
         {#if tab === 'notifications' && notifications.unread}<span class="pip">{notifications.unread}</span>{/if}
-        <button class="close" title="Remove this panel" aria-label="Remove {typeOf(tab).label}" onclick={() => removePanel(i)}><Icon name="x" size={12} /></button>
+        <button class="close" title={app.rightPanels.length === 1 ? 'Close right sidebar' : 'Remove this panel'} aria-label={app.rightPanels.length === 1 ? 'Close right sidebar' : `Remove ${typeOf(tab).label}`} onclick={() => removePanel(i)}><Icon name="x" size={12} /></button>
       </header>
       <div class="panel">
         {#if tab === 'files'}<FileTree />

@@ -5,7 +5,7 @@
   import { app } from './lib/state.svelte';
   import { layout } from './lib/layout.svelte';
   import { tasks } from './lib/tasks.svelte';
-  import { bridge, isWindowsClient, isAndroidClient } from './lib/platform';
+  import { bridge, isWindowsClient, isAndroidClient, isCompactAndroid } from './lib/platform';
   import { capture } from './lib/capture.svelte';
   import { terminal } from './lib/terminal.svelte';
   import { presenter } from './lib/present.svelte';
@@ -92,8 +92,8 @@
         else if (capture.open) capture.open = false;
         else if (app.paletteOpen) app.paletteOpen = false;
         else if (terminal.open) terminal.open = false;
-        else if (app.leftOpen && innerWidth <= 700) app.leftOpen = false;
-        else if (app.rightOpen && innerWidth <= 700) app.rightOpen = false;
+        else if (app.leftOpen && (innerWidth <= 700 || isCompactAndroid())) app.leftOpen = false;
+        else if (app.rightOpen && (innerWidth <= 700 || isCompactAndroid())) app.rightOpen = false;
         else if (layout.pane.back.length) await layout.back();
         else { docs.keepDrafts(); bridge.send({ type: 'exit' }); }
       } else if (msg?.type === 'mcp-copied') {

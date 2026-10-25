@@ -3,6 +3,13 @@ export const isWindowsClient = typeof window !== 'undefined' && !!window.chrome?
 export const isAndroidClient = typeof navigator !== 'undefined' && /QuantosAndroid\//.test(navigator.userAgent);
 export const isNativeClient = isWindowsClient || isAndroidClient;
 
+/** Compact Android windows, including a phone rotated to landscape. */
+export function isCompactAndroid() {
+  if (!isAndroidClient || typeof window === 'undefined') return false;
+  const shortest = typeof screen === 'undefined' ? 0 : Math.min(screen.width, screen.height);
+  return innerWidth <= 700 || shortest > 0 && shortest <= 600;
+}
+
 /** Messages the page may send to the Windows client. The client checks each one; nothing here grants native access by itself. */
 export type BridgeMessage = { type: string; [key: string]: unknown };
 

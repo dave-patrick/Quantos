@@ -4,6 +4,7 @@
   import { app } from '../lib/state.svelte';
   import Icon from './Icon.svelte';
   import { modal } from '../lib/modal';
+  import { isCompactAndroid } from '../lib/platform';
 
   let area = $state<HTMLTextAreaElement | null>(null);
   let busy = $state(false);
@@ -23,7 +24,7 @@
   <div class="scrim">
     <div class="card" role="dialog" aria-modal="true" aria-label="Quick capture" use:modal={{ onclose: () => (capture.open = false) }}>
       <header><Icon name="inbox" size={16} /> <strong>Quick capture</strong></header>
-      <textarea bind:this={area} bind:value={capture.text} {onkeydown} rows="5" placeholder="Jot it down. Ctrl+Enter to save."></textarea>
+      <textarea bind:this={area} bind:value={capture.text} {onkeydown} rows="5" placeholder={isCompactAndroid() ? 'Jot it down, then tap Capture.' : 'Jot it down. Ctrl+Enter to save.'}></textarea>
       <div class="row">
         <label>To
           <select class="input" bind:value={capture.target}>

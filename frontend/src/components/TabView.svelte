@@ -17,6 +17,8 @@
   import MindmapView from './views/MindmapView.svelte';
   import MapView from './views/MapView.svelte';
   import NotesView from './views/NotesView.svelte';
+  import PhoneNotes from './views/PhoneNotes.svelte';
+  import { isCompactAndroid } from '../lib/platform';
   import HelpView from './views/HelpView.svelte';
   import AboutView from './views/AboutView.svelte';
   import TasksView from './views/TasksView.svelte';
@@ -56,7 +58,7 @@
 {:else if tab.kind === 'map'}
   <MapView />
 {:else if tab.kind === 'notes'}
-  <NotesView />
+  {#if isCompactAndroid() && tab.arg !== 'advanced'}<PhoneNotes />{:else}<NotesView />{/if}
 {:else if tab.kind === 'help'}
   <HelpView {tab} />
 {:else if tab.kind === 'about'}

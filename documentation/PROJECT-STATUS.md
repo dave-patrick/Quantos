@@ -13,6 +13,16 @@ _Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/ser
   embedded Svelte frontend. It preserves the actual app brand and features, with phone/tablet
   layouts, system/IME insets, Android Back, Keystore, native files/printing/PDF rendering,
   notifications and Android `sh`. Windows global shortcuts and PowerShell remain platform-specific.
+- The phone revision uses Notes, Tasks, Today and More with one page at a time, a separate closeable
+  Details screen and simpler note/task controls. Advanced views remain in More; the editor stays
+  mounted behind More/Details. Header search searches note bodies. Tablets retain split panes and
+  sidebars. The last sidebar panel's X now hides the sidebar and preserves its configuration.
+  Native checks at 360px, enlarged text and real IME passed, as did tablet close/reopen; independent
+  review scored the requested search/Capture fixes resolved, disposition ship. The updated ARM64 APK
+  is installed on the owner's phone: 24 nodes, production sync with no conflicts/errors, enabled MCP
+  writes preserved, and Details closed by a real native tap. The updated Windows package passed
+  97 frontend / 167 .NET tests, archive checks and self-check (zero self-check warnings), and was
+  staged/restarted with Page loaded / HTTP 200.
 - `src/Quantos.Server/` is the optional portable Docker shared-vault server. Devices retain their
   local vaults and sync using persisted three-way hashes. Concurrent edits and edit-versus-delete
   preserve both copies for review. Keys, grants, caches, linked paths and device layouts stay local.
