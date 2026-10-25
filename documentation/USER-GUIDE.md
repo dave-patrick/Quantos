@@ -10,8 +10,11 @@ are sent to that server over HTTPS. AI requests use only the providers you confi
 ## Android, shared vault and server MCP
 
 The Android app uses the same Quantos workspace, branding and note/task features on phones and
-tablets. Phones use Notes, Tasks, Today and More navigation, with Capture always in the top bar;
-advanced tools remain under More and note properties open in Details. Tablets keep the wider workspace and split panes when there
+tablets. Phones start with Daily notes, Tasks, Capture, Today and More navigation. Capture opens
+quick capture without leaving the current page and also stays in the top bar.
+Open **More › Settings › Phone navigation** to choose and order up to four shortcuts. More stays
+at the end, and these preferences stay on this device. Advanced tools remain under More and note
+properties open in Details. Tablets keep the wider workspace and split panes when there
 is room. Use the **Commands** button for commands such as **Next tab**, **Previous tab** and
 **Split down**. Android Back closes a menu or dialog before navigating back or leaving.
 

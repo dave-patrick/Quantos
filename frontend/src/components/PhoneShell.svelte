@@ -6,6 +6,8 @@
   import { run } from '../lib/commands.svelte';
   import { views } from '../lib/views.svelte';
   import { terminal } from '../lib/terminal.svelte';
+  import { prefs } from '../lib/prefs.svelte';
+  import { phoneDestinations, normalizePhoneNavigation } from '../lib/phoneNavigation';
   import wordmark from '../assets/quantos-wordmark.svg?raw';
   import Icon from './Icon.svelte';
   import Pane from './Pane.svelte';
@@ -16,14 +18,10 @@
   let { today }: { today: string } = $props();
   let more = $state(false);
   const active = $derived(layout.activeTab);
-  const roots = ['notes', 'tasks', 'myday'];
+  const destinations = $derived(normalizePhoneNavigation(prefs.phoneNavigation).map(kind => phoneDestinations.find(d => d.kind === kind)!));
+  const roots = $derived(destinations.map(d => d.kind));
   const leaf = $derived(!!active && (!roots.includes(active.kind) || active.arg === 'advanced'));
-  const destination = $derived(more || app.rightOpen || active?.arg === 'advanced' ? 'more' : active?.kind === 'node' ? 'notes' : roots.includes(active?.kind ?? '') ? active?.kind : 'more');
-  const destinations: { kind: TabKind; label: string; icon: string }[] = [
-    { kind: 'notes', label: 'Notes', icon: 'file-text' },
-    { kind: 'tasks', label: 'Tasks', icon: 'check-square' },
-    { kind: 'myday', label: 'Today', icon: 'sun' }
-  ];
+  const destination = $derived(more || app.rightOpen || active?.arg === 'advanced' ? 'more' : active?.kind === 'node' && roots.includes('notes') ? 'notes' : active && roots.includes(active.kind) ? active.kind : 'more');
   const groups: { title: string; items: { kind: TabKind; title: string; icon: string; arg?: string }[] }[] = [
     { title: 'Plan', items: [
       { kind: 'daily', title: 'Daily notes', icon: 'calendar' }, { kind: 'timeline', title: 'Timeline', icon: 'calendar' },
@@ -124,9 +122,9 @@
     {#if terminal.open}<TerminalDrawer />{/if}
   </main>
 
-  <nav class="phone-nav" aria-label="Main navigation">
+  <nav class="phone-nav" aria-label="Main navigation" style:grid-template-columns={`repeat(${destinations.length + 1}, minmax(0, 1fr))`}>
     {#each destinations as d (d.kind)}
-      <button aria-current={destination === d.kind ? 'page' : undefined} onclick={() => open({ kind: d.kind })}><span class="nav-icon"><Icon name={d.icon} size={22} /></span><span>{d.label}</span></button>
+      <button aria-current={destination === d.kind ? 'page' : undefined} onclick={() => d.kind === 'capture' ? capture.show() : open({ kind: d.kind })}><span class="nav-icon"><Icon name={d.icon} size={22} /></span><span>{d.label}</span></button>
     {/each}
     <button aria-current={destination === 'more' ? 'page' : undefined} onclick={showMore}><span class="nav-icon"><Icon name="menu" size={22} /></span><span>More</span></button>
   </nav>
@@ -146,6 +144,7 @@
   .phone-workspace[hidden] { display: none; }
   .phone-nav { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; padding: 4px 8px; border-top: 1px solid var(--line); background: var(--bg-raised); }
   .phone-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--text-muted); font: 600 12px/1.3 var(--font-body); }
+  .phone-nav button > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-icon { display: flex; justify-content: center; align-items: center; width: 56px; height: 30px; border-radius: 18px; }
   .phone-nav button[aria-current='page'] { color: var(--accent-strong); }
   .phone-nav button[aria-current='page'] .nav-icon { background: var(--accent-wash); }

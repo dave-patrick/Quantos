@@ -33,6 +33,8 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - Compact Android renders PhoneShell with Notes/Tasks/Today/More and PhonePanel for Details;
   the existing editor stays mounted beneath those temporary pages. Tablets retain the expanded
   workspace. PhoneNotes is a simpler entry point; the original notes browser remains in More.
+  `prefs.phoneNavigation` keeps ordered phone shortcuts on the device; `phoneNavigation.ts`
+  validates the destination list and reserves More. Settings changes never sync as vault content.
 - Build with `pwsh build/build.ps1`; test with `dotnet test tests/Quantos.Tests` and `npx vitest run` in frontend.
 - The owner tests Quantos from `C:\Users\davem\Apps\Quantos\Quantos\application` (vault in
   `C:\Users\davem\Quantos\Vault`). After every build, stage it there with

@@ -12,6 +12,7 @@
   import UpdateSettings from '../UpdateSettings.svelte';
   import McpSettings from '../McpSettings.svelte';
   import SyncSettings from '../SyncSettings.svelte';
+  import PhoneNavigationSettings from '../PhoneNavigationSettings.svelte';
   import { vaultSettings } from '../../lib/vaultSettings.svelte';
   import { templatesStore } from '../../lib/templates.svelte';
   import { onMount } from 'svelte';
@@ -21,7 +22,7 @@
 
   import type { Tab } from '../../lib/layout.svelte';
   let { tab }: { tab?: Tab } = $props();
-  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates' | 'sync';
+  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates' | 'sync' | 'phone-navigation';
   let section = $state<Section>('general');
   let navSide = $state<'left' | 'right' | 'top' | 'bottom'>('left');
   // A link can open a particular section ("Open AI settings").
@@ -35,10 +36,12 @@
     <select class="input" bind:value={section}>
       <option value="general">Appearance</option><option value="editor">Writing</option><option value="vault">Vault</option><option value="sync">Shared vault</option>
       <option value="shortcuts">Shortcuts</option><option value="toolbar">Toolbar</option><option value="plugins">Plugins & permissions</option><option value="ai">AI</option>
+      {#if isAndroidClient}<option value="phone-navigation">Phone navigation</option>{/if}
       <option value="agents">MCP</option><option value="backups">Backups</option><option value="updates">Updates</option>
     </select>
   </label>
   <nav>
+    {#if isAndroidClient}<button class:on={section === 'phone-navigation'} onclick={() => section = 'phone-navigation'}>Phone navigation</button>{/if}
     {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['sync', 'Shared vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
       <button class:on={section === key} onclick={() => (section = key as typeof section)}>{label}</button>
     {/each}
@@ -76,6 +79,8 @@
       {/if}
       {#if themes.error}<p class="warn">{themes.error}</p>{/if}
       <button class="btn ghost" onclick={async () => { await themes.list(); await themes.apply(); app.toast('Styles reloaded.', 'ok'); }}>Reload styles</button>
+    {:else if section === 'phone-navigation' && isAndroidClient}
+      <PhoneNavigationSettings />
     {:else if section === 'editor'}
       <h2>Writing</h2>
       <label class="check"><input type="checkbox" bind:checked={prefs.typewriter} /> Typewriter scrolling (keep the current line centred)</label>

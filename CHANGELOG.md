@@ -7,6 +7,9 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Android phones: choose and order bottom-bar shortcuts in Settings › Phone navigation. More stays
+  available; choices persist on the device and leave tablet navigation unchanged.
+
 - Simplified Android phone navigation with Notes, Tasks, Today and More, a focused notes list,
   separate Details screen, task Options and a settings section picker; tablets retain the workspace.
 - Fixed the last right-panel close button: it now hides the sidebar and preserves it for reopening.

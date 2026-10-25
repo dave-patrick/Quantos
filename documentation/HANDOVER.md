@@ -46,6 +46,26 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-25; latest release 0.2.0)
 
+- **Custom phone navigation (2026-10-25, unreleased).** The owner wants Daily notes, Tasks, quick
+  Capture and Today first; these are now the defaults, followed by permanent More. In More › Settings,
+  choose Phone navigation to select one to four shortcuts, remove them, reorder with left/right arrows
+  or restore defaults. Capture is an action that leaves the current page in place. Choices live in
+  device `quantos.prefs`, never in shared vault content; tablet navigation is unchanged. Stored
+  preferences are validated for known destinations, duplicates, maximum count and empty/invalid
+  fallback. The full build passed 101 frontend / 167 .NET tests, archive validation and self-check
+  (zero self-check warnings); Windows was staged/restarted with Page loaded / HTTP 200. Both APKs
+  built with zero warnings/errors. Native 360px testing covered add/remove/reorder/reset, restart
+  persistence, 1.3 text scale, 48px controls and a real tap on bottom Capture retaining Tasks.
+  Tablet split workspace remained expanded. The ARM64 update is installed on the owner's SM-S948U
+  with their chosen default order, 24 nodes, no sync errors/conflicts and server MCP writes preserved.
+  Native evidence is in ignored `.impeccable/review/phone-navigation/` (including the actual 411px phone).
+  Independent review's sole 8px touch-spacing fix was scored resolved, disposition ship for that fix.
+  After the user reported missing notes, the phone was found in empty `video-processing`; selecting
+  `default` restored the existing 24-note browser. A transient Tailscale DNS error cleared; authenticated
+  sync returned HTTP 200, zero transfers/conflicts. Follow-up requested work: link T580's
+  `G:\My Drive\Thymer\Videos` (618 Markdown files) read/write through the shared server. Its contents
+  are not shared yet; the Windows `videos` link currently uses this PC's `D:\My Drive\Thymer\Videos`.
+
 - **Phone navigation and panel close (2026-10-25, unreleased).** The last right-sidebar panel's X
   previously returned without doing anything; it now hides the sidebar while preserving its panel
   configuration. Compact Android uses Notes, Tasks, Today and More, one visible page, and a separate

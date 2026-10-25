@@ -9,6 +9,21 @@ _Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/ser
 
 ### Android and shared vault (owner-approved scope, 2026-10-24)
 
+- **Phone navigation** settings now select and order one to four bottom-bar shortcuts; More stays
+  last. Defaults follow the owner's choice: Daily notes, Tasks, Capture and Today. Capture opens
+  quick capture without navigating away. Choices persist locally in device preferences, leaving
+  tablets unchanged. Preference validation is covered by four tests; the full build passes
+  101 frontend / 167 .NET tests, archive validation and self-check (zero self-check warnings).
+  Windows was staged/restarted with Page loaded / HTTP 200. Both APKs build without warnings/errors.
+  Native 360px tests verified changing/resetting the bar, restart persistence, enlarged text and a
+  real Capture tap retaining the active page; tablet splits stayed expanded. The owner's 411px phone
+  has the updated ARM64 build and requested default order, with 24 nodes and no sync errors/conflicts;
+  server MCP write access is preserved.
+  Finish review scored its sole reorder-button spacing fix resolved (ship for that fix). A later
+  missing-notes report was traced to the phone's empty `video-processing` workspace; switching to
+  `default` restored its 24 notes. Transient VPN DNS failure cleared and authenticated sync returned
+  HTTP 200 with zero transfers/conflicts. Linking T580's Videos folder read/write is newly requested
+  follow-up work; those 618 Markdown files are not yet shared by the server.
 - `android/` is a native .NET Android host using the existing Core, linked backend source and
   embedded Svelte frontend. It preserves the actual app brand and features, with phone/tablet
   layouts, system/IME insets, Android Back, Keystore, native files/printing/PDF rendering,
@@ -69,7 +84,7 @@ _Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/ser
 | Latest release | [0.2.0](https://github.com/dave-patrick/Quantos/releases/tag/v0.2.0) (Windows x64 zip, SHA-256 `3fafdba7f3b0f2606855155e22814b771e333baf2479809578b381f95771ce1c`) |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
-| Tests | 167 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass in the current Android/server Windows test build. |
+| Tests | 167 .NET (xUnit, `tests/Quantos.Tests`) and 101 frontend (Vitest, `frontend/tests`); all pass in the current phone-navigation test build. |
 | Released build | Version 0.2.0 (commit `a8b51fa`, tag `v0.2.0`). The Windows x64 release package passed validation and self-check and was published to GitHub Releases. Split panes are distinct cards with a clear active state and individual close buttons. The right sidebar supports multiple resizable panels and saves layout automatically. Notes List rows are single-line; Preview can be toggled and remembers the choice. My Day task cards are compact; priority colors are red (P1), orange (P2), green (P3), and blue (P4). The frameless window resizes on every edge and corner and recalculates its layout after maximize/restore and tray hide/reopen to keep controls aligned. The active editor can move a note to Trash; the version label no longer clips. The current staged unreleased build is described above. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 

@@ -9,7 +9,11 @@ when configured, just as on Windows.
 ## Phone and tablet
 
 The existing Quantos wordmark, icon, fonts, charcoal surfaces, blue accent and user themes are
-preserved. Phones use one page at a time, with **Notes, Tasks, Today and More** at the bottom.
+preserved. Phones use one page at a time, initially with **Daily notes, Tasks, Capture, Today and More**
+at the bottom. **Capture** opens quick capture without leaving the current page.
+To change it, open **More › Settings**, choose **Phone navigation** in **Settings section**, then
+add/remove shortcuts and use the arrows to order them. Choose one to four shortcuts; **More** stays
+last. Changes apply immediately, persist on this device and do not change tablet navigation.
 **Capture** stays in the top bar; Notes has a readable recent-note list and **New note** action.
 Open **More** for advanced tools, saved views, workspace switching and settings. The advanced notes
 browser remains available there for filters, bulk actions and preview. Task grouping and board
