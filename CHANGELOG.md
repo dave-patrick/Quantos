@@ -7,6 +7,9 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- Workspace folders now decide a note's displayed scope even when externally managed frontmatter
+  names a different workspace. Derived indexes rebuild without rewriting that source metadata.
+
 - Optional host folder bridge shares externally managed Markdown folders through the server with
   offline clients, exact transfers, conflict/recovery copies and unavailable-drive/deletion guards.
   Server sync changes now enter its live index for MCP without requiring a restart.

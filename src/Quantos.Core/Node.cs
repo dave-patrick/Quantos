@@ -60,9 +60,9 @@ public sealed record Node
         string? Str(string key) => values.TryGetValue(key, out var v) && v is not null ? Convert.ToString(v, CultureInfo.InvariantCulture) : null;
         var props = values.Where(kv => !NodeKeys.Reserved.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
         _ = int.TryParse(Str(NodeKeys.Schema), out var schema);
-        // A file in a linked folder belongs to that folder, whatever its frontmatter says: the
-        // folder is where the other app keeps it, so the folder decides (STORAGE-SPEC section 9).
-        var linked = Storage.Vault.LinkedScopeOf(relativePath);
+        // Storage location decides scope for both linked folders and shared workspaces. External
+        // applications may own the frontmatter's workspace field; indexing must not rewrite it.
+        var folderWorkspace = Storage.Vault.WorkspaceOf(relativePath);
         return new Node
         {
             Id = Str(NodeKeys.Id) ?? "",
@@ -71,7 +71,7 @@ public sealed record Node
             Hash = hash ?? Hashing.Sha256(content),
             Title = Str(NodeKeys.Title) ?? System.IO.Path.GetFileNameWithoutExtension(relativePath),
             Type = Str(NodeKeys.Type) ?? NodeTypes.Note,
-            Workspace = linked ?? Str(NodeKeys.Workspace) ?? "",
+            Workspace = folderWorkspace.Length > 0 ? folderWorkspace : Str(NodeKeys.Workspace) ?? "",
             Tags = doc.GetStringList(NodeKeys.Tags).Select(t => t.TrimStart('#')).ToList(),
             Aliases = doc.GetStringList(NodeKeys.Aliases),
             Created = Str(NodeKeys.Created),

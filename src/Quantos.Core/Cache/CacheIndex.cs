@@ -21,7 +21,7 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// </summary>
 public sealed partial class CacheIndex : IDisposable
 {
-    public const int Version = 10;
+    public const int Version = 11; // rebuild derived workspace assignments from physical paths
     private readonly SqliteConnection _db;
     private readonly Lock _gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);

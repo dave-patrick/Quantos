@@ -88,7 +88,7 @@ public sealed class FolderBridgeTests
         await bridge.Run();
         Assert.Equal("workspaces/videos/a-first.md", server.Session.Cache.PathOf(id));
         Assert.Empty(bridge.Engine.Conflicts());
-        Assert.Single(SyncFiles.Manifest(server.Writes).Where(f => f.Path.EndsWith(".md")));
+        Assert.Single(SyncFiles.Manifest(server.Writes), f => f.Path.EndsWith(".md"));
     }
 
     [Fact]

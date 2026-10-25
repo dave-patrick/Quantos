@@ -15,6 +15,10 @@ _Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/ser
   unavailable/empty folders and large removal batches pause. Ordinary device links remain local.
   Four bridge tests and the live server-index integration test pass. Host deployment and verification
   against the owner's Videos folder are in progress; see HANDOVER and SERVER.md.
+- Imported/shared notes use their physical workspace folder for indexing, preserving other apps'
+  frontmatter workspace fields. Cache version 11 rebuilds existing derived assignments. This fixes
+  Videos files that arrived on Android but appeared under their legacy `video-processing` metadata.
+  The full .NET suite passes 175 tests, including metadata-preserving scope/restart cases.
 - **Phone navigation** settings now select and order one to four bottom-bar shortcuts; More stays
   last. Defaults follow the owner's choice: Daily notes, Tasks, Capture and Today. Capture opens
   quick capture without navigating away. Choices persist locally in device preferences, leaving

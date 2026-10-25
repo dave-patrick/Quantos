@@ -11,6 +11,29 @@ namespace Quantos.Tests;
 /// </summary>
 public class LinkedFolderTests
 {
+    [Theory]
+    [InlineData("video-processing")]
+    [InlineData("")]
+    public void Workspace_location_wins_without_rewriting_other_app_metadata(string originalWorkspace)
+    {
+        using var v = new TestVault();
+        v.Session.Vault.EnsureWorkspace("videos");
+        var id = Ulid.New();
+        var field = originalWorkspace.Length > 0 ? $"workspace: {originalWorkspace}\n" : "";
+        var text = $"---\nid: {id}\ntitle: External file\ntype: note\n{field}custom: keep\n---\nOriginal body\n";
+        var path = v.Abs("workspaces/videos/external.md");
+        File.WriteAllText(path, text);
+        v.Session.Reconciler.Run();
+        Assert.Equal(id, Only(v,"videos").Id);
+        Assert.Equal(text, File.ReadAllText(path));
+        v.Restart();
+        Assert.Equal("videos", v.Writes.Require(id).Workspace);
+        var note=v.Writes.Require(id);
+        v.Writes.UpdateFields(id, note.Hash, null, null, Actor.User, body:"Edited in Quantos");
+        if(originalWorkspace.Length>0) Assert.Contains(field, File.ReadAllText(path));
+        Assert.Contains("custom: keep",File.ReadAllText(path));
+    }
+
     private static string Outside(TestVault v, string name = "outside")
     {
         var path = Path.Combine(v.Root, name);
