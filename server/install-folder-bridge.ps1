@@ -23,6 +23,7 @@ if($LASTEXITCODE -ne 0){throw 'Could not protect private bridge state.'}
 $state=Join-Path $runtime $Workspace
 New-Item -ItemType Directory -Force $state | Out-Null
 $exe=Join-Path $state 'quantos-folder-bridge.exe'
+Get-CimInstance Win32_Process -Filter "Name='quantos-folder-bridge.exe'" | Where-Object { $_.ExecutablePath -eq $exe } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 if(-not [string]::Equals([IO.Path]::GetFullPath($Binary),$exe,[StringComparison]::OrdinalIgnoreCase)){Copy-Item -LiteralPath $Binary -Destination $exe -Force}
 # No password/key appears in the task command line; only its protected runtime file path.
 foreach($value in @($source,$Workspace,$Server,$TokenFile,$state)){if($value.Contains('"')){throw 'Double quotes are not valid in bridge arguments.'}}
@@ -35,8 +36,10 @@ $config=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'bridge-config.json') 
 & $config.Executable --folder $config.Folder --workspace $config.Workspace --server $config.Server --token-file $config.TokenFile --state $config.State
 exit $LASTEXITCODE
 '@ | Set-Content -LiteralPath $runner -Encoding UTF8
-$arguments='-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}"' -f $runner
-$action=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $arguments -WorkingDirectory $state
+$arguments='--folder "{0}" --workspace "{1}" --server "{2}" --token-file "{3}" --state "{4}"' -f $source,$Workspace,$Server,$TokenFile,$state
+# The Windows publish is a windowless executable. Track it directly so ending/restarting the task
+# cannot leave a detached native worker holding the single-instance lock.
+$action=New-ScheduledTaskAction -Execute $exe -Argument $arguments -WorkingDirectory $state
 $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
 $trigger=New-ScheduledTaskTrigger -AtLogOn -User $identity.Name
 $principal=New-ScheduledTaskPrincipal -UserId $identity.User.Value -LogonType Interactive -RunLevel Limited

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Quantos.Core;
 using Quantos.Core.Sync;
 
+string? statePath = null;
 try
 {
     string? Option(string name) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
@@ -9,6 +10,7 @@ try
     var folder = Path.GetFullPath(Required("--folder"));
     var workspace = Required("--workspace");
     var state = Path.GetFullPath(Required("--state"));
+    statePath = state;
     Directory.CreateDirectory(state);
     using var singleInstance = new FileStream(Path.Combine(state, "bridge.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
     using var session = new VaultSession(Path.Combine(state, "bridge-vault"), new QuantosPaths(Path.Combine(state, "client-data")));
@@ -16,7 +18,8 @@ try
     using var remote = new HttpSyncRemote(Required("--server"), File.ReadAllText(Required("--token-file")).Trim(), Path.Combine(state, "server-id"));
     var bridge = new FolderBridge(session, folder, workspace, Path.Combine(state, "sync"), remote);
     using var stop = new CancellationTokenSource();
-    Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
+    if (!OperatingSystem.IsWindows() || !Console.IsInputRedirected)
+        Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
     if (Option("--resolve") is { } conflict)
     {
         var keep = Required("--keep");
@@ -48,4 +51,9 @@ try
     void AtomicStatus<T>(T status) => Quantos.Core.Storage.AtomicFile.WriteAllText(Path.Combine(state, "status.json"), JsonSerializer.Serialize(status));
 }
 catch (OperationCanceledException) { return 0; }
-catch (Exception ex) { Console.Error.WriteLine($"Folder bridge stopped: {ex.Message}"); return 1; }
+catch (Exception ex)
+{
+    if (statePath is not null)
+        try { Quantos.Core.Storage.AtomicFile.WriteAllText(Path.Combine(statePath, "status.json"), JsonSerializer.Serialize(new { ok = false, time = DateTimeOffset.Now, error = ex.Message })); } catch (IOException) { }
+    Console.Error.WriteLine($"Folder bridge stopped: {ex.Message}"); return 1;
+}
