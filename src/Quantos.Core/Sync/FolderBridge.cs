@@ -28,7 +28,9 @@ public sealed class FolderBridge
         session.Vault.SyncLinkedFolders.Add(workspace);
         AtomicFile.WriteAllText(bindingFile, binding);
         this.remote = new ScopedRemote(remote, $"workspaces/{workspace}/");
-        Engine = new SyncEngine(session.Writes, state, this.remote);
+        // Remove clean old paths before adding renamed paths, so an indexer never sees both
+        // names with the same note identity. Concurrent edit-versus-delete still becomes a conflict.
+        Engine = new SyncEngine(session.Writes, state, this.remote, deletionsFirst: true);
     }
 
     public async Task<SyncReport> Run(CancellationToken ct = default)

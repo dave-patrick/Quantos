@@ -13,7 +13,7 @@ public interface ISyncRemote
 
 /// <summary>A persisted three-way checkpoint. A failed or interrupted transfer is safe to retry.
 /// Concurrent changes never overwrite one another; both versions are kept for the person.</summary>
-public sealed class SyncEngine(WriteService writes, string stateFolder, ISyncRemote remote)
+public sealed class SyncEngine(WriteService writes, string stateFolder, ISyncRemote remote, bool deletionsFirst = false)
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private readonly SemaphoreSlim gate = new(1);
@@ -35,6 +35,12 @@ public sealed class SyncEngine(WriteService writes, string stateFolder, ISyncRem
             var server = (await remote.Manifest(ct)).Where(f => !SyncFiles.IsDeviceState(f.Path)).ToDictionary(f => f.Path, f => f.Hash, StringComparer.Ordinal);
             // Case-only path differences cannot be represented safely on Windows.
             var paths = local.Keys.Concat(server.Keys).Concat(baseline.Keys).Distinct(StringComparer.Ordinal).Order().ToList();
+            if (deletionsFirst)
+                paths = paths.OrderBy(path =>
+                {
+                    var b = baseline.GetValueOrDefault(path); var l = local.GetValueOrDefault(path); var r = server.GetValueOrDefault(path);
+                    return b is not null && (l is null && r == b || r is null && l == b) ? 0 : 1;
+                }).ThenBy(path => path, StringComparer.Ordinal).ToList();
             if (paths.GroupBy(p => p, StringComparer.OrdinalIgnoreCase).Any(g => g.Count() > 1))
                 throw new QuantosException("The shared vault contains filenames that differ only by case. Rename them before syncing to Windows.");
             var pending = Conflicts().ToDictionary(c => c.Path);

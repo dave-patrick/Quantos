@@ -9,9 +9,11 @@ public sealed class FolderBridgeTests
 {
     private sealed class Remote(TestVault server) : ISyncRemote
     {
+        public Action? Applied;
         public Task<IReadOnlyList<SyncFile>> Manifest(CancellationToken ct) => Task.FromResult(SyncFiles.Manifest(server.Writes));
         public Task<byte[]?> Read(string path, string? expectedHash, CancellationToken ct) => Task.FromResult(File.Exists(server.Abs(path)) ? File.ReadAllBytes(server.Abs(path)) : null);
-        public Task<bool> Apply(SyncMutation m, CancellationToken ct) => Task.FromResult(server.Writes.ApplySyncFile(m, Path.Combine(server.Root, "recovery"), Actor.User));
+        public Task<bool> Apply(SyncMutation m, CancellationToken ct)
+        { var result = server.Writes.ApplySyncFile(m, Path.Combine(server.Root, "recovery"), Actor.User); if(result) Applied?.Invoke(); return Task.FromResult(result); }
     }
     private static string Source(TestVault local)
     { var folder = Path.Combine(local.Root, "external"); Directory.CreateDirectory(folder); return folder; }
@@ -71,6 +73,22 @@ public sealed class FolderBridgeTests
         Directory.CreateDirectory(folder);
         await Assert.ThrowsAsync<QuantosException>(() => bridge.Run());
         Assert.Equal(20, Directory.GetFiles(server.Abs("workspaces/videos"), "*.md").Length);
+    }
+
+    [Fact]
+    public async Task Outside_rename_keeps_the_note_identity_even_when_the_server_indexes_every_step()
+    {
+        using var local = new TestVault(false); using var server = new TestVault();
+        var folder = Source(local); var id = Ulid.New();
+        File.WriteAllText(Path.Combine(folder,"z-last.md"), $"---\nid: {id}\ntitle: Rename check\ntype: note\nworkspace: videos\n---\nkeep identity");
+        var remote = new Remote(server) { Applied = () => server.Session.Reconciler.Run() };
+        var bridge = new FolderBridge(local.Session, folder, "videos", Path.Combine(local.Root,"bridge-state"), remote);
+        await bridge.Run();
+        File.Move(Path.Combine(folder,"z-last.md"), Path.Combine(folder,"a-first.md"));
+        await bridge.Run();
+        Assert.Equal("workspaces/videos/a-first.md", server.Session.Cache.PathOf(id));
+        Assert.Empty(bridge.Engine.Conflicts());
+        Assert.Single(SyncFiles.Manifest(server.Writes).Where(f => f.Path.EndsWith(".md")));
     }
 
     [Fact]
