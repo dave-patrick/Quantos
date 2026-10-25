@@ -11,12 +11,14 @@
   import cli from '../../../../documentation/CLI-REFERENCE.md?raw';
   import agents from '../../../../documentation/AGENT-ADAPTERS.md?raw';
   import plugins from '../../../../documentation/PLUGINS.md?raw';
+  import server from '../../../../documentation/SERVER.md?raw';
 
   /** Help: the user guide and the other guides, searchable, plus the live list of keyboard shortcuts. */
   let { tab }: { tab: Tab } = $props();
 
   const DOCS = [
     { key: 'guide', label: 'User guide', icon: 'book', text: guide },
+    { key: 'server', label: 'Shared vault & server', icon: 'layers', text: server },
     { key: 'shortcuts', label: 'Keyboard shortcuts', icon: 'command', text: '' },
     { key: 'troubleshooting', label: 'Troubleshooting', icon: 'alert', text: troubleshooting },
     { key: 'cli', label: 'Command line', icon: 'terminal', text: cli },

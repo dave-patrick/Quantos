@@ -5,7 +5,12 @@
   import { app } from './lib/state.svelte';
   import { layout } from './lib/layout.svelte';
   import { tasks } from './lib/tasks.svelte';
-  import { bridge, isWindowsClient } from './lib/platform';
+  import { bridge, isWindowsClient, isAndroidClient } from './lib/platform';
+  import { capture } from './lib/capture.svelte';
+  import { terminal } from './lib/terminal.svelte';
+  import { presenter } from './lib/present.svelte';
+  import { aiJob } from './lib/ai.svelte';
+  import './styles/android.css';
   import { docs, leaveFor } from './lib/docs.svelte';
   import { supertags } from './lib/supertags.svelte';
   import { views } from './lib/views.svelte';
@@ -61,7 +66,7 @@
   let reauthAsked = false;
   function signedOut() {
     phase = 'auth';
-    if (!isWindowsClient || reauthAsked) return;
+    if ((!isWindowsClient && !isAndroidClient) || reauthAsked) return;
     reauthAsked = true;
     let recent: number[] = [];
     try { recent = (JSON.parse(sessionStorage.getItem('quantos-reauth') ?? '[]') as number[]).filter((t) => Date.now() - t < 60_000); } catch { /* storage unavailable */ }
@@ -76,7 +81,25 @@
     connection.listeners.add((c) => (app.connected = c));
     bridge.send({ type: 'ready' });
     bridge.on(async (msg) => {
-      if (msg?.type === 'flush') {
+      if (msg?.type === 'back') {
+        const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        (document.activeElement ?? document.body).dispatchEvent(escape);
+        if (escape.defaultPrevented) return;
+        if (presenter.active) presenter.close();
+        else if (aiJob.open) aiJob.close();
+        else if (app.asking) app.asking.done(null);
+        else if (app.dialog) app.dialog = null;
+        else if (capture.open) capture.open = false;
+        else if (app.paletteOpen) app.paletteOpen = false;
+        else if (terminal.open) terminal.open = false;
+        else if (app.leftOpen && innerWidth <= 700) app.leftOpen = false;
+        else if (app.rightOpen && innerWidth <= 700) app.rightOpen = false;
+        else if (layout.pane.back.length) await layout.back();
+        else { docs.keepDrafts(); bridge.send({ type: 'exit' }); }
+      } else if (msg?.type === 'mcp-copied') {
+        app.toast('MCP connection copied, including its agent key.', 'ok');
+      } else if (msg?.type === 'flush') {
+        docs.keepDrafts();
         await docs.flushAll();
         bridge.send({ type: 'pending-saves', count: docs.pendingCount() });
       } else if (msg?.type === 'signin' && typeof msg.url === 'string') {

@@ -20,4 +20,7 @@ TestResults/
 
 # local dev harness data (tools/dev): test vault, client data, browser profile, logs
 /.dev/
+/server/server-token
+/server/mcp-token
 /src/Quantos.Backend/.dev/
+/.impeccable/review/

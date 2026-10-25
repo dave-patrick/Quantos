@@ -4,6 +4,8 @@
   import { app } from '../lib/state.svelte';
   import { layout } from '../lib/layout.svelte';
   import Icon from './Icon.svelte';
+  import ServerMcpSettings from './ServerMcpSettings.svelte';
+  import { isAndroidClient } from '../lib/platform';
 
   /** Settings › MCP: the Model Context Protocol server and how to point an agent at it. */
   interface McpInfo {
@@ -24,7 +26,7 @@
   async function load() {
     info = await api.get<McpInfo>('mcp?agent=' + encodeURIComponent(agent));
   }
-  onMount(() => { load().catch((e) => app.error(e)); });
+  onMount(() => { if (!isAndroidClient) load().catch((e) => app.error(e)); });
 
   const clients = [
     { key: 'claudeDesktop', name: 'Claude Desktop', where: 'claude_desktop_config.json' },
@@ -61,6 +63,9 @@
 </script>
 
 <h2>MCP</h2>
+<ServerMcpSettings />
+{#if !isAndroidClient}
+<h3>Local MCP</h3>
 <p class="faint intro">
   MCP (Model Context Protocol) is how an AI agent reaches Quantos: it gets the same tools you use,
   to read and change your notes. The agent runs as itself: it can read from the start, and you
@@ -118,6 +123,8 @@
   </p>
 {:else}
   <p class="faint">Loading…</p>
+{/if}
+
 {/if}
 
 <style>

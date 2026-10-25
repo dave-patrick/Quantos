@@ -7,6 +7,14 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- An Android host for the existing Quantos interface and core, with phone/tablet layouts, touch
+  splitters, system Back, Android Keystore, file import/export, PDF rendering/printing, notifications
+  and an Android shell. Test APKs are separate from the Windows release.
+- An optional portable shared-vault server, initially deployed privately on T580, with durable
+  offline device copies, conditional synchronisation and explicit conflict review.
+- Server MCP over Streamable HTTP, with a separate agent key. Settings › MCP can enable or revoke
+  note/task write access on the server and copy a remote connection configuration.
+
 ## 0.2.0 (2026-10-24)
 
 - **A more usable split workspace.** The header and panes align, split views read as separate cards, and active panes are easier to identify. The right sidebar supports multiple resizable panels and remembers their layout automatically.

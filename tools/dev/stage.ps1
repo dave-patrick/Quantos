@@ -103,7 +103,7 @@ foreach ($file in Get-ChildItem (Join-Path $Package 'application') -File) {
 }
 
 Step 'Refreshing the documents'
-foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLUGINS.md', 'AGENT-ADAPTERS.md') {
+foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLUGINS.md', 'AGENT-ADAPTERS.md', 'ANDROID.md', 'SERVER.md') {
     $from = Join-Path $Package $doc
     if (Test-Path $from) { Copy-Item $from (Join-Path $OwnerRoot $doc) -Force }
 }

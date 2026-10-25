@@ -1,7 +1,7 @@
 version: "1.0"
 project:
   name: "Quantos"
-  description: "Local-first notes, tasks and projects app over a Markdown vault (.NET 10 backend, Svelte frontend, WebView2 Windows client)."
+  description: "Local-first Markdown notes, tasks and projects with a shared .NET/Svelte core, Windows and Android clients, and an optional shared-vault/MCP server."
 layers:
   context: true
   skills: false

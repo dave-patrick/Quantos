@@ -72,6 +72,8 @@ public static class Program
         builder.Services.AddSingleton<VaultHost>();
         builder.Services.AddSingleton(new Quantos.Core.Updates.UpdateService(Api.SystemEndpoints.Version, paths.ClientData));
         builder.Services.AddSingleton<ClientPresence>();
+        builder.Services.AddSingleton<SyncCoordinator>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<SyncCoordinator>());
 
         var app = builder.Build();
         var log = app.Services.GetRequiredService<ILogger<VaultHost>>();
@@ -106,6 +108,7 @@ public static class Program
         HabitEndpoints.Map(app);
         PlanningEndpoints.Map(app);
         UpdateEndpoints.Map(app);
+        SyncEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

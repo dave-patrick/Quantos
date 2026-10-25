@@ -2,6 +2,7 @@
   import { tick } from 'svelte';
   import { terminal } from '../lib/terminal.svelte';
   import Icon from './Icon.svelte';
+  import { isAndroidClient } from '../lib/platform';
 
   let input = $state('');
   let history = $state<string[]>([]);
@@ -48,12 +49,12 @@
   }
 </script>
 
-<section class="drawer" style="height:{terminal.height}px" aria-label="PowerShell terminal">
+<section class="drawer" style="height:{terminal.height}px" aria-label={isAndroidClient ? 'Android shell' : 'PowerShell terminal'}>
   <div class="grip" role="separator" aria-orientation="horizontal" onpointerdown={startResize}></div>
   <header>
     <Icon name="terminal" size={14} />
     {#each terminal.sessions as s, i (s.id)}
-      <button class="tab" class:on={s.id === terminal.active} onclick={() => (terminal.active = s.id)}>PowerShell {i + 1}{s.running ? ' ●' : ''}</button>
+      <button class="tab" class:on={s.id === terminal.active} onclick={() => (terminal.active = s.id)}>{isAndroidClient ? 'Shell' : 'PowerShell'} {i + 1}{s.running ? ' ●' : ''}</button>
     {/each}
     <button class="icon-btn" title="New terminal" onclick={() => terminal.newSession()}><Icon name="plus" size={13} /></button>
     <span class="spacer"></span>
@@ -65,7 +66,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
     <pre bind:this={out} class="out" onclick={() => field?.focus()} role="log">{session.output}</pre>
     <div class="line">
-      <span class="prompt">PS {session.cwd}&gt;</span>
+      <span class="prompt">{isAndroidClient ? '$' : `PS ${session.cwd}>`}</span>
       <!-- svelte-ignore a11y_autofocus -->
       <input bind:this={field} bind:value={input} {onkeydown} spellcheck="false" autocomplete="off" autofocus aria-label="Command" disabled={session.running} />
     </div>

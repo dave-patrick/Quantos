@@ -12,6 +12,8 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   design rules, build/test/release steps. Keep it current when you finish work.
 - `BUILD-PLAN.md`: the approved plan, acceptance tests, roadmap (section 14) and decision log (section 17).
 - `CHANGELOG.md`: what each release contains.
+- `documentation/ANDROID.md`: Android host, phone/tablet layouts, native features and test APK build.
+- `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
 - BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built; published as 0.1.x on GitHub Releases (the app updates
@@ -23,6 +25,11 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - src/Quantos.Core (storage, write service, tasks, structure, AI, backups, updates, export),
   src/Quantos.Backend (API, security), src/Quantos.Client (Windows client, updater), src/Quantos.Cli
   (CLI + MCP + agent tool export), frontend (Svelte), tests/Quantos.Tests (xUnit), frontend/tests (Vitest).
+- `android/` hosts the existing backend and built frontend inside .NET Android; it does not fork
+  the product services. Android keys use Keystore. `src/Quantos.Server` is a portable sync/MCP service,
+  deployed separately with a persistent vault. `Core/Sync` uses persisted three-way file hashes,
+  conditional writes, retained recovery copies and explicit conflict review. App keys and MCP agent
+  keys are separate; only app-authenticated requests can change server MCP write grants.
 - Build with `pwsh build/build.ps1`; test with `dotnet test tests/Quantos.Tests` and `npx vitest run` in frontend.
 - The owner tests Quantos from `C:\Users\davem\Apps\Quantos\Quantos\application` (vault in
   `C:\Users\davem\Quantos\Vault`). After every build, stage it there with

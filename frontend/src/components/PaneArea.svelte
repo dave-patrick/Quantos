@@ -7,24 +7,26 @@
   let dragging = $state(false);
   const gutter = 8;
 
-  function start(e: MouseEvent) {
+  function start(e: PointerEvent) {
     e.preventDefault();
     dragging = true;
     const container = (e.currentTarget as HTMLElement).parentElement!;
     const rect = container.getBoundingClientRect();
     const horizontal = layout.split === 'horizontal';
-    const move = (ev: MouseEvent) => {
+    const move = (ev: PointerEvent) => {
       const pos = horizontal ? ev.clientY - rect.top : ev.clientX - rect.left;
       const size = horizontal ? rect.height : rect.width;
       ratio = Math.min(0.85, Math.max(0.15, pos / size));
     };
     const up = () => {
       dragging = false;
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
     };
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
   }
 
   function resizeByKey(e: KeyboardEvent) {
@@ -44,7 +46,10 @@
 {:else}
   <div class="panes {layout.split}" style={layout.split === 'horizontal' ? `grid-template-rows: calc(${ratio*100}% - ${gutter*ratio}px) ${gutter}px calc(${(1-ratio)*100}% - ${gutter*(1-ratio)}px);` : `grid-template-columns: calc(${ratio*100}% - ${gutter*ratio}px) ${gutter}px calc(${(1-ratio)*100}% - ${gutter*(1-ratio)}px);`}>
     <Pane pane={layout.panes[0]} index={0} {today} />
-    <button class="spacer" class:dragging type="button" aria-label="Resize split panes" aria-orientation={layout.split === 'horizontal' ? 'horizontal' : 'vertical'} onmousedown={start} onkeydown={resizeByKey}></button>
+    <!-- A keyboard-focusable separator is the ARIA window-splitter pattern. -->
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="spacer" class:dragging tabindex="0" role="separator" aria-label="Resize split panes" aria-valuenow={Math.round(ratio * 100)} aria-valuemin="15" aria-valuemax="85" aria-orientation={layout.split === 'horizontal' ? 'horizontal' : 'vertical'} onpointerdown={start} onkeydown={resizeByKey}></div>
     <Pane pane={layout.panes[1]} index={1} {today} />
   </div>
 {/if}

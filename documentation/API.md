@@ -81,6 +81,22 @@ Client → page: `client {version, captureHotkey, scratchpadHotkey}`, `flush` (r
 `pending-saves`), `open-node {id}`, `hotkey-status {problems}`, `terminal {event: opened|output|clear|state|closed|denied, …}`,
 `run-result {output, failed}`, `popup-shown`.
 
-## Command line
+## Optional shared-vault API
+
+The local `/api/sync` endpoints are restricted to the person using the app; agent and plugin actors
+cannot configure connections or MCP permissions. `GET /api/sync/` returns connection status,
+last successful sync, error and conflicts. `PUT /api/sync/` accepts `{url, token?}`; `DELETE` disconnects
+without deleting either vault. `POST /api/sync/run` retries now. `POST /api/sync/conflicts/{id}` accepts
+`{keepLocal}`; `GET /api/sync/conflicts/{id}/version?local=true|false` downloads the preserved copy.
+`GET|PUT /api/sync/mcp` reads or saves `{writeAccess}`. Explicit `POST /api/sync/mcp/connection` returns
+the MCP endpoint and separate Bearer header for the user's Copy action.
+
+The separate server exposes public `GET /health`, app-key authenticated `/sync/manifest`,
+`GET|PUT|DELETE /sync/file?path=…` (required `If-Match` hash or `missing`), `GET|PUT /sync/mcp`,
+and `POST /sync/mcp/connection`. `/mcp` uses the separate agent key and Streamable HTTP. See
+[SERVER.md](SERVER.md) for setup and migration. Android also maps authenticated, attachment-only
+`GET /api/android/pdf-info?path=…` and `/api/android/pdf-page?path=…&page=1` on its local backend.
+
+## Command line reference
 
 See [CLI-REFERENCE.md](CLI-REFERENCE.md). Exit codes 0 ok, 1 failed, 2 usage, 3 not running, 4 not permitted.

@@ -3,7 +3,7 @@
   import { layout } from '../lib/layout.svelte';
   import { run, keysFor, displayKeys } from '../lib/commands.svelte';
   import { toolbar } from '../lib/toolbar.svelte';
-  import { isWindowsClient } from '../lib/platform';
+  import { isWindowsClient, isAndroidClient } from '../lib/platform';
   import Icon from './Icon.svelte';
   import WorkspaceSwitcher from './WorkspaceSwitcher.svelte';
   // The wordmark (brand/quantos-wordmark.svg) is inlined: its letters take the text colour, so it suits light and dark.
@@ -42,6 +42,9 @@
   </nav>
 
   <div class="right">
+    {#if isAndroidClient}
+      <button class="tool" aria-label="Commands" title="Commands" onclick={() => run('palette.commands')}><Icon name="command" size={18} /></button>
+    {/if}
     {#if splitItem}
       <button class="tool" class:icon-only={!toolbar.showLabels} title="{splitItem.title}{keysFor(splitItem.id) ? ` (${displayKeys(keysFor(splitItem.id))})` : ''}" onclick={() => run(splitItem.id)}>
         <Icon name={splitItem.icon ?? 'split'} size={15} />{#if toolbar.showLabels}<span>{splitItem.label}</span>{/if}
@@ -53,7 +56,7 @@
     <button class="search" class:labelled={toolbar.showLabels} aria-label="Search or jump to" title="Search or jump to ({displayKeys(keysFor('palette.files'))})" onclick={() => run('palette.files')}>
       <Icon name="search" size={16} />{#if toolbar.showLabels}<span>Search</span>{/if}
     </button>
-    {#if !isWindowsClient}<span class="requires-windows" title="Global capture shortcuts, the always-on-top scratchpad, native notifications and the terminal need the Windows client.">Browser</span>{/if}
+    {#if !isWindowsClient && !isAndroidClient}<span class="requires-windows" title="Global capture shortcuts, the always-on-top scratchpad, native notifications and the terminal need the Windows client.">Browser</span>{/if}
     <button class="icon-btn" aria-label="Toggle right sidebar" aria-pressed={app.rightOpen} onclick={() => (app.rightOpen = !app.rightOpen)}>
       <Icon name={app.rightOpen ? 'panel-right-open' : 'panel-right-close'} size={18} stroke={2} />
     </button>

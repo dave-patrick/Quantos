@@ -4,7 +4,35 @@ Quantos is a personal productivity app for notes, tasks, projects and people. Ev
 is a Markdown file with YAML frontmatter, kept in a folder you choose (your **vault**). You can open
 and edit those files with any editor, and copy the folder to back it up.
 
-Release 1.0 runs entirely on your computer. Nothing is sent anywhere.
+Quantos keeps your vault on this device by default. If you connect a shared server, vault changes
+are sent to that server over HTTPS. AI requests use only the providers you configure.
+
+## Android, shared vault and server MCP
+
+The Android app uses the same Quantos workspace, branding and note/task features on phones and
+tablets. Phones use overlay sidebars; tablets keep the wider workspace and split panes when there
+is room. Use the **Commands** button for commands such as **Next tab**, **Previous tab** and
+**Split down**. Android Back closes a menu or dialog before navigating back or leaving.
+
+Android stores its vault privately. Before uninstalling, save a copy with **Settings › Shared vault
+› Android files › Export vault**. **Import vault copy** opens a separate copy and preserves the
+previous vault. PDF pages and citations work locally; a note's **More actions › Export › PDF**
+opens Android's print dialog. The local Terminal uses Android `sh`; Windows PowerShell and global
+Windows hotkeys require Windows. Folder links use filesystem paths; use vault copies and shared
+sync to move notes between Android and other apps.
+
+To share notes between devices, open **Settings › Shared vault**, enter your server's HTTPS address
+and app server key, then choose **Connect**. You can keep editing offline. Changes sync when the
+server is reachable; simultaneous edits keep both versions under **Versions to review**. Choosing
+**Disconnect** keeps the device's vault and pending changes. A server is optional.
+
+The server's MCP works independently of the apps. In **Settings › MCP › Shared server MCP**, turn
+**Allow the server MCP to create and edit notes and tasks** on or off, then choose **Save server
+permissions**. The saved state is confirmed by the server. **Copy MCP connection** includes the
+separate MCP key for your agent; keep that copied configuration private. MCP cannot grant itself
+permissions, run shell commands or permanently delete files.
+
+The bundled **Shared vault & server** Help guide covers server setup, keys and migration.
 
 ---
 

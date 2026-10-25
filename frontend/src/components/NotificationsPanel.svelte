@@ -3,15 +3,23 @@
   import { onMount } from 'svelte';
   import { notifications } from '../lib/notifications.svelte';
   import { openNode } from '../lib/links.svelte';
-  import { isWindowsClient } from '../lib/platform';
+  import { isWindowsClient, isAndroidClient, bridge } from '../lib/platform';
   let permission = $state(typeof Notification === 'undefined' ? 'unsupported' : Notification.permission);
-  onMount(() => notifications.load());
+  onMount(() => {
+    notifications.load();
+    if (!isAndroidClient) return;
+    const off = bridge.on((message) => { if (message.type === 'notification-permission') permission = message.granted ? 'granted' : 'default'; });
+    bridge.send({ type: 'notification-status' });
+    return off;
+  });
 </script>
 
 <div class="scroll notes">
   <div class="head"><h3 class="label">Notification history</h3>
     {#if notifications.unread}<button class="btn ghost" onclick={() => notifications.markRead()}>Mark all read</button>{/if}</div>
-  {#if !isWindowsClient && permission === 'default'}
+  {#if isAndroidClient && permission !== 'granted'}
+    <button class="btn" onclick={() => bridge.send({ type: 'request-notifications' })}>Enable device notifications</button>
+  {:else if !isWindowsClient && permission === 'default'}
     <button class="btn" onclick={async () => (permission = await Notification.requestPermission())}>Show reminders as browser notifications</button>
   {/if}
   {#each notifications.list as n (n.id)}

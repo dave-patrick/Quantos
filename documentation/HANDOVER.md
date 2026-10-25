@@ -44,7 +44,31 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 2026-10-24; latest release 0.2.0)
+## Open threads (as of 2026-10-25; latest release 0.2.0)
+
+- **Android / shared server / frontend MCP permission (2026-10-25, unreleased).** The owner's approved
+  scope is recorded at the top of BUILD-PLAN. The Android app shares the full existing backend and
+  frontend rather than implementing a reduced note app. Build with `pwsh build/android.ps1`; ARM64
+  and x64 APKs are in ignored `publish/android/`, debug-signed for testing. Server setup and migration
+  are in SERVER.md. T580 production is `https://t580.tail7a64f4.ts.net:8445`; isolated QA is 8446.
+  The production volume is `quantos-data`; test data is `quantos-test-data`. Keys remain in protected
+  runtime files, never in the repo. All 167 .NET tests pass. Android phone/tablet x64 runtime tests
+  verified local edits/restart, actual offline edit/reconnect to Windows, server MCP write on/off and
+  native Copy, tablet splits, native PDF page rendering, a valid 13-file portable ZIP export, import
+  into a separate vault preserving the original, and approved Android shell execution. Physical ARM64
+  testing, microphone/notification delivery and native printing remain separate acceptance checks.
+  No public APK release was made.
+  Emulator 37.2.12 software GPU modes crashed the whole VM on this Windows/Arc host; `-gpu host`
+  works. Run one emulator at a time to avoid memory pressure. Native evidence is in ignored
+  `.impeccable/review/`, not browser emulation. Independent review requested an IME caret-visibility
+  fix; the reviewer scored it resolved, with disposition **ship for the scored fix**. The documenter
+  verified the extension against incumbent assets/tokens; marketing-artifact drift was preserved.
+  The final Windows build passed 97 frontend / 167 .NET tests, archive checks and self-check with
+  zero self-check warnings, and was staged/restarted successfully (Page loaded, HTTP 200). Its first
+  production connection followed a verified 29-file backup: 28 portable files uploaded, zero
+  conflicts. Production MCP write access is enabled and persisted across a real server restart;
+  authenticated MCP initialize/tools-list returned all nine tools. The owner can revoke writes in
+  Settings › MCP. The synthetic QA container is stopped; its separate volume is retained.
 
 - **Released 0.2.0** (tag `v0.2.0`, Windows x64 zip, SHA-256
   `3fafdba7f3b0f2606855155e22814b771e333baf2479809578b381f95771ce1c`). The release includes the

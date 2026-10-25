@@ -110,6 +110,26 @@ request alone can never trigger these actions.
 - The meaning-search index (`client-data/cache/embeddings.sqlite`) is derived data like the cache:
   outside the vault, rebuilt when the model changes.
 
+## Android and optional shared server
+
+Android runs the same loopback backend with an app session. Its native bridge accepts messages
+only from trusted top-level Quantos pages, never plugin frames or external pages. Microphone,
+notifications, file selection, downloads, printing and terminal approval use native Android
+permissions/dialogs. App and AI keys use Android Keystore encryption outside the vault. Portable
+ZIP import validates paths and unpacked sizes, opens a separate vault copy and keeps the old one.
+
+Connecting a server is explicit. The local backend makes HTTPS requests with no credential-bearing
+redirects and pins the server identity. Every device retains its local vault. Sync uses conditional
+byte hashes, a device checkpoint and preserved conflicts/recovery copies. Machine paths, linked
+folders, local workspace layout, keys, grants, locks, caches and local history are not shared.
+
+The server has separate app and MCP keys outside the vault. The app key can configure server MCP
+writes; MCP cannot configure itself. The fixed `server-mcp` actor starts read-only. The owner can
+enable CreateEdit in Settings › MCP; no MCP shell, permanent delete or permission escalation is
+exposed. Copy MCP connection explicitly copies the separate agent key (marked sensitive on Android).
+The server rejects cross-origin browser requests. T580 binds its container to loopback and exposes
+it through private Tailscale HTTPS. Hosted migration must preserve identity/data and protect HTTPS.
+
 ## Data safety
 
 See [STORAGE-SPEC.md](STORAGE-SPEC.md): atomic writes, conflict checks by content hash, history

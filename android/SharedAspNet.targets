@@ -1,0 +1,22 @@
+<Project>
+  <!-- ASP.NET has no Android runtime pack. Package its managed assemblies with the app,
+       using the exact runtime version already used by Quantos, rather than a desktop
+       FrameworkReference. No Windows native libraries are included. -->
+  <PropertyGroup>
+    <AspNetRuntimeVersion>10.0.13</AspNetRuntimeVersion>
+    <AspNetRuntimePackage Condition="'$(RuntimeIdentifier)' == 'android-arm64'">microsoft.aspnetcore.app.runtime.win-arm64</AspNetRuntimePackage>
+    <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == '' and '$(AspNetRuntimePackage)' != ''">$(NuGetPackageRoot)$(AspNetRuntimePackage)/$(AspNetRuntimeVersion)/runtimes/win-arm64/lib/net10.0</AspNetRuntimeDirectory>
+    <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == ''">$(NetCoreRoot)shared/Microsoft.AspNetCore.App/$(AspNetRuntimeVersion)</AspNetRuntimeDirectory>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(AspNetRuntimePackage)' != ''">
+    <PackageDownload Include="$(AspNetRuntimePackage)" Version="[$(AspNetRuntimeVersion)]" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(AspNetRuntimeDirectory)/Microsoft.*.dll;$(AspNetRuntimeDirectory)/System.*.dll" Exclude="$(AspNetRuntimeDirectory)/Microsoft.AspNetCore.Server.IIS*.dll;$(AspNetRuntimeDirectory)/Microsoft.AspNetCore.Server.HttpSys.dll;$(AspNetRuntimeDirectory)/*Native*.dll;$(AspNetRuntimeDirectory)/*.Messages.dll">
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="CheckAspNetRuntime" BeforeTargets="ResolveReferences" Condition="!Exists('$(AspNetRuntimeDirectory)/Microsoft.AspNetCore.dll')">
+    <Error Text="Install ASP.NET Core runtime $(AspNetRuntimeVersion), or set AspNetRuntimeDirectory to its managed runtime folder. See android/README.md." />
+  </Target>
+</Project>

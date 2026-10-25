@@ -1,4 +1,4 @@
-import { bridge, isWindowsClient } from './platform';
+import { bridge, isNativeClient } from './platform';
 
 /** The local PowerShell terminal lives in the Windows client; the browser never shows it. */
 class Terminal {
@@ -9,7 +9,7 @@ class Terminal {
   active = $state<string | null>(null);
 
   constructor() {
-    if (!isWindowsClient) return;
+    if (!isNativeClient) return;
     bridge.on((msg) => {
       if (msg?.type !== 'terminal') return;
       if (msg.event === 'denied') { this.denied = true; return; }
@@ -32,7 +32,7 @@ class Terminal {
   }
 
   toggle() {
-    if (!isWindowsClient) return;
+    if (!isNativeClient) return;
     this.open = !this.open;
     if (this.open && this.sessions.length === 0) this.newSession();
   }

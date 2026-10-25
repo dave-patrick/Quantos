@@ -128,6 +128,7 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
             return ctx.Request.Headers[ClientHeader].ToString() switch
             {
                 "windows" => new Actor(ActorKind.User, "windows-client"),
+                "android" => new Actor(ActorKind.User, "android-client"),
                 "plugin" => new Actor(ActorKind.Plugin, ctx.Request.Headers["X-Quantos-Plugin"].ToString()),
                 _ => Actor.Cli
             };
@@ -173,4 +174,5 @@ public static class HttpContextActorExtensions
     public static Actor Actor(this HttpContext ctx) => (Actor)ctx.Items[RequestSecurity.ActorKey]!;
     public static bool IsNative(this HttpContext ctx) => ctx.Items[RequestSecurity.NativeKey] is true;
     public static bool IsWindowsClient(this HttpContext ctx) => ctx.IsNative() && ctx.Actor().Name == "windows-client";
+    public static bool IsAppClient(this HttpContext ctx) => ctx.IsNative() && ctx.Actor().Name is "windows-client" or "android-client";
 }

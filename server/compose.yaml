@@ -1,0 +1,26 @@
+services:
+  quantos:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    image: quantos-server:local
+    container_name: quantos-server
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:47830:8080"
+    volumes:
+      - quantos-data:/data
+    environment:
+      QUANTOS_SERVER_TOKEN_FILE: /run/secrets/quantos-token
+      QUANTOS_MCP_TOKEN_FILE: /run/secrets/quantos-mcp-token
+      TZ: "${TZ:-Etc/UTC}"
+    secrets:
+      - quantos-token
+      - quantos-mcp-token
+secrets:
+  quantos-token:
+    file: ./server-token
+  quantos-mcp-token:
+    file: ./mcp-token
+volumes:
+  quantos-data:

@@ -1,6 +1,6 @@
 import { api } from './api';
 import { onChange } from './events';
-import { isWindowsClient } from './platform';
+import { isWindowsClient, isAndroidClient, bridge } from './platform';
 import { app } from './state.svelte';
 import { openNode } from './links.svelte';
 
@@ -20,6 +20,7 @@ class Notifications {
       // Otherwise use a system notification when the page is in the background and allowed to,
       // or show it in the page so it isn't missed.
       if (isWindowsClient) return;
+      if (isAndroidClient) bridge.send({ type: 'notification', id: n.id, title: n.title, body: n.body, nodeId: n.nodeId });
       const status = await api.get<{ windowsClientConnected?: boolean }>('status').catch(() => null);
       if (status?.windowsClientConnected) return;
       if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {

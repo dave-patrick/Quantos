@@ -37,7 +37,7 @@ public class QuantosException(string message, int status = 400) : Exception(mess
 /// property edits, renames, moves, trash, restore, rollback, capture, CLI, agents - goes through
 /// here: permission check, conflict check, history, atomic write, index update, notification.
 /// </summary>
-public sealed class WriteService
+public sealed partial class WriteService
 {
     private readonly Lock _gate = new();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };

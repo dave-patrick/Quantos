@@ -28,8 +28,16 @@ public sealed record AiSettings
 /// Reads and writes ai.json, and keeps API keys in ai-keys.json encrypted for the current Windows
 /// user (DPAPI), so a copied client-data folder doesn't carry usable keys. Keys never go back to a page.
 /// </summary>
+public interface IKeyProtector
+{
+    string Protect(string value);
+    string? Unprotect(string value);
+}
+
 public sealed class AiSettingsStore(string settingsFolder)
 {
+    /// <summary>Set by a native host before it opens a vault. Keys stay device-owned.</summary>
+    public static IKeyProtector KeyProtector { get; set; } = new WindowsKeyProtector();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("Quantos AI provider key");
     private readonly object _gate = new();
@@ -59,23 +67,32 @@ public sealed class AiSettingsStore(string settingsFolder)
     public string? GetKey(string provider)
     {
         if (!ReadKeys().TryGetValue(provider, out var sealedKey)) return null;
-        if (!OperatingSystem.IsWindows()) return null;
-        try { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(sealedKey), Entropy, DataProtectionScope.CurrentUser)); }
+        try { return KeyProtector.Unprotect(sealedKey); }
         catch (CryptographicException) { return null; } // sealed by another Windows user or machine
         catch (FormatException) { return null; }
     }
 
     public void SetKey(string provider, string? key)
     {
-        if (!OperatingSystem.IsWindows()) throw new QuantosException("Saving API keys needs Windows (they're encrypted for your Windows account).");
         lock (_gate)
         {
             var keys = ReadKeys();
             if (string.IsNullOrWhiteSpace(key)) keys.Remove(provider);
-            else keys[provider] = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(key.Trim()), Entropy, DataProtectionScope.CurrentUser));
+            else keys[provider] = KeyProtector.Protect(key.Trim());
             Directory.CreateDirectory(settingsFolder);
             AtomicFile.WriteAllText(KeysFile, JsonSerializer.Serialize(keys, Json));
         }
+    }
+
+    private sealed class WindowsKeyProtector : IKeyProtector
+    {
+        public string Protect(string value)
+        {
+            if (!OperatingSystem.IsWindows()) throw new QuantosException("Saving API keys needs a supported device key store.");
+            return Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value), Entropy, DataProtectionScope.CurrentUser));
+        }
+        public string? Unprotect(string value) => OperatingSystem.IsWindows()
+            ? Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(value), Entropy, DataProtectionScope.CurrentUser)) : null;
     }
 
     private Dictionary<string, string> ReadKeys()

@@ -2,7 +2,7 @@
   import ThemeEditor from '../ThemeEditor.svelte';
   import { app } from '../../lib/state.svelte';
   import { prefs } from '../../lib/prefs.svelte';
-  import { isWindowsClient } from '../../lib/platform';
+  import { isWindowsClient, isAndroidClient } from '../../lib/platform';
   import Setup from '../Setup.svelte';
   import ShortcutSettings from '../ShortcutSettings.svelte';
   import ToolbarSettings from '../ToolbarSettings.svelte';
@@ -11,6 +11,7 @@
   import BackupSettings from '../BackupSettings.svelte';
   import UpdateSettings from '../UpdateSettings.svelte';
   import McpSettings from '../McpSettings.svelte';
+  import SyncSettings from '../SyncSettings.svelte';
   import { vaultSettings } from '../../lib/vaultSettings.svelte';
   import { templatesStore } from '../../lib/templates.svelte';
   import { onMount } from 'svelte';
@@ -20,7 +21,7 @@
 
   import type { Tab } from '../../lib/layout.svelte';
   let { tab }: { tab?: Tab } = $props();
-  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates';
+  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates' | 'sync';
   let section = $state<Section>('general');
   let navSide = $state<'left' | 'right' | 'top' | 'bottom'>('left');
   // A link can open a particular section ("Open AI settings").
@@ -31,7 +32,7 @@
 <div class="settings" class:nav-left={navSide === 'left'} class:nav-right={navSide === 'right'} class:nav-top={navSide === 'top'} class:nav-bottom={navSide === 'bottom'}>
   <h1 class="visually-hidden">Settings</h1>
   <nav>
-    {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
+    {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['sync', 'Shared vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
       <button class:on={section === key} onclick={() => (section = key as typeof section)}>{label}</button>
     {/each}
   </nav>
@@ -93,7 +94,9 @@
         onchange={(e) => vaultSettings.set('inlineTasks', (e.target as HTMLInputElement).checked ? null : false)} />
         Turn “- [ ] …” lines in notes into tasks automatically</label>
       <h3>Backups</h3>
-      <p class="muted">Until configurable backups arrive in Release 1.1: {isWindowsClient ? 'use Exit in this window' : 'use Exit in the Windows client'} so the backend shuts down safely, then copy the whole Vault folder somewhere safe. You don't need the cache in client-data; it's rebuilt from the vault.</p>
+      <p class="muted">{isAndroidClient ? 'Use Settings › Shared vault › Android files › Export vault to keep a portable copy outside the app.' : 'Use Settings › Backups to configure rolling backups, make a backup now, or verify and restore a saved copy.'}</p>
+    {:else if section === 'sync'}
+      <SyncSettings />
     {:else if section === 'shortcuts'}
       <ShortcutSettings />
     {:else if section === 'toolbar'}

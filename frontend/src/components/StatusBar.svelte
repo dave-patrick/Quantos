@@ -2,7 +2,7 @@
   import { app } from '../lib/state.svelte';
   import { layout } from '../lib/layout.svelte';
   import { docs } from '../lib/docs.svelte';
-  import { isWindowsClient } from '../lib/platform';
+  import { isWindowsClient, isAndroidClient } from '../lib/platform';
   import { notifications } from '../lib/notifications.svelte';
   import { prefs } from '../lib/prefs.svelte';
   import { focus, clock } from '../lib/focus.svelte';
@@ -41,7 +41,7 @@
   {/if}
   <span class="item" title="Dates use this device's time zone">{zone}</span>
   <span class="item" title={app.status?.vault ?? ''}><Icon name="database" size={12} /> {vaultName}</span>
-  <span class="item">{isWindowsClient ? 'Windows client' : 'Browser'}</span>
+  <span class="item">{isWindowsClient ? 'Windows client' : isAndroidClient ? 'Android' : 'Browser'}</span>
 </footer>
 
 <style>

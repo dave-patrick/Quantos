@@ -1,6 +1,7 @@
 <script lang="ts">
   import { approvals } from '../lib/approvals.svelte';
   import Icon from './Icon.svelte';
+  import { isAndroidClient } from '../lib/platform';
 
   let cancelButton = $state<HTMLButtonElement | null>(null);
   let opener: HTMLElement | null = null;
@@ -31,7 +32,7 @@
     <div class="card" role="alertdialog" aria-modal="true" aria-labelledby="approval-title">
       <Icon name="shield" size={22} />
       <div>
-        <h2 id="approval-title">Approve in the Windows client</h2>
+        <h2 id="approval-title">{isAndroidClient ? 'Confirm on this device' : 'Approve in the Windows client'}</h2>
         <p>{approvals.waiting.description}</p>
         <p class="muted">{approvals.inClient ? 'A confirmation window has opened. Approve it there to continue.' : 'For safety, this can only be approved in the Quantos Windows client. Switch to it and approve the request.'}</p>
         <button class="btn" bind:this={cancelButton} onclick={() => approvals.cancel()}>Cancel</button>

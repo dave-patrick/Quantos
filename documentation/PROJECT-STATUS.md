@@ -5,7 +5,48 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-24, at version 0.2.0 (released as v0.2.0)._
+_Last updated: 2026-10-25, at version 0.2.0 (Windows release v0.2.0; Android/server work unreleased)._
+
+### Android and shared vault (owner-approved scope, 2026-10-24)
+
+- `android/` is a native .NET Android host using the existing Core, linked backend source and
+  embedded Svelte frontend. It preserves the actual app brand and features, with phone/tablet
+  layouts, system/IME insets, Android Back, Keystore, native files/printing/PDF rendering,
+  notifications and Android `sh`. Windows global shortcuts and PowerShell remain platform-specific.
+- `src/Quantos.Server/` is the optional portable Docker shared-vault server. Devices retain their
+  local vaults and sync using persisted three-way hashes. Concurrent edits and edit-versus-delete
+  preserve both copies for review. Keys, grants, caches, linked paths and device layouts stay local.
+- The backend hosts nine MCP tools with a separate agent key. **Settings › MCP › Shared server MCP**
+  controls create/edit permission on the actual server; it starts read-only. MCP cannot grant itself
+  permissions or use shell/admin APIs. **Settings › Shared vault** connects, disconnects and reviews
+  conflicts. See [ANDROID.md](ANDROID.md), [SERVER.md](SERVER.md) and the updated API/security/storage guides.
+- T580 production service is healthy at `https://t580.tail7a64f4.ts.net:8445`, Docker `quantos-server`,
+  named volume `quantos-data`, time zone `America/Phoenix`. Runtime keys are protected in the host's
+  `~/Apps/QuantosServer/keys/`; never commit/copy them into documentation. Existing Tailscale services
+  were preserved. Port 8446 and `quantos-test-data` are an isolated synthetic QA vault.
+- Verified: all **167 .NET tests**, including server auth/MCP grant persistence, offline/restart sync,
+  conflict preservation and disconnect cancellation. Android x64 and ARM64 test APKs compile with
+  zero warnings. Installed x64 Android phone/tablet emulators opened the full app. Phone edits
+  survived app restart; a real offline edit with the test server stopped reached Windows after
+  reconnect. MCP write toggle and native Copy action worked against T580. Tablet sync and split
+  panes worked. Native PDF renderer returned a valid page PNG. Native export produced a valid
+  13-file ZIP without device secrets; import restored its notes in a separate vault and kept the
+  original. An approved Android shell command returned its expected marker. Frontend check: 0 errors, 9 warnings;
+  desktop Settings/MCP axe scan: no violations.
+- Independent native review preserved branding/layout/MCP UI and required keeping the active line
+  visible when the IME resizes the note viewport. The Android editor now explicitly scrolls its
+  focused selection on viewport resize. The reviewer scored that fix resolved (ship for the scored
+  fix); the documenter verified incumbent assets/tokens without changing the existing system.
+- The final Windows package passed 97 frontend / 167 .NET tests, archive checks and self-check
+  (zero self-check warnings). It was staged and restarted with Page loaded / HTTP 200. After a
+  verified 29-file backup, the owner's Windows vault connected to production: 28 portable files
+  uploaded, zero conflicts. MCP write access is enabled and persisted across a server restart;
+  real authenticated MCP initialize/tools-list returned all nine tools. The synthetic QA server
+  is stopped; its volume is retained.
+- Test APKs are debug-signed, not a public release. No physical ARM64 handset acceptance, real
+  microphone/notification delivery, full backup restore or every inherited view has been manually
+  exercised. Android may stop background work; reminders/sync resume when reopened. Server migration
+  is documented and preserves the server id/data, but a hosted migration has not been performed.
 
 ## 1. Where things stand
 
@@ -14,8 +55,8 @@ _Last updated: 2026-10-24, at version 0.2.0 (released as v0.2.0)._
 | Latest release | [0.2.0](https://github.com/dave-patrick/Quantos/releases/tag/v0.2.0) (Windows x64 zip, SHA-256 `3fafdba7f3b0f2606855155e22814b771e333baf2479809578b381f95771ce1c`) |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
-| Tests | 151 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass in the 0.2.0 release build. |
-| Current build | Version 0.2.0 (commit `a8b51fa`, tag `v0.2.0`). The Windows x64 release package passed validation and self-check, was published to GitHub Releases, and is staged in the owner's test copy; startup completed with HTTP 200. Split panes are distinct cards with a clear active state and individual close buttons. The right sidebar supports multiple resizable panels and saves layout automatically. Notes List rows are single-line; Preview can be toggled and remembers the choice. My Day task cards are compact; priority colors are red (P1), orange (P2), green (P3), and blue (P4). The frameless window resizes on every edge and corner and recalculates its layout after maximize/restore and tray hide/reopen to keep controls aligned. The active editor can move a note to Trash; the version label no longer clips. Eighteen Demo records remain in the active vault; no separate demo vault is included. |
+| Tests | 167 .NET (xUnit, `tests/Quantos.Tests`) and 97 frontend (Vitest, `frontend/tests`); all pass in the current Android/server Windows test build. |
+| Released build | Version 0.2.0 (commit `a8b51fa`, tag `v0.2.0`). The Windows x64 release package passed validation and self-check and was published to GitHub Releases. Split panes are distinct cards with a clear active state and individual close buttons. The right sidebar supports multiple resizable panels and saves layout automatically. Notes List rows are single-line; Preview can be toggled and remembers the choice. My Day task cards are compact; priority colors are red (P1), orange (P2), green (P3), and blue (P4). The frameless window resizes on every edge and corner and recalculates its layout after maximize/restore and tray hide/reopen to keep controls aligned. The active editor can move a note to Trash; the version label no longer clips. The current staged unreleased build is described above. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
 Version numbers are product versions (0.x.y) and are separate from the plan's "Release 1.x" names.
@@ -118,14 +159,13 @@ From BUILD-PLAN section 14. Each needs a scope decision from the owner before it
 | Item | Notes and dependencies |
 |---|---|
 | Broader content importing | Independent of the rest. Candidates: Obsidian (closest format), Notion export, Evernote `.enex`, OneNote, Apple Notes, plain Markdown folders. Imports should go through `WriteService` and preserve links. |
-| Containerized backend | The backend is .NET and mostly portable; Windows-only parts (DPAPI key storage, the WebView2 client, PowerShell) need alternatives or to stay client-side. Precedes hosting. |
-| Multiuser accounts and sign-in | Needed before any shared or hosted use. The permission system already has actors; there are no user accounts. BUILD-PLAN "Sign-in is deferred until multiuser". |
-| Server hosting | Needs the two items above plus the rules in BUILD-PLAN section 15 (remote hosting). |
-| Moving to the new deployment | Migrating a local vault to the hosted setup. |
-| Offline caching and sync for remote use | The largest item; BUILD-PLAN recommends keeping device caches separate from authoritative storage, which the current design already does. |
+| Containerized shared-vault server | Built for the approved single-owner/device scope; see SERVER.md. The complete local backend remains in each app. |
+| Multiuser accounts and sign-in | Still deferred. The current shared server is one owner's vault/devices with separate app and MCP keys, not multiuser collaboration. |
+| Hosted migration | Portable container, persistent volume and migration procedure built; an actual hosted move remains unverified. |
+| Offline editing and sync | Built with complete local vaults, persisted checkpoints and conservative conflict review. |
 
 Gaps noticed along the way (not in the plan): code signing of the executables (SmartScreen and
-antivirus warnings, and a stronger update trust anchor than the checksum alone); touch and phone layout;
+antivirus warnings, and a stronger update trust anchor than the checksum alone); public Android signing/distribution;
 `RELEASE-CHECKLIST.md` needs the 1.1/1.2 features.
 
 ## 5. Verification status

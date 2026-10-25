@@ -2,6 +2,15 @@
 
 Every decision in this plan is confirmed. Anything marked **Recommended design** is a proposed technical approach that has not been separately approved.
 
+## Android and shared-server scope approved 2026-10-24
+
+The owner approved a standalone offline Android app for phones and tablets, with the same branding
+and feature implementation as Windows. Both apps may optionally connect to a shared vault server;
+devices keep editing offline and sync on reconnect. The first server runs on T580, with portable
+data and deployment for later hosted migration. The backend also hosts MCP. Its write access is
+controlled by the owner inside the frontend app. See [Android](documentation/ANDROID.md) and
+[server](documentation/SERVER.md) for the implementation and platform differences.
+
 ---
 
 ## 1. Product objective

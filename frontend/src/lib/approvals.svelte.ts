@@ -1,6 +1,6 @@
 import { api } from './api';
 import { onChange } from './events';
-import { isWindowsClient } from './platform';
+import { isWindowsClient, isAndroidClient, bridge } from './platform';
 import type { Approval } from './types';
 
 /**
@@ -19,6 +19,7 @@ class Approvals {
 
   wait(approval: Approval): Promise<string | null> {
     this.waiting = approval;
+    if (isAndroidClient) bridge.send({ type: 'approve', id: approval.id });
     return new Promise((resolve) => {
       this.resolver = resolve;
       const timer = setInterval(async () => {
@@ -44,7 +45,7 @@ class Approvals {
     this.resolver = null;
   }
 
-  get inClient() { return isWindowsClient; }
+  get inClient() { return isWindowsClient || isAndroidClient; }
 }
 
 export const approvals = new Approvals();

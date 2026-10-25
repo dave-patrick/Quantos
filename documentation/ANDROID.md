@@ -1,0 +1,60 @@
+# Quantos on Android
+
+The Android app runs the same Svelte interface and .NET vault services as Windows. Notes, tasks,
+projects, daily notes, queries, search, graphs, maps, whiteboards, mind maps, presentations, focus,
+habits, planning, attachments, templates, backups, plugins and AI settings use the shared code.
+It works with a local vault without a server or account. AI providers still require the network
+when configured, just as on Windows.
+
+## Phone and tablet
+
+The existing Quantos wordmark, icon, fonts, charcoal surfaces, blue accent and user themes are
+preserved. Phones use a two-row toolbar, overlay sidebars and scrollable settings navigation.
+Tablets retain the wider workspace, persistent sidebars where space permits, and split panes.
+Pane dividers support touch as well as mouse and keyboard. Touch controls have 48 dp targets.
+System bars, display cutouts, the keyboard and Android Back are handled by the native host.
+
+PDF pages use Android's PDF renderer and keep Quantos's page citation controls. **More actions ›
+Export › PDF** opens Android's print dialog, including Save as PDF. Markdown and HTML exports,
+attachment selection and conflict-copy downloads use the system file picker. The local Terminal
+uses Android `sh`; Windows PowerShell scripts and Windows global hotkeys remain Windows-specific.
+Android notifications are enabled from the notification panel. Android may stop a background app;
+missed reminders and pending sync resume when the app starts again.
+
+## Keep a recoverable copy
+
+The vault is in the app's private storage. Uninstalling Quantos removes that storage. Use
+**Settings › Shared vault › Android files › Export vault** to save a ZIP elsewhere. Importing
+a ZIP opens a separate vault copy and preserves the previous vault. Only portable vault content
+is imported; device keys, locks and caches are excluded. Archives are limited to 1 GB unpacked,
+with a 200 MB limit per file.
+
+## Shared vault and MCP
+
+See [SERVER.md](SERVER.md). A server is optional. Each device keeps its complete local vault;
+editing continues offline and synchronises on reconnect. The server MCP works while the apps
+are closed. **Settings › MCP › Shared server MCP** controls its note/task write access and copies
+its connection configuration.
+
+## Build
+
+Install .NET 10, the .NET Android workload (`dotnet workload install android`), JDK 17+, Android
+SDK platform 36, and ASP.NET Core runtime **10.0.13**. ARM64 builds restore the matching managed
+ARM64 runtime package automatically. The Android project packages the managed
+ASP.NET assemblies because Microsoft does not ship an ASP.NET Android runtime pack. Override
+`AspNetRuntimeDirectory` if that runtime is installed outside the usual .NET shared folder.
+Do not add the Windows client's framework reference to this project.
+
+```powershell
+pwsh build/android.ps1                         # ARM64 phones and tablets, debug-signed test APK
+pwsh build/android.ps1 -Runtime android-x64    # x64 emulator test APK
+```
+
+Output is in `publish/android/`, with SHA-256 files. Debug signing is for testing. A public release
+needs a separately managed release signing key and the usual publication decision.
+`android/Backend/` compiles the existing backend source and embeds the existing built frontend;
+it is not a separate implementation of Quantos features.
+
+AI provider and server keys are encrypted with Android Keystore. The backend listens only on
+loopback. Native messages are accepted only from Quantos's app pages; plugin frames and external
+pages cannot invoke the native bridge. External web links open in the user's browser.

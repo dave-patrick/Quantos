@@ -4,7 +4,7 @@
   import { whereFrom } from '../lib/links.svelte';
   import { views } from '../lib/views.svelte';
   import { supertags } from '../lib/supertags.svelte';
-  import { isWindowsClient } from '../lib/platform';
+  import { isNativeClient, isAndroidClient } from '../lib/platform';
   import { terminal } from '../lib/terminal.svelte';
   import { capture } from '../lib/capture.svelte';
   import Icon from './Icon.svelte';
@@ -128,6 +128,7 @@
 
   function open(e: MouseEvent, kind: TabKind, label: string, arg?: string) {
     layout.open({ kind, title: label, arg }, whereFrom(e));
+    if (isAndroidClient && innerWidth <= 700) app.leftOpen = false;
   }
 </script>
 
@@ -249,7 +250,7 @@
           </button>
         {:else if item.key === 'capture'}
           <button class="item" onclick={() => capture.show()} {...dnd(item.key)}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
-        {:else if isWindowsClient}
+        {:else if isNativeClient}
           <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()} {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
         {:else}
           <div class="item disabled" title="The PowerShell terminal runs in the Windows client only." {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>

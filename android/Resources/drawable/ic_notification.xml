@@ -1,0 +1,7 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="1254" android:viewportHeight="1254">
+  <!-- Solid notification rendition of the arcs, cards and orb in brand/quantos-icon.svg. -->
+  <path android:pathData="M654.4,220 A407,407 0,1 0,778.5 1003.4 M804.6,260.1 A407,407 0,0 1,1013.1 751.8" android:fillColor="@android:color/transparent" android:strokeColor="#ffffff" android:strokeWidth="80" android:strokeLineCap="round" />
+  <path android:pathData="M445,372 L840,372 L840,870 L445,870 Z" android:fillColor="@android:color/transparent" android:strokeColor="#ffffff" android:strokeWidth="55" android:strokeLineJoin="round" />
+  <path android:pathData="M538,534 L724,534 M538,635 L724,635 M538,736 L724,736" android:fillColor="@android:color/transparent" android:strokeColor="#ffffff" android:strokeWidth="50" android:strokeLineCap="round" />
+  <path android:pathData="M1005.5,938 A108.5,108.5 0,1 1,788.5 938 A108.5,108.5 0,1 1,1005.5 938" android:fillColor="#ffffff" />
+</vector>

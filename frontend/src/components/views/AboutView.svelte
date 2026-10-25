@@ -3,7 +3,7 @@
   import { app } from '../../lib/state.svelte';
   import { layout } from '../../lib/layout.svelte';
   import { updates } from '../../lib/updates.svelte';
-  import { isWindowsClient } from '../../lib/platform';
+  import { isWindowsClient, isAndroidClient } from '../../lib/platform';
   import wordmark from '../../assets/quantos-wordmark.svg?raw';
   import license from '../../../../LICENSE?raw';
 
@@ -41,7 +41,7 @@
       <dt>Version</dt><dd>{updates.status?.current ?? s?.version ?? '…'}
         {#if updates.status?.available}<button class="link" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'updates' }, 'current')}>Version {updates.status.latest?.version} is available</button>
         {:else}<button class="link" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'updates' }, 'current')}>Check for updates</button>{/if}</dd>
-      <dt>Running in</dt><dd>{isWindowsClient ? 'The Windows client' : 'A browser'}{s?.safeMode ? ' · safe mode' : ''}</dd>
+      <dt>Running in</dt><dd>{isWindowsClient ? 'The Windows client' : isAndroidClient ? 'The Android app' : 'A browser'}{s?.safeMode ? ' · safe mode' : ''}</dd>
       <dt>Vault</dt><dd class="path">{s?.vault ?? 'None open'}</dd>
       <dt>App data</dt><dd class="path">{s?.clientData ?? ''}</dd>
       <dt>Notes</dt><dd>{s?.nodeCount ?? '…'} in {s?.workspaces?.length ?? 0} {s?.workspaces?.length === 1 ? 'workspace' : 'workspaces'}</dd>

@@ -1,0 +1,41 @@
+/* The Android app uses the actual Quantos interface and assets. Only compact-device
+   ergonomics change here; desktop and browser layouts keep their existing rules. */
+:root[data-platform='android'] { --statusbar-h: 30px; }
+:root[data-platform='android'] button,
+:root[data-platform='android'] .btn,
+:root[data-platform='android'] select { min-height: 48px; }
+:root[data-platform='android'] .icon-btn { min-width: 48px; }
+:root[data-platform='android'] input:not([type='checkbox']):not([type='radio']) { min-height: 48px; }
+:root[data-platform='android'] .cm-content { font-size: 17px; }
+:root[data-platform='android'] .panes > .spacer { position: relative; }
+:root[data-platform='android'] .panes > .spacer::after { content: ''; position: absolute; inset: 0 -20px; }
+:root[data-platform='android'] .panes.horizontal > .spacer::after { inset: -20px 0; }
+@media (min-width: 701px) and (max-width: 1100px) {
+  :root[data-platform='android'] .header { grid-template-columns: minmax(0, 1fr) auto; }
+  :root[data-platform='android'] .header .toolbar { display: none; }
+  :root[data-platform='android'] .header .tool span,
+  :root[data-platform='android'] .header .search span { display: none; }
+}
+@media (max-width: 700px) {
+  :root[data-platform='android'] .shell,
+  :root[data-platform='android'] .shell.left,
+  :root[data-platform='android'] .shell.right,
+  :root[data-platform='android'] .shell.left.right { grid-template-rows: 112px minmax(0, 1fr) var(--statusbar-h); gap: 8px; }
+  :root[data-platform='android'] .header { grid-template-columns: minmax(0, 1fr); grid-template-rows: 52px 52px; gap: 0; padding: 0 4px; }
+  :root[data-platform='android'] .header .brand { gap: 4px; }
+  :root[data-platform='android'] .header .wordmark { height: 22px; margin: 0 4px; }
+  :root[data-platform='android'] .header .right { justify-content: flex-end; min-width: 0; gap: 4px; }
+  :root[data-platform='android'] .header .tool,
+  :root[data-platform='android'] .header .search { min-width: 48px; padding: 0 10px; }
+  :root[data-platform='android'] .header .tool span,
+  :root[data-platform='android'] .header .search span { display: none; }
+  :root[data-platform='android'] .header .current .label { display: none; }
+  :root[data-platform='android'] .shell.left .sidebar,
+  :root[data-platform='android'] .shell.right .rightbar { top: 120px; }
+  :root[data-platform='android'] .settings,
+  :root[data-platform='android'] .settings.nav-right { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  :root[data-platform='android'] .settings nav { display: flex; flex-wrap: nowrap; overflow-x: auto; border: 0; padding: 4px 8px; order: 0; }
+  :root[data-platform='android'] .settings nav button { flex-shrink: 0; }
+  :root[data-platform='android'] .settings .body { padding: 16px; }
+  :root[data-platform='android'] .statusbar { overflow-x: auto; white-space: nowrap; }
+}

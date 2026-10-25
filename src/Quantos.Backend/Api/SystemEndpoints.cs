@@ -105,8 +105,8 @@ public static class SystemEndpoints
 
         api.MapPost("/approvals/{id}", (VaultHost host, HttpContext ctx, string id, DecisionBody body) =>
         {
-            if (!ctx.IsWindowsClient())
-                return Results.Json(new { error = "Approvals can only be given in the Windows client." }, statusCode: 403);
+            if (!ctx.IsAppClient())
+                return Results.Json(new { error = "Approvals can only be given in a native Quantos client." }, statusCode: 403);
             return host.Require().Approvals.Decide(id, body.Approve) ? Results.Ok(host.Require().Approvals.Get(id)) : Results.NotFound();
         });
 

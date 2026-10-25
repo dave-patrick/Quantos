@@ -3,7 +3,7 @@
   import { app } from '../lib/state.svelte';
   import { handleGlobalKey } from '../lib/commands.svelte';
   import { watchDate } from '../lib/dates';
-  import { isWindowsClient } from '../lib/platform';
+  import { isNativeClient } from '../lib/platform';
   import { terminal } from '../lib/terminal.svelte';
   import Header from './Header.svelte';
   import LeftSidebar from './LeftSidebar.svelte';
@@ -40,7 +40,7 @@
   {#if app.leftOpen}<LeftSidebar />{/if}
   <main class="center">
     <PaneArea {today} />
-    {#if isWindowsClient && terminal.open}<TerminalDrawer />{/if}
+    {#if isNativeClient && terminal.open}<TerminalDrawer />{/if}
   </main>
   {#if app.rightOpen}<RightSidebar />{/if}
   <StatusBar />

@@ -235,3 +235,28 @@ are. Editing a linked note in Quantos adds `modified` alongside it.
 - A linked folder is outside the vault, so the vault's own backups don't include it. Back it up the
   way its own app does; Quantos keeps the history of what it changed.
 
+## 10. Optional shared-vault replication
+
+Local-only mode is unchanged. Connected devices retain complete local vaults. Pending changes
+are derived from the local files and persisted base hashes, so they survive process restarts and
+do not depend on an in-memory queue. `client-data/settings/sync.json` holds the server address,
+device-encrypted app key, local vault path and connection identity. `client-data/sync/<connection>/`
+holds the pinned server id, checkpoint hashes, conflict snapshots and recovery copies. None of
+these device files are synced.
+
+The server owns its own vault and writes through `WriteService.ApplySyncFile`. File transfers
+check the exact previous SHA-256, preserve the prior bytes before replacement/deletion and reject
+stale bases. Markdown and attachments retain their bytes. Notes, workspaces, tags, templates,
+themes, plugins, trash and portable configuration files are eligible. Locks, journals, caches,
+provider keys, permissions, per-device `workspaces/<name>/workspace-state.json` layouts and linked-folder absolute paths are excluded. Traversal, symlink and
+case-only collisions are rejected. The per-file limit matches attachments: 200 MB.
+
+Conflicts preserve device and server snapshots as binary sidecars with JSON metadata. A decision
+checks that neither reviewed version changed; later edits produce a fresh review while retaining
+the previous snapshots. Resolved records and replaced files remain in recovery storage outside
+the shared vault. This version does not automatically merge text.
+
+Server data includes `Vault/`, `server-id`, client data/permissions and `sync-recovery/`. App and
+MCP tokens are separate runtime secrets. Migration must preserve the server id and the full data
+volume, plus both secret files. See [SERVER.md](SERVER.md).
+

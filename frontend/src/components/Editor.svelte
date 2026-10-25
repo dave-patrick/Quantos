@@ -11,6 +11,7 @@
   import { prefs } from '../lib/prefs.svelte';
   import { activeEditor, editorDocs } from '../lib/activeEditor';
   import { toggleSpellCheck } from '../lib/editor/spellcheck';
+  import { isAndroidClient } from '../lib/platform';
 
   let {
     text,
@@ -53,6 +54,25 @@
     });
     lastVersion = version;
     if (view) editorDocs.set(view, () => docId);
+    if (isAndroidClient) {
+      let frame = 0;
+      const keepCaretVisible = () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          if (view?.hasFocus) view.dispatch({ effects: View.scrollIntoView(view.state.selection.main.head, { y: 'nearest', yMargin: 24 }) });
+        });
+      };
+      // Native IME insets resize the outer note viewport, not just CodeMirror's scroller.
+      const observer = new ResizeObserver(keepCaretVisible);
+      observer.observe(host.closest('.scroll') ?? host);
+      window.addEventListener('resize', keepCaretVisible);
+      window.visualViewport?.addEventListener('resize', keepCaretVisible);
+      return () => {
+        observer.disconnect(); cancelAnimationFrame(frame);
+        window.removeEventListener('resize', keepCaretVisible);
+        window.visualViewport?.removeEventListener('resize', keepCaretVisible);
+      };
+    }
   });
 
   onDestroy(() => {

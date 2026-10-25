@@ -10,6 +10,7 @@
   import { presenter } from '../lib/present.svelte';
   import { focus } from '../lib/focus.svelte';
   import { recorder } from '../lib/recorder.svelte';
+  import { bridge, isAndroidClient } from '../lib/platform';
 
   let { doc, paneIndex, oncopymd, oncopyrich }: { doc: Doc; paneIndex: number; oncopymd: () => void; oncopyrich: () => void } = $props();
   let open = $state(false);
@@ -114,7 +115,10 @@
   });
 
   const exportDoc = (format: 'md' | 'html' | 'pdf') => act(async () => {
+    await doc.flush();
+    if (isAndroidClient && format === 'pdf') { bridge.send({ type: 'print-note', id: doc.id }); return; }
     const result = await api.post<{ path: string }>(`export/node/${doc.id}`, { format });
+    if (isAndroidClient) bridge.send({ type: 'download', path: result.path });
     app.toast(`Exported to ${result.path}`, 'ok');
   });
 </script>

@@ -1,18 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { updates } from '../lib/updates.svelte';
-  import { isWindowsClient } from '../lib/platform';
+  import { isWindowsClient, isAndroidClient } from '../lib/platform';
+  import { app } from '../lib/state.svelte';
   import { renderMarkdown } from '../lib/render';
   import { ago } from '../lib/today.svelte';
 
   /** Settings › Updates. */
-  onMount(() => { updates.load(); });
+  onMount(() => { if (!isAndroidClient) updates.load(); });
   const s = $derived(updates.status);
   const mb = (n: number) => `${(n / 1048576).toFixed(0)} MB`;
 </script>
 
 <h2>Updates</h2>
-{#if !s}
+{#if isAndroidClient}
+  <p class="intro">This is Quantos <strong>{app.status?.version}</strong> for Android.</p>
+  <p>Install a new Android APK over this app to update it and keep your vault. Use Settings › Shared vault › Android files › Export vault before uninstalling.</p>
+{:else if !s}
   <p class="faint">Loading…</p>
 {:else}
   <p class="intro">This is Quantos <strong>{s.current}</strong>.
