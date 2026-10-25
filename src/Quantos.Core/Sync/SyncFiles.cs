@@ -31,9 +31,9 @@ public static class SyncFiles
             throw new QuantosException("Invalid sync path.");
         if (vault.SyncLinkedFolders.Count > 0)
         {
-            if (parts.Length < 4 || parts[0] != "workspaces" || !vault.SyncLinkedFolders.Contains(parts[1]) || parts[2] != "nodes" || !path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            if (parts.Length < 3 || parts[0] != "workspaces" || !vault.SyncLinkedFolders.Contains(parts[1]) || !path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 throw new QuantosException("The folder bridge only syncs Markdown in its selected workspace.");
-            var linked = vault.Absolute($"{Vault.LinkedPrefix}/{parts[1]}/{string.Join('/', parts.Skip(3))}");
+            var linked = vault.Absolute($"{Vault.LinkedPrefix}/{parts[1]}/{string.Join('/', parts.Skip(2))}");
             var root = Path.GetFullPath(vault.LinkedRoots[parts[1]]);
             if (!Directory.Exists(root)) throw new QuantosException("The linked source folder is unavailable. Folder sync is paused.", 503);
             for (FileSystemInfo? item = new FileInfo(linked); item is not null; item = item is FileInfo file ? file.Directory : ((DirectoryInfo)item).Parent)
@@ -77,7 +77,7 @@ public static class SyncFiles
                 var count = 0;
                 foreach (var file in Directory.EnumerateFiles(root, "*", folderOptions).Where(f => f.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var path = $"workspaces/{name}/nodes/{Path.GetRelativePath(root, file).Replace('\\', '/')}";
+                    var path = $"workspaces/{name}/{Path.GetRelativePath(root, file).Replace('\\', '/')}";
                     Validate(writes.Vault, path);
                     var size = new FileInfo(file).Length;
                     if (size > MaxFileBytes) throw new QuantosException("A source note is too large to sync.");

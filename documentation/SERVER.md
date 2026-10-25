@@ -12,6 +12,8 @@ Run the optional **folder bridge on the host that has the original folder**. It 
 server's workspace and the original Markdown files in sync in both directions. Windows and Android
 then use that shared workspace normally, including offline edits. Other programs can keep using the
 original folder. JSON, text files, application configuration and other non-Markdown files are excluded.
+Original relative paths are preserved. New notes, daily notes and tasks in that workspace can create
+their usual subfolders in the source; existing files are not rearranged.
 The server stores its own copy in its persistent volume; Google Drive is not used for its database,
 locks, checkpoints or recovery records.
 

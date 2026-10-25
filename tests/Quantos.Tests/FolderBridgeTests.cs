@@ -26,13 +26,16 @@ public sealed class FolderBridgeTests
         File.WriteAllBytes(file, original); File.WriteAllText(Path.Combine(folder, "settings.json"), "private");
         var bridge = Bridge(local, server, folder);
         await bridge.Run();
-        Assert.Equal(original, File.ReadAllBytes(server.Abs("workspaces/videos/nodes/note.md")));
-        Assert.False(File.Exists(server.Abs("workspaces/videos/nodes/settings.json")));
+        Assert.Equal(original, File.ReadAllBytes(server.Abs("workspaces/videos/note.md")));
+        Assert.False(File.Exists(server.Abs("workspaces/videos/settings.json")));
         local.Restart();
         bridge = Bridge(local, server, folder); // persisted checkpoint survives process restart
         var next = Encoding.UTF8.GetBytes("edited in Quantos\n");
-        server.Writes.ApplySyncFile(new("workspaces/videos/nodes/note.md", SyncFiles.Hash(original), next), Path.Combine(server.Root,"recovery"), Actor.User);
+        server.Writes.ApplySyncFile(new("workspaces/videos/note.md", SyncFiles.Hash(original), next), Path.Combine(server.Root,"recovery"), Actor.User);
         await bridge.Run(); Assert.Equal(next, File.ReadAllBytes(file));
+        server.Writes.ApplySyncFile(new("workspaces/videos/daily/2026/2026-10-25.md", null, Encoding.UTF8.GetBytes("daily capture")), Path.Combine(server.Root,"recovery"), Actor.User);
+        await bridge.Run();
+        Assert.Equal("daily capture", File.ReadAllText(Path.Combine(folder,"daily/2026/2026-10-25.md")));
         Assert.NotEmpty(Directory.GetFiles(Path.Combine(local.Root, "bridge-state/recovery"), "*.bin"));
     }
 
@@ -43,7 +46,7 @@ public sealed class FolderBridgeTests
         var folder = Source(local); var file = Path.Combine(folder, "note.md"); File.WriteAllText(file, "base");
         var bridge = Bridge(local, server, folder); await bridge.Run();
         File.WriteAllText(file, "outside writer");
-        server.Writes.ApplySyncFile(new("workspaces/videos/nodes/note.md", SyncFiles.Hash(Encoding.UTF8.GetBytes("base")), Encoding.UTF8.GetBytes("phone edit")), Path.Combine(server.Root,"recovery"), Actor.User);
+        server.Writes.ApplySyncFile(new("workspaces/videos/note.md", SyncFiles.Hash(Encoding.UTF8.GetBytes("base")), Encoding.UTF8.GetBytes("phone edit")), Path.Combine(server.Root,"recovery"), Actor.User);
         Assert.Equal(1, (await bridge.Run()).Conflicts);
         Assert.Equal("outside writer", File.ReadAllText(file));
         var conflict = Assert.Single(bridge.Engine.Conflicts());
@@ -60,14 +63,14 @@ public sealed class FolderBridgeTests
         var bridge = Bridge(local, server, folder); await bridge.Run();
         for(var i=0;i<10;i++) File.Delete(Path.Combine(folder,$"note{i}.md"));
         await Assert.ThrowsAsync<QuantosException>(() => bridge.Run());
-        Assert.Equal(20, Directory.GetFiles(server.Abs("workspaces/videos/nodes"), "*.md").Length);
+        Assert.Equal(20, Directory.GetFiles(server.Abs("workspaces/videos"), "*.md").Length);
         Directory.Move(folder, folder + "-offline");
         await Assert.ThrowsAsync<QuantosException>(() => bridge.Run());
-        Assert.Throws<QuantosException>(() => local.Writes.ApplySyncFile(new("workspaces/videos/nodes/new.md", null, Encoding.UTF8.GetBytes("do not recreate the missing source")), Path.Combine(local.Root,"recovery"), Actor.User));
+        Assert.Throws<QuantosException>(() => local.Writes.ApplySyncFile(new("workspaces/videos/new.md", null, Encoding.UTF8.GetBytes("do not recreate the missing source")), Path.Combine(local.Root,"recovery"), Actor.User));
         Assert.False(Directory.Exists(folder));
         Directory.CreateDirectory(folder);
         await Assert.ThrowsAsync<QuantosException>(() => bridge.Run());
-        Assert.Equal(20, Directory.GetFiles(server.Abs("workspaces/videos/nodes"), "*.md").Length);
+        Assert.Equal(20, Directory.GetFiles(server.Abs("workspaces/videos"), "*.md").Length);
     }
 
     [Fact]
@@ -75,7 +78,7 @@ public sealed class FolderBridgeTests
     {
         using var local = new TestVault(false); using var server = new TestVault(); var folder = Source(local);
         _ = Bridge(local, server, folder);
-        foreach(var path in new[]{"workspaces/videos/nodes/../escape.md", "workspaces/default/nodes/note.md", "workspaces/videos/nodes/secret.json", "linked/videos/note.md"})
+        foreach(var path in new[]{"workspaces/videos/../escape.md", "workspaces/default/nodes/note.md", "workspaces/videos/secret.json", "linked/videos/note.md"})
             Assert.Throws<QuantosException>(() => SyncFiles.Validate(local.Session.Vault, path));
     }
 }

@@ -20,14 +20,14 @@ public sealed class FolderBridge
         if (state.StartsWith(source.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || Vault.PathEquals(source, state))
             throw new QuantosException("Bridge state must be outside the linked source folder.");
         Directory.CreateDirectory(state);
-        var binding = JsonSerializer.Serialize(new { source, workspace = Vault.ValidateWorkspaceName(workspace) });
+        var binding = JsonSerializer.Serialize(new { source, workspace = Vault.ValidateWorkspaceName(workspace), mapping = "workspace-relative-v1" });
         var bindingFile = Path.Combine(state, "folder-binding.json");
         if (File.Exists(bindingFile) && File.ReadAllText(bindingFile) != binding)
             throw new QuantosException("This bridge state belongs to another source folder or workspace. Use a separate state folder.");
         session.Vault.RegisterLinkedFolder(workspace, source);
         session.Vault.SyncLinkedFolders.Add(workspace);
         AtomicFile.WriteAllText(bindingFile, binding);
-        this.remote = new ScopedRemote(remote, $"workspaces/{workspace}/nodes/");
+        this.remote = new ScopedRemote(remote, $"workspaces/{workspace}/");
         Engine = new SyncEngine(session.Writes, state, this.remote);
     }
 
