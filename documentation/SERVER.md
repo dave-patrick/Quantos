@@ -19,7 +19,9 @@ locks, checkpoints or recovery records.
 
 Build with `pwsh build/folder-bridge.ps1`, copy the executable to the server host, and run
 `server/install-folder-bridge.ps1` there with `-Folder`, `-Workspace`, `-Server`, `-TokenFile`,
-`-Binary` and `-Start`. The token file is the existing protected **app server key**, not the MCP key.
+`-Binary` and `-Start`. To register a known mapping before Google Drive is mounted, add
+`-AllowUnavailableFolder` and omit `-Start`; the logon task starts after desktop sign-in. Missing
+source folders are never recreated by the bridge. The token file is the existing protected **app server key**, not the MCP key.
 For example, use folder `G:\My Drive\Notes` and workspace `shared-notes`. The installer registers a
 hidden task for the current user's interactive session, where Google Drive is available; it starts
 at sign-in and polls every 15 seconds while running. Keep that user signed in. Configure each folder

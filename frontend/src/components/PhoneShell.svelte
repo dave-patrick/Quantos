@@ -98,7 +98,8 @@
     {:else if more}
       <div class="phone-more scroll">
         <div class="workspace-row"><span>Workspace</span><WorkspaceSwitcher /></div>
-        <section aria-label="App settings">
+        <section aria-label="Notes and settings">
+          <button class="more-row" onclick={() => open({ kind: 'notes' })}><Icon name="file-text" /> Notes <Icon name="chevron-right" /></button>
           <button class="more-row" onclick={() => open({ kind: 'settings' })}><Icon name="settings" /> Settings <Icon name="chevron-right" /></button>
           <button class="more-row" onclick={() => { more = false; app.rightOpen = true; }}><Icon name="panel-right" /> Files and note details <Icon name="chevron-right" /></button>
           <button class="more-row" onclick={() => open({ kind: 'notifications' })}><Icon name="bell" /> Notifications <Icon name="chevron-right" /></button>

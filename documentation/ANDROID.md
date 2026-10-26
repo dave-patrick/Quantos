@@ -15,7 +15,8 @@ To change it, open **More › Settings**, choose **Phone navigation** in **Setti
 add/remove shortcuts and use the arrows to order them. Choose one to four shortcuts; **More** stays
 last. Changes apply immediately, persist on this device and do not change tablet navigation.
 **Capture** stays in the top bar; Notes has a readable recent-note list and **New note** action.
-Open **More** for advanced tools, saved views, workspace switching and settings. The advanced notes
+Open **More › Notes** for the simple notes list, even when Notes is not pinned in the bottom bar.
+More also holds advanced tools, saved views, workspace switching and settings. The advanced notes
 browser remains available there for filters, bulk actions and preview. Task grouping and board
 controls are behind **Options**. Note properties and files open in **Details**, with an explicit
 close button; note source, history and other secondary actions live in the note's overflow menu.

@@ -44,19 +44,36 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 2026-10-25; latest release 0.2.0)
+## Open threads (as of 2026-10-26; latest release 0.2.0)
 
-- **Google Drive server folder bridge (2026-10-25, deployment in progress).** The owner approved
-  `G:\My Drive\Thymer\Videos` on T580 with edits going back to the originals, and emphasized other
-  systems modify it. `Quantos.FolderBridge` uses the existing three-way sync engine and WriteService
-  for a single Markdown-only workspace. Explicit runtime opt-in leaves ordinary client links private.
-  Conflicts/recovery/state live outside the Google Drive folder. Empty/unavailable folders and large
-  removal batches pause it. Server now starts its watcher so replicated files enter MCP's live index.
-  All 172 .NET tests pass, including four bridge tests and both server integration tests.
-  The win-x64 bridge builds. A protected source ZIP
-  backup on T580 contains 617 Markdown files and matches the current file set (initial inventory was
-  618; other systems are active). Deployment, replacing this PC's local `videos` link with the shared
-  workspace, and end-to-end phone verification remain to do.
+- **Google Drive server folder bridge (2026-10-25, private deployment).** The owner's
+  `G:\My Drive\Thymer\Videos` on T580 feeds shared workspace `videos` read/write through
+  `Quantos.FolderBridge`. Other systems continue using the originals. Only Markdown transfers;
+  source JSON/text/application configuration stays local. Three-way hashes, conditional writes,
+  conflicts/recovery outside the source, empty/unavailable-folder guards and large-removal guards
+  protect outside edits. Clean renames preserve note identities. The existing local Windows `videos`
+  link was removed through the API, leaving `D:\My Drive\Thymer\Videos` intact; Windows now uses the
+  shared copy. A source ZIP backup covered all 617 files present when taken; subsequent live import
+  uploaded 618 Markdown files as outside systems remained active. Windows backup: 690 files,
+  verification reported zero problems. Server volume snapshots are protected under the server
+  runtime backups folder. Server image is `quantos-server:workspace-scope-440a8ed`; all 175 .NET tests
+  pass. Its watcher keeps the live index updated; MCP grants and server identity survive the update.
+  The phone is updated and renders **618 Videos notes plus 24 default notes**, with zero sync conflicts.
+  A temporary probe verified Quantos→original, outside edit→Quantos, Android→original and MCP read;
+  it was moved to Trash and removed from the active source by the bridge.
+  Cache v11 fixes imported notes being indexed under their old `video-processing` frontmatter rather
+  than the physical `videos` folder; original frontmatter remains unchanged. More has a permanent
+  first-row Notes action for the compact list, independent of pinned shortcuts. Native 360/411 review
+  returned ship for that narrow access change. The directly tracked windowless logon task is installed.
+  On October 26, desktop sign-in restored the Google Drive mount and automatically started the task.
+  Controlled stop/restart verified zero workers after stop and exactly one after restart. Docker
+  Desktop needed starting after sign-in (its auto-start setting is already enabled). Server health
+  returned HTTP 200; the fresh 07:16 sync completed with zero transfers and zero conflicts across
+  all 618 source files. Missing source folders are never recreated.
+  Windows staging uses Shell.Application so the client survives the executor job ending.
+  T580 source is canonical at `C:\repos\Quantos`. Its Scoop Git launcher is broken: deployment Git
+  used the SDK container and verified Git bundles kept in `C:\repos\_checkout-recovery`. Public MCR
+  pulls used an isolated Docker config with an empty MCR auth entry; normal credentials were preserved.
 
 - **Custom phone navigation (2026-10-25, unreleased).** The owner wants Daily notes, Tasks, quick
   Capture and Today first; these are now the defaults, followed by permanent More. In More › Settings,

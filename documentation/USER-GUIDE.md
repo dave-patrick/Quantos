@@ -14,6 +14,7 @@ tablets. Phones start with Daily notes, Tasks, Capture, Today and More navigatio
 quick capture without leaving the current page and also stays in the top bar.
 Open **More › Settings › Phone navigation** to choose and order up to four shortcuts. More stays
 at the end, and these preferences stay on this device. Advanced tools remain under More and note
+lists are always reachable directly through **More › Notes**. Note
 properties open in Details. Tablets keep the wider workspace and split panes when there
 is room. Use the **Commands** button for commands such as **Next tab**, **Previous tab** and
 **Split down**. Android Back closes a menu or dialog before navigating back or leaving.

@@ -111,7 +111,10 @@ foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLU
 function Start-Client {
     # Remember what the log already says, so only this start's lines are looked at.
     New-LogText | Out-Null
-    Start-Process (Join-Path $app 'Quantos.exe')
+    # The desktop shell brokers the interactive launch outside a terminal/agent job. Otherwise
+    # closing that job can also close the newly staged app after its startup check succeeds.
+    $desktopShell = New-Object -ComObject Shell.Application
+    $desktopShell.ShellExecute((Join-Path $app 'Quantos.exe'), '', $app, 'open', 1)
     Start-Sleep -Seconds 20
     return @(New-LogText -split "`r?`n")
 }
