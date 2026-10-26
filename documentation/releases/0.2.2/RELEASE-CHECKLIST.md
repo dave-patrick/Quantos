@@ -8,8 +8,12 @@ Build ID: **2026.26.10.2**, shared by this source/build set's platform/channel v
 - [x] Backend self-check: zero warnings/failures.
 - [x] Isolated final Windows package started with sample vault, Page loaded / HTTP 200 and version 0.2.2.
 - [x] Native resize smoke: 960→920 logical pixels; About shows 0.2.2 and 2026.26.10.2.
-- [ ] Version commit and v0.2.2 tag pushed.
-- [ ] GitHub release and uploaded package digest verified against local SHA-256.
+- [x] Version commit `5a619c5` and v0.2.2 tag pushed.
+- [x] GitHub release is public, non-prerelease, with only Windows ZIP, ARM64 Release APK and checksums.
+      Both uploaded artifact digests exactly match local SHA-256.
+- [x] Opt-in LiveUpdateTests downloaded, verified and unpacked the real published Windows ZIP (1 passed).
+- [x] Installed owner Windows 0.2.1 checked through its authenticated API: 0.2.2 available, correct build
+      title, no error. Download/install remains the owner's next UI action.
 - [x] Public ARM64 APK: v2/v3 signature verifies, certificate CN=Quantos / Atomic 22 Industries;
       versionName 0.2.2, versionCode 202, ARM64 ABI, no debuggable/test-only flag.
 - [x] Matching x64 Release-mode build started in a fresh QA emulator; More › Notes and New note render.
@@ -28,5 +32,5 @@ SHA-256:
 
 Before the version bump, native input checks passed all four edges, all four corners, title-bar
 movement and resizing after maximize/restore. Full historical manual checks in
-../../RELEASE-CHECKLIST.md are not all repeated for this patch; in-app download/install from an older
-version, overnight reminders and all multi-monitor DPI transitions remain unverified in this run.
+../../RELEASE-CHECKLIST.md are not all repeated for this patch; the final install/restart UI action,
+overnight reminders and all multi-monitor DPI transitions remain unverified in this run.

@@ -110,11 +110,11 @@ counts below are unchanged; this native-only change was verified through compile
 
 | | |
 |---|---|
-| Latest release | [0.2.0](https://github.com/dave-patrick/Quantos/releases/tag/v0.2.0) (Windows x64 zip, SHA-256 `3fafdba7f3b0f2606855155e22814b771e333baf2479809578b381f95771ce1c`) |
+| Latest release | [0.2.2](https://github.com/dave-patrick/Quantos/releases/tag/v0.2.2), build `2026.26.10.2`; Windows x64 ZIP and public signed Android ARM64 Release APK. SHA-256 and verification: [release checklist](releases/0.2.2/RELEASE-CHECKLIST.md). |
 | Branch | `main` (no long-lived branches; commits go straight to `main`) |
 | Plan coverage | BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. Only the "Roadmap items without an assigned release" remain (section 4). |
 | Tests | 175 .NET (xUnit, `tests/Quantos.Tests`) and 101 frontend (Vitest, `frontend/tests`); all pass in the current phone-navigation test build. |
-| Released build | Version 0.2.0 (commit `a8b51fa`, tag `v0.2.0`). The Windows x64 release package passed validation and self-check and was published to GitHub Releases. Split panes are distinct cards with a clear active state and individual close buttons. The right sidebar supports multiple resizable panels and saves layout automatically. Notes List rows are single-line; Preview can be toggled and remembers the choice. My Day task cards are compact; priority colors are red (P1), orange (P2), green (P3), and blue (P4). The frameless window resizes on every edge and corner and recalculates its layout after maximize/restore and tray hide/reopen to keep controls aligned. The active editor can move a note to Trash; the version label no longer clips. The current staged unreleased build is described above. |
+| Released build | Version 0.2.2, build 2026.26.10.2, version commit `5a619c5`, tag `v0.2.2`. About displays both identities. All 276 automated tests and backend self-check pass; final Windows sample-vault startup/resize and Android Release-mode emulator navigation passed. Uploaded digests match, and the live updater downloaded/verified/unpacked the published ZIP. Owner Windows 0.2.1 reports 0.2.2 available for their own install click. Their phone runs private Debug 0.2.2 with 24 default + 618 Videos notes and zero sync errors/conflicts. |
 | Accessibility | axe-core scans of every view show no serious or critical issues, in the built-in and custom themes. |
 
 Version numbers are product versions (0.x.y) and are separate from the plan's "Release 1.x" names.

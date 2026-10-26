@@ -44,7 +44,7 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 2026-10-26; release set 0.2.2, build 2026.26.10.2)
+## Open threads (as of 2026-10-26; latest release 0.2.2, build 2026.26.10.2)
 
 - **Public and private release channels (2026-10-26).** The owner explicitly authorized a public
   production Android APK while keeping their phone on private debug builds. This release set is
@@ -60,6 +60,11 @@ open threads and the machine.
   Final 0.2.2 was launched against a separate example vault and passed startup HTTP 200, About identity
   and a real right-edge drag (960→920 logical pixels), then the owner candidate was reopened.
   Public APK and private phone validation/publication proofs are recorded in the release checklist.
+  Release `v0.2.2` is public at version commit `5a619c5`, with Windows ZIP, ARM64 Release APK and
+  checksums only. GitHub digests match local files. The live updater test fetched/verified/unpacked
+  the published ZIP; the owner's installed 0.2.1 reports 0.2.2 available with no error. Leave their
+  final install/restart click to them. Phone private Debug 0.2.2 retains 24 default + 618 Videos notes,
+  with no sync error/conflict; the public APK was not installed on it.
 
 - **Windows edge resize (2026-10-26, staged).** Reproduced a right-edge drag leaving the window
   unchanged: WebView2/child controls covered the form's custom hit zones. MainForm now reserves
