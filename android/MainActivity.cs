@@ -117,7 +117,7 @@ public sealed class MainActivity : Activity
             web.Settings.MixedContentMode = MixedContentHandling.NeverAllow;
             web.Settings.JavaScriptCanOpenWindowsAutomatically = false;
             web.Settings.SetSupportMultipleWindows(false);
-            web.Settings.UserAgentString += " QuantosAndroid/0.2.0";
+            web.Settings.UserAgentString += " QuantosAndroid/" + PackageManager!.GetPackageInfo(PackageName!, PackageInfoFlags.MetaData)!.VersionName;
             web.SetWebViewClient(new LocalNavigation(this));
             web.SetWebChromeClient(new NativeChrome(this));
             web.SetDownloadListener(new DownloadHandler(this));

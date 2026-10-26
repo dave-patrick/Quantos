@@ -3,7 +3,7 @@
        using the exact runtime version already used by Quantos, rather than a desktop
        FrameworkReference. No Windows native libraries are included. -->
   <PropertyGroup>
-    <AspNetRuntimeVersion>10.0.13</AspNetRuntimeVersion>
+    <AspNetRuntimeVersion>10.0.14</AspNetRuntimeVersion>
     <AspNetRuntimePackage Condition="'$(RuntimeIdentifier)' == 'android-arm64'">microsoft.aspnetcore.app.runtime.win-arm64</AspNetRuntimePackage>
     <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == '' and '$(AspNetRuntimePackage)' != ''">$(NuGetPackageRoot)$(AspNetRuntimePackage)/$(AspNetRuntimeVersion)/runtimes/win-arm64/lib/net10.0</AspNetRuntimeDirectory>
     <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == ''">$(NetCoreRoot)shared/Microsoft.AspNetCore.App/$(AspNetRuntimeVersion)</AspNetRuntimeDirectory>

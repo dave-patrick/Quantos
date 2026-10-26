@@ -7,6 +7,22 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+Optional server/folder-bridge binaries remain separately deployed from source.
+
+## 0.2.2 (2026-10-26)
+
+- Public signed Android ARM64 Release APK for phones and tablets, alongside the Windows x64 package.
+  Private debug builds remain a separate signing channel.
+- Release and build identities are separate, following Lohe: 0.2.2, build 2026.26.10.2, visible in About
+  and download filenames. Numeric release tags preserve compatibility with the in-app Windows updater.
+- Fixed Windows edge and corner resizing: a narrow dark border now receives resize drags instead
+  of the embedded browser. The border follows display scaling and disappears when maximized.
+- Fixed the last right-panel close button so it hides the sidebar and preserves its configuration.
+- Added shared-vault connection and server MCP write-access controls in the Windows app.
+- Imported notes now appear in their physical workspace while preserving external frontmatter.
+
+### Android and server features
+
 - Workspace folders now decide a note's displayed scope even when externally managed frontmatter
   names a different workspace. Derived indexes rebuild without rewriting that source metadata.
 
@@ -23,7 +39,7 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 - An Android host for the existing Quantos interface and core, with phone/tablet layouts, touch
   splitters, system Back, Android Keystore, file import/export, PDF rendering/printing, notifications
-  and an Android shell. Test APKs are separate from the Windows release.
+  and an Android shell. Public Release and private Debug APKs are separate signing channels.
 - An optional portable shared-vault server, initially deployed privately on T580, with durable
   offline device copies, conditional synchronisation and explicit conflict review.
 - Server MCP over Streamable HTTP, with a separate agent key. Settings › MCP can enable or revoke

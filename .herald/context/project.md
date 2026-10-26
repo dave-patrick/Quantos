@@ -12,12 +12,14 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   design rules, build/test/release steps. Keep it current when you finish work.
 - `BUILD-PLAN.md`: the approved plan, acceptance tests, roadmap (section 14) and decision log (section 17).
 - `CHANGELOG.md`: what each release contains.
-- `documentation/ANDROID.md`: Android host, phone/tablet layouts, native features and test APK build.
+- `documentation/ANDROID.md`: Android host, phone/tablet layouts, public release signing and private debug builds.
+- `build/VERSIONING.md`: Lohe-style release/build identity, artifact names and updater compatibility.
 - `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
-- BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built; published as 0.1.x on GitHub Releases (the app updates
-  itself from there). Remaining: the unscheduled roadmap items, which need the owner's scope decision.
+- BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. The 0.2.2 release set includes Windows x64 and a
+  public release-signed Android ARM64 APK. The owner's phone stays on the private debug certificate.
+  Semantic release and YYYY.DD.MM.revision build IDs are separate; About and filenames show both.
 
 ## Stack and layout
 - .NET 10 self-contained single-file backend (127.0.0.1 only) and Windows client (WinForms + WebView2);

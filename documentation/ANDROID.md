@@ -57,7 +57,7 @@ Tailscale shows Connected.
 ## Build
 
 Install .NET 10, the .NET Android workload (`dotnet workload install android`), JDK 17+, Android
-SDK platform 36, and ASP.NET Core runtime **10.0.13**. ARM64 builds restore the matching managed
+SDK platform 36, and ASP.NET Core runtime **10.0.14**. ARM64 builds restore the matching managed
 ARM64 runtime package automatically. The Android project packages the managed
 ASP.NET assemblies because Microsoft does not ship an ASP.NET Android runtime pack. Override
 `AspNetRuntimeDirectory` if that runtime is installed outside the usual .NET shared folder.
@@ -68,8 +68,19 @@ pwsh build/android.ps1                         # ARM64 phones and tablets, debug
 pwsh build/android.ps1 -Runtime android-x64    # x64 emulator test APK
 ```
 
-Output is in `publish/android/`, with SHA-256 files. Debug signing is for testing. A public release
-needs a separately managed release signing key and the usual publication decision.
+Output is in `publish/android/`, with SHA-256 files. Private test builds use Debug signing; the public
+ARM64 APK uses Release configuration and a separately managed release signing key. Release builds
+require `-SigningKeyStore <private-keystore> -SigningPasswordFile <private-store-password-file>` and
+`-SigningKeyPasswordFile <private-key-password-file>` (use separate file paths even if passwords match), plus
+`-Configuration Release`; the password is read from the protected file and is never passed as a value
+on the command line. Keep the signing key backed up privately for all future public updates.
+
+Public and private builds currently use the same app identifier with different certificates. They
+cannot update over each other. Stay on the same channel; uninstalling to change channel removes
+app-private data, so export a vault first. The owner's phone stays on its existing private debug
+channel; public release publication does not install anything on it. Public APKs contain no private
+vault, server address, server credentials or signing files. The backend is optional; configure a
+server only when wanted.
 `android/Backend/` compiles the existing backend source and embeds the existing built frontend;
 it is not a separate implementation of Quantos features.
 

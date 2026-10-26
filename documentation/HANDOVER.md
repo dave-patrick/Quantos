@@ -44,7 +44,22 @@ open threads and the machine.
   `D:\My Drive\Dev Projects\<project>\`.
 - **Website:** only `site/` is published (GitHub Pages). Never publish private vault or workspace data.
 
-## Open threads (as of 2026-10-26; latest release 0.2.0)
+## Open threads (as of 2026-10-26; release set 0.2.2, build 2026.26.10.2)
+
+- **Public and private release channels (2026-10-26).** The owner explicitly authorized a public
+  production Android APK while keeping their phone on private debug builds. This release set is
+  Windows/public Android 0.2.2, build `2026.26.10.2`. Android versionCode is 202 (Lohe's release-only
+  formula). The stable key is private under `C:\Users\davem\Projects\Quantos-signing`; preserve it for
+  future public updates and never commit/upload its files. Release builds require distinct store/key
+  password file paths because apksigner consumes each line; the build script forces signing and
+  verifies the final APK before export. ASP.NET managed runtime pin is now 10.0.14.
+  The owner requested the Lohe naming convention on all projects: global and C:\repos AGENTS guidance
+  now apply it on each project's next build. See `build/VERSIONING.md` and `build/next-build.ps1`.
+  Earlier 0.2.1 candidates were never public. The owner Windows copy stays on 0.2.1 so they can use
+  Settings › Updates for 0.2.2; this latest request supersedes automatic owner staging for this release.
+  Final 0.2.2 was launched against a separate example vault and passed startup HTTP 200, About identity
+  and a real right-edge drag (960→920 logical pixels), then the owner candidate was reopened.
+  Public APK and private phone validation/publication proofs are recorded in the release checklist.
 
 - **Windows edge resize (2026-10-26, staged).** Reproduced a right-edge drag leaving the window
   unchanged: WebView2/child controls covered the form's custom hit zones. MainForm now reserves

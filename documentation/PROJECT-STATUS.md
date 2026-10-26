@@ -5,7 +5,15 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-26, at version 0.2.0 (Windows release v0.2.0; Android/server work unreleased)._
+_Last updated: 2026-10-26, release set 0.2.2, build 2026.26.10.2 (Windows x64 and public Android ARM64;
+optional server/folder bridge deployed separately)._
+
+The owner authorized a production-signed public Android APK and a separate private debug update for
+their phone. Build IDs now follow Lohe's YYYY.DD.MM.revision convention, shown separately in About
+and artifact filenames; Android versionCode 202 follows Lohe's release-only version scheme.
+The Windows tag stays numeric for legacy updater compatibility. The installed owner copy remains
+on the 0.2.1 candidate, by latest request, so Settings › Updates can offer 0.2.2 after publication.
+Final Windows 0.2.2 was verified in an isolated sample vault (HTTP 200, About identity, native resize).
 
 Windows edge resizing is fixed and staged (October 26): the frameless host reserves a DPI-scaled
 outer strip so WebView2 cannot intercept its resize input. The strip disappears when maximized.
@@ -275,14 +283,18 @@ had no shortcut handling).
 
 ## 8. Releasing
 
-1. Bump the version in six places: `build/build.ps1` (`$Version`), `frontend/package.json` and the top two
+1. Follow [build/VERSIONING.md](../build/VERSIONING.md): release and build ID are separate. Advance
+   `build/build-id.txt` once per new source/build set with `pwsh build/next-build.ps1`; variants share it.
+   Bump the release version when requested: `build/build.ps1` (`$Version`), `frontend/package.json` and the top two
    `version` fields in `frontend/package-lock.json`, `<Version>` in the Backend, Cli and Client `.csproj`
-   files, and the MCP `serverInfo` version in `src/Quantos.Cli/Mcp.cs`.
+   files, and the MCP `serverInfo` version in `src/Quantos.Cli/Mcp.cs`. Android's display/backend version
+   follows the release; its versionCode is `major*10000 + minor*100 + patch`, like Lohe.
 2. `pwsh build/build.ps1` (must pass all tests). A released build has no build mark: the mark that
    names the commit is only for a staging copy (`-Mark`), so the app tells them apart.
 3. Commit "Version x.y.z", tag `vx.y.z`, push `main` and the tag.
-4. `gh release create vx.y.z publish/Quantos-x.y.z-win-x64.zip --title "Quantos x.y.z" --notes-file <notes>`.
-   The asset must be named `Quantos-x.y.z-win-x64.zip`: the in-app updater looks for that name and needs
+4. Publish the versioned Windows ZIP and public release-signed ARM64 APK. Use numeric tag `vx.y.z`
+   for legacy Windows updater compatibility, with the build ID in the release title and asset names.
+   The ZIP is `Quantos-x.y.z-build-YYYY.DD.MM.revision-win-x64.zip`: the in-app updater accepts its suffix and needs
    the SHA-256 `digest` GitHub records for it.
 5. Add the release to `CHANGELOG.md` and update this file.
 6. **Stage the new test build into the owner's app copy and restart it.** The owner tests from

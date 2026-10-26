@@ -1,5 +1,10 @@
 # Quantos user guide
 
+Windows and public Android release: **0.2.2**. Private Android debug builds are separate from the
+public signed Release APK; keep using the same build channel to preserve update compatibility.
+About lists the release version and a separate build ID in `YYYY.DD.MM.revision` format (day before
+month), matching the download filename.
+
 Quantos is a personal productivity app for notes, tasks, projects and people. Everything you write
 is a Markdown file with YAML frontmatter, kept in a folder you choose (your **vault**). You can open
 and edit those files with any editor, and copy the folder to back it up.

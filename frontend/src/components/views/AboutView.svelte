@@ -41,6 +41,7 @@
       <dt>Version</dt><dd>{updates.status?.current ?? s?.version ?? '…'}
         {#if updates.status?.available}<button class="link" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'updates' }, 'current')}>Version {updates.status.latest?.version} is available</button>
         {:else}<button class="link" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'updates' }, 'current')}>Check for updates</button>{/if}</dd>
+      <dt>Build</dt><dd>{__QUANTOS_BUILD_ID__}</dd>
       <dt>Running in</dt><dd>{isWindowsClient ? 'The Windows client' : isAndroidClient ? 'The Android app' : 'A browser'}{s?.safeMode ? ' · safe mode' : ''}</dd>
       <dt>Vault</dt><dd class="path">{s?.vault ?? 'None open'}</dd>
       <dt>App data</dt><dd class="path">{s?.clientData ?? ''}</dd>

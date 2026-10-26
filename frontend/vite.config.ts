@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { readFileSync } from 'node:fs';
 
 // Dev server proxies the API to a running backend. Start the backend first
 // (dotnet run --project src/Quantos.Backend -- --open), then `npm run dev`.
@@ -10,7 +11,10 @@ export default defineConfig({
   base: '/',
   // The build mark names the commit a package was built from. It is only set for a staging copy
   // (build/build.ps1 -Mark); a released build has none.
-  define: { __QUANTOS_BUILD__: JSON.stringify(process.env.QUANTOS_BUILD ?? '') },
+  define: {
+    __QUANTOS_BUILD__: JSON.stringify(process.env.QUANTOS_BUILD ?? ''),
+    __QUANTOS_BUILD_ID__: JSON.stringify(readFileSync(new URL('../build/build-id.txt', import.meta.url), 'utf8').trim())
+  },
   build: {
     outDir: '../src/Quantos.Backend/wwwroot',
     emptyOutDir: true,

@@ -16,7 +16,7 @@ param(
     [switch]$SkipTests,
     [switch]$Mark,
     [string]$Runtime = 'win-x64',
-    [string]$Version = '0.2.0'
+    [string]$Version = '0.2.2'
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -81,7 +81,9 @@ Set-Content (Join-Path $pkg 'Open in browser.cmd') -Encoding ascii -Value "@echo
 Set-Content (Join-Path $pkg 'Self-check.cmd') -Encoding ascii -Value "@echo off`r`n`"%~dp0application\Quantos.Backend.exe`" --selfcheck`r`npause"
 
 Step 'Zip'
-$zip = Join-Path $out "Quantos-$Version-$Runtime.zip"
+$buildId = (Get-Content (Join-Path $root 'build/build-id.txt') -Raw).Trim()
+if ($buildId -notmatch '^\d{4}\.\d{2}\.\d{2}\.[1-9]\d*$') { throw 'Build ID must use YYYY.DD.MM.revision.' }
+$zip = Join-Path $out "Quantos-$Version-build-$buildId-$Runtime.zip"
 if (Test-Path $zip) { Remove-Item -LiteralPath $zip -Force }
 Compress-Archive -Path $pkg -DestinationPath $zip -CompressionLevel Optimal
 
