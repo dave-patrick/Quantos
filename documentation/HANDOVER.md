@@ -46,6 +46,15 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-26; latest release 0.2.2, build 2026.26.10.2)
 
+- **Security review remediation (2026-10-26, source/build set 2026.26.10.3).** First batch fixes
+  Windows native origin checks/full script review, calendar traversal and attachment boundaries
+  for serving/trashing/adding/export. See SECURITY-REMEDIATION.md for regression coverage and the
+  remaining priorities. Agent/native credential separation and the other audited findings remain
+  open. No release or replacement of the owner's installed copy is implied by these source changes.
+  Validation: 204 backend/core tests passed sequentially, three native dialog tests passed, and
+  independent review finished clean. Parallel runs hit existing discovery/SSE timeout checks;
+  see the remediation record for the exact limits and deferred WebView2/device acceptance.
+
 - **Public and private release channels (2026-10-26).** The owner explicitly authorized a public
   production Android APK while keeping their phone on private debug builds. This release set is
   Windows/public Android 0.2.2, build `2026.26.10.2`. Android versionCode is 202 (Lohe's release-only

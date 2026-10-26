@@ -384,7 +384,8 @@ workspace remembers its own tabs, splits and scroll positions.
 - **Export:** Markdown, HTML or PDF from a note's menu, or a zip of a whole workspace from the file
   tree. Queries are frozen into tables, embeds are included and properties are listed under the title,
   so exports read the same anywhere. A workspace zip carries the images and files its notes use.
-  Exports go to the vault's `exports` folder.
+  Exports go to the vault's `exports` folder. Workspace exports copy attachments only from the
+  vault's attachments folder; links that climb out of it or pass through a symbolic link are excluded.
 - **Publish:** *Publish this folder…* in the workspace menu makes a small website from the notes of
   the workspace, or of a linked folder: a page per note with the notes that link to it and the ones
   it links to, an index you can search, and a graph of how they connect. The site is written to the
@@ -456,8 +457,9 @@ These need the Windows client; the browser labels them *Requires Windows client*
 
 Change the global shortcuts in *Settings › Shortcuts*; if another program already uses one, Quantos
 tells you. Each terminal session asks for confirmation before it starts, and PowerShell code blocks
-in notes have a **Run** button that shows exactly what will run, and where, before running it. Code
-in notes never runs by itself.
+in notes have a **Run** button that opens a native review window with the full script and starting
+folder. Scroll through the script or select and copy it before choosing **Run**. Enter and Escape
+cancel by default. Code in notes never runs by itself.
 
 ---
 

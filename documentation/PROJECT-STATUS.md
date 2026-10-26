@@ -21,6 +21,15 @@ Package/archive validation and startup HTTP 200 passed. Native mouse checks pass
 all four corners, title-bar movement and resizing after maximize/restore. Existing automated suite
 counts below are unchanged; this native-only change was verified through compile/package and UI checks.
 
+Security remediation is now in progress in source/build set `2026.26.10.3` (release version remains
+0.2.2). The first batch tightens Windows native origins, displays full scripts before execution,
+and closes calendar/attachment path escapes. See [SECURITY-REMEDIATION.md](SECURITY-REMEDIATION.md)
+for the implemented scope and open audit findings. Published packages and owner installations
+remain unchanged by this batch.
+Validation passed 204 backend/core tests with test collections run sequentially and three native
+dialog tests. Default parallel runs hit existing discovery/SSE timeouts; no timeout/assertion was
+relaxed. Independent review finished clean after preserving linked-folder calendar export.
+
 ### Android and shared vault (owner-approved scope, 2026-10-24)
 
 - `src/Quantos.FolderBridge/` adds an optional host worker for a folder managed by Google Drive or

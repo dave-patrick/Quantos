@@ -51,6 +51,10 @@ if (-not $SkipTests) {
     Step 'Tests'
     dotnet test tests/Quantos.Tests -c Release --nologo | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
+    if ($IsWindows) {
+        dotnet test tests/Quantos.Client.Tests -c Release --nologo | Out-Host
+        if ($LASTEXITCODE -ne 0) { throw 'Native client tests failed' }
+    }
 }
 
 Step 'Publish'

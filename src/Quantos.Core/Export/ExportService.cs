@@ -103,7 +103,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
             foreach (var a in attachments)
             {
                 var source = writes.Vault.Absolute(a);
-                if (File.Exists(source)) zip.CreateEntryFromFile(source, a.Replace('\\', '/'), CompressionLevel.Optimal);
+                if (FileBoundary.ContainsFile(writes.Vault.Attachments, source) && File.Exists(source)) zip.CreateEntryFromFile(source, a.Replace('\\', '/'), CompressionLevel.Optimal);
             }
         }
         return new ExportResult(writes.Vault.Relative(zipPath), format, $"{count} note(s)");
@@ -150,7 +150,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
             foreach (var a in Attachments.Find(node.Body))
             {
                 var source = vault.Absolute(a);
-                if (!File.Exists(source)) continue;
+                if (!FileBoundary.ContainsFile(vault.Attachments, source) || !File.Exists(source)) continue;
                 var name = Path.GetFileName(source);
                 var target = assets.TryGetValue(a, out var known) ? known : name;
                 assets[a] = target;

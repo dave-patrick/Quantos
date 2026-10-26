@@ -60,7 +60,11 @@ public static class TaskEndpoints
         {
             var session = host.Require();
             session.Permissions.Demand(ctx.Actor(), Core.Security.Permission.CreateEdit, "Export calendar");
+            Vault.ValidateWorkspaceName(b.Name);
+            if (!session.Vault.WorkspaceNames().Contains(b.Name, StringComparer.Ordinal) && !session.Vault.IsLinked(b.Name))
+                throw new QuantosException("Choose an existing workspace or linked folder.");
             var path = Path.Combine(session.Vault.Exports, $"quantos-{b.Name}.ics");
+            if (!FileBoundary.ContainsFile(session.Vault.Exports, path)) throw new QuantosException("The calendar must be saved inside exports.");
             AtomicFile.WriteAllText(path, Calendar.Build(session.Tasks.List(b.Name), "Quantos - " + b.Name));
             return new { path };
         });

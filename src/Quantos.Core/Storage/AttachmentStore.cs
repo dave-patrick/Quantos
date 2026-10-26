@@ -29,6 +29,7 @@ public sealed class AttachmentStore(WriteService writes)
         var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
         var rel = $"attachments/{hash[..2]}/{hash}{ext}";
         var abs = Vault.Absolute(rel);
+        if (!FileBoundary.ContainsFile(Vault.Attachments, abs)) throw new QuantosException("Attachments cannot use linked paths.");
         if (File.Exists(abs)) return (rel, true);
         AtomicFile.WriteAllBytes(abs, bytes);
         return (rel, false);
@@ -54,7 +55,7 @@ public sealed class AttachmentStore(WriteService writes)
     {
         writes.Permissions.Demand(actor, Permission.TrashRestore, $"Move {relativePath} to trash");
         var abs = Vault.Absolute(relativePath);
-        if (!abs.StartsWith(Vault.Attachments, StringComparison.OrdinalIgnoreCase) || !File.Exists(abs)) throw new QuantosException("Attachment not found.", 404);
+        if (!FileBoundary.ContainsFile(Vault.Attachments, abs) || !File.Exists(abs)) throw new QuantosException("Attachment not found.", 404);
         if (writes.Cache.AttachmentRefCounts().Any(r => string.Equals(r.Path, relativePath, StringComparison.OrdinalIgnoreCase) && r.Count > 0))
             throw new QuantosException("Notes still use this attachment.", 409);
         return writes.Exclusive(() =>

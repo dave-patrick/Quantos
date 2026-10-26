@@ -42,6 +42,11 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   `prefs.phoneNavigation` keeps ordered phone shortcuts on the device; `phoneNavigation.ts`
   validates the destination list and reserves More. Settings changes never sync as vault content.
 - Build with `pwsh build/build.ps1`; test with `dotnet test tests/Quantos.Tests` and `npx vitest run` in frontend.
+- On Windows, `dotnet test tests/Quantos.Client.Tests` exercises the native script review dialog on
+  an STA thread; the package build includes this tier. Shared native URL checks use
+  `Core/Security/LocalOrigin`, and attachment file access uses `Core/Storage/FileBoundary`.
+- `documentation/SECURITY-REMEDIATION.md` tracks implemented security batches and open findings.
+  Tightened attachment/calendar/native boundaries do not yet fix shared-token actor impersonation.
 - The owner tests Quantos from `C:\Users\davem\Apps\Quantos\Quantos\application` (vault in
   `C:\Users\davem\Quantos\Vault`). After every build, stage it there with
   `pwsh tools/dev/stage.ps1`: it closes the client, replaces the three programs with the ones from

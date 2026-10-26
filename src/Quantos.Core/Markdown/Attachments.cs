@@ -10,7 +10,10 @@ public static partial class Attachments
         foreach (Match m in MarkdownRef().Matches(body))
         {
             var target = Uri.UnescapeDataString(m.Groups["path"].Value.Trim());
-            if (target.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase)) yield return target;
+            if (!target.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase) || target.Contains('\\') || target.Contains(':') || target.Any(char.IsControl)) continue;
+            var parts = target.Split('/');
+            if (parts.Any(p => p is "" or "." or ".." || p.EndsWith('.') || p.EndsWith(' '))) continue;
+            yield return target;
         }
     }
 

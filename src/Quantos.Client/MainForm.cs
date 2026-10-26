@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Quantos.Core.Security;
 
 namespace Quantos.Client;
 
@@ -337,7 +338,7 @@ public sealed class MainForm : Form
         // Only the backend's own pages load here; every other link opens in the default browser.
         core.NavigationStarting += (_, args) =>
         {
-            if (!args.Uri.StartsWith(Origin, StringComparison.OrdinalIgnoreCase) && !args.Uri.StartsWith("about:", StringComparison.Ordinal))
+            if (!LocalOrigin.Matches(args.Uri, Origin) && args.Uri != "about:blank")
             {
                 args.Cancel = true;
                 OpenExternal(args.Uri);
@@ -348,12 +349,12 @@ public sealed class MainForm : Form
         // and WebView2 still asks the person; anything else is refused.
         core.PermissionRequested += (_, args) =>
         {
-            if (!args.Uri.StartsWith(Origin, StringComparison.OrdinalIgnoreCase)) args.State = CoreWebView2PermissionState.Deny;
+            if (!LocalOrigin.Matches(args.Uri, Origin)) args.State = CoreWebView2PermissionState.Deny;
         };
         core.WebMessageReceived += (_, args) =>
         {
             // The bridge accepts messages only from the backend's origin.
-            if (!args.Source.StartsWith(Origin, StringComparison.OrdinalIgnoreCase)) return;
+            if (!LocalOrigin.Matches(args.Source, Origin)) return;
             try { HandleMessage(JsonDocument.Parse(args.WebMessageAsJson).RootElement, core, main); }
             catch (Exception ex) { _paths.Log("Bridge message failed: " + ex.Message); }
         };
@@ -481,7 +482,7 @@ public sealed class MainForm : Form
     private void RunCodeBlock(string code, string? cwd)
     {
         cwd ??= BackendConnection.Read(_paths)?.Vault ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (!Confirm("Run this PowerShell code?", $"Folder: {cwd}\n\n{Truncate(code, 1500)}", "Run")) return;
+        if (!(bool)Invoke(() => ScriptConfirmation.Show(this, code, cwd))) return;
         _ = Task.Run(() =>
         {
             var (output, failed) = TerminalHost.RunOnce(code, cwd, TimeSpan.FromMinutes(5));
@@ -499,8 +500,6 @@ public sealed class MainForm : Form
         var result = (TaskDialogButton?)Invoke(() => TaskDialog.ShowDialog(this, page));
         return result is not null && result.Text == verb;
     }
-
-    private static string Truncate(string s, int n) => s.Length <= n ? s : s[..n] + "\n…";
 
     private void Post(object message)
     {

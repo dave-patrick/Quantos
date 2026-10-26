@@ -43,6 +43,49 @@ public sealed class BackendSecurityTests : IAsyncLifetime
         return http;
     }
 
+    [Theory]
+    [InlineData("x/../../../escaped-calendar")]
+    [InlineData("x\\..\\..\\..\\escaped-calendar")]
+    [InlineData("not-a-workspace")]
+    public async Task Calendar_export_requires_an_existing_workspace_name(string name)
+    {
+        using var http = Client(token: true);
+        var response = await http.PostAsJsonAsync("api/tasks/calendar", new { name });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.False(File.Exists(Path.Combine(_root, "escaped-calendar.ics")));
+    }
+
+    [Fact]
+    public async Task Calendar_export_stays_in_exports_for_a_valid_workspace()
+    {
+        using var http = Client(token: true);
+        var response = await http.PostAsJsonAsync("api/tasks/calendar", new { name = "default" });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(File.Exists(Path.Combine(_root, "Vault", "exports", "quantos-default.ics")));
+    }
+
+    [Fact]
+    public async Task Calendar_export_preserves_registered_linked_scopes()
+    {
+        var folder = Path.Combine(_root, "linked-calendar-marker");
+        Directory.CreateDirectory(folder);
+        using var http = Client(token: true);
+        Assert.Equal(HttpStatusCode.OK, (await http.PostAsJsonAsync("api/linked-folders", new { name = "calendar-link", path = folder })).StatusCode);
+        var response = await http.PostAsJsonAsync("api/tasks/calendar", new { name = "calendar-link" });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(File.Exists(Path.Combine(_root, "Vault", "exports", "quantos-calendar-link.ics")));
+    }
+
+    [Fact]
+    public async Task File_serving_does_not_treat_an_attachment_prefix_sibling_as_an_attachment()
+    {
+        var sibling = Path.Combine(_root, "Vault", "attachments-elsewhere");
+        Directory.CreateDirectory(sibling);
+        File.WriteAllText(Path.Combine(sibling, "marker.txt"), "private marker");
+        using var http = Client(token: true);
+        Assert.Equal(HttpStatusCode.NotFound, (await http.GetAsync("api/files/attachments-elsewhere/marker.txt")).StatusCode);
+    }
+
     [Fact] // 13 security.6
     public async Task A_request_without_the_access_token_is_rejected()
     {

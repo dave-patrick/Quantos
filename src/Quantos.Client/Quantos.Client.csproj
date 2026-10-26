@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\quantos.ico" LogicalName="quantos.ico" />
+    <InternalsVisibleTo Include="Quantos.Client.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,7 @@
     <Project Path="src/Quantos.Server/Quantos.Server.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Quantos.Client.Tests/Quantos.Client.Tests.csproj" />
     <Project Path="tests/Quantos.Tests/Quantos.Tests.csproj" />
   </Folder>
 </Solution>
