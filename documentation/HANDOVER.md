@@ -46,6 +46,17 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-26; latest release 0.2.0)
 
+- **Windows edge resize (2026-10-26, staged).** Reproduced a right-edge drag leaving the window
+  unchanged: WebView2/child controls covered the form's custom hit zones. MainForm now reserves
+  an 8-logical-pixel dark outer strip for the form, updates it on DPI/state changes, and removes
+  the inset when maximized. Existing custom capture/resize handling owns all eight hit zones.
+  Windows package/archive validation passed and the owner's copy was staged/restarted (Page loaded,
+  HTTP 200). Real mouse drags passed left/right/top/bottom, all four corners, title-bar movement,
+  and another right-edge resize after maximize/restore. Move a window clear of the taskbar before
+  testing a covered bottom edge; use the painted corner rather than its rounded transparent tip.
+  Evidence: ignored `.dev/resize-native-results.json`, `resize-package-build.log`, `resize-stage.log`.
+  No Core/frontend changes; existing automated suites were not rerun for this native-only fix.
+
 - **Google Drive server folder bridge (2026-10-25, private deployment).** The owner's
   `G:\My Drive\Thymer\Videos` on T580 feeds shared workspace `videos` read/write through
   `Quantos.FolderBridge`. Other systems continue using the originals. Only Markdown transfers;

@@ -77,6 +77,7 @@ public sealed class MainForm : Form
         // Draw our own title bar and buttons. The window has no native frame; edge resizing is
         // handled from the same hit zones below so Windows cannot add its silver sizing strip.
         FormBorderStyle = FormBorderStyle.None;
+        UpdateResizeBorder();
         _icon.Image = Icon.ToBitmap();
         // Title text hidden per user preference; icon remains in the title bar.
 // _titleBar.Controls.Add(_title);
@@ -106,6 +107,7 @@ public sealed class MainForm : Form
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
+        UpdateResizeBorder();
         _btnMax.Maximized = WindowState == FormWindowState.Maximized;
         _btnMax.Invalidate();
         if (_observedWindowState != WindowState)
@@ -113,6 +115,23 @@ public sealed class MainForm : Form
             _observedWindowState = WindowState;
             if (WindowState != FormWindowState.Minimized) QueueWindowLayoutRefresh();
         }
+    }
+
+    private int ResizeBorderThickness => LogicalToDeviceUnits(8);
+
+    private void UpdateResizeBorder()
+    {
+        // Child HWNDs (especially WebView2) receive their own mouse hit tests. Leave an
+        // uncovered strip owned by the form so its edge/corner handlers receive real input.
+        var border = WindowState == FormWindowState.Maximized ? 0 : ResizeBorderThickness;
+        var padding = new Padding(border);
+        if (Padding != padding) Padding = padding;
+    }
+
+    protected override void OnDpiChanged(DpiChangedEventArgs e)
+    {
+        base.OnDpiChanged(e);
+        UpdateResizeBorder();
     }
 
     private void QueueWindowLayoutRefresh()
@@ -867,7 +886,7 @@ public sealed class MainForm : Form
             int screenX = unchecked((short)(packed & 0xFFFF));
             int screenY = unchecked((short)((packed >> 16) & 0xFFFF));
             var pt = PointToClient(new Point(screenX, screenY));
-            int b = 10;
+            int b = ResizeBorderThickness;
             bool left = pt.X <= b, right = pt.X >= Width - b, top = pt.Y <= b, bottom = pt.Y >= Height - b;
             if (top && left) { m.Result = (IntPtr)HTTOPLEFT; return; }
             if (top && right) { m.Result = (IntPtr)HTTOPRIGHT; return; }

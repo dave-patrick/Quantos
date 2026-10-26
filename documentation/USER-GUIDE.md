@@ -77,6 +77,8 @@ use **Exit** from the tray icon menu. Exit saves your open notes first and warns
 couldn't be saved.
 Drag the blank strip above the app toolbar to move the window. Drag it while maximized to restore
 the window under the pointer and continue moving it.
+To resize a restored Windows window, drag any outer edge or corner. The narrow dark border is
+the resize area; restore a maximized window before resizing it.
 
 The top bar has a taller header with a larger Quantos wordmark and an 8px gap before the main
 content. The dark appearance uses a slightly lighter neutral gray background. Its quick actions can

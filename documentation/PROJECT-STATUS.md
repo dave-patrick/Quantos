@@ -7,6 +7,12 @@ for what shipped when. Keep this file current when you finish a piece of work.
 
 _Last updated: 2026-10-26, at version 0.2.0 (Windows release v0.2.0; Android/server work unreleased)._
 
+Windows edge resizing is fixed and staged (October 26): the frameless host reserves a DPI-scaled
+outer strip so WebView2 cannot intercept its resize input. The strip disappears when maximized.
+Package/archive validation and startup HTTP 200 passed. Native mouse checks passed all four edges,
+all four corners, title-bar movement and resizing after maximize/restore. Existing automated suite
+counts below are unchanged; this native-only change was verified through compile/package and UI checks.
+
 ### Android and shared vault (owner-approved scope, 2026-10-24)
 
 - `src/Quantos.FolderBridge/` adds an optional host worker for a folder managed by Google Drive or
