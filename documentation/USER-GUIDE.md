@@ -571,9 +571,9 @@ All in-app shortcuts can be changed in *Settings › Shortcuts* (saved in the va
 ## Note folders on Android
 
 Open **More → Notes** to browse the current workspace. Folders appear above the notes;
-tap one to browse its contents. The folder trail takes you to a parent or **All notes**.
+tap one to browse its contents. The folder trail takes you to a parent or **All folders**.
 Folder counts include nested notes, while the list shows notes directly in the open folder.
-Search filters titles and tags in that folder. **New note** creates the note inside the folder you are browsing. Only folders containing notes are listed.
+Search filters titles and tags in that folder. **New note** creates the note inside the folder you are browsing. The actual folder tree includes containing folders such as Notes, Daily, Tasks and Archive, as well as empty folders. Archived notes are labelled. Use **New folder** to create a folder here, and the workspace picker to browse another workspace.
 
 Use **Back** and **Forward** in the phone header to retrace folders and pages. After opening
 a note from a folder, **Back** returns to that folder. The chosen folder is retained with the

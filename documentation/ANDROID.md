@@ -18,8 +18,7 @@ last. Changes apply immediately, persist on this device and do not change tablet
 Open **More › Notes** for the simple notes list, even when Notes is not pinned in the bottom bar.
 In Notes, tap a folder to browse it, or use its folder trail to return to a parent. The phone's
 **Back** and **Forward** buttons retrace folder visits as well as pages; **Back** from a note returns
-to the folder where you opened it. Folder counts include notes in nested folders. Empty folders
-are not listed. Search filters note titles and tags within the open folder; **New note** creates its note there.
+to the folder where you opened it. Folder counts include notes in nested folders. Empty folders and Archive are included. Search filters note titles and tags within the open folder; **New note** creates its note there. Use **New folder** to create a folder, and the workspace picker in Notes to change workspaces.
 More also holds advanced tools, saved views, workspace switching and settings. The advanced notes
 browser remains available there for filters, bulk actions and preview. Task grouping and board
 controls are behind **Options**. Note properties and files open in **Details**, with an explicit

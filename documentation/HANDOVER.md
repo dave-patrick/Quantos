@@ -362,3 +362,24 @@ moved to Trash afterwards; original active counts stayed 24 default / 614 Videos
 resolution error was present before installation and remains; it was not introduced by this change.
 Frontend check: zero errors and nine existing warnings; 105 frontend tests passed. Android build:
 zero warnings/errors. Evidence is in ignored `.dev/note-folders-*`. No public release was made.
+
+## Android icon and complete folder hierarchy — 2026-10-26
+
+Private Debug ARM64 build `2026.26.10.11` is installed on the SM-S948U with its existing certificate.
+The previous raster launcher/browser icon was the Atomic 22 publisher image. Both are now PNG
+renders of the existing `brand/quantos-icon.svg`; the manifest still uses `@drawable/quantos_icon`.
+Packaged-resource inspection and the phone's native App info screen show the actual Quantos Q.
+
+Phone Notes previously stripped the physical Notes/Daily/Tasks/Archive parent and derived folders
+only from active note summaries. It now loads `/api/tree?archived=true`, merges summaries without
+flattening paths, includes empty directories and archive contents, and labels archived notes.
+`noteFolders.ts` owns path validation, counts, display labels and migration from old `folder:` tab
+arguments to `folderpath:` physical locations. Notes includes its workspace picker and New folder;
+New note saves to the selected physical directory. Folder actions still use the existing APIs.
+
+Validation: 111 frontend tests passed; Svelte check has zero errors / nine existing warnings. Android
+build has zero warnings/errors. On-device touch checks matched all 5 Default and all 17 Videos
+folders against the real folder API, including empty folders/Archive. Opening a folder, New folder,
+New note in the selected directory, Back and Forward passed. Before/after active counts matched
+(24 Default / 613 Videos); only the owned test note was trashed. Native evidence is under ignored
+`.dev/folders-icon-*`. Windows was not staged and no public release was made.

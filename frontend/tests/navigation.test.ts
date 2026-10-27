@@ -28,15 +28,15 @@ describe('workspace navigation', () => {
   });
   it('retraces folders and returns to the same folder after opening a note', async () => {
     await layout.open({ kind: 'notes' });
-    await layout.open({ kind: 'notes', arg: 'folder:Projects' });
-    await layout.open({ kind: 'notes', arg: 'folder:Projects/Work' });
+    await layout.open({ kind: 'notes', arg: 'folderpath:workspaces/default/nodes/Projects' });
+    await layout.open({ kind: 'notes', arg: 'folderpath:workspaces/default/nodes/Projects/Work' });
     await layout.open({ kind: 'node', nodeId: 'folder-note' });
     await layout.back();
-    expect(layout.activeTab?.arg).toBe('folder:Projects/Work');
+    expect(layout.activeTab?.arg).toBe('folderpath:workspaces/default/nodes/Projects/Work');
     await layout.back();
-    expect(layout.activeTab?.arg).toBe('folder:Projects');
+    expect(layout.activeTab?.arg).toBe('folderpath:workspaces/default/nodes/Projects');
     await layout.forward();
-    expect(layout.activeTab?.arg).toBe('folder:Projects/Work');
+    expect(layout.activeTab?.arg).toBe('folderpath:workspaces/default/nodes/Projects/Work');
   });
   it('never replaces a pinned tab during history travel', async () => {
     const a = await layout.open({ kind: 'notes' });

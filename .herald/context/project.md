@@ -69,7 +69,9 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 ## Note navigation and schema
 - Compact Android `PhoneNotes.svelte` browses note folders. Folder paths live in the Notes tab's
   `folder:` argument so header Back/Forward and returning from a note restore the same folder.
-  New note creates within the folder being browsed.
+  The real folder tree retains Notes/Daily/Tasks/Archive parents and empty folders. `noteFolders.ts`
+  merges that tree with note summaries without flattening storage directories. New note and New
+  folder use the selected physical path. Notes includes its own workspace picker.
 - Tasks open in normal pages. Task popups were removed after the owner clarified the Android scope.
 - `type: task` implicitly belongs to the editable `#task` schema. `SupertagService` synthesizes its
   default until an explicit update creates a normal supertag file; native task fields keep stable

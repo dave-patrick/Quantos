@@ -78,3 +78,9 @@ the generator, and asserts that both treatments share byte-identical lettering.
 | `BRAND-SPEC.txt` | locked ratios and rules |
 | `preview.template.html` | generated comparison page template |
 | `preview.html` | generated, gitignored |
+## Android and browser raster icon
+
+`android/Resources/drawable/quantos_icon.png` and `frontend/public/brand/quantos-icon.png` are
+512px transparent PNG renders of `brand/quantos-icon.svg` (Chromium SVG rendering, unchanged
+artwork). They identify Quantos, not the Atomic 22 publisher. The Android manifest refers to
+`@drawable/quantos_icon`; keep the drawable basename stable when updating the product icon.

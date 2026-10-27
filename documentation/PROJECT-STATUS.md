@@ -349,3 +349,19 @@ folder; the installed build identity is confirmed and the task-popup bundle is a
 Original active counts stayed 24 default / 614 Videos after test cleanup. Existing server DNS failure
 was recorded before and after the update (zero sync conflicts); no sync-health claim is implied.
 See ignored `.dev/note-folders-phone-results.json` and native screenshot. No public release occurred.
+
+### Android icon and physical folder tree (2026-10-26)
+
+Build `2026.26.10.11` is installed privately on the owner's phone. Android launcher and browser icon
+use the Quantos Q rendered from the canonical SVG, replacing the mistaken publisher raster.
+Phone Notes now uses the actual folder API, preserving containing directories and empty folders,
+and includes Archive with labelled archived notes. A workspace picker and New folder action are
+available directly in Notes. New note, breadcrumbs and history retain full physical directory paths;
+older phone layouts migrate their previous Notes-relative paths.
+
+111 frontend tests pass; Svelte check has zero errors / nine existing warnings. Android build has
+zero warnings/errors. Actual phone taps verified a folder list matching the API (5/5 Default and
+17/17 Videos), empty folders, Archive, creation in the selected folder and navigation. Active counts
+were unchanged by acceptance cleanup. APK icon extraction and Android App info both confirmed the
+correct Q icon. This supersedes the earlier active-note-only folder limitation; no Windows staging
+or public release was performed.
