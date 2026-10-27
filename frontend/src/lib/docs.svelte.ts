@@ -414,6 +414,11 @@ class DocStore {
     await Promise.all([...this.docs.values()].map((d) => d.flush()));
   }
 
+  /** Derived task changes can update another open note under this browser's own origin. */
+  async refreshOpen() {
+    await Promise.all([...this.docs.values()].filter(d => d.refs > 0 && d.node && !d.trashed).map(d => d.refresh()));
+  }
+
   /** Writes every unsaved note to browser storage now, so a page reload can't lose it. */
   keepDrafts() {
     for (const d of this.docs.values()) d.writeDraft();

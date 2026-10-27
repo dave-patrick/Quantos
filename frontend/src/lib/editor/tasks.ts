@@ -31,7 +31,8 @@ class ChipWidget extends WidgetType {
   constructor(readonly taskId: string, readonly label: string, readonly deleted: boolean) { super(); }
   eq(o: ChipWidget) { return o.taskId === this.taskId && o.label === this.label && o.deleted === this.deleted; }
   toDOM() {
-    const chip = document.createElement('span');
+    const chip = document.createElement('button');
+    chip.type = 'button';
     chip.className = 'cm-task-chip';
     chip.dataset.task = this.taskId;
     if (this.deleted) chip.dataset.deleted = '1';
@@ -56,7 +57,7 @@ function build(view: EditorView, hooks: TaskHooks) {
         builder.add(boxFrom, boxFrom + 3, Decoration.replace({ widget: new CheckWidget(checked, boxFrom, taskId) }));
         const textFrom = boxFrom + 3 + m[3].length;
         const textTo = textFrom + m[4].length;
-        if (textTo > textFrom && (checked || info?.deleted)) builder.add(textFrom, textTo, Decoration.mark({ class: info?.deleted ? 'cm-task-deleted' : 'cm-task-done' }));
+        if (textTo > textFrom) builder.add(textFrom, textTo, Decoration.mark({ class: [taskId ? 'cm-task-title' : '', info?.deleted ? 'cm-task-deleted' : checked ? 'cm-task-done' : ''].filter(Boolean).join(' '), attributes: taskId ? { 'data-task': taskId, ...(info?.deleted ? { 'data-deleted': '1' } : {}), title: 'Open task' } : {} }));
         if (taskId && m[5]) {
           const commentFrom = textTo + (m[5].length - m[5].trimStart().length);
           const label = info?.deleted ? 'deleted · restore' : [info?.due ? 'due ' + info.due.slice(5, 10) : '', info?.priority ? 'P' + info.priority : ''].filter(Boolean).join(' · ') || 'task';
@@ -84,6 +85,14 @@ export function taskLines(hooks: TaskHooks): Extension {
     { decorations: (v) => v.decorations }
   );
   const events = EditorView.domEventHandlers({
+    click(event) {
+      const chip = (event.target as HTMLElement).closest<HTMLButtonElement>('.cm-task-chip');
+      if (!chip?.dataset.task || event.detail !== 0) return false;
+      event.preventDefault();
+      if (chip.dataset.deleted) hooks.restoreTask?.(chip.dataset.task);
+      else hooks.openTask?.(chip.dataset.task, event);
+      return true;
+    },
     mousedown(event, view) {
       const target = event.target as HTMLElement;
       if (target.classList.contains('cm-task-check')) {
@@ -96,10 +105,11 @@ export function taskLines(hooks: TaskHooks): Extension {
         if (taskId) hooks.toggleTask?.(taskId, !checked);
         return true;
       }
-      if (target.classList.contains('cm-task-chip') && target.dataset.task) {
+      if ((target.closest('.cm-task-chip, .cm-task-title') as HTMLElement)?.dataset.task) {
+        const taskTarget = target.closest('.cm-task-chip, .cm-task-title') as HTMLElement;
         event.preventDefault();
-        if (target.dataset.deleted) hooks.restoreTask?.(target.dataset.task);
-        else hooks.openTask?.(target.dataset.task, event);
+        if (taskTarget.dataset.deleted) hooks.restoreTask?.(taskTarget.dataset.task!);
+        else hooks.openTask?.(taskTarget.dataset.task!, event);
         return true;
       }
       return false;

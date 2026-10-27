@@ -33,7 +33,11 @@
           if (f?.type === 'multiselect' || f?.type === 'nodes') return [k, String(v).split(',').map((s) => s.trim()).filter(Boolean)];
           return [k, v];
         }));
-      const node = await api.post<NodeDto>('nodes', { title: title.trim(), workspace: app.workspace, tags: [tag.name], properties });
+      const isTask = tag.name.toLowerCase() === 'task';
+      const node = await api.post<NodeDto>(isTask ? 'tasks' : 'nodes', {
+        title: title.trim(), workspace: app.workspace, tags: [tag.name], ...(isTask ? {} : { properties })
+      });
+      if (isTask) await api.post(`tasks/${node.id}/update`, { set: properties });
       onclose();
       openNode(node.id, 'new', node.title);
     } catch (e) { app.error(e); } finally { busy = false; }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Doc } from '../lib/docs.svelte';
-  import { tasks, type TaskDto, type TaskStatus } from '../lib/tasks.svelte';
+  import { tasks, type TaskDto } from '../lib/tasks.svelte';
   import { app } from '../lib/state.svelte';
   import { openNode, searchTitles, whereFrom } from '../lib/links.svelte';
   import { api } from '../lib/api';
@@ -16,17 +16,12 @@
   const blocks = $derived(tasks.list.filter((t) => t.dependsOn.includes(id)));
   const parent = $derived(task?.parent ? tasks.get(task.parent) : undefined);
   const source = $derived(task?.source ? app.titleIndex.get(task.source) : undefined);
-  const label = (v: string | null | undefined) => (v ? (/\|([^\]]+)\]\]$/.exec(v)?.[1] ?? v) : '');
 
   let reminderAt = $state('');
   let depQuery = $state('');
 
   async function set(values: Record<string, unknown>) {
-    try { await tasks.update(id, values); await doc.refresh(); } catch (e) { app.error(e); }
-  }
-
-  async function status(s: TaskStatus) {
-    try { await tasks.setStatus(id, s); await doc.refresh(); } catch (e) { app.error(e); }
+    try { await doc.flush(); await tasks.update(id, values); await doc.refresh(); } catch (e) { app.error(e); }
   }
 
   async function addReminder() {
@@ -54,45 +49,11 @@
   }
 
   const taskTitles = $derived(app.titles.filter((t) => t.type === 'task' && t.id !== id));
-  const projects = $derived(app.titles.filter((t) => t.type === 'project' || t.tags.includes('project')));
-  const people = $derived(app.titles.filter((t) => t.type === 'person' || t.tags.includes('person')));
 </script>
 
 {#if task}
   <section class="panel" aria-label="Task details">
-    <div class="status">
-      {#each ['todo', 'doing', 'waiting', 'done', 'cancelled'] as s (s)}
-        <button class:on={task.status === s} onclick={() => status(s as TaskStatus)}>{s}</button>
-      {/each}
-    </div>
-
     <dl>
-      <dt>Priority</dt>
-      <dd class="prio">
-        {#each [1, 2, 3, 4] as p (p)}<button class="p{p}" class:on={task.priority === p} onclick={() => set({ priority: task.priority === p ? null : p })}>P{p}</button>{/each}
-      </dd>
-      <dt>Due</dt><dd><input aria-label="Due" class="cell" type="date" value={task.due?.slice(0, 10) ?? ''} onchange={(e) => set({ due: (e.target as HTMLInputElement).value || null })} /></dd>
-      <dt>Planned</dt><dd><input aria-label="Planned" class="cell" type="date" value={task.planned?.slice(0, 10) ?? ''} onchange={(e) => set({ planned: (e.target as HTMLInputElement).value || null })} />
-        <span class="faint hint">Rollover moves this, never the due date.</span></dd>
-      <dt>Effort</dt><dd><input aria-label="Effort in minutes" class="cell narrow" type="number" min="0" step="5" value={task.effort ?? ''} onchange={(e) => set({ effort: (e.target as HTMLInputElement).value || null })} /> min
-        {#if task.effortRollup && task.effortRollup !== task.effort}<span class="faint">({task.effortRollup} min with subtasks)</span>{/if}</dd>
-      <dt>Project</dt><dd>
-        <input aria-label="Project" class="cell" list="projects" value={label(task.project)} placeholder="Project note"
-          onchange={(e) => { const v = (e.target as HTMLInputElement).value; const p = projects.find((x) => x.title === v); set({ project: p ? `[[${p.id}|${p.title}]]` : v || null }); }} />
-        <datalist id="projects">{#each projects as p (p.id)}<option value={p.title}></option>{/each}</datalist></dd>
-      <dt>Stage</dt><dd><input aria-label="Stage" class="cell" value={task.stage ?? ''} placeholder="e.g. Drafting" onchange={(e) => set({ stage: (e.target as HTMLInputElement).value || null })} /></dd>
-      <dt>Assignees</dt><dd>
-        <input aria-label="Assignees" class="cell" list="people" value={task.assignees.map(label).join(', ')} placeholder="People, comma separated"
-          onchange={(e) => set({ assignees: (e.target as HTMLInputElement).value.split(',').map((s) => s.trim()).filter(Boolean).map((n) => { const p = people.find((x) => x.title === n); return p ? `[[${p.id}|${p.title}]]` : n; }) })} />
-        <datalist id="people">{#each people as p (p.id)}<option value={p.title}></option>{/each}</datalist></dd>
-      <dt>Waiting on</dt><dd><input aria-label="Waiting on" class="cell" value={task.waitingOn ?? ''} placeholder="Who or what" onchange={(e) => set({ waiting_on: (e.target as HTMLInputElement).value || null })} /></dd>
-      <dt>Repeats</dt><dd>
-        <select aria-label="Repeats" class="cell" value={task.recurrence ?? ''} onchange={(e) => set({ recurrence: (e.target as HTMLSelectElement).value || null })}>
-          <option value="">Doesn't repeat</option><option value="daily">Every day</option><option value="weekdays">Every weekday</option>
-          <option value="weekly">Every week</option><option value="FREQ=WEEKLY;INTERVAL=2">Every 2 weeks</option><option value="monthly">Every month</option><option value="yearly">Every year</option>
-          {#if task.recurrence && !['daily', 'weekdays', 'weekly', 'FREQ=WEEKLY;INTERVAL=2', 'monthly', 'yearly'].includes(task.recurrence)}<option value={task.recurrence}>{task.recurrence}</option>{/if}
-        </select>
-        {#if task.occurrence}<span class="faint hint">This occurrence: {task.occurrence}</span>{/if}</dd>
       <dt>Reminders</dt><dd class="col">
         {#each task.reminders as r, i (i)}
           <span class="reminder">
@@ -123,19 +84,13 @@
 
 <style>
   .panel { margin: 6px 0 16px; padding: 12px 14px; border-radius: 10px; background: var(--bg-raised); border: 1px solid var(--line); }
-  .status { display: flex; gap: 4px; margin-bottom: 10px; }
-  .status button { border: 1px solid var(--line-strong); background: none; color: var(--text-muted); border-radius: 14px; padding: 2px 12px; font-size: 13px; text-transform: capitalize; }
-  .status button.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
   dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin: 0; align-items: center; }
   dt { font: 12px var(--font-mono); color: var(--text-muted); }
   dd { margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   dd.col { flex-direction: column; align-items: stretch; gap: 4px; }
   .cell { height: 28px; padding: 0 8px; border-radius: 5px; border: 1px solid var(--line); background: var(--bg-input); color: var(--text); font-size: 13.5px; min-width: 0; }
   .cell:focus { outline: none; border-color: var(--accent); }
-  .narrow { width: 80px; }
   .hint { font-size: 12px; }
-  .prio button { border: 1px solid var(--line-strong); background: none; border-radius: 5px; padding: 1px 9px; font: 600 12px var(--font-mono); color: var(--text-muted); }
-  .prio .p1.on { background: var(--p1); color: #1a0c0c; } .prio .p2.on { background: var(--p2); color: #1c1306; } .prio .p3.on { background: var(--p3); color: var(--accent-ink); } .prio .p4.on { background: var(--p4); color: #0c131d; }
   .reminder { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
   .add { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .dep { display: flex; align-items: center; }

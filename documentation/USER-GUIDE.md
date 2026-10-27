@@ -567,3 +567,11 @@ approval in the Windows client.
 | Extract selection to new note | `Ctrl+Alt+E` |
 
 All in-app shortcuts can be changed in *Settings › Shortcuts* (saved in the vault's `shortcuts.json`).
+
+## Edit a task without leaving a note
+
+Click the task's words or its task chip in a note to open the full task in a popup. Edit its title, body, properties, reminders, dependencies or subtasks. Close with **Close task** or **Escape** to return to the same note position. Changes save automatically; unsaved text or conflicts keep the popup open. Ctrl-click opens a task in a new tab; Shift-click opens it in the other pane. Keyboard users can Tab to the task chip and press Enter.
+
+Use **Back** and **Forward** in the header, or **Alt+Left** and **Alt+Right**, to retrace pages in the active pane. Returning to a note restores its scroll position. The compact phone header also has these controls.
+
+Open **Manage supertags**, then **#task** (or **Edit #task properties** in the popup) to add, remove or edit task property definitions. Existing tasks use this definition automatically. Saving the definition creates an ordinary supertag Markdown file; viewing it alone changes no task files. Field labels can change while their stored keys stay the same. Task status values remain todo, doing, waiting, done and cancelled because they control completion and recurrence. Removing a property definition preserves existing values. **New #task** creates a real task.

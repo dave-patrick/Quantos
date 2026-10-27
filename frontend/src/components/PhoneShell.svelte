@@ -83,8 +83,10 @@
         <span class="phone-wordmark" role="img" aria-label="Quantos">{@html wordmark}</span>
       {/if}
       <div class="phone-actions">
+        {#if !leaf}<button class="icon-btn" aria-label="Back" disabled={!layout.pane.back.length} onclick={back}><Icon name="arrow-left" size={21} /></button>{/if}
+        <button class="icon-btn" aria-label="Forward" disabled={!layout.pane.forward.length} onclick={() => layout.forward()}><Icon name="arrow-right" size={21} /></button>
         <button class="icon-btn" aria-label="Search notes" onclick={() => open({ kind: 'search' })}><Icon name="search" size={21} /></button>
-        <button class="capture-button" onclick={() => capture.show()}><Icon name="inbox" size={19} /> Capture</button>
+        <button class="capture-button" onclick={() => capture.show()}><Icon name="inbox" size={19} /><span class="capture-label">Capture</span></button>
       </div>
     {/if}
   </header>
@@ -132,6 +134,7 @@
 </div>
 
 <style>
+  @media (max-width: 440px) { .capture-label { display: none; } .phone-actions { gap: 0; } .phone-header { gap: 0; padding: 0 4px; } .phone-wordmark :global(svg) { max-width: 80px; } }
   .phone-shell { height: 100%; display: grid; grid-template-rows: 56px minmax(0, 1fr) 68px; background: var(--bg-panel); }
   .phone-header { display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 1px solid var(--line); min-width: 0; }
   .phone-header h1, .screen-title { flex: 1; min-width: 0; font: 600 20px/1.2 var(--font-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

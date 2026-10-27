@@ -490,6 +490,11 @@ public sealed partial class TaskService : ITaskHooks
         finally { _syncDepth--; }
     }
 
+    public void AfterRename(Node node, Actor actor)
+    {
+        if (node.Type == NodeTypes.Task && _syncDepth == 0) SyncInline(node.Id, null, node.Title, actor);
+    }
+
     /// <summary>Brings every inline line bound to a task in line with the task (checkbox and text).</summary>
     public void SyncInline(string taskId, bool? done, string? title, Actor actor, string? except = null)
     {
@@ -543,4 +548,5 @@ public interface ITaskHooks
 {
     string BindInlineTasks(FrontmatterDocument doc, string body, Actor actor, string? scope = null);
     void AfterNoteWritten(Node note, Actor actor);
+    void AfterRename(Node node, Actor actor);
 }

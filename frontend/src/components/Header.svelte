@@ -31,9 +31,10 @@
   </div>
 
   <nav class="toolbar" aria-label="Quick actions">
-    <button class="icon-btn" title="Back ({displayKeys(keysFor('nav.back'))})" disabled={!pane.back.length} onclick={() => layout.back()}><Icon name="arrow-left" /></button>
-    <button class="icon-btn" title="Forward ({displayKeys(keysFor('nav.forward'))})" disabled={!pane.forward.length} onclick={() => layout.forward()}><Icon name="arrow-right" /></button>
-    <span class="sep"></span>
+    <div class="history" aria-label="Navigation history">
+    <button class="icon-btn" aria-label="Back" title="Back ({displayKeys(keysFor('nav.back'))})" disabled={!pane.back.length} onclick={() => layout.back()}><Icon name="arrow-left" /></button>
+    <button class="icon-btn" aria-label="Forward" title="Forward ({displayKeys(keysFor('nav.forward'))})" disabled={!pane.forward.length} onclick={() => layout.forward()}><Icon name="arrow-right" /></button>
+    </div><span class="sep"></span>
     {#each centerItems as item (item.id)}
       <button class="tool" title="{item.title}{keysFor(item.id) ? ` (${displayKeys(keysFor(item.id))})` : ''}" onclick={() => run(item.id)}>
         <Icon name={item.icon ?? 'zap'} size={15} /><span>{item.label}</span>
@@ -73,6 +74,7 @@
   .header .icon-btn[aria-pressed='true'] { background: transparent; color: var(--accent-strong); }
   .wordmark { display: inline-flex; height: 23.75px; margin: 0 4px 0 2px; color: var(--text); flex: none; }
   .wordmark :global(svg) { height: 100%; width: auto; }
+  .history { display: flex; flex: none; gap: 2px; }
   .toolbar { display: flex; align-items: center; justify-content: center; gap: 2px; min-width: 0; overflow: hidden; }
   .toolbar .icon-btn:disabled { opacity: .35; cursor: default; background: none; }
   .sep { width: 1px; height: 18px; background: var(--line); margin: 0 6px; }
@@ -85,5 +87,5 @@
   .search.labelled { width: auto; padding: 0 8px; }
   .search:hover { background: transparent; color: var(--text); }
   @media (max-width: 1150px) { .tool span { display: none; } }
-  @media (max-width: 720px) { .toolbar { display: none; } }
+  @media (max-width: 720px) { .toolbar { justify-content: start; } .toolbar .tool, .sep { display: none; } .wordmark { display: none; } }
 </style>

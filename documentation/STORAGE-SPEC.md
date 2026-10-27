@@ -260,3 +260,6 @@ Server data includes `Vault/`, `server-id`, client data/permissions and `sync-re
 MCP tokens are separate runtime secrets. Migration must preserve the server id and the full data
 volume, plus both secret files. See [SERVER.md](SERVER.md).
 
+### Built-in task supertag
+
+`type: task` implies membership of `#task` for supertag counts, tag queries and property editing; existing files do not need a `tags: [task]` rewrite. Until customized, the global definition is synthesized with ID `builtin-task` and no physical file. An explicit update materializes a normal `type: supertag`, `title: task` definition via WriteService. It supplies editable fields with the existing task property keys (`status`, `priority`, `due`, `planned`, etc.). Field definitions may carry a stable `key` distinct from the display `name`. The `task` type name is fixed. Reminder/dependency/recurrence semantics continue to use TaskService. Renaming a task also refreshes its bound inline task labels through the existing derived write path.

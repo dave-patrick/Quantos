@@ -314,3 +314,22 @@ had no shortcut handling).
    can be renamed but not overwritten — copies the updated documents across, and starts `Quantos.exe`
    again. Confirm it came up from the `Startup:` and `Page loaded` lines in
    `client-data\logs\client-<date>.log`.
+
+### Task popup, navigation and editable #task schema (2026-10-26)
+
+Private Windows build `2026.26.10.6`, semantic version `0.2.2`, is staged in the owner's test copy
+and restarted (Page loaded / HTTP 200). Inline task text/chips open the full task editor in a native
+HTML dialog while retaining the note's editor, cursor and viewport. Close/Escape saves and restores
+focus without scrolling; source task labels refresh after a popup rename. Common task properties
+now come from editable `#task` fields. The default definition is synthesized until explicitly saved
+and applies to existing tasks, tag queries, counts, inheritance and migrations without rewriting
+files. Field display-name edits retain stable keys; native task keys do not rekey unrelated schemas.
+Header Back/Forward stays available on compact layouts and retains note scroll, including long
+CodeMirror documents after their measured heights settle. Existing and pinned tab navigation is recorded.
+
+Validated: 109 frontend / 242 backend-core / 4 native client tests; Svelte check has zero errors
+and nine existing warnings. Full .NET tests passed sequentially after unrelated parallel native
+sign-in and log-disposal flakes. Browser acceptance verified task values/custom fields, source title
+refresh, a real #task form, keyboard focus/Escape, exact 3671px note return and navigation, and a
+390px popup with no horizontal overflow. Package/archive validation and self-check passed with
+zero self-check warnings. Native Android runtime/installation remains unverified for this change.

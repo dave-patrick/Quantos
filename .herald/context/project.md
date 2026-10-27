@@ -65,3 +65,10 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - Public landing pages use dark app-specific compositions with real approved brand assets; shared Atomic 22
   navigation links to the blue Notes directory. Publish only site/ via GitHub Pages. Never serve or
   publish private workspace data.
+
+## Task editing and schema
+- Inline task text/chips open `TaskPopup.svelte` over the mounted note; save/refresh and explicit
+  focus/scroll restoration keep the origin in place. Header history retains note scroll positions.
+- `type: task` implicitly belongs to the editable `#task` schema. `SupertagService` synthesizes its
+  default until an explicit update creates a normal supertag file; native task fields keep stable
+  keys without rekeying unrelated schemas. `TaskService` retains scheduling and completion logic.

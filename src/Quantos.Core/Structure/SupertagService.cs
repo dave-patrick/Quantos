@@ -30,6 +30,30 @@ public sealed record SupertagInput(string? Name, string? Parent, string? Color, 
 public sealed partial class SupertagService(WriteService writes)
 {
     private CacheIndex Cache => writes.Cache;
+    public const string TaskDefinitionId = "builtin-task";
+
+    private static NodeSummary DefaultTask() => new(TaskDefinitionId, "", "task", NodeTypes.Supertag, "", [], "", null, false, false,
+        new Dictionary<string, object?> {
+            ["color"] = "#78b6ff", ["icon"] = "check-square", ["layout"] = "table",
+            ["description"] = "Task properties. Reminders, dependencies and completion are managed by Quantos.",
+            ["fields"] = TaskFields().Select(f => (object?)new Dictionary<string, object?> {
+                ["name"] = f.Name, ["key"] = f.Key, ["type"] = f.Type, ["options"] = f.Options,
+                ["default"] = f.Default, ["description"] = f.Description
+            }).ToList()
+        }, []);
+
+    private static List<FieldDef> TaskFields() => [
+        new("Status", "status", "status", Quantos.Core.Tasks.TaskStatus.All, false, "todo", null, null),
+        new("Priority", "priority", "select", ["1", "2", "3", "4"], false, null, "1 is highest; 4 is lowest.", null),
+        new("Due", "due", "date", null, false, null, null, null),
+        new("Planned", "planned", "date", null, false, null, null, null),
+        new("Effort", "effort", "number", null, false, null, "Minutes", null),
+        new("Project", "project", "node", null, false, null, null, null),
+        new("Stage", "stage", "text", null, false, null, null, null),
+        new("Assignees", "assignees", "nodes", null, false, null, null, null),
+        new("Waiting on", "waiting_on", "text", null, false, null, null, null),
+        new("Recurrence", "recurrence", "text", null, false, null, "daily, weekdays, weekly, monthly, yearly or RRULE", null)
+    ];
 
     public static string FieldKey(string name) => Regex.Replace(name.Trim().ToLowerInvariant(), @"[^\p{L}\p{N}]+", "_").Trim('_');
     public static string NormalizeTag(string name) => name.Trim().TrimStart('#').Trim();
@@ -43,23 +67,28 @@ public sealed partial class SupertagService(WriteService writes)
         var byName = new Dictionary<string, NodeSummary>(StringComparer.OrdinalIgnoreCase);
         foreach (var d in defs.OrderBy(d => d.Workspace.Length)) byName[d.Title] = d;
         var counts = TagCounts(workspace);
+        if (!byName.ContainsKey("task")) byName["task"] = DefaultTask();
 
         var own = byName.Values.ToDictionary(d => d.Title, d => OwnFields(d), StringComparer.OrdinalIgnoreCase);
         // Namespacing: when two tags define the same key with different types, the newer definition's key becomes "tag.key".
         var owners = new Dictionary<string, (string Tag, string Type, string Created)>(StringComparer.OrdinalIgnoreCase);
+        var taskKeys = TaskFields().Select(f => f.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var d in byName.Values.OrderBy(d => d.Created ?? "", StringComparer.Ordinal))
         {
             var fields = own[d.Title];
             for (var i = 0; i < fields.Count; i++)
             {
                 var f = fields[i];
+                // Native task properties retain their established keys without taking keys away
+                // from existing, unrelated supertags that already use names such as "status".
+                if (d.Title.Equals("task", StringComparison.OrdinalIgnoreCase) && taskKeys.Contains(f.Key)) continue;
                 if (owners.TryGetValue(f.Key, out var o) && !o.Tag.Equals(d.Title, StringComparison.OrdinalIgnoreCase) && o.Type != f.Type && !IsAncestor(byName, d.Title, o.Tag))
                     fields[i] = f with { Key = FieldKey(d.Title) + "." + f.Key };
                 else owners.TryAdd(f.Key, (d.Title, f.Type, d.Created ?? ""));
             }
         }
 
-        return byName.Values.Select(d =>
+        var result = byName.Values.Select(d =>
         {
             var p = d.Properties;
             var (chain, error) = Chain(byName, d.Title);
@@ -85,7 +114,8 @@ public sealed partial class SupertagService(WriteService writes)
                 Props.Str(p, "color"), Props.Str(p, "icon"), d.Workspace, own[d.Title], all,
                 Props.LinkId(Props.Str(p, "template")), string.Equals(Props.Str(p, "auto_apply_template"), "true", StringComparison.OrdinalIgnoreCase),
                 Props.Str(p, "layout"), Props.Str(p, "description") ?? "", counts.GetValueOrDefault(d.Title.ToLowerInvariant()), d.Path, error, d.Created);
-        }).OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
+        }).ToList();
+        return result.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     public SupertagDto? Get(string nameOrId, string? workspace = null) =>
@@ -163,7 +193,7 @@ public sealed partial class SupertagService(WriteService writes)
     {
         var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var n in Cache.List(workspace, includeArchived: false, limit: 1_000_000))
-            foreach (var t in n.Tags) counts[t.ToLowerInvariant()] = counts.GetValueOrDefault(t.ToLowerInvariant()) + 1;
+            foreach (var t in n.Type == NodeTypes.Task ? n.Tags.Append("task").Distinct(StringComparer.OrdinalIgnoreCase) : n.Tags) counts[t.ToLowerInvariant()] = counts.GetValueOrDefault(t.ToLowerInvariant()) + 1;
         return counts;
     }
 
@@ -174,7 +204,7 @@ public sealed partial class SupertagService(WriteService writes)
         var name = NormalizeTag(input.Name ?? "");
         if (name.Length == 0 || name.Contains(' ')) throw new QuantosException("A supertag name can't be empty or contain spaces.");
         var scope = input.Scope ?? "";
-        if (List(scope.Length == 0 ? null : scope).Any(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && t.Scope == scope))
+        if (List(scope.Length == 0 ? null : scope).Any(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && t.Scope == scope && t.Id != TaskDefinitionId))
             throw new QuantosException($"#{name} already exists.", 409);
         var props = Properties(input, name, scope);
         var node = writes.Create(new CreateNodeRequest { Title = name, Type = NodeTypes.Supertag, Workspace = scope, Body = input.Description ?? "", Properties = props }, actor);
@@ -183,6 +213,12 @@ public sealed partial class SupertagService(WriteService writes)
 
     public SupertagDto Update(string id, SupertagInput input, Actor actor)
     {
+        if (id == TaskDefinitionId)
+        {
+            var existing = Get("task");
+            if (existing is not null && existing.Id != TaskDefinitionId) return Update(existing.Id, input, actor);
+            return Create(input with { Name = "task", Scope = "" }, actor);
+        }
         var current = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
         var props = Properties(input with { Name = current.Name }, current.Name, current.Scope);
         var remove = new List<string>();
@@ -223,8 +259,10 @@ public sealed partial class SupertagService(WriteService writes)
                 if (string.IsNullOrEmpty(fieldName)) continue;
                 var type = Props.Str(f.GetValueOrDefault("type")) ?? "text";
                 if (!FieldTypes.All.Contains(type)) throw new QuantosException($"Unknown field type '{type}'.");
-                if (!keys.Add(FieldKey(fieldName))) throw new QuantosException($"Two fields are called '{fieldName}'.");
+                var fieldKey = Props.Str(f.GetValueOrDefault("key")) is { Length: > 0 } storedKey ? storedKey : FieldKey(fieldName);
+                if (!keys.Add(fieldKey)) throw new QuantosException($"Two fields use the property key '{fieldKey}'.");
                 var map = new Dictionary<string, object?> { ["name"] = fieldName, ["type"] = type };
+                if (Props.Str(f.GetValueOrDefault("key")) is { Length: > 0 } key) map["key"] = key;
                 if (f.GetValueOrDefault("options") is { } opts) map["options"] = Props.List(new Dictionary<string, object?> { ["o"] = opts }, "o");
                 if (Props.Str(f.GetValueOrDefault("required")) is "true" or "True") map["required"] = true;
                 if (Props.Str(f.GetValueOrDefault("description")) is { } desc) map["description"] = desc;
@@ -243,6 +281,7 @@ public sealed partial class SupertagService(WriteService writes)
     public SupertagDto Rename(string id, string newName, Actor actor)
     {
         var tag = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
+        if (tag.Name.Equals("task", StringComparison.OrdinalIgnoreCase)) throw new QuantosException("#task is the built-in task type. Edit its properties instead of renaming it.");
         newName = NormalizeTag(newName);
         if (newName.Length == 0 || newName.Contains(' ')) throw new QuantosException("A supertag name can't be empty or contain spaces.");
         if (newName.Equals(tag.Name, StringComparison.Ordinal)) return tag;
@@ -297,7 +336,7 @@ public sealed partial class SupertagService(WriteService writes)
         var tag = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
         var tags = WithDescendants(tag.Name);
         int changed = 0, skipped = 0;
-        foreach (var n in Cache.List(includeArchived: true, limit: 1_000_000).Where(n => n.Tags.Any(tags.Contains)))
+        foreach (var n in Cache.List(includeArchived: true, limit: 1_000_000).Where(n => n.Tags.Any(tags.Contains) || (n.Type == NodeTypes.Task && tags.Contains("task"))))
         {
             if (!n.Properties.TryGetValue(fieldKey, out var raw) || raw is null) continue;
             var value = Props.Str(raw);

@@ -23,6 +23,8 @@
   import TerminalDrawer from './TerminalDrawer.svelte';
   import Approvals from './Approvals.svelte';
   import CaptureDialog from './CaptureDialog.svelte';
+  import TaskPopup from './TaskPopup.svelte';
+  import { taskPopup } from '../lib/taskPopup.svelte';
   import BlockMenu from './BlockMenu.svelte';
 
   let today = $state('');
@@ -35,7 +37,7 @@
   });
 
   function onkeydown(e: KeyboardEvent) {
-    if (app.dialog || app.asking || aiJob.open) return;
+    if (taskPopup.id || app.dialog || app.asking || aiJob.open) return;
     handleGlobalKey(e);
   }
 </script>
@@ -57,6 +59,7 @@
 </div>
 {/if}
 
+{#if taskPopup.id}{#key taskPopup.id}<TaskPopup id={taskPopup.id} />{/key}{/if}
 <CommandPalette />
 <HoverPreview />
 <Approvals />

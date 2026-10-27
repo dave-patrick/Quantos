@@ -5,7 +5,7 @@ export type TabKind =
   | 'node' | 'daily' | 'search' | 'trash' | 'history' | 'diagnostics' | 'settings' | 'tasks' | 'myday'
   | 'timeline' | 'review' | 'query' | 'view' | 'dictionary' | 'attachments' | 'templates' | 'supertags' | 'graph' | 'notifications' | 'pdf' | 'ask' | 'replace' | 'focus' | 'habits' | 'sprints' | 'goals' | 'gantt' | 'mindmap' | 'map' | 'notes' | 'help' | 'about';
 
-export interface TabSpec { kind: TabKind; nodeId?: string; arg?: string; title?: string }
+export interface TabSpec { kind: TabKind; nodeId?: string; arg?: string; title?: string; scroll?: number }
 
 export interface Tab extends TabSpec {
   key: string;
@@ -102,9 +102,14 @@ class Layout {
     return true;
   }
 
-  activate(paneIndex: number, key: string) {
+  activate(paneIndex: number, key: string, recordHistory = true) {
     const pane = this.panes[paneIndex];
     if (!pane) return;
+    const previous = pane.tabs.find(t => t.key === pane.active);
+    if (recordHistory && previous && previous.key !== key) {
+      pane.back = [...pane.back.slice(-49), specOf(previous)];
+      pane.forward = [];
+    }
     pane.active = key;
     const tab = pane.tabs.find((t) => t.key === key);
     if (tab) tab.lastActive = Date.now();
@@ -148,23 +153,23 @@ class Layout {
 
   private async travel(paneIndex: number, direction: 'back' | 'forward') {
     const pane = this.panes[paneIndex];
-    const stack = direction === 'back' ? pane.back : pane.forward;
-    const target = stack.at(-1);
+    const target = (direction === 'back' ? pane.back : pane.forward).at(-1);
     if (!target) return;
-    const current = pane.tabs.find((t) => t.key === pane.active);
+    const current = pane.tabs.find(t => t.key === pane.active);
+    if (current) await flushTab(current);
+    const key = tabKey(target);
+    const other = pane.tabs.find(t => t.key === key);
+    if (!other && (!current || current.pinned) && pane.tabs.length >= MAX_TABS && !(await this.makeRoom(pane))) return;
     if (direction === 'back') pane.back = pane.back.slice(0, -1); else pane.forward = pane.forward.slice(0, -1);
     if (current) {
-      await flushTab(current);
       if (direction === 'back') pane.forward = [...pane.forward, specOf(current)]; else pane.back = [...pane.back, specOf(current)];
-      const key = tabKey(target);
-      const other = pane.tabs.find((t) => t.key === key);
-      if (other) { this.activate(paneIndex, key); return; }
-      const tab: Tab = { ...target, key, title: target.title ?? titles[target.kind], pinned: false, scroll: 0, lastActive: Date.now() };
-      pane.tabs[pane.tabs.indexOf(current)] = tab;
-      this.activate(paneIndex, key);
-    } else {
-      await this.open(target, 'new');
     }
+    if (!other) {
+      const tab: Tab = { ...target, key, title: target.title ?? titles[target.kind], pinned: false, scroll: target.scroll ?? 0, lastActive: Date.now() };
+      if (current && !current.pinned) pane.tabs[pane.tabs.indexOf(current)] = tab;
+      else pane.tabs.push(tab);
+    }
+    this.activate(paneIndex, key, false);
   }
 
   splitPane(direction: 'vertical' | 'horizontal', focusNew = true) {
@@ -260,7 +265,7 @@ class Layout {
 }
 
 function specOf(tab: Tab): TabSpec {
-  return { kind: tab.kind, nodeId: tab.nodeId, arg: tab.arg, title: tab.title };
+  return { kind: tab.kind, nodeId: tab.nodeId, arg: tab.arg, title: tab.title, scroll: tab.scroll };
 }
 
 export const layout = new Layout();

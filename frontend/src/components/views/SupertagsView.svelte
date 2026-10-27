@@ -13,7 +13,7 @@
 
   let selectedName = $state(tab.arg ?? '');
   const selected = $derived(supertags.byName(selectedName));
-  let draft = $state<{ parent: string; color: string; icon: string; layout: string; template: string; autoApply: boolean; description: string; fields: { name: string; type: FieldType; options: string; required: boolean; description: string }[] } | null>(null);
+  let draft = $state<{ parent: string; color: string; icon: string; layout: string; template: string; autoApply: boolean; description: string; fields: { name: string; key?: string; type: FieldType; options: string; required: boolean; description: string }[] } | null>(null);
   let newName = $state('');
   let newScope = $state('');
   let renameTo = $state('');
@@ -35,7 +35,7 @@
       const fresh = {
         parent: t.parent ?? '', color: t.color ?? '', icon: t.icon ?? '', layout: t.layout ?? '', template: t.template ?? '', autoApply: !!t.autoApplyTemplate,
         description: t.description ?? '',
-        fields: t.fields.map((f) => ({ name: f.name, type: f.type, options: (f.options ?? []).join(', '), required: !!f.required, description: f.description ?? '' }))
+        fields: t.fields.map((f) => ({ name: f.name, key: f.key, type: f.type, options: (f.options ?? []).join(', '), required: !!f.required, description: f.description ?? '' }))
       };
       const edited = draft !== null && draftFor === t.id && JSON.stringify(draft) !== baseline;
       if (edited) return;
@@ -71,7 +71,7 @@
         parent: draft.parent, color: draft.color, icon: draft.icon, layout: draft.layout, template: draft.template, autoApplyTemplate: draft.autoApply,
         description: draft.description,
         fields: draft.fields.filter((f) => f.name.trim()).map((f) => ({
-          name: f.name.trim(), type: f.type, required: f.required, description: f.description || undefined,
+          name: f.name.trim(), key: f.key, type: f.type, required: f.required, description: f.description || undefined,
           options: f.type === 'select' || f.type === 'multiselect' || f.type === 'status' ? f.options.split(',').map((s) => s.trim()).filter(Boolean) : undefined
         }))
       });
@@ -142,8 +142,8 @@
           <select class="input" bind:value={draft.template}><option value="">None</option>{#each templatesStore.list as t (t.id)}<option value={t.id}>{t.title}</option>{/each}</select></label>
         <label class="check"><input type="checkbox" bind:checked={draft.autoApply} disabled={!draft.template} /> Apply the template when this tag is added</label>
         <label class="wide">Description <input class="input" bind:value={draft.description} /></label>
-        <label class="wide">Rename
-          <span class="inline"><input class="input" bind:value={renameTo} /><button class="btn" onclick={rename} disabled={renameTo.trim() === selected.name}>Rename everywhere</button></span></label>
+        {#if selected.name.toLowerCase() !== 'task'}<label class="wide">Rename
+          <span class="inline"><input class="input" bind:value={renameTo} /><button class="btn" onclick={rename} disabled={renameTo.trim() === selected.name}>Rename everywhere</button></span></label>{/if}
       </div>
 
       <h2 class="label">Fields</h2>

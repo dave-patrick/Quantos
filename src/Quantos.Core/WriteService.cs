@@ -310,6 +310,7 @@ public sealed partial class WriteService
             foreach (var path in touched) AfterJournal(Vault.Absolute(path));
             Changes.Publish(new ChangeEvent(Vault.PathEquals(newAbs, abs) ? ChangeKind.Updated : ChangeKind.Moved, id, renamed.Path, node.Path, renamed.Hash, actor.ToString()));
             foreach (var path in touched) PublishUpdated(path, actor);
+            TaskHooks?.AfterRename(renamed, actor);
             return renamed;
         }
     }

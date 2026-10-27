@@ -324,3 +324,21 @@ first importers), updating RELEASE-CHECKLIST.md for 1.1/1.2, code signing (needs
 
 - **Latest task row and frame correction (2026-10-23).** Dense My Day rows no longer show project or assignee chips; their title receives the available width and status/date chips are constrained. The client removes WS_THICKFRAME and uses custom drag resizing on all four edges and corners to avoid the silver DWM border. The Windows build was staged and relaunched successfully; HTTP 200 is confirmed in the client log. Ask the owner to visually confirm the edge and resize behavior.
 - **Restore drag selecting the page (2026-10-23).** When the owner dragged a maximized window to restore it, the browser page ended up with text selected across the whole view. The native `WM_NCLBUTTONDOWN` caption move loop could continue into WebView2 because the form no longer has `WS_CAPTION`. Titlebar and icon drags now use form-level capture and move the form directly; a drag from maximized restores under the cursor and continues. The Windows x64 build and package validation passed, and the test copy was staged with the prior client closed and the new client relaunched (HTTP 200). Ask the owner to retry maximize, restore by drag, and ordinary window movement.
+
+## Task editing and navigation — 2026-10-26
+
+Private Windows build `2026.26.10.6` (release version remains `0.2.2`) adds full task popups
+from inline task text/chips, preserving the mounted note and its scroll position. Header navigation
+includes narrow/phone Back and Forward; history retains note scroll and existing/pinned tabs.
+`#task` is an editable supertag: its default is virtual until explicitly saved; existing task files
+inherit the schema without a bulk rewrite. Common fields use the schema editor, and reminders,
+dependencies and subtasks retain dedicated controls. Renamed tasks update their bound note lines.
+
+Validation: 109 frontend, 242 backend/core and 4 native client tests passed. The full .NET suite
+passed with `.dev/task.runsettings` disabling collection parallelism; initial parallel runs hit
+existing native sign-in timing and credential-test log teardown locks. No assertion was relaxed.
+Browser acceptance covered title/body/due/custom-field persistence, keyboard focus/Escape, unchanged
+editor identity and scroll at 3671px, Back/Forward restoration, #task forms, and 390px popup layout.
+Evidence is in ignored `.dev/task-*` logs and screenshots. The Windows archive and self-check passed
+with zero self-check warnings; the owner's test copy was staged/restarted with HTTP 200.
+Android binaries/device interaction were not validated for this change. No public release was made.

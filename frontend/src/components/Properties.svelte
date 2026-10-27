@@ -2,17 +2,19 @@
   import { fieldProblem } from '../lib/fields';
   import type { Doc } from '../lib/docs.svelte';
   import { supertags, type FieldDef } from '../lib/supertags.svelte';
+  import { tasks } from '../lib/tasks.svelte';
+  import { layout } from '../lib/layout.svelte';
   import { app } from '../lib/state.svelte';
   import { openNode, searchTitles } from '../lib/links.svelte';
   import Icon from './Icon.svelte';
 
-  let { doc, compact = false }: { doc: Doc; compact?: boolean } = $props();
+  let { doc, compact = false, editSchema = true }: { doc: Doc; compact?: boolean; editSchema?: boolean } = $props();
 
   const hiddenKeys = new Set(['status', 'priority', 'due', 'planned', 'effort', 'assignees', 'project', 'waiting_on', 'parent', 'depends_on',
     'recurrence', 'series', 'series_day', 'occurrence', 'reminders', 'completed', 'source', 'time_block', 'tz', 'date', 'stage']);
 
   const node = $derived(doc.node);
-  const tagDefs = $derived((node?.tags ?? []).map((t) => supertags.byName(t)).filter((t) => !!t));
+  const tagDefs = $derived((node?.type === 'task' ? [...new Set(['task', ...node.tags])] : node?.tags ?? []).map((t) => supertags.byName(t)).filter((t) => !!t));
   const fields = $derived.by(() => {
     const seen = new Set<string>();
     const out: FieldDef[] = [];
@@ -49,7 +51,14 @@
   const validate = fieldProblem;
 
   async function setValue(key: string, value: unknown) {
-    await doc.setProperties({ [key]: value });
+    try {
+      if (node?.type === 'task' && hiddenKeys.has(key)) {
+        await doc.flush();
+        if (key === 'status') await tasks.setStatus(doc.id, value as import('../lib/tasks.svelte').TaskStatus);
+        else await tasks.update(doc.id, { [key]: value === '' ? null : value });
+        await doc.refresh();
+      } else await doc.setProperties({ [key]: value });
+    } catch (e) { app.error(e); }
   }
 
   async function removeKey(key: string) {
@@ -84,7 +93,8 @@
 {#if node}
   <section class="props" class:compact aria-label="Properties">
     <div class="tags">
-      {#each node.tags as tag (tag)}
+      {#if node.type === 'task' && editSchema}<button class="add-tag" title="Edit the task supertag and its properties" onclick={() => layout.open({ kind: 'supertags', arg: 'task', title: '#task' })}><Icon name="hash" size={12} /> task · Edit properties</button>{/if}
+      {#each node.tags.filter(t => node.type !== 'task' || t.toLowerCase() !== 'task') as tag (tag)}
         {@const def = supertags.byName(tag)}
         <span class="tag" style="--tag:{def?.color ?? 'var(--accent)'}">#{tag}
           <button aria-label="Remove tag {tag}" onclick={() => removeTag(tag)}><Icon name="x" size={10} /></button></span>

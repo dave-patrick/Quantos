@@ -21,7 +21,7 @@
   import { recent } from '../../lib/recent.svelte';
   import { openByTitle, whereFrom } from '../../lib/links.svelte';
 
-  let { tab, id, paneIndex }: { tab: Tab; id: string; paneIndex: number } = $props();
+  let { tab, id, paneIndex, popup = false }: { tab: Tab; id: string; paneIndex: number; popup?: boolean } = $props();
 
   const doc = docs.acquire(id);
   onDestroy(() => docs.release(id));
@@ -35,19 +35,42 @@
   let showToc = $state(false);
   let zoom = $state<{ line: number; text: string } | null>(null);
   let restored = false;
+  let restoreObserver: ResizeObserver | null = null;
+  let restoreTimer: ReturnType<typeof setTimeout>;
+  onDestroy(() => { restoreObserver?.disconnect(); clearTimeout(restoreTimer); clearTimeout(scrollTimer); });
 
   $effect(() => { if (!editingTitle && doc.node) titleDraft = doc.node.title; });
 
   // Restore the scroll position once content is loaded (workspace switches restore it too).
   $effect(() => {
-    if (!restored && doc.node && scroller) {
+    if (!restored && doc.node && scroller && (view || doc.node.type === 'canvas')) {
       restored = true;
-      tick().then(() => { if (scroller) scroller.scrollTop = tab.scroll ?? 0; });
+      const position = tab.scroll ?? 0;
+      // Virtualized line heights settle after the editor mounts. Wait for the content's
+      // measured height so a long note is not clamped to the initial height estimate.
+      tick().then(() => {
+        if (!scroller) return;
+        const finish = () => {
+          restoreObserver?.disconnect(); restoreObserver = null;
+          clearTimeout(restoreTimer);
+          if (scroller) { scroller.scrollTop = position; tab.scroll = scroller.scrollTop; }
+        };
+        if (!view || position === 0) { finish(); return; }
+        restoreObserver = new ResizeObserver(() => {
+          if (!scroller) return;
+          scroller.scrollTop = position;
+          if (scroller.scrollHeight - scroller.clientHeight >= position) requestAnimationFrame(finish);
+        });
+        restoreObserver.observe(view.contentDOM);
+        restoreTimer = setTimeout(finish, 1500);
+      });
     }
   });
 
   let scrollTimer: ReturnType<typeof setTimeout>;
   function onScroll() {
+    if (restoreObserver) return;
+    if (scroller) tab.scroll = scroller.scrollTop;
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => { if (scroller) { tab.scroll = scroller.scrollTop; layout.persist(); } }, 300);
   }
@@ -56,7 +79,7 @@
     editingTitle = false;
     const next = titleDraft.trim();
     if (!doc.node || !next || next === doc.node.title) { titleDraft = doc.node?.title ?? ''; return; }
-    try { await doc.rename(next); } catch (e) { app.error(e); titleDraft = doc.node.title; }
+    await docs.track(doc.rename(next).catch((e) => { app.error(e); titleDraft = doc.node?.title ?? ''; }));
   }
 
   /**
@@ -117,7 +140,7 @@
   }
 
   function onKey(e: KeyboardEvent) {
-    if (e.key === 'F2') { editingTitle = true; }
+    if (e.key === 'F2' && (e.target as HTMLElement)?.closest('.node-view') === scroller?.parentElement) { editingTitle = true; }
   }
 
   onMount(() => {
@@ -163,7 +186,7 @@
 
 <svelte:window onkeydown={onKey} />
 
-<div class="node-view">
+<div class="node-view" data-node-id={id}>
   <div class="bar">
     <nav class="crumbs" aria-label="Location">
       {#each crumbs as c, i (i)}<button class="crumb link" title={`Go to ${c.label}`} onclick={c.go}>{c.label}</button><Icon name="chevron-right" size={11} />{/each}
@@ -175,6 +198,7 @@
       {/if}
     </nav>
     <div class="actions">
+      {#if !popup}
       <span class="save-state {doc.status}">
         {#if doc.status === 'saving'}Saving…{:else if doc.status === 'dirty'}Edited{:else if doc.status === 'saved'}Saved{:else if doc.status === 'conflict'}Conflict{:else if doc.status === 'error'}Not saved{:else if doc.status === 'readonly'}Read-only{/if}
       </span>
@@ -185,6 +209,7 @@
       <button class="icon-btn" title="Version history" onclick={() => layout.open({ kind: 'history', nodeId: id, title: `History: ${doc.node?.title ?? ''}` }, 'new')}><Icon name="history" /></button>
       <button class="icon-btn icon-btn-danger" title="Move to trash" onclick={trashDoc}><Icon name="trash" size={14} /></button>
       <NodeMenu {doc} {paneIndex} onoutline={() => (showToc = !showToc)} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
+      {/if}
     </div>
   </div>
 
@@ -232,8 +257,8 @@
           </div>
           {#if doc.node.type !== 'canvas'}
             <fieldset class="plain" disabled={noEdit}>
+              <div class="node-properties" class:popup-properties={popup}><Properties {doc} editSchema={!popup} /></div>
               {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
-              <div class="node-properties"><Properties {doc} /></div>
             </fieldset>
           {/if}
           {#if doc.node.type === 'canvas'}
@@ -281,6 +306,7 @@
 </div>
 
 <style>
+  .popup-properties { display: block !important; }
   .node-view { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 38px; padding: 0 10px 0 16px; flex: none; }
   .crumbs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: var(--text-faint); font-size: 12.5px; white-space: nowrap; }

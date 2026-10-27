@@ -57,7 +57,7 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
             }
             // Schema records (supertags, templates, synced block sources) appear only when asked for by type or browsed by folder.
             else if (spec.Folder is not { Length: > 0 } && n.Type is (NodeTypes.Supertag or NodeTypes.Template or NodeTypes.SyncedBlock)) return false;
-            if (wanted is not null && !wanted.All(set => n.Tags.Any(set.Contains))) return false;
+            if (wanted is not null && !wanted.All(set => (n.Tags.Any(set.Contains) || (n.Type == NodeTypes.Task && set.Contains("task"))))) return false;
             if (spec.Folder is { Length: > 0 } folder && !n.Path.StartsWith(folder.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase)) return false;
             if (hits is not null && !hits.Contains(n.Id)) return false;
             foreach (var f in spec.Filters ?? []) if (!Matches(n, f)) return false;
