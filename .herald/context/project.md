@@ -66,9 +66,11 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   navigation links to the blue Notes directory. Publish only site/ via GitHub Pages. Never serve or
   publish private workspace data.
 
-## Task editing and schema
-- Inline task text/chips open `TaskPopup.svelte` over the mounted note; save/refresh and explicit
-  focus/scroll restoration keep the origin in place. Header history retains note scroll positions.
+## Note navigation and schema
+- Compact Android `PhoneNotes.svelte` browses note folders. Folder paths live in the Notes tab's
+  `folder:` argument so header Back/Forward and returning from a note restore the same folder.
+  New note creates within the folder being browsed.
+- Tasks open in normal pages. Task popups were removed after the owner clarified the Android scope.
 - `type: task` implicitly belongs to the editable `#task` schema. `SupertagService` synthesizes its
   default until an explicit update creates a normal supertag file; native task fields keep stable
   keys without rekeying unrelated schemas. `TaskService` retains scheduling and completion logic.

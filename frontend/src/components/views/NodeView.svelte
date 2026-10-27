@@ -21,7 +21,7 @@
   import { recent } from '../../lib/recent.svelte';
   import { openByTitle, whereFrom } from '../../lib/links.svelte';
 
-  let { tab, id, paneIndex, popup = false }: { tab: Tab; id: string; paneIndex: number; popup?: boolean } = $props();
+  let { tab, id, paneIndex }: { tab: Tab; id: string; paneIndex: number } = $props();
 
   const doc = docs.acquire(id);
   onDestroy(() => docs.release(id));
@@ -186,7 +186,7 @@
 
 <svelte:window onkeydown={onKey} />
 
-<div class="node-view" data-node-id={id}>
+<div class="node-view">
   <div class="bar">
     <nav class="crumbs" aria-label="Location">
       {#each crumbs as c, i (i)}<button class="crumb link" title={`Go to ${c.label}`} onclick={c.go}>{c.label}</button><Icon name="chevron-right" size={11} />{/each}
@@ -198,7 +198,6 @@
       {/if}
     </nav>
     <div class="actions">
-      {#if !popup}
       <span class="save-state {doc.status}">
         {#if doc.status === 'saving'}Saving…{:else if doc.status === 'dirty'}Edited{:else if doc.status === 'saved'}Saved{:else if doc.status === 'conflict'}Conflict{:else if doc.status === 'error'}Not saved{:else if doc.status === 'readonly'}Read-only{/if}
       </span>
@@ -209,7 +208,6 @@
       <button class="icon-btn" title="Version history" onclick={() => layout.open({ kind: 'history', nodeId: id, title: `History: ${doc.node?.title ?? ''}` }, 'new')}><Icon name="history" /></button>
       <button class="icon-btn icon-btn-danger" title="Move to trash" onclick={trashDoc}><Icon name="trash" size={14} /></button>
       <NodeMenu {doc} {paneIndex} onoutline={() => (showToc = !showToc)} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
-      {/if}
     </div>
   </div>
 
@@ -257,7 +255,7 @@
           </div>
           {#if doc.node.type !== 'canvas'}
             <fieldset class="plain" disabled={noEdit}>
-              <div class="node-properties" class:popup-properties={popup}><Properties {doc} editSchema={!popup} /></div>
+              <div class="node-properties"><Properties {doc} /></div>
               {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
             </fieldset>
           {/if}
@@ -306,7 +304,6 @@
 </div>
 
 <style>
-  .popup-properties { display: block !important; }
   .node-view { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 38px; padding: 0 10px 0 16px; flex: none; }
   .crumbs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: var(--text-faint); font-size: 12.5px; white-space: nowrap; }

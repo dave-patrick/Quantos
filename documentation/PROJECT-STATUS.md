@@ -333,3 +333,19 @@ sign-in and log-disposal flakes. Browser acceptance verified task values/custom 
 refresh, a real #task form, keyboard focus/Escape, exact 3671px note return and navigation, and a
 390px popup with no horizontal overflow. Package/archive validation and self-check passed with
 zero self-check warnings. Native Android runtime/installation remains unverified for this change.
+
+### Android note folders supersede task popup scope (2026-10-26)
+
+The owner clarified that note folders on Android are the intended feature; task popups were removed.
+Phone Notes browses folders/subfolders, shows direct notes and recursive folder counts, and uses
+`folder:` tab arguments so Back/Forward and returning from a note retain the folder. Empty folders
+are not listed. Private Debug ARM64 build `2026.26.10.10` keeps release version `0.2.2` and the phone's
+existing signing certificate. The preceding Windows-only delivery did not fulfill this scope.
+
+105 frontend tests passed; Svelte check has zero errors and nine existing warnings. The Android
+build has zero warnings/errors. Native 411px SM-S948U touch testing verified opening nested folders
+and a note, returning to its folder, parent navigation, Forward and New note saving in the current
+folder; the installed build identity is confirmed and the task-popup bundle is absent.
+Original active counts stayed 24 default / 614 Videos after test cleanup. Existing server DNS failure
+was recorded before and after the update (zero sync conflicts); no sync-health claim is implied.
+See ignored `.dev/note-folders-phone-results.json` and native screenshot. No public release occurred.

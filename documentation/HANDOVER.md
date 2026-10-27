@@ -342,3 +342,23 @@ editor identity and scroll at 3671px, Back/Forward restoration, #task forms, and
 Evidence is in ignored `.dev/task-*` logs and screenshots. The Windows archive and self-check passed
 with zero self-check warnings; the owner's test copy was staged/restarted with HTTP 200.
 Android binaries/device interaction were not validated for this change. No public release was made.
+
+## Android note folders — clarified scope, 2026-10-26
+
+The owner clarified that the request is **folders for notes on Android**, and explicitly said task
+popups are not wanted. This supersedes the task-popup surface above. The Android update removes
+that popup behavior; task chips use normal task pages. Do not stage Windows for this correction.
+Phone Notes now browses folders/subfolders through More → Notes. Folder paths live in the Notes
+tab argument, so Back/Forward retraces them and Back from a note returns to its originating folder.
+Existing folder counts are recursive; the note list/search stay within the current folder. Empty
+folders are not shown. The folder browser source initially existed as pending work in the checkout;
+it is included in this Android delivery and its navigation is now integrated with workspace history.
+
+Private ARM64 Debug build `2026.26.10.10`, semantic version `0.2.2`, retains the installed certificate.
+Native SM-S948U touch acceptance confirmed the installed build and checked folder → subfolder → note, Back to
+folder, Back to parent, Forward to the same folder, and New note saving in that folder at the actual
+411px viewport. The final phone state was restored to Videos notes. Test notes were
+moved to Trash afterwards; original active counts stayed 24 default / 614 Videos. A server DNS
+resolution error was present before installation and remains; it was not introduced by this change.
+Frontend check: zero errors and nine existing warnings; 105 frontend tests passed. Android build:
+zero warnings/errors. Evidence is in ignored `.dev/note-folders-*`. No public release was made.

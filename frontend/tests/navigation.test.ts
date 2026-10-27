@@ -26,6 +26,18 @@ describe('workspace navigation', () => {
     await layout.open({ kind: 'settings' });
     expect(layout.pane.forward).toHaveLength(0);
   });
+  it('retraces folders and returns to the same folder after opening a note', async () => {
+    await layout.open({ kind: 'notes' });
+    await layout.open({ kind: 'notes', arg: 'folder:Projects' });
+    await layout.open({ kind: 'notes', arg: 'folder:Projects/Work' });
+    await layout.open({ kind: 'node', nodeId: 'folder-note' });
+    await layout.back();
+    expect(layout.activeTab?.arg).toBe('folder:Projects/Work');
+    await layout.back();
+    expect(layout.activeTab?.arg).toBe('folder:Projects');
+    await layout.forward();
+    expect(layout.activeTab?.arg).toBe('folder:Projects/Work');
+  });
   it('never replaces a pinned tab during history travel', async () => {
     const a = await layout.open({ kind: 'notes' });
     layout.togglePin(0, a!.key);

@@ -2,8 +2,6 @@ import { api } from './api';
 import { layout, type Where } from './layout.svelte';
 import { app } from './state.svelte';
 import type { NodeDto, NodeSummary } from './types';
-import { docs } from './docs.svelte';
-import { openTaskPopup } from './taskPopup.svelte';
 import { tasks } from './tasks.svelte';
 
 export const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
@@ -130,17 +128,6 @@ export const tasksVersion = { get value() { return tasks.version; } };
 export const taskHooks = {
   toggleTask: (taskId: string, checked: boolean) => { tasks.setStatus(taskId, checked ? 'done' : 'todo').catch((e) => app.error(e)); },
   taskInfo: (taskId: string) => tasks.info(taskId),
-  openTask: (taskId: string, event: MouseEvent) => {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const open = async () => {
-      if (whereFrom(event) !== 'current') { await openNode(taskId, whereFrom(event)); return; }
-      const originId = target?.closest<HTMLElement>('[data-node-id]')?.dataset.nodeId ?? tasks.get(taskId)?.source;
-      const origin = originId ? docs.peek(originId) : null;
-      await origin?.flush();
-      if (origin?.dirty || origin?.conflict || origin?.status === 'error') throw new Error('Save or resolve the note’s changes before opening its task.');
-      openTaskPopup(taskId, target);
-    };
-    open().catch(e => app.error(e));
-  },
+  openTask: (taskId: string, event: MouseEvent) => { openNode(taskId, whereFrom(event)); },
   restoreTask: (taskId: string) => { tasks.restore(taskId).catch((e) => app.error(e)); }
 };

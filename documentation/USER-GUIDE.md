@@ -568,10 +568,13 @@ approval in the Windows client.
 
 All in-app shortcuts can be changed in *Settings › Shortcuts* (saved in the vault's `shortcuts.json`).
 
-## Edit a task without leaving a note
+## Note folders on Android
 
-Click the task's words or its task chip in a note to open the full task in a popup. Edit its title, body, properties, reminders, dependencies or subtasks. Close with **Close task** or **Escape** to return to the same note position. Changes save automatically; unsaved text or conflicts keep the popup open. Ctrl-click opens a task in a new tab; Shift-click opens it in the other pane. Keyboard users can Tab to the task chip and press Enter.
+Open **More → Notes** to browse the current workspace. Folders appear above the notes;
+tap one to browse its contents. The folder trail takes you to a parent or **All notes**.
+Folder counts include nested notes, while the list shows notes directly in the open folder.
+Search filters titles and tags in that folder. **New note** creates the note inside the folder you are browsing. Only folders containing notes are listed.
 
-Use **Back** and **Forward** in the header, or **Alt+Left** and **Alt+Right**, to retrace pages in the active pane. Returning to a note restores its scroll position. The compact phone header also has these controls.
-
-Open **Manage supertags**, then **#task** (or **Edit #task properties** in the popup) to add, remove or edit task property definitions. Existing tasks use this definition automatically. Saving the definition creates an ordinary supertag Markdown file; viewing it alone changes no task files. Field labels can change while their stored keys stay the same. Task status values remain todo, doing, waiting, done and cancelled because they control completion and recurrence. Removing a property definition preserves existing values. **New #task** creates a real task.
+Use **Back** and **Forward** in the phone header to retrace folders and pages. After opening
+a note from a folder, **Back** returns to that folder. The chosen folder is retained with the
+workspace's page layout. Task chips open the task's normal page; no task popup is used.

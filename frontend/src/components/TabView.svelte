@@ -58,7 +58,7 @@
 {:else if tab.kind === 'map'}
   <MapView />
 {:else if tab.kind === 'notes'}
-  {#if isCompactAndroid() && tab.arg !== 'advanced'}<PhoneNotes />{:else}<NotesView />{/if}
+  {#if isCompactAndroid() && tab.arg !== 'advanced'}<PhoneNotes {tab} />{:else}<NotesView />{/if}
 {:else if tab.kind === 'help'}
   <HelpView {tab} />
 {:else if tab.kind === 'about'}
