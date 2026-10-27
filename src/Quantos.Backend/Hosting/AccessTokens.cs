@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Text;
+using Quantos.Core;
+using Quantos.Core.Security;
 
 namespace Quantos.Backend.Hosting;
 
@@ -18,6 +21,7 @@ public sealed class AccessTokens
 
     private readonly ConcurrentDictionary<string, (DateTimeOffset Expires, SessionKind Kind)> _codes = new();
     private readonly ConcurrentDictionary<string, SessionInfo> _sessions = new();
+    private readonly ConcurrentDictionary<string, Actor> _native = new();
     private readonly TimeProvider _time;
 
     public AccessTokens(TimeProvider? time = null, string? token = null)
@@ -31,6 +35,19 @@ public sealed class AccessTokens
     public bool IsLaunchToken(string? candidate) =>
         candidate is not null && CryptographicOperations.FixedTimeEquals(
             System.Text.Encoding.UTF8.GetBytes(candidate), System.Text.Encoding.UTF8.GetBytes(LaunchToken));
+
+    /// <summary>Issued only by the owning process or verified native IPC, never by HTTP or discovery.</summary>
+    public string IssueNativeToken(string platform)
+    {
+        if (platform is not ("windows" or "android")) throw new ArgumentException("Unknown native platform.");
+        var token = Random(32);
+        _native[Fingerprint(token)] = new Actor(ActorKind.User, platform + "-client", CredentialId: Ulid.New());
+        return token;
+    }
+
+    public Actor? NativeActor(string token) => _native.GetValueOrDefault(Fingerprint(token));
+    public void RevokeNativeToken(string token) => _native.TryRemove(Fingerprint(token), out _);
+    public static string Fingerprint(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 
     public string IssueCode(SessionKind kind)
     {

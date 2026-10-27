@@ -10,7 +10,8 @@ export function modal(node: HTMLElement, options: { onclose: () => void }) {
   function onkeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); opts.onclose(); return; }
     if (e.key !== 'Tab') return;
-    const items = [...node.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])')];
+    const items = [...node.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])')]
+      .filter((item) => item.getClientRects().length && !item.closest('[inert]'));
     if (!items.length) return;
     const i = items.indexOf(document.activeElement as HTMLElement);
     const next = e.shiftKey ? (i <= 0 ? items.length - 1 : i - 1) : (i === -1 || i === items.length - 1 ? 0 : i + 1);

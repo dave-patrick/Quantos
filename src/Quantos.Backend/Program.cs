@@ -37,7 +37,7 @@ public static class Program
         if (existing is not null && await Discovery.IsAliveAsync(existing))
         {
             Console.WriteLine($"Quantos is already running at {existing.Url} (process {existing.Pid}).");
-            if (options.OpenBrowser) await OpenBrowserAsync(existing.Url, existing.Token);
+            if (options.OpenBrowser) await NativeControl.OpenBrowserAsync(paths.ClientData, existing.Pid, Core.Agents.McpService.AppDirectory());
             return 0;
         }
 
@@ -68,16 +68,31 @@ public static class Program
         builder.Services.AddSingleton(paths);
         builder.Services.AddSingleton(settings);
         builder.Services.AddSingleton(tokens ?? new AccessTokens());
+        builder.Services.AddSingleton<ClientCredentials>();
         builder.Services.AddSingleton(new ServerAddress { Port = port });
         builder.Services.AddSingleton<VaultHost>();
         builder.Services.AddSingleton(new Quantos.Core.Updates.UpdateService(Api.SystemEndpoints.Version, paths.ClientData));
         builder.Services.AddSingleton<ClientPresence>();
         builder.Services.AddSingleton<SyncCoordinator>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<SyncCoordinator>());
+        builder.Services.AddHostedService(sp => new NativeControlServer(paths, sp.GetRequiredService<ServerAddress>(), sp.GetRequiredService<AccessTokens>(), sp.GetRequiredService<ILogger<NativeControlServer>>()));
 
         var app = builder.Build();
         var log = app.Services.GetRequiredService<ILogger<VaultHost>>();
         var host = app.Services.GetRequiredService<VaultHost>();
+        if (options.DevelopmentCli)
+        {
+#if DEBUG
+            var credentialFile = ClientCredentialFile.PathFor(paths.ClientData, "Cli", "cli");
+            var credentials = app.Services.GetRequiredService<ClientCredentials>();
+            var cached = ClientCredentialFile.Read(credentialFile);
+            if (cached is null || credentials.Authenticate(cached.Token)?.Kind != ActorKind.Cli)
+                ClientCredentialFile.Write(credentialFile, new("Cli", "cli", credentials.Issue(ActorKind.Cli, "cli").Token));
+            log.LogWarning("Explicit development CLI access enabled for this Debug backend. Do not use it with your personal vault.");
+#else
+            throw new InvalidOperationException("Development CLI access is supported only by a Debug backend.");
+#endif
+        }
 
         app.Use(HandleErrors);
         app.UseMiddleware<RequestSecurity>();
@@ -133,7 +148,7 @@ public static class Program
             Discovery.Write(paths, new DiscoveryInfo(port, Environment.ProcessId, accessTokens.LaunchToken, address.Url, host.Session?.Vault.Root, DateTimeOffset.Now, SystemEndpoints.Version));
             log.LogInformation("Quantos backend listening on {Url}", address.Url);
             Console.WriteLine($"Quantos backend {SystemEndpoints.Version} listening on {address.Url}");
-            if (options.OpenBrowser) _ = OpenBrowserAsync(address.Url, accessTokens.LaunchToken);
+            if (options.OpenBrowser) OpenBrowser(address.Url, accessTokens);
         });
         app.Lifetime.ApplicationStopping.Register(() =>
         {
@@ -213,20 +228,14 @@ public static class Program
         catch (ArgumentException) { lifetime.StopApplication(); }
     }
 
-    /// <summary>Asks the backend for a one-time code and opens the default browser with it.</summary>
-    public static async Task OpenBrowserAsync(string url, string token)
+    /// <summary>The owning process can open a browser without exposing native authority in discovery.</summary>
+    private static void OpenBrowser(string url, AccessTokens tokens)
     {
         try
         {
-            using var http = new HttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Post, url + "api/auth/code") { Content = JsonContent.Create(new { kind = "browser" }) };
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            using var response = await http.SendAsync(request);
-            var payload = await response.Content.ReadFromJsonAsync<CodeResponse>();
-            if (payload?.Url is { } openUrl) Process.Start(new ProcessStartInfo(openUrl) { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo(url + "auth/open?code=" + tokens.IssueCode(SessionKind.Browser)) { UseShellExecute = true });
         }
         catch (Exception ex) { Console.Error.WriteLine("Couldn't open the browser: " + ex.Message); }
     }
 
-    private sealed record CodeResponse(string Code, string Url);
 }

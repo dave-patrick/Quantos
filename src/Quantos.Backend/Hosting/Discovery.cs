@@ -9,7 +9,7 @@ using Quantos.Core.Storage;
 
 namespace Quantos.Backend.Hosting;
 
-public sealed record DiscoveryInfo(int Port, int Pid, string Token, string Url, string? Vault, DateTimeOffset Started, string Version);
+public sealed record DiscoveryInfo(int Port, int Pid, string Token, string Url, string? Vault, DateTimeOffset Started, string Version, int AuthVersion = 2);
 
 /// <summary>
 /// client-data/settings/backend.json: how clients, the CLI and capture windows find the running

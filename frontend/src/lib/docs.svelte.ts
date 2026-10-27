@@ -3,6 +3,7 @@ import { connection, onChange } from './events';
 import { layout, setTabFlusher } from './layout.svelte';
 import { app } from './state.svelte';
 import { merge3 } from './text';
+import { writeGate, writeKey } from './writeGate';
 import type { ChangeEvent, NodeDto, SaveResult } from './types';
 
 export type DocStatus = 'loading' | 'saved' | 'dirty' | 'saving' | 'conflict' | 'error' | 'readonly' | 'trashed' | 'missing';
@@ -256,7 +257,10 @@ export class Doc {
       this.rawBaseHash = conflict.disk.hash;
       this.externalVersion++;
       this.status = 'saved';
+      // Choosing the disk version deliberately discards this failed edit, rather than retrying it.
+      writeGate.dismiss(writeKey(mineIsRaw ? 'PUT' : 'PATCH', `nodes/${this.id}`, mineIsRaw ? { content: '', baseHash: '' } : { body: '', baseHash: '' }));
     }
+    if (!this.dirty) this.writeDraft();
   }
 
   async setProperties(set: Record<string, unknown>, remove: string[] = []) {
@@ -412,6 +416,17 @@ class DocStore {
     // Let in-flight creations finish first, so their text is in a document before saving.
     while (this.pending.size) await Promise.allSettled([...this.pending]);
     await Promise.all([...this.docs.values()].map((d) => d.flush()));
+  }
+
+  /** Task edits can also rename labels in their source notes. Keep mounted editors current. */
+  async refreshOpen() {
+    await Promise.all([...this.docs.values()].filter((d) => d.node && !d.trashed && d.status !== 'missing').map(async (d) => {
+      try { await d.refresh(); }
+      catch (error) {
+        if (error instanceof ApiError && error.status === 404) d.status = 'missing';
+        else app.error(error);
+      }
+    }));
   }
 
   /** Writes every unsaved note to browser storage now, so a page reload can't lose it. */

@@ -5,6 +5,7 @@
   import { layout } from '../lib/layout.svelte';
   import Icon from './Icon.svelte';
   import ServerMcpSettings from './ServerMcpSettings.svelte';
+  import LocalConnections from './LocalConnections.svelte';
   import { isAndroidClient } from '../lib/platform';
 
   /** Settings › MCP: the Model Context Protocol server and how to point an agent at it. */
@@ -37,6 +38,8 @@
   ];
 
   const json = (key: string) => JSON.stringify(info?.configs?.[key] ?? {}, null, 2);
+  const ps = (text: string) => "'" + text.replaceAll("'", "''") + "'";
+  const pairingCommand = () => info ? `& ${ps(info.program ?? 'quantos-cli')} status --agent ${ps(agent)} --client-data ${ps(info.clientData)}` : '';
 
   async function copy(text: string, what: string) {
     try {
@@ -68,17 +71,20 @@
 <h3>Local MCP</h3>
 <p class="faint intro">
   MCP (Model Context Protocol) is how an AI agent reaches Quantos: it gets the same tools you use,
-  to read and change your notes. The agent runs as itself: it can read from the start, and you
+  to read and change your notes. Approve its first connection in the native prompt; it starts with
+  read access, and you
   decide in
   <button class="link" onclick={() => layout.open({ kind: 'settings', title: 'Settings', arg: 'plugins' }, 'current')}>Settings › Plugins &amp; permissions</button>
   what else it may do.
 </p>
 
+<LocalConnections />
+
 {#if info}
   <h3>Set up</h3>
   <p class="faint">
-    Copy the settings for your agent into its configuration file, then start it. Quantos has to be
-    running: the agent talks to the app, not to the files.
+    Pair once in PowerShell before starting the agent. Match the code in the native Quantos prompt,
+    then copy the configuration below into your agent. Quantos must be running.
   </p>
 
   <div class="field">
@@ -96,6 +102,9 @@
     <button class="btn primary" disabled={busy || program.trim() === saved} onclick={saveProgram}>Save program</button>
     {#if info.program && program.trim() !== info.program}<button class="btn" onclick={useDetected}>Use the one next to the app</button>{/if}
   </div>
+
+  <pre class="code">{pairingCommand()}</pre>
+  <div class="row"><button class="btn" onclick={() => copy(pairingCommand(), 'Pairing command')}><Icon name="copy" size={14} /> Copy pairing command</button></div>
 
   <h3>Configuration</h3>
   <div class="tabs" role="tablist" aria-label="Agent">

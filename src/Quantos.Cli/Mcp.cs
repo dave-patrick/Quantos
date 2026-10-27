@@ -56,7 +56,6 @@ public static class Mcp
 
     public static async Task<int> Serve(Client client, Options options)
     {
-        if (options.Agent is null) Console.Error.WriteLine("Tip: pass --agent <name> so this agent gets its own permissions (read-only until you grant more).");
         string? line;
         while ((line = await Console.In.ReadLineAsync()) is not null)
         {
@@ -75,7 +74,7 @@ public static class Mcp
                     {
                         ["protocolVersion"] = request?["params"]?["protocolVersion"]?.ToString() ?? "2025-06-18",
                         ["capabilities"] = new JsonObject { ["tools"] = new JsonObject() },
-                        ["serverInfo"] = new JsonObject { ["name"] = "quantos", ["version"] = "0.2.2" },
+                        ["serverInfo"] = new JsonObject { ["name"] = "quantos", ["version"] = "0.2.3" },
                         ["instructions"] = "Quantos is the user's personal knowledge vault of Markdown notes and tasks. Notes link with [[id|Title]]. Prefer reading before writing; keep the user's formatting."
                     },
                     "ping" => new JsonObject(),

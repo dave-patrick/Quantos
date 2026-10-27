@@ -9,6 +9,18 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 Optional server/folder-bridge binaries remain separately deployed from source.
 
+## 0.2.3 (2026-10-27)
+
+Windows x64 release, build **2026.27.10.15**. Android downloads remain on 0.2.2.
+
+- Windows and browser task clicks open an editor popup; closing saves changes and returns to the
+  same page, scroll position and focused control. Android keeps normal task navigation.
+- Sidebar task dates, priority and other details sit below the title in smaller text.
+- Save failures retain task edits; resolved conflicts no longer restore an obsolete local draft.
+- Separate native app, browser and paired personal CLI credentials. Discovery data does not grant
+  content write access; Settings exposes local CLI pairing and revocation.
+- Preserve editable task properties and improved note/folder navigation from the recent staging builds.
+
 ## 0.2.2 (2026-10-26)
 
 - Public signed Android ARM64 Release APK for phones and tablets, alongside the Windows x64 package.

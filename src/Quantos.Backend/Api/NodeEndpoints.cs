@@ -134,6 +134,7 @@ public static class NodeEndpoints
             var session = host.Require();
             var actor = ctx.Actor();
             session.Permissions.Demand(actor, Core.Security.Permission.CreateEdit, $"Link the folder {body.Name}");
+            session.Permissions.Demand(actor, Core.Security.Permission.OutsideFiles, "Register a folder outside the vault");
             var name = CleanName(body.Name);
             if (session.Vault.LinkedRoots.ContainsKey(name)) throw new QuantosException($"'{name}' is already linked.", 409);
             var full = Path.GetFullPath(Environment.ExpandEnvironmentVariables(body.Path.Trim().Trim('"')));
@@ -152,6 +153,7 @@ public static class NodeEndpoints
             var session = host.Require();
             var actor = ctx.Actor();
             session.Permissions.Demand(actor, Core.Security.Permission.CreateEdit, $"Unlink the folder {name}");
+            session.Permissions.Demand(actor, Core.Security.Permission.OutsideFiles, "Change the folders allowed outside the vault");
             var clean = CleanName(name);
             if (!session.Vault.LinkedRoots.ContainsKey(clean)) throw new QuantosException("That folder isn't linked.", 404);
             session.Vault.UnregisterLinkedFolder(clean);

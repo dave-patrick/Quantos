@@ -2,6 +2,9 @@
 
 Standard library only. Schemas come from `quantos-cli tools`, calls go through `quantos-cli call`,
 so every call runs as the named agent with the permissions granted to it in Quantos.
+Before running a framework, pair interactively with `quantos-cli status --agent my-script`
+and approve the matching code in the native client. This wrapper captures subprocess output;
+it cannot present the first-pairing prompt interactively.
 
     quantos = QuantosTools(cli=r"C:\\Users\\you\\Documents\\Quantos\\application\\quantos-cli.exe", agent="my-script")
     tools = quantos.schemas("anthropic")              # or "openai", "json"

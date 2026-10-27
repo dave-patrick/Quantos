@@ -61,7 +61,7 @@ public static class SystemEndpoints
 
         api.MapPost("/system/shutdown", (HttpContext ctx, IHostApplicationLifetime lifetime) =>
         {
-            if (!ctx.IsNative()) return Results.Json(new { error = "Only the Windows client or CLI can stop the backend." }, statusCode: 403);
+            if (!ctx.IsAppClient() && ctx.Actor().Kind != ActorKind.Cli) return Results.Json(new { error = "Only a native client or paired CLI can stop the backend." }, statusCode: 403);
             _ = Task.Run(async () => { await Task.Delay(200); lifetime.StopApplication(); });
             return Results.Ok(new { stopping = true });
         });
@@ -90,11 +90,42 @@ public static class SystemEndpoints
         // Browser handoff: native callers (Windows client, CLI) get a one-time code for a browser session.
         api.MapPost("/auth/code", (HttpContext ctx, AccessTokens tokens, ServerAddress address, CodeBody? body) =>
         {
-            if (!ctx.IsNative()) return Results.Json(new { error = "Not allowed." }, statusCode: 403);
+            // A paired personal CLI may open ordinary browser windows, never app/native sessions.
+            if (!ctx.IsAppClient() && !(ctx.Actor().Kind == ActorKind.Cli && body?.Kind != "app"))
+                return Results.Json(new { error = "Only a native client or paired personal CLI can sign in a browser." }, statusCode: 403);
             var kind = body?.Kind == "app" ? SessionKind.App : SessionKind.Browser;
             var code = tokens.IssueCode(kind);
             var to = body?.To is { } t && t.StartsWith('/') ? "&to=" + Uri.EscapeDataString(t) : "";
             return Results.Ok(new { code, url = $"{address.Url}auth/open?code={code}{to}" });
+        });
+
+        api.MapGet("/auth/whoami", (HttpContext ctx) => new { kind = ctx.Actor().Kind, name = ctx.Actor().Name, credentialId = ctx.Actor().CredentialId, native = ctx.IsAppClient() });
+
+        api.MapPost("/auth/credentials/request", (VaultHost host, ClientCredentials credentials, HttpContext ctx, PairingBody body) =>
+        {
+            if (!ctx.IsBootstrap()) throw new QuantosException("Use the discovery credential only to request pairing.", 403);
+            var approval = credentials.Request(body.Kind, body.Name, body.Proof, host.Require().Approvals);
+            return Results.Accepted(value: new { id = approval.Id });
+        });
+
+        api.MapPost("/auth/credentials/poll", (VaultHost host, ClientCredentials credentials, HttpContext ctx, PairingPollBody body) =>
+        {
+            if (!ctx.IsBootstrap()) throw new QuantosException("Use the discovery credential only to finish pairing.", 403);
+            return credentials.Poll(body.Id, body.Proof, host.Require().Approvals);
+        });
+
+        api.MapGet("/auth/credentials", (ClientCredentials credentials, HttpContext ctx) =>
+        {
+            if (ctx.Actor().Kind != ActorKind.User) throw new QuantosException("Only you can manage paired connections.", 403);
+            return credentials.List();
+        });
+
+        api.MapPost("/auth/credentials/{id}/revoke", (VaultHost host, ClientCredentials credentials, HttpContext ctx, string id, CredentialRevokeBody body) =>
+        {
+            if (ctx.Actor().Kind != ActorKind.User) throw new QuantosException("Only you can manage paired connections.", 403);
+            var info = credentials.List().FirstOrDefault(c => c.Id == id) ?? throw new QuantosException("That connection is no longer paired.", 404);
+            host.Require().Permissions.Demand(ctx.Actor(), Permission.ManagePermissions, $"Revoke {info.Kind} connection “{info.Name}” ({info.Id})", body.Approval);
+            return credentials.Revoke(id) ? Results.NoContent() : Results.NotFound();
         });
 
         // Approvals: requested by anyone, decided only by the Windows client after a native prompt.
@@ -113,10 +144,12 @@ public static class SystemEndpoints
         api.MapGet("/permissions", (VaultHost host) => new { grants = host.Require().Permissions.Current, safeMode = host.Require().Permissions.SafeMode });
 
         // Push channel (write step 7): server-sent events.
-        api.MapGet("/events", async (HttpContext ctx, VaultHost host, ClientPresence presence, IHostApplicationLifetime lifetime, CancellationToken requestAborted) =>
+        api.MapGet("/events", async (HttpContext ctx, VaultHost host, ClientPresence presence, ClientCredentials credentials, IHostApplicationLifetime lifetime, CancellationToken requestAborted) =>
         {
             // End the stream when the backend shuts down, so open pages don't hold up a safe exit.
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(requestAborted, lifetime.ApplicationStopping);
+            var revoked = ctx.Actor() is { Kind: ActorKind.Agent or ActorKind.Cli, CredentialId: { } id }
+                ? credentials.RevocationToken(id) : CancellationToken.None;
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(requestAborted, lifetime.ApplicationStopping, revoked);
             var ct = linked.Token;
             using var present = ctx.IsWindowsClient() ? presence.WindowsClient() : null;
             ctx.Response.Headers.ContentType = "text/event-stream";
@@ -151,3 +184,7 @@ public static class SystemEndpoints
         });
     }
 }
+
+public sealed record PairingBody(ActorKind Kind, string Name, string Proof);
+public sealed record PairingPollBody(string Id, string Proof);
+public sealed record CredentialRevokeBody(string? Approval);

@@ -195,5 +195,10 @@ text, ok = quantos.call("search_notes", {"query": "budget"})   # when the model 
 
 ## The HTTP API
 
-Agents that can't start a process can call the backend's HTTP API directly with the
-`X-Quantos-Agent: <name>` header; see `API.md`. The same grants apply.
+Before starting a framework, run `quantos-cli status --agent <name>` interactively and approve
+the matching pairing code in the native client. This avoids a framework hiding the terminal's
+pairing prompt. Settings › MCP provides **Copy pairing command**.
+
+Agents that can't start a process can call the backend's HTTP API with their separately paired
+bearer credential; see `API.md`. The server binds the identity to that credential.
+`X-Quantos-Agent` cannot select an identity. The discovery token is only for pairing, not content.

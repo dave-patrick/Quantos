@@ -14,6 +14,11 @@ agents (they need no display). Work data lives in `.dev\` at the repo root, whic
 
 ## Driving the browser
 
+The development backend explicitly uses the Debug-only `--development-cli` flag to provision a
+personal CLI credential in the isolated `.dev` client data. `signin.ps1` invokes that CLI to obtain
+a browser sign-in link; it cannot impersonate a native client through discovery headers. The flag
+is rejected by Release builds. Do not point this harness at the owner's vault or client data.
+
 ```
 node tools/dev/edge.mjs 9333 nav "<url>"          # open a page (e.g. the sign-in link)
 node tools/dev/edge.mjs 9333 eval "<js>"          # run JavaScript in the page and print the result as JSON

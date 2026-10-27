@@ -24,6 +24,8 @@
   import Approvals from './Approvals.svelte';
   import CaptureDialog from './CaptureDialog.svelte';
   import BlockMenu from './BlockMenu.svelte';
+  import TaskPopup from './TaskPopup.svelte';
+  import { taskPopup } from '../lib/taskPopup.svelte';
 
   let today = $state('');
   onMount(() => watchDate((d) => (today = d)));
@@ -35,7 +37,7 @@
   });
 
   function onkeydown(e: KeyboardEvent) {
-    if (app.dialog || app.asking || aiJob.open) return;
+    if (taskPopup.id || taskPopup.busy || app.dialog || app.asking || aiJob.open) return;
     handleGlobalKey(e);
   }
 </script>
@@ -45,7 +47,7 @@
 {#if compact}
   <PhoneShell {today} />
 {:else}
-<div class="shell" class:left={app.leftOpen} class:right={app.rightOpen}>
+<div class="shell" class:left={app.leftOpen} class:right={app.rightOpen} inert={!!taskPopup.id || taskPopup.busy}>
   <Header />
   {#if app.leftOpen}<LeftSidebar />{/if}
   <main class="center">
@@ -57,6 +59,7 @@
 </div>
 {/if}
 
+{#if taskPopup.id}{#key taskPopup.id}<TaskPopup id={taskPopup.id} />{/key}{/if}
 <CommandPalette />
 <HoverPreview />
 <Approvals />

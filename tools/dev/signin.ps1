@@ -2,5 +2,8 @@
 param([switch]$Backend)
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $d = Get-Content (Join-Path $root '.dev\client-data\settings\backend.json') | ConvertFrom-Json
-$r = Invoke-RestMethod -Method Post -Uri "$($d.url)api/auth/code" -Headers @{ Authorization = "Bearer $($d.token)"; 'X-Quantos-Client' = 'windows' } -ContentType 'application/json' -Body '{"kind":"browser"}'
-if ($Backend) { $r.url } else { $r.url -replace '^http://127\.0\.0\.1:\d+/', 'http://localhost:5173/' }
+$cli = Join-Path $root 'src/Quantos.Cli/bin/Debug/net10.0/quantos-cli.exe'
+if (-not (Test-Path -LiteralPath $cli)) { throw 'Restart the isolated Debug dev backend with tools/dev/backend.ps1 to build its paired CLI.' }
+$link = & $cli open --print-url --client-data (Join-Path $root '.dev/client-data')
+if ($LASTEXITCODE -ne 0) { throw 'Development sign-in failed. Restart the isolated Debug backend; discovery no longer grants browser sign-in.' }
+if ($Backend) { $link } else { $link -replace '^http://127\.0\.0\.1:\d+/', 'http://localhost:5173/' }

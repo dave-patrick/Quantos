@@ -12,7 +12,7 @@ public enum Permission { Read, CreateEdit, MoveArchive, TrashRestore, PermanentD
 public enum ActorKind { User, Cli, Agent, Plugin, Automation, System }
 
 /// <summary>Who is asking. <see cref="ViaBrowser"/> marks requests that arrived from a browser session.</summary>
-public sealed record Actor(ActorKind Kind, string Name, bool ViaBrowser = false, string? Instance = null)
+public sealed record Actor(ActorKind Kind, string Name, bool ViaBrowser = false, string? Instance = null, string? CredentialId = null)
 {
     public static readonly Actor User = new(ActorKind.User, "app");
     public static readonly Actor Browser = new(ActorKind.User, "browser", ViaBrowser: true);
@@ -82,7 +82,7 @@ public sealed class PermissionService
 
         if (AlwaysApprove.Contains(permission))
         {
-            if (approvalId is not null && Approvals.Consume(approvalId, permission, description)) return;
+            if (approvalId is not null && Approvals.Consume(approvalId, actor, permission, description)) return;
             throw new ApprovalRequiredException(Approvals.Request(actor, permission, description));
         }
     }
@@ -163,7 +163,7 @@ public sealed record Approval
 
 /// <summary>
 /// One-shot approvals. Only the Windows client can approve (the API restricts the approve endpoint
-/// to callers holding the launch token, which browser sessions never see).
+/// to authenticated native clients; discovery and browser credentials cannot decide).
 /// </summary>
 public sealed class ApprovalService(TimeProvider? time = null)
 {
@@ -193,19 +193,23 @@ public sealed class ApprovalService(TimeProvider? time = null)
     public bool Decide(string id, bool approve)
     {
         Expire();
-        if (!_approvals.TryGetValue(id, out var approval) || approval.State != ApprovalState.Pending) return false;
-        approval.State = approve ? ApprovalState.Approved : ApprovalState.Denied;
-        return true;
+        if (!_approvals.TryGetValue(id, out var approval)) return false;
+        lock (approval)
+        {
+            if (approval.State != ApprovalState.Pending) return false;
+            approval.State = approve ? ApprovalState.Approved : ApprovalState.Denied;
+            return true;
+        }
     }
 
     /// <summary>Uses an approval once. It must be approved, unexpired, and for the same permission and action.</summary>
-    public bool Consume(string id, Permission permission, string description)
+    public bool Consume(string id, Actor actor, Permission permission, string description)
     {
         Expire();
         if (!_approvals.TryGetValue(id, out var approval)) return false;
         lock (approval)
         {
-            if (approval.State != ApprovalState.Approved || approval.Permission != permission || approval.Description != description) return false;
+            if (approval.State != ApprovalState.Approved || approval.Actor != actor || approval.Permission != permission || approval.Description != description) return false;
             approval.State = ApprovalState.Used;
             return true;
         }
@@ -215,7 +219,8 @@ public sealed class ApprovalService(TimeProvider? time = null)
     {
         var now = _time.GetUtcNow();
         foreach (var a in _approvals.Values)
-            if (a.State is ApprovalState.Pending or ApprovalState.Approved && now - a.Requested > Lifetime) a.State = ApprovalState.Expired;
+            lock (a)
+                if (a.State is ApprovalState.Pending or ApprovalState.Approved && now - a.Requested > Lifetime) a.State = ApprovalState.Expired;
     }
 }
 

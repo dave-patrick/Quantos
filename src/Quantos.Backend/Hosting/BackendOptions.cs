@@ -10,6 +10,7 @@ public sealed record BackendOptions
     public int? ParentPid { get; init; }
     public bool SelfCheck { get; init; }
     public bool Help { get; init; }
+    public bool DevelopmentCli { get; init; }
 
     public const int DefaultPort = 47821;
 
@@ -27,6 +28,7 @@ public sealed record BackendOptions
                 "--open" => o with { OpenBrowser = true },
                 "--parent" => o with { ParentPid = int.Parse(Next()) },
                 "--selfcheck" => o with { SelfCheck = true },
+                "--development-cli" => o with { DevelopmentCli = true },
                 "--help" or "-h" or "/?" => o with { Help = true },
                 _ => o
             };
@@ -44,6 +46,7 @@ public sealed record BackendOptions
           --port <n>            Preferred local port (default 47821; a free port is used if it's taken)
           --client-data <path>  Settings, cache and logs folder (default: beside the application folder)
           --selfcheck           Check that this machine can run Quantos, print a report, and exit
+          --development-cli     Debug builds only: provision a personal CLI for isolated dev data
 
         The backend listens on 127.0.0.1 only. Close it with Ctrl+C, or use Exit in the Windows client.
         """;

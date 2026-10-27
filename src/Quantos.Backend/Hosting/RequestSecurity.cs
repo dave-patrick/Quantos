@@ -6,10 +6,11 @@ namespace Quantos.Backend.Hosting;
 /// Request checks (BUILD-PLAN section 10): Host header (blocks DNS rebinding), Origin and
 /// Sec-Fetch-Site (blocks other web pages), and authentication by launch token or session cookie.
 /// </summary>
-public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, ServerAddress address, ILogger<RequestSecurity> log)
+public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, ClientCredentials credentials, ServerAddress address, ILogger<RequestSecurity> log)
 {
     public const string ActorKey = "quantos.actor";
     public const string NativeKey = "quantos.native";
+    public const string BootstrapKey = "quantos.bootstrap";
     public const string CsrfHeader = "X-Quantos-Request";
     public const string ClientHeader = "X-Quantos-Client";
     public const string AgentHeader = "X-Quantos-Agent";
@@ -60,14 +61,14 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
 
         if (request.Path.StartsWithSegments("/api"))
         {
-            var actor = Authenticate(ctx, out var native);
+            var actor = Authenticate(ctx, out var native, out var bearer, out var bootstrap);
             if (actor is null)
             {
                 await Reject(ctx, StatusCodes.Status401Unauthorized, "Open Quantos from the Windows client, or start the backend with --open.");
                 return;
             }
             // Cookie-authenticated writes must carry a header a cross-site form or image can't send.
-            if (!native && !HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method) && request.Headers[CsrfHeader].Count == 0)
+            if (!bearer && !HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method) && request.Headers[CsrfHeader].Count == 0)
             {
                 await Reject(ctx, StatusCodes.Status403Forbidden, "Missing request header.");
                 return;
@@ -76,20 +77,31 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
             if (instance.Length is > 0 and <= 64) actor = actor with { Instance = instance };
             ctx.Items[ActorKey] = actor;
             ctx.Items[NativeKey] = native;
+            ctx.Items[BootstrapKey] = bootstrap;
+            if (bootstrap)
+            {
+                var allowed = request.Method == "GET" && request.Path == "/api/ping"
+                    || request.Method == "POST" && (request.Path == "/api/auth/credentials/request" || request.Path == "/api/auth/credentials/poll");
+                if (!allowed)
+                {
+                    await Reject(ctx, StatusCodes.Status403Forbidden, "Pair this connection in a native Quantos client before using the API.");
+                    return;
+                }
+            }
 
             // Agents and plugins act only within their grants: reading needs Read, and the app's own
             // controls (vault choice, safe mode, plugin switches, sign-in) are for the user alone.
-            if (actor.Kind is ActorKind.Agent or ActorKind.Plugin or ActorKind.Automation)
+            if (!bootstrap && actor.Kind is ActorKind.Agent or ActorKind.Plugin or ActorKind.Automation)
             {
                 var path = request.Path;
-                if (path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/system") || path.StartsWithSegments("/api/auth")
+                if (path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/system") || path.StartsWithSegments("/api/auth") && path != "/api/auth/whoami"
                     || path.StartsWithSegments("/api/plugins") || path.StartsWithSegments("/api/approvals"))
                 {
                     await Reject(ctx, StatusCodes.Status403Forbidden, "Only you can do that, not an agent or plugin.");
                     return;
                 }
                 var permissions = ctx.RequestServices.GetService<VaultHost>()?.Session?.Permissions;
-                if (permissions is not null && (HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method)) && !path.StartsWithSegments("/api/ping"))
+                if (permissions is not null && (HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method)) && path != "/api/ping" && path != "/api/auth/whoami")
                 {
                     try { permissions.Demand(actor, Permission.Read, "Read vault content"); }
                     catch (PermissionDeniedException ex)
@@ -116,29 +128,26 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, S
         await next(ctx);
     }
 
-    private Actor? Authenticate(HttpContext ctx, out bool native)
+    private Actor? Authenticate(HttpContext ctx, out bool native, out bool bearer, out bool bootstrap)
     {
-        native = false;
+        native = bearer = bootstrap = false;
         var auth = ctx.Request.Headers.Authorization.ToString();
-        if (auth.StartsWith("Bearer ", StringComparison.Ordinal) && tokens.IsLaunchToken(auth[7..].Trim()))
+        if (auth.Length > 0)
         {
-            native = true;
-            var agent = ctx.Request.Headers[AgentHeader].ToString();
-            if (agent.Length > 0) return new Actor(ActorKind.Agent, agent);
-            return ctx.Request.Headers[ClientHeader].ToString() switch
-            {
-                "windows" => new Actor(ActorKind.User, "windows-client"),
-                "android" => new Actor(ActorKind.User, "android-client"),
-                "plugin" => new Actor(ActorKind.Plugin, ctx.Request.Headers["X-Quantos-Plugin"].ToString()),
-                _ => Actor.Cli
-            };
+            if (!auth.StartsWith("Bearer ", StringComparison.Ordinal)) return null;
+            bearer = true;
+            var token = auth[7..].Trim();
+            if (tokens.NativeActor(token) is { } app) { native = true; return app; }
+            if (tokens.IsLaunchToken(token)) { bootstrap = true; return new Actor(ActorKind.Agent, "discovery"); }
+            return credentials.Authenticate(token);
         }
         var session = tokens.Session(ctx.Request.Cookies[AccessTokens.CookieName]);
         if (session is null) return null;
         // Requests the app makes on a plugin's behalf carry its name and get only that plugin's grants.
         var plugin = ctx.Request.Headers["X-Quantos-Plugin"].ToString();
-        if (plugin.Length > 0) return new Actor(ActorKind.Plugin, plugin, ViaBrowser: true);
-        return session.Kind == SessionKind.App ? Actor.User with { ViaBrowser = true, Name = "app" } : Actor.Browser;
+        var id = "session-" + AccessTokens.Fingerprint(session.Id);
+        if (plugin.Length > 0) return new Actor(ActorKind.Plugin, plugin, ViaBrowser: true, CredentialId: id);
+        return session.Kind == SessionKind.App ? Actor.User with { ViaBrowser = true, Name = "app", CredentialId = id } : Actor.Browser with { CredentialId = id };
     }
 
     private static Task Reject(HttpContext ctx, int status, string message)
@@ -173,6 +182,7 @@ public static class HttpContextActorExtensions
 {
     public static Actor Actor(this HttpContext ctx) => (Actor)ctx.Items[RequestSecurity.ActorKey]!;
     public static bool IsNative(this HttpContext ctx) => ctx.Items[RequestSecurity.NativeKey] is true;
-    public static bool IsWindowsClient(this HttpContext ctx) => ctx.IsNative() && ctx.Actor().Name == "windows-client";
-    public static bool IsAppClient(this HttpContext ctx) => ctx.IsNative() && ctx.Actor().Name is "windows-client" or "android-client";
+    public static bool IsBootstrap(this HttpContext ctx) => ctx.Items[RequestSecurity.BootstrapKey] is true;
+    public static bool IsWindowsClient(this HttpContext ctx) => ctx.IsNative() && ctx.Actor().Kind == ActorKind.User && ctx.Actor().Name == "windows-client";
+    public static bool IsAppClient(this HttpContext ctx) => ctx.IsNative() && ctx.Actor().Kind == ActorKind.User && ctx.Actor().Name is "windows-client" or "android-client";
 }

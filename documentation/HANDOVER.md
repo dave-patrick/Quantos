@@ -46,6 +46,32 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-26; latest release 0.2.2, build 2026.26.10.2)
 
+- **Task popup restored for Windows/browser (2026-10-27).** The owner explicitly wants task clicks
+  in the Windows app and browser to edit in a popup while keeping their place; Android is excluded.
+  The original workspace remains mounted and inert beneath the editor; Close/Escape waits for body,
+  title, metadata and submitted subtask writes, then restores scroll/focus. Modified clicks retain
+  tabs/panes. Nested links stay in the popup; existing prompts appear above it. Failed writes retain
+  the popup until retry; disk conflict choices clear obsolete drafts and failure markers. Browser
+  acceptance covered source identity at 2200px, task/source links, title source-label refresh,
+  failed title/reminder retry, nested due-date prompts, conflict resolution/reopen and read-offline
+  dismissal. See PROJECT-STATUS for build/staging validation.
+  Delivered private Windows `0.2.2`, build `2026.27.10.14`, to the owner's local staging copy;
+  restarted with Page loaded / HTTP 200, matching executable hashes and served build ID. All 370
+  tests passed, package/self-check passed, independent review finished clean, and the native Windows
+  UI exposed the full task editor popup. Browser acceptance supplies close/scroll/failure evidence.
+
+- **Sidebar task titles (2026-10-27, source/frontend build 2026.27.10.12).** Tasks and docked My Day
+  now put dates, assigned priority and other existing metadata below the title in smaller text.
+  Empty metadata takes no extra line; long values wrap. Full-size Tasks keeps its existing layout.
+  Isolated browser checks covered 264–266px rows, long/unbroken metadata, missing metadata,
+  opening, completion and Alt+Down queue reorder with focus retained. Frontend checks/tests/build
+  and independent review passed. Windows staging follow-up: package `2026.27.10.13` retains release
+  `0.2.2` and includes the current checkout. All 111 frontend, 242 backend/core and four native tests
+  passed (backend rerun sequentially after one log-lock cleanup failure). ZIP validation and packaged
+  self-check passed with zero warnings. Installed into the owner's local staging copy and restarted;
+  all three executable hashes match, Page loaded reports HTTP 200 and served assets contain the new
+  build ID. No Android installation or public publication was performed.
+
 - **Security review remediation (2026-10-26, source/build set 2026.26.10.3).** First batch fixes
   Windows native origin checks/full script review, calendar traversal and attachment boundaries
   for serving/trashing/adding/export. See SECURITY-REMEDIATION.md for regression coverage and the

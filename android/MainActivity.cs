@@ -47,8 +47,7 @@ internal sealed record LocalHost(WebApplication App, HttpClient Http, string Url
             activeSettings.Port = app.Services.GetRequiredService<ServerAddress>().Port;
             activeSettings.Save(paths);
             var http = new HttpClient { BaseAddress = new System.Uri(url) };
-            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.LaunchToken);
-            http.DefaultRequestHeaders.Add("X-Quantos-Client", "android");
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.IssueNativeToken("android"));
             return new LocalHost(app, http, url, tokens);
         });
     }

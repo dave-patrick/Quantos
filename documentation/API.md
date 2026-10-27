@@ -8,6 +8,21 @@ camelCase. Errors: `{ "error": "…" }` with 400 (bad input), 401 (not signed in
 428 (approval required: `{ error, approval: { id, permission, description, … } }`).
 Authentication and headers: see [SECURITY-MODEL.md](SECURITY-MODEL.md).
 
+### Local connection authentication
+
+Discovery `authVersion: 2` credentials allow only ping and pairing. Send a paired credential as
+`Authorization: Bearer <credential>` for content APIs; actor identity comes from the credential,
+never `X-Quantos-Agent` or `X-Quantos-Client`. Do not log credentials or sign-in URLs.
+
+| Method and path | Purpose |
+|---|---|
+| `POST /api/auth/credentials/request` | Bootstrap only; `{ kind: "Agent"|"Cli", name, proof }`, random 64-hex proof; native confirmation required. CLI name must be `cli`. Returns approval metadata. |
+| `POST /api/auth/credentials/poll` | Bootstrap only; `{ id, proof }`. Returns `{ state, token? }`; token appears only after native approval and requires the same secret proof. Requests expire after five minutes. |
+| `GET /api/auth/whoami` | Authenticated actor metadata, no credential secrets. |
+| `GET /api/auth/credentials` | User only; connection IDs, names, kinds and creation times. |
+| `POST /api/auth/credentials/{id}/revoke` | User only; `{ approval? }`, requires native ManagePermissions confirmation. Revokes subsequent credential authentication. |
+| `POST /api/auth/code` | Native may request app/browser sessions; paired personal CLI may request browser sessions only. Named agents and bootstrap are denied. |
+
 ### Nodes
 
 | Method and path | Purpose |
@@ -52,8 +67,8 @@ Authentication and headers: see [SECURITY-MODEL.md](SECURITY-MODEL.md).
 
 ### System
 
-`GET /api/ping` · `GET /api/status` · `POST /api/system/rebuild` · `POST /api/system/shutdown` (native only) ·
-`POST /api/system/safe-mode` · `GET /api/setup` · `POST /api/setup/check|open` · `POST /api/auth/code` (native only) ·
+`GET /api/ping` · `GET /api/status` · `POST /api/system/rebuild` · `POST /api/system/shutdown` (native/personal CLI) ·
+`POST /api/system/safe-mode` · `GET /api/setup` · `POST /api/setup/check|open` · `POST /api/auth/code` (see above) ·
 `GET /api/approvals` · `GET /api/approvals/{id}` · `POST /api/approvals/{id}` (Windows client only) ·
 `GET /api/permissions` · `PUT /api/permissions` (approval) · `GET /api/plugins` · `POST /api/plugins/enabled` ·
 `GET /plugin-host/{name}` · `POST /api/shell/run` (approval) · `GET /api/shell/jobs/{id}` ·

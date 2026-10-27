@@ -7,8 +7,8 @@
   import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
   import Icon from './Icon.svelte';
 
-  let { task, showMyDay = true, draggable = false, ondragstart, compact = false, dense = false }:
-    { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean; dense?: boolean } = $props();
+  let { task, showMyDay = true, draggable = false, ondragstart, compact = false, dense = false, stacked = false }:
+    { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean; dense?: boolean; stacked?: boolean } = $props();
 
   const today = $derived(day.today);
   const minute = $derived(day.minute); // forces re-check when the minute ticks
@@ -83,16 +83,17 @@
   }
 </script>
 
-<div class="task p{task.priority ?? 0}" class:closed class:compact class:dense {draggable} {ondragstart} role="group" aria-label={task.title}
+<div class="task p{task.priority ?? 0}" class:closed class:compact class:dense={dense || stacked} {draggable} {ondragstart} role="group" aria-label={task.title}
   oncontextmenu={(e) => { e.preventDefault(); menu = { x: e.clientX, y: e.clientY }; }}>
   <span class="strip" aria-hidden="true"></span>
   <span class="main">
     <label class="task-check"><input type="checkbox" checked={task.status === 'done'} onchange={toggle} aria-label={closed ? 'Reopen task' : 'Complete task'} /></label>
-    <button class="title" onclick={(e) => openNode(task.id, whereFrom(e), task.title)}>
+    <button class="title" title={task.title} onclick={(e) => openNode(task.id, whereFrom(e), task.title)}>
       {task.title}
     </button>
   </span>
   <span class="chips">
+    {#if (dense || stacked) && task.priority}<span class="chip" title={'Priority ' + task.priority}><Icon name="flag" size={11} /> P{task.priority}</span>{/if}
     {#if task.blocked}<span class="chip warn" title="Waiting on another task"><Icon name="lock" size={11} /> blocked</span>{/if}
     {#if task.status === 'doing'}<span class="chip accent">doing</span>{/if}
     {#if task.status === 'waiting' || task.waitingOn}<span class="chip" title="Waiting on">⏳ {task.waitingOn ?? 'waiting'}</span>{/if}
@@ -101,7 +102,7 @@
     {#if !dense && (task.effortRollup ?? task.effort)}<span class="chip" title="Effort">{task.effortRollup ?? task.effort}m</span>{/if}
     {#if projectName && !compact && !dense}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
     {#if task.assignees.length && !compact && !dense}<span class="chip"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
-    {#if !dense && task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
+    {#if task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
     {#if task.due}<span class="chip" class:danger={overdue} title="Due">⚑ {fmt(task.due)}</span>{/if}
     {#if !dense && task.reminders.some((r) => !r.fired)}<span class="chip" title="Reminder set"><Icon name="bell" size={11} /></span>{/if}
   </span>
@@ -143,10 +144,13 @@
   .task:hover .del, .del:focus-visible { opacity: 1; }
   .del:hover { color: var(--danger); background: var(--bg-hover); }
   .compact { min-height: calc(32px * var(--d)); padding-top: calc(4px * var(--d)); padding-bottom: calc(4px * var(--d)); }
-  .dense { flex-wrap: nowrap; gap: 6px; min-height: 36px; padding: 4px 8px 4px 12px; }
-  .dense .main { flex: 1 1 0%; gap: 7px; }
+  .dense { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 6px; min-height: 36px; padding: 4px 8px 4px 12px; }
+  .dense .main { grid-row: 1; grid-column: 1; gap: 7px; }
   .dense .title { font-size: 13.5px; }
-  .dense .chips { flex: 0 1 auto; flex-wrap: nowrap; margin-left: 0; max-width: 42%; overflow: hidden; }
-  .dense .chip { font-size: 10px; line-height: 16px; padding: 0 4px; }
+  .dense .myday { grid-row: 1; grid-column: 2; }
+  .dense .del { grid-row: 1; grid-column: 3; }
+  .dense .chips { grid-row: 2; grid-column: 1 / -1; margin: 0; padding-left: 23px; max-width: none; }
+  .dense .chips:not(:has(.chip)) { display: none; }
+  .dense .chip { font-size: 10px; line-height: 16px; padding: 0 4px; max-width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; }
   .dense .strip { top: 5px; bottom: 5px; }
 </style>

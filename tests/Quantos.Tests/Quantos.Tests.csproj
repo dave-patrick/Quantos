@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Quantos.Core\Quantos.Core.csproj" />
     <ProjectReference Include="..\..\src\Quantos.Backend\Quantos.Backend.csproj" />
     <ProjectReference Include="..\..\src\Quantos.Server\Quantos.Server.csproj" />
+    <ProjectReference Include="..\..\src\Quantos.Cli\Quantos.Cli.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

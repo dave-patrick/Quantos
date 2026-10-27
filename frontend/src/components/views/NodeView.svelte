@@ -20,8 +20,9 @@
   import Whiteboard from '../Whiteboard.svelte';
   import { recent } from '../../lib/recent.svelte';
   import { openByTitle, whereFrom } from '../../lib/links.svelte';
+  import { writeGate, writeKey } from '../../lib/writeGate';
 
-  let { tab, id, paneIndex }: { tab: Tab; id: string; paneIndex: number } = $props();
+  let { tab, id, paneIndex, popup = false }: { tab: Tab; id: string; paneIndex: number; popup?: boolean } = $props();
 
   const doc = docs.acquire(id);
   onDestroy(() => docs.release(id));
@@ -32,6 +33,8 @@
   /** Locked note or reading mode: the text, title and properties are shown but can't be changed. */
   const noEdit = $derived(!!doc.node?.locked || prefs.reading);
   let editingTitle = $state(false);
+  let titleFailed = $state(false);
+  let titleSaving = $state(false);
   let showToc = $state(false);
   let zoom = $state<{ line: number; text: string } | null>(null);
   let restored = false;
@@ -39,7 +42,7 @@
   let restoreTimer: ReturnType<typeof setTimeout>;
   onDestroy(() => { restoreObserver?.disconnect(); clearTimeout(restoreTimer); clearTimeout(scrollTimer); });
 
-  $effect(() => { if (!editingTitle && doc.node) titleDraft = doc.node.title; });
+  $effect(() => { if (!editingTitle && !titleFailed && !titleSaving && doc.node) titleDraft = doc.node.title; });
 
   // Restore the scroll position once content is loaded (workspace switches restore it too).
   $effect(() => {
@@ -77,9 +80,11 @@
 
   async function commitTitle() {
     editingTitle = false;
+    if (titleSaving) return;
     const next = titleDraft.trim();
     if (!doc.node || !next || next === doc.node.title) { titleDraft = doc.node?.title ?? ''; return; }
-    await docs.track(doc.rename(next).catch((e) => { app.error(e); titleDraft = doc.node?.title ?? ''; }));
+    titleSaving = true;
+    await docs.track(doc.rename(next).then(() => { titleFailed = false; }, (e) => { titleFailed = true; app.error(e); }).finally(() => { titleSaving = false; }));
   }
 
   /**
@@ -186,10 +191,10 @@
 
 <svelte:window onkeydown={onKey} />
 
-<div class="node-view">
+<div class="node-view" data-node-id={id}>
   <div class="bar">
     <nav class="crumbs" aria-label="Location">
-      {#each crumbs as c, i (i)}<button class="crumb link" title={`Go to ${c.label}`} onclick={c.go}>{c.label}</button><Icon name="chevron-right" size={11} />{/each}
+      {#if !popup}{#each crumbs as c, i (i)}<button class="crumb link" title={`Go to ${c.label}`} onclick={c.go}>{c.label}</button><Icon name="chevron-right" size={11} />{/each}{/if}
       {#if zoom}
         <button class="crumb link" onclick={() => (zoom = null)}>{doc.node?.title}</button><Icon name="chevron-right" size={11} />
         <span class="crumb current">{zoom.text}</span>
@@ -201,6 +206,7 @@
       <span class="save-state {doc.status}">
         {#if doc.status === 'saving'}Saving…{:else if doc.status === 'dirty'}Edited{:else if doc.status === 'saved'}Saved{:else if doc.status === 'conflict'}Conflict{:else if doc.status === 'error'}Not saved{:else if doc.status === 'readonly'}Read-only{/if}
       </span>
+      {#if !popup}
       <button class="btn ghost phone-details" onclick={() => { app.rightTab = 'inspector'; app.rightOpen = true; }}>Details</button>
       <button class="icon-btn" aria-pressed={showToc} title="Table of contents" onclick={() => (showToc = !showToc)}><Icon name="list" /></button>
       <button class="icon-btn" aria-pressed={doc.raw} title={doc.raw ? 'Back to the editor' : 'Edit the Markdown source'} disabled={doc.node?.readOnly || noEdit}
@@ -208,6 +214,7 @@
       <button class="icon-btn" title="Version history" onclick={() => layout.open({ kind: 'history', nodeId: id, title: `History: ${doc.node?.title ?? ''}` }, 'new')}><Icon name="history" /></button>
       <button class="icon-btn icon-btn-danger" title="Move to trash" onclick={trashDoc}><Icon name="trash" size={14} /></button>
       <NodeMenu {doc} {paneIndex} onoutline={() => (showToc = !showToc)} oncopymd={() => copyMarkdown(doc.body).then(() => app.toast('Copied as Markdown.', 'ok'))} oncopyrich={() => copyRich(doc.body).then(() => app.toast('Copied as rich text.', 'ok'))} />
+      {/if}
     </div>
   </div>
 
@@ -218,7 +225,7 @@
       <div class="placeholder">
         <Icon name="alert" size={20} />
         <div><h3>This node no longer exists</h3><p>It may have been deleted outside Quantos. Its earlier versions are still in history.</p>
-          <button class="btn" onclick={() => layout.open({ kind: 'history', nodeId: id, title: 'History' }, 'current')}>Open history</button></div>
+          {#if !popup}<button class="btn" onclick={() => layout.open({ kind: 'history', nodeId: id, title: 'History' }, 'current')}>Open history</button>{/if}</div>
       </div>
     {:else if doc.trashed}
       <div class="placeholder">
@@ -244,10 +251,10 @@
 
         {#if !doc.raw}
           <!-- The editable title is the page's heading, so screen readers can jump to it. -->
-          <h1 class="title-heading" aria-label={titleDraft || 'Untitled'}><input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle} readonly={noEdit}
-            onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); view?.focus(); } if (e.key === 'Escape') { titleDraft = doc.node?.title ?? ''; (e.target as HTMLInputElement).blur(); } }}
+          <h1 class="title-heading" aria-label={titleDraft || 'Untitled'}><input class="title" bind:this={titleInput} bind:value={titleDraft} onfocus={() => (editingTitle = true)} onblur={commitTitle} readonly={noEdit || titleSaving}
+            onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); view?.focus(); } if (e.key === 'Escape') { titleDraft = doc.node?.title ?? ''; titleFailed = false; writeGate.dismiss(writeKey('POST', `nodes/${id}/rename`, { title: '' })); (e.target as HTMLInputElement).blur(); } }}
             aria-label="Title" spellcheck="false" /></h1>
-          {#if namespace.length}<nav class="ns">{#each namespace as part, i (i)}<button onclick={(e) => openByTitle(namespace.slice(0, i + 1).join('/'), e.shiftKey ? 'other' : 'current')}>{part}</button><span>/</span>{/each}</nav>{/if}
+          {#if namespace.length && !popup}<nav class="ns">{#each namespace as part, i (i)}<button onclick={(e) => openByTitle(namespace.slice(0, i + 1).join('/'), e.shiftKey ? 'other' : 'current')}>{part}</button><span>/</span>{/each}</nav>{/if}
           <div class="meta faint">
             <span class="badge">{doc.node.type}</span>
             {#if doc.node.archived}<span class="badge warn">archived</span>{/if}
@@ -255,7 +262,7 @@
           </div>
           {#if doc.node.type !== 'canvas'}
             <fieldset class="plain" disabled={noEdit}>
-              <div class="node-properties"><Properties {doc} /></div>
+              <div class="node-properties" class:popup-properties={popup}><Properties {doc} editSchema={!popup} /></div>
               {#if doc.node.type === 'task'}<TaskPanel {doc} />{/if}
             </fieldset>
           {/if}
@@ -304,6 +311,7 @@
 </div>
 
 <style>
+  .popup-properties { display: block !important; }
   .node-view { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 38px; padding: 0 10px 0 16px; flex: none; }
   .crumbs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: var(--text-faint); font-size: 12.5px; white-space: nowrap; }

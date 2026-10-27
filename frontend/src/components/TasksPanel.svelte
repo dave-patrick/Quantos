@@ -16,7 +16,7 @@
       <p class="faint empty">No tasks yet.</p>
     {:else}
       <div class="list">
-        {#each openTasks as t (t.id)}<TaskRow task={t} compact showMyDay={false} />{/each}
+        {#each openTasks as t (t.id)}<TaskRow task={t} compact stacked showMyDay={false} />{/each}
         {#if doneCount}<p class="faint done">{doneCount} finished</p>{/if}
       </div>
     {/if}
@@ -36,9 +36,8 @@
   .list :global(.task.compact) { min-height: calc(38px * var(--d)); padding: calc(5px * var(--d)) 2px; border-radius: 6px; border: 0; border-bottom: 1px solid var(--line); background: transparent; box-shadow: none; }
   .list :global(.task.compact:hover) { background: var(--bg-hover); box-shadow: none; }
   .list :global(.task.compact .strip) { left: 0; top: 6px; bottom: 6px; width: 2px; }
-  .list :global(.task.compact .main) { gap: 8px; flex: 1 1 0; min-width: 0; }
+  .list :global(.task.compact .main) { gap: 7px; flex: 1 1 0; min-width: 0; }
   .list :global(.task.compact .title) { font-size: 13px; }
-  .list :global(.task.compact .chips) { gap: 4px; flex: 0 0 auto; margin-left: 0; }
   .list :global(.task.compact .chip) { font-size: 10px; padding: 0 5px; border-radius: 8px; }
   .list :global(.task.compact .chip.warn), .list :global(.task.compact .chip.danger) { font-size: 10px; }
   .list :global(.task.compact .del) { opacity: 0; }

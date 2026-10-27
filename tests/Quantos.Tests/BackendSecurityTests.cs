@@ -34,11 +34,16 @@ public sealed class BackendSecurityTests : IAsyncLifetime
         try { Directory.Delete(_root, true); } catch (IOException) { }
     }
 
-    private HttpClient Client(bool token = false, string? client = null, CookieContainer? cookies = null)
+    private HttpClient Client(bool token = false, string? client = null, CookieContainer? cookies = null, string? agent = null)
     {
         var handler = new HttpClientHandler { CookieContainer = cookies ?? new CookieContainer(), UseCookies = true, AllowAutoRedirect = false };
         var http = new HttpClient(handler) { BaseAddress = new Uri(_url) };
-        if (token) http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokens.LaunchToken);
+        if (token)
+        {
+            var credential = client is "windows" or "android" ? _tokens.IssueNativeToken(client)
+                : ((ClientCredentials)_app.Services.GetService(typeof(ClientCredentials))!).Issue(agent is null ? Quantos.Core.Security.ActorKind.Cli : Quantos.Core.Security.ActorKind.Agent, agent ?? "cli").Token;
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credential);
+        }
         if (client is not null) http.DefaultRequestHeaders.Add(RequestSecurity.ClientHeader, client);
         return http;
     }
@@ -69,7 +74,7 @@ public sealed class BackendSecurityTests : IAsyncLifetime
     {
         var folder = Path.Combine(_root, "linked-calendar-marker");
         Directory.CreateDirectory(folder);
-        using var http = Client(token: true);
+        using var http = Client(token: true, client: "windows");
         Assert.Equal(HttpStatusCode.OK, (await http.PostAsJsonAsync("api/linked-folders", new { name = "calendar-link", path = folder })).StatusCode);
         var response = await http.PostAsJsonAsync("api/tasks/calendar", new { name = "calendar-link" });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -180,8 +185,7 @@ public sealed class BackendSecurityTests : IAsyncLifetime
     [Fact] // 13 security.1
     public async Task An_agent_write_is_denied_by_default()
     {
-        using var agent = Client(token: true);
-        agent.DefaultRequestHeaders.Add(RequestSecurity.AgentHeader, "helper");
+        using var agent = Client(token: true, agent: "helper");
         Assert.Equal(HttpStatusCode.OK, (await agent.GetAsync("api/nodes")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await agent.PostAsJsonAsync("api/nodes", new { title = "nope" })).StatusCode);
     }

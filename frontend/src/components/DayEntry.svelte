@@ -59,7 +59,7 @@
   }
 </script>
 
-<section class="day" class:today={isToday} class:collapsed={!expanded}>
+<section class="day" data-node-id={node?.id} class:today={isToday} class:collapsed={!expanded}>
   <header>
     <button class="toggle" aria-expanded={expanded} onclick={() => (expanded = !expanded)}>
       <Icon name={expanded ? 'chevron-down' : 'chevron-right'} size={14} />

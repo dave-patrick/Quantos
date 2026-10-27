@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Quantos.Backend;
 using Quantos.Backend.Hosting;
 using Quantos.Core;
@@ -20,13 +21,12 @@ public sealed class BackendConnection : IDisposable
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private readonly CancellationTokenSource _stop = new();
 
-    private BackendConnection(Discovery info, Process? owned)
+    private BackendConnection(Discovery info, Process? owned, string nativeToken)
     {
         Info = info;
         Owned = owned;
         Http = new HttpClient { BaseAddress = new Uri(info.Url), Timeout = TimeSpan.FromSeconds(30) };
-        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", info.Token);
-        Http.DefaultRequestHeaders.Add("X-Quantos-Client", "windows");
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", nativeToken);
     }
 
     public Discovery Info { get; }
@@ -43,7 +43,8 @@ public sealed class BackendConnection : IDisposable
         if (existing is not null && await IsAliveAsync(existing))
         {
             paths.Log($"Connected to running backend {existing.Url} (pid {existing.Pid})");
-            return new BackendConnection(existing, null);
+            var grant = await NativeControl.ConnectWindowsAsync(paths.ClientData, existing.Pid, ClientPaths.AppDirectory);
+            return new BackendConnection(existing with { Url = grant.Url, Port = grant.Port }, null, grant.Token);
         }
 
         // No live backend: host Kestrel in this process so there's no separate service to orphan.
@@ -61,7 +62,7 @@ public sealed class BackendConnection : IDisposable
             if (info is not null && await IsAliveAsync(info))
             {
                 paths.Log($"Started in-process backend {info.Url} (process {Environment.ProcessId})");
-                return new BackendConnection(info, null) { _ownedApp = app };
+                return new BackendConnection(info, null, app.Services.GetRequiredService<AccessTokens>().IssueNativeToken("windows")) { _ownedApp = app };
             }
             await Task.Delay(150);
         }
@@ -134,7 +135,6 @@ public sealed class BackendConnection : IDisposable
                 {
                     using var http = new HttpClient { BaseAddress = Http.BaseAddress, Timeout = Timeout.InfiniteTimeSpan };
                     http.DefaultRequestHeaders.Authorization = Http.DefaultRequestHeaders.Authorization;
-                    http.DefaultRequestHeaders.Add("X-Quantos-Client", "windows");
                     using var stream = await http.GetStreamAsync("api/events", _stop.Token);
                     using var reader = new StreamReader(stream);
                     delay = 1000;

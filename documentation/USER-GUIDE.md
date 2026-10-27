@@ -1,6 +1,6 @@
 # Quantos user guide
 
-Windows and public Android release: **0.2.2**. Private Android debug builds are separate from the
+Windows release: **0.2.3**. Latest public Android release: **0.2.2**. Private Android debug builds are separate from the
 public signed Release APK; keep using the same build channel to preserve update compatibility.
 About lists the release version and a separate build ID in `YYYY.DD.MM.revision` format (day before
 month), matching the download filename.
@@ -19,8 +19,10 @@ tablets. Phones start with Daily notes, Tasks, Capture, Today and More navigatio
 quick capture without leaving the current page and also stays in the top bar.
 Open **More › Settings › Phone navigation** to choose and order up to four shortcuts. More stays
 at the end, and these preferences stay on this device. Advanced tools remain under More and note
-lists are always reachable directly through **More › Notes**. Note
-properties open in Details. Tablets keep the wider workspace and split panes when there
+lists are always reachable directly through **More › Notes**. In phone Notes, tap a folder to
+browse it; use the folder trail to return to a parent or **All notes**. Folder counts include notes
+in nested folders, while the list shows notes directly inside the open folder. Search filters note
+titles and tags in the open folder. Note properties open in Details. Tablets keep the wider workspace and split panes when there
 is room. Use the **Commands** button for commands such as **Next tab**, **Previous tab** and
 **Split down**. Android Back closes a menu or dialog before navigating back or leaving.
 
@@ -101,11 +103,21 @@ to the same gutter as the center view. Drag the center handle to resize the pane
 has a quiet neutral emphasis on its outline; each pane has its own close button. The right sidebar
 keeps its panels on the same neutral card color as the rest of the app, with an 8px inset at the
 window edge. Its Tasks panel uses one heading, a compact add field, and a simple list rather than
-nested task cards. My Day task rows in the docked sidebar keep the title visible and show essential
-status and due information; project and assignee details remain in the full task views. Sidebar
+nested task cards. Tasks and My Day sidebar rows put the title on the first line, with smaller
+dates, assigned priority (P1–P4), status and other task details underneath. Long details wrap and tasks
+without details stay on one line. Hover over a truncated title to see its full text. Sidebar
 cards have an 8px gap. Drag the small grip between two cards to resize
 them; it appears on hover or keyboard focus. The left and right sidebar toggle icons in the top bar
 stay unboxed.
+
+In Windows and the browser, click a task title or a task label inside a note to edit it in a popup.
+Close it with the **X** or **Escape** to return to the same page, scroll position and focused control.
+Changes save before closing; if a write fails or conflicts, retry it or resolve the conflict first.
+If adding a subtask succeeds but saving its tags or My Day flag fails, choose **Retry saving task**
+to finish saving the same subtask.
+Links opened inside the popup stay there so the underlying workspace remains in place.
+**Ctrl-click** opens a normal tab and **Shift-click** opens the other pane. Android tasks continue
+opening as normal pages.
 
 Use **Add a panel** at the bottom of the right sidebar to add **My Day** alongside Files, Tasks,
 Scratchpad and the other available panels. Each panel is its own card; drag the subtle grip between
@@ -486,6 +498,10 @@ day if you tick *Check once a day*. Updating by hand still works: close Quantos 
 `quantos-cli tasks`, `quantos-cli capture "Call the bank"`, `quantos-cli task add "Pay rent" --due 2026-11-01`.
 Add `--json` for scripts. See `CLI-REFERENCE.md`.
 
+On first use, match the pairing code in the terminal with the confirmation in the native Quantos
+window. Personal CLI pairing permits editing and opening signed-in browser windows. Each named
+agent has a separate connection and receives only its own grants. Keep connection credentials private.
+
 AI agents can connect with `quantos-cli mcp --agent <name>` (Model Context Protocol). A new agent can
 only **read** until you grant more in *Settings › Plugins & permissions*. Granting permissions is
 confirmed in the Windows client. Agents can never run commands or delete permanently without your
@@ -495,6 +511,13 @@ approval in the Windows client.
   run, and copy the settings for Claude Desktop, Claude Code, Cursor, Codex or OpenCode into that
   agent's configuration file. The page also lists the nine tools an agent gets. Quantos has to be
   running, because the agent talks to the app and not to the files.
+- Before starting the agent, choose **Copy pairing command** in *Settings › MCP*, run that command
+  in a terminal, and approve the matching code in Quantos. This prevents background agent software
+  from hiding the pairing request. Without a name, MCP/tool calls use the agent named `agent`.
+- **Remove a local connection** in *Settings › MCP › Paired connections*: choose **Revoke** and
+  confirm in the native window. Its next authenticated request is rejected. Run the pairing command
+  again with `--pair` if you later want to reconnect it. Revoking a personal CLI credential does not
+  close browser sessions it already opened.
 
 ---
 

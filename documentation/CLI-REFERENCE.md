@@ -1,8 +1,9 @@
 # quantos-cli reference
 
 `quantos-cli.exe` lives in `application\`. It talks to the running Quantos backend (start Quantos
-first) using the access token in `client-data\settings\backend.json`, which only your Windows account
-can read.
+first). On first use, it requests pairing. Match the code printed in your terminal with the native
+Quantos confirmation before approving. Personal CLI pairing authorizes vault edits and opening
+signed-in browser windows; named agents remain limited to their own grants.
 
 ```
 quantos-cli <command> [arguments] [--json] [--workspace <name>] [--agent <name>]
@@ -11,6 +12,16 @@ quantos-cli <command> [arguments] [--json] [--workspace <name>] [--agent <name>]
 - Output is a readable table; add `--json` for machine-readable output.
 - `--workspace` limits commands to one workspace.
 - `--agent <name>` acts as a named agent, limited to the permissions you granted that agent.
+- Run `quantos-cli status --agent <name>` once interactively before starting an MCP/framework client.
+  Settings › MCP includes a **Copy pairing command** button for this step.
+- `mcp` and `call` default to the agent named `agent` when `--agent` is omitted.
+- `--pair` requests a replacement credential after revocation; existing rejected credentials never
+  silently enroll again. Revoke connections in Settings › MCP › Paired connections.
+- `--credential-file <path>` or `QUANTOS_ACCESS_TOKEN` supplies an explicit paired credential;
+  its identity cannot be changed with headers or command flags. Keep these secrets private.
+  Default credential caches live in device settings; Windows encrypts them for your account.
+- `open --print-url` prints a short-lived browser sign-in URL for trusted local tooling; treat it
+  as a secret. Named agents cannot create these URLs.
 - Exit codes: `0` success, `1` failure, `2` usage error, `3` Quantos not running, `4` not permitted.
 
 | Command | What it does |

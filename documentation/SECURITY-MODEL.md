@@ -9,15 +9,27 @@ plugins, imported files), and agents acting beyond what the user allowed.
 | Process | Runs | Talks to |
 |---|---|---|
 | `Quantos.Backend.exe` | Owns the vault. The only writer. Listens on `127.0.0.1` only. | Everyone, after authentication |
-| `Quantos.exe` (Windows client) | WebView2 window, tray, global shortcuts, notifications, PowerShell host | Backend (launch token), its own pages (bridge) |
+| `Quantos.exe` (Windows client) | WebView2 window, tray, global shortcuts, notifications, PowerShell host | Backend (memory-only native credential), its own pages (bridge) |
 | Browser tab | The same frontend | Backend (session cookie) |
-| `quantos-cli.exe` | Commands and the MCP server for agents | Backend (launch token, optionally as a named agent) |
+| `quantos-cli.exe` | Commands and the MCP server for agents | Backend (separately paired personal CLI or named agent credential) |
 
 ## Authentication (BUILD-PLAN 10.6-10.9)
 
 - A new random **launch token** (256-bit) is created at every backend start. It is written to
   `client-data\settings\backend.json`, readable by the current Windows user only (ACL set on write).
-- The Windows client and CLI send it as `Authorization: Bearer`. Page script never sees it.
+- This token is only a bootstrap credential: it permits ping and requesting/polling pairing.
+  It cannot read content, select an actor, approve actions or mint sessions. `authVersion: 2`
+  identifies this protocol; older clients must be updated together with the backend.
+- CLI/agent connections require a native pairing confirmation with a matching short code. Each
+  receives its own random bearer credential whose actor is bound by the server. Identity headers
+  cannot change that actor. The registry stores hashes in device settings. Windows CLI caches use
+  DPAPI CurrentUser and a private directory ACL; Unix caches use owner-only file permissions.
+- Native Windows/Android credentials stay in memory. A host owning the backend obtains one in
+  process. Windows reconnect uses a same-user named pipe, checks the kernel-reported peer PID and
+  matching installed executable paths in both directions, and fails closed on mismatch. The
+  backend's browser-open pipe operation opens the browser itself without returning a credential.
+- This separates application/API roles. It does not isolate a hostile process that can debug the
+  same user's processes, replace installed executables, or decrypt that user's DPAPI data.
 - Pages get a session by **one-time code**: a native caller asks `POST /api/auth/code`, opens
   `/auth/open?code=…`, and the backend exchanges the code (single use, 60 seconds) for an
   `HttpOnly`, `SameSite=Strict` cookie, then redirects to a clean URL.
@@ -37,8 +49,8 @@ Every write goes through the single write service, which checks the actor's perm
 | Actor | Granted by default |
 |---|---|
 | User (app or browser session, Windows client) | Everything, subject to approvals below |
-| CLI (launch token, no agent name) | Content permissions; not files outside the vault, network, or managing permissions |
-| Agent (`X-Quantos-Agent: name`) | Read only |
+| Paired personal CLI | Content permissions and opening a signed-in browser; not direct native approvals |
+| Paired named agent | Read only |
 | Plugin (`X-Quantos-Plugin: name`) | Nothing |
 | Automation (rule name) | Read, create and edit |
 
@@ -50,8 +62,10 @@ local commands; access files outside the vault; network requests; manage permiss
 - The Windows client refuses device permission requests (microphone, camera, location) from any page
   that isn't Quantos's own; Quantos's pages still go through WebView2's own prompt, and only the
   recorder asks, for the microphone.
-- `quantos-cli call` runs the same tools as the MCP server and, with `--agent`, under that agent's
-  grants; without `--agent` it acts as the command line.
+- `quantos-cli call` and `mcp` default to the named agent `agent`; `--agent` selects which paired
+  agent credential to use. An explicitly supplied credential keeps its server-bound identity.
+  Ordinary CLI commands without `--agent` use the separately paired personal CLI credential.
+  Pairing that personal connection explicitly authorizes editing and browser sign-in.
 - **Updates:** Quantos contacts GitHub (`api.github.com`, and the release download on github.com) only
   when the person checks or turns on the daily check; only the person can start a check or a download.
   A download is used only if its SHA-256 matches the digest GitHub publishes for the release file, only
@@ -60,14 +74,15 @@ local commands; access files outside the vault; network requests; manage permiss
 - A **locked** note (`locked: true`) refuses edits from every actor, the person included, until it is
   unlocked; only the person (app, browser session or CLI) can unlock it.
 - Agents and plugins are also checked on every read, and can't reach setup, system, sign-in,
-  plugin or approval endpoints at all.
+  plugin or approval endpoints. The metadata-only `/api/auth/whoami` endpoint is allowed.
 
 ## Approvals (BUILD-PLAN 10.10)
 
 Shell execution, permanent deletion and changing permissions **always** need an approval, whoever
 asks. The backend creates a pending approval describing exactly what will happen (for commands: the
 exact text and folder). Only the Windows client can decide it, after a native confirmation dialog.
-Approvals are single-use, tied to that exact action, and expire after five minutes. A browser
+Approvals are single-use, tied to the actor, credential, requesting instance and exact action,
+and expire after five minutes. Native Android can also decide native approvals. A browser
 request alone can never trigger these actions.
 
 ## The native bridge

@@ -30,6 +30,10 @@ Validation passed 204 backend/core tests with test collections run sequentially 
 dialog tests. Default parallel runs hit existing discovery/SSE timeouts; no timeout/assertion was
 relaxed. Independent review finished clean after preserving linked-folder calendar export.
 
+Compact phone Notes now browses note folders with a breadcrumb trail and recursive folder counts;
+note rows use tighter spacing with a 48px minimum tap target. Search remains scoped to titles and tags
+in the open folder. Empty folders are not shown because the phone view uses the existing note summaries.
+
 ### Android and shared vault (owner-approved scope, 2026-10-24)
 
 - `src/Quantos.FolderBridge/` adds an optional host worker for a folder managed by Google Drive or
@@ -236,6 +240,35 @@ antivirus warnings, and a stronger update trust anchor than the checksum alone);
 `RELEASE-CHECKLIST.md` needs the 1.1/1.2 features.
 
 ## 5. Verification status
+
+- Task popup (2026-10-27): Windows/browser clicks use the full editor over the retained workspace;
+  Android stays on normal pages. Popup state is transient; API writes are observed for pending or
+  failed changes without changing their return values or auth. Browser acceptance verified a mounted
+  source at 2200px, editor focus return, title/source-label refresh, nested source links, title and
+  reminder failure/retry, nested due-date prompt layering and Escape, disk-conflict resolution that
+  remains resolved on reopening, and closing a saved popup when list refresh is offline. Automated
+  tests cover platform routing, modified navigation, write completion ordering, failed-field retry,
+  and clearing resolved body/raw conflict drafts. Native Android interaction was not exercised.
+  Delivery: private Windows build `2026.27.10.14`, release `0.2.2`, passed 124 frontend / 242
+  backend-core / four native tests, typecheck (zero errors, nine existing warnings), independent
+  review, ZIP validation and packaged self-check (zero warnings). A 390px browser popup had no
+  horizontal overflow. The owner's staging copy was installed/restarted; all three executable
+  hashes match, Page loaded reports HTTP 200 and served assets report the new build ID. The native
+  Windows accessibility tree showed the full task popup open. Close/scroll/failure acceptance was
+  exercised in the browser; no Android APK or public release was produced.
+
+- Sidebar task layout (2026-10-27, frontend build `2026.27.10.12`): Tasks and docked My Day use
+  title-first rows with smaller metadata underneath, including assigned priority and distinct planned
+  dates. Existing badges are preserved. Browser checks in the isolated development vault covered
+  264–266px rows, absent metadata, long unbroken waiting text without horizontal overflow, task
+  opening/completion, Alt+Down reorder with retained focus and unchanged full-page Tasks layout.
+  All 111 frontend tests passed; svelte-check reported zero errors and nine existing warnings;
+  Vite build and independent review passed. The subsequent Windows staging package is build
+  `2026.27.10.13`, release `0.2.2`: all 111 frontend, 242 backend/core and four native tests passed;
+  backend ran sequentially after one log-lock cleanup failure. ZIP validation and packaged self-check
+  passed (zero self-check warnings). The owner's local staging copy was replaced and restarted;
+  executable hashes match, startup reports Page loaded / HTTP 200 and served assets contain the build
+  ID. No Android installation or public publication was performed.
 
 Verified: everything listed in section 3 has unit or acceptance tests for its logic and was exercised
 in a browser against the dev backend (screenshots and accessibility scans). The in-app update check and

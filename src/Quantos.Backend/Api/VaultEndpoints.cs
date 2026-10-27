@@ -153,6 +153,8 @@ public static class VaultEndpoints
         {
             var session = host.Require();
             var abs = session.Vault.Absolute(path);
+            var privateRoot = Path.GetFullPath(host.Paths.ClientData).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (abs.StartsWith(privateRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return Results.NotFound();
             var allowed = Core.Storage.FileBoundary.ContainsFile(session.Vault.Attachments, abs)
                 || session.Vault.IsLinkedFile(abs);
             if (!allowed || !File.Exists(abs)) return Results.NotFound();

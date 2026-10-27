@@ -99,7 +99,7 @@
       {#if (list as TaskDto[]).length}
         <section class="suggest">
           <div class="row"><h2 class="label">{name}</h2><button class="btn ghost" onclick={() => addAll(list as TaskDto[])}>Add all to My Day</button></div>
-          {#each list as TaskDto[] as t (t.id)}<TaskRow task={t} />{/each}
+          {#each list as TaskDto[] as t (t.id)}<TaskRow task={t} stacked={docked} />{/each}
         </section>
       {/if}
     {/each}

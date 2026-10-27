@@ -545,6 +545,7 @@ public sealed class MainForm : Form
     {
         "PermanentDelete" => "permanent deletion",
         "RunCommands" => "running a command",
+        "ManagePermissions" => "permissions or connections",
         _ => permission ?? "action"
     };
 

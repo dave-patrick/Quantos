@@ -5,6 +5,8 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Security.Cryptography;
+using Quantos.Core.Security;
 
 namespace Quantos.Cli;
 
@@ -33,7 +35,7 @@ public static class Program
           task add <title> [--due D] [--priority 1-4]
           task done <title or id>
           query "<yaml>"                  Run a query (same syntax as ```query blocks)
-          open [title or id]              Open Quantos in your browser
+          open [title or id] [--print-url] Open Quantos in your browser (or print one-time link)
           run "<powershell>"              Run a command after approval in the Windows client
           rebuild                         Rebuild the cache from the vault
           mcp                             Serve the Model Context Protocol on stdin/stdout for AI agents
@@ -43,6 +45,8 @@ public static class Program
                                           and print its result; exit code 1 when the tool fails
 
         The backend must be running (start Quantos, or Quantos.Backend.exe).
+        Approve first-time pairing in the native client. --pair explicitly requests a new connection.
+        QUANTOS_ACCESS_TOKEN or --credential-file <path> supplies an already paired credential.
         """;
 
     public static async Task<int> Main(string[] args)
@@ -63,6 +67,7 @@ public static class Program
         Client client;
         try { client = await Client.ConnectAsync(opts); }
         catch (Exception ex) { Console.Error.WriteLine(ex.Message); return 3; }
+        using var connection = client;
 
         try
         {
@@ -280,7 +285,8 @@ public static class Program
         string? to = null;
         if (o.Positional.Count > 1) to = "/note/" + await Resolve(c, string.Join(' ', o.Positional.Skip(1)), o.Workspace);
         var r = await c.Post("auth/code", new { kind = "browser", to });
-        Process.Start(new ProcessStartInfo(r!["url"]!.ToString()) { UseShellExecute = true });
+        if (o.Flag("print-url")) Console.WriteLine(r!["url"]!.ToString());
+        else Process.Start(new ProcessStartInfo(r!["url"]!.ToString()) { UseShellExecute = true });
         return 0;
     }
 
@@ -359,7 +365,7 @@ public sealed class Options
     private readonly Dictionary<string, List<string>> _named = new();
     public bool Json => Flag("json");
     public string? Workspace => Get("workspace");
-    public string? Agent => Get("agent");
+    public string? Agent => Get("agent") ?? (Positional.FirstOrDefault() is "mcp" or "call" ? "agent" : null);
 
     public static Options Parse(string[] args)
     {
@@ -369,7 +375,7 @@ public sealed class Options
             if (args[i].StartsWith("--"))
             {
                 var name = args[i][2..];
-                var flag = name is "json" or "all";
+                var flag = name is "json" or "all" or "pair" or "print-url";
                 var value = !flag && i + 1 < args.Length ? args[++i] : "true";
                 if (!o._named.TryGetValue(name, out var list)) o._named[name] = list = [];
                 list.Add(value);
@@ -385,21 +391,19 @@ public sealed class Options
     public string WorkspaceQuery(string sep) => Workspace is null ? "" : $"{sep}workspace={Uri.EscapeDataString(Workspace)}";
 }
 
-public sealed class Client
+public sealed class Client : IDisposable
 {
     private readonly HttpClient _http;
     public string Url { get; }
 
-    private Client(string url, string token, string? agent)
+    private Client(string url, string token)
     {
         Url = url;
         _http = new HttpClient { BaseAddress = new Uri(url), Timeout = TimeSpan.FromSeconds(60) };
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        _http.DefaultRequestHeaders.Add("X-Quantos-Client", "cli");
-        if (agent is not null) _http.DefaultRequestHeaders.Add("X-Quantos-Agent", agent);
     }
 
-    public static async Task<Client> ConnectAsync(Options o)
+    public static async Task<Client> ConnectAsync(Options o, CancellationToken ct = default)
     {
         var clientData = o.Get("client-data") ?? Environment.GetEnvironmentVariable("QUANTOS_CLIENT_DATA");
         if (clientData is null)
@@ -412,15 +416,62 @@ public sealed class Client
         var file = Path.Combine(clientData, "settings", "backend.json");
         if (!File.Exists(file)) throw new InvalidOperationException("Quantos isn't running. Start Quantos (or Quantos.Backend.exe) first.");
         var info = JsonNode.Parse(await File.ReadAllTextAsync(file))!;
-        var client = new Client(info["url"]!.ToString(), info["token"]!.ToString(), o.Agent);
-        try { await client.Get("ping"); }
+        var url = info["url"]!.ToString();
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var address) || address.Scheme != "http" || address.Host != "127.0.0.1" || address.UserInfo.Length > 0 || address.AbsolutePath != "/" || address.Query.Length > 0 || address.Fragment.Length > 0)
+            throw new InvalidOperationException("The discovery file does not identify a local Quantos backend.");
+        using var bootstrap = new Client(url, info["token"]!.ToString());
+        try { await bootstrap.Get("ping"); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { throw new InvalidOperationException("Quantos isn't responding. Start it again."); }
+        if (info["authVersion"]?.GetValue<int>() != 2) throw new InvalidOperationException("Update the backend and CLI together before pairing this connection.");
+
+        var kind = o.Agent is null ? "Cli" : "Agent";
+        var name = o.Agent ?? "cli";
+        var cache = o.Get("credential-file") ?? ClientCredentialFile.PathFor(clientData, kind, name);
+        var supplied = Environment.GetEnvironmentVariable("QUANTOS_ACCESS_TOKEN");
+        CachedClientCredential? cached;
+        try { cached = supplied is null && !o.Flag("pair") ? ClientCredentialFile.Read(cache) : null; }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or CryptographicException or FormatException) { throw new InvalidOperationException("The connection credential could not be unlocked on this device. Check its private file or use --pair to request a new connection."); }
+        if (supplied is null && cached is null && o.Get("credential-file") is not null) throw new InvalidOperationException("The supplied credential file does not exist. Pair this connection before supplying its file.");
+        if (o.Flag("pair") && (supplied is not null || o.Get("credential-file") is not null)) throw new InvalidOperationException("Use --pair without a supplied credential or credential file.");
+        string? token = supplied;
+        if (token is null && !o.Flag("pair") && cached is not null)
+        {
+            if (cached.Kind != kind || cached.Name != name) throw new InvalidOperationException("The credential file belongs to a different connection.");
+            token = cached.Token;
+        }
+        if (token is null)
+        {
+            var proof = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
+            var code = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(proof)))[..8].ToUpperInvariant();
+            var request = await bootstrap.Post("auth/credentials/request", new { kind, name, proof });
+            var id = request!["id"]!.ToString();
+            Console.Error.WriteLine($"Pairing {kind} “{name}”. Confirm code {code} in the native Quantos client. Waiting for your decision…");
+            var deadline = DateTimeOffset.UtcNow.AddMinutes(5);
+            while (DateTimeOffset.UtcNow < deadline)
+            {
+                ct.ThrowIfCancellationRequested();
+                var result = await bootstrap.Post("auth/credentials/poll", new { id, proof });
+                var state = result!["state"]!.ToString();
+                if (state == "Approved") { token = result["token"]!.ToString(); break; }
+                if (state != "Pending") throw new InvalidOperationException("The pairing request was denied or expired. Use --pair when you want to request another connection.");
+                await Task.Delay(1000, ct);
+            }
+            if (token is null) throw new InvalidOperationException("Pairing expired. Open a native Quantos client and use --pair to try again.");
+            ClientCredentialFile.Write(cache, new(kind, name, token));
+        }
+        var client = new Client(url, token);
+        JsonNode? identity;
+        try { identity = await client.Get("auth/whoami"); }
+        catch (ApiException ex) when (ex.Status is 401 or 403) { throw new InvalidOperationException("This connection is no longer authorized. Use --pair for a new native approval; a revoked connection never silently pairs again."); }
+        if (o.Agent is not null && (identity?["kind"]?.ToString() != "Agent" || identity["name"]?.ToString() != o.Agent))
+            throw new InvalidOperationException("The supplied credential is not bound to the requested agent. Agent names cannot override credential identity.");
         return client;
     }
 
     public Task<JsonNode?> Get(string path) => Send(HttpMethod.Get, path, null);
     public Task<JsonNode?> Post(string path, object body) => Send(HttpMethod.Post, path, body);
     public Task<JsonNode?> Patch(string path, object body) => Send(HttpMethod.Patch, path, body);
+    public void Dispose() => _http.Dispose();
 
     private async Task<JsonNode?> Send(HttpMethod method, string path, object? body)
     {

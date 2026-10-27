@@ -27,6 +27,8 @@ public sealed class ConfigStore(Vault vault, PermissionService permissions, Chan
     {
         if (!IsAllowed(name)) throw new QuantosException($"'{name}' isn't a Quantos configuration file.", 404);
         permissions.Demand(actor, Permission.CreateEdit, $"Change {name}");
+        if (string.Equals(name, Vault.LinkedFoldersFile, StringComparison.OrdinalIgnoreCase))
+            permissions.Demand(actor, Permission.OutsideFiles, "Change the folders allowed outside the vault");
         WritePath(Path.Combine(vault.Root, name), value);
         changes.Publish(new ChangeEvent(ChangeKind.Notification, null, name, Origin: actor.ToString(), Data: new { config = name }));
     }

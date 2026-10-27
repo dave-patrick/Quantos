@@ -239,8 +239,7 @@ public sealed partial class Vault
         var full = Path.GetFullPath(fullPath);
         foreach (var root in LinkedRoots.Values)
         {
-            var rootFull = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            if (full.StartsWith(rootFull, StringComparison.OrdinalIgnoreCase)) return true;
+            if (FileBoundary.ContainsFile(root, full)) return true;
         }
         return false;
     }

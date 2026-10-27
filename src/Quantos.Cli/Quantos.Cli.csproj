@@ -9,14 +9,16 @@
     <RootNamespace>Quantos.Cli</RootNamespace>
     <Product>Quantos</Product>
     <Company>Atomic 22 Industries</Company>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.13" />
     <!-- The tool schemas live with the domain code, but the CLI stays a thin client: it compiles
          the same file rather than taking a reference on the whole library. -->
     <Compile Include="..\Quantos.Core\Agents\McpTools.cs" Link="Agents\McpTools.cs" />
+    <Compile Include="..\Quantos.Core\Security\ClientCredentialFile.cs" Link="Security\ClientCredentialFile.cs" />
   </ItemGroup>
 
 </Project>

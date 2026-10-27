@@ -1,4 +1,5 @@
 import type { Approval } from './types';
+import { writeGate, writeKey } from './writeGate';
 
 /** Identifies this browser tab, so it can ignore change events caused by its own writes. */
 export const instanceId = crypto.randomUUID();
@@ -19,7 +20,7 @@ export function onUnauthorized(listener: Listener) {
   return () => unauthorizedListeners.delete(listener);
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function sendRequest<T>(method: string, path: string, body?: unknown): Promise<T> {
   const response = await fetch('/api/' + path.replace(/^\//, ''), {
     method,
     credentials: 'same-origin',
@@ -38,6 +39,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     throw error;
   }
   return data as T;
+}
+
+function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  if (method === 'GET') return sendRequest<T>(method, path, body);
+  return writeGate.run(writeKey(method, path, body), () => sendRequest<T>(method, path, body));
 }
 
 export const api = {

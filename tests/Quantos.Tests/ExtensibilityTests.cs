@@ -39,7 +39,9 @@ public sealed class ExtensibilityTests : IAsyncLifetime
     private HttpClient Native(string? client = null, string? agent = null)
     {
         var http = new HttpClient { BaseAddress = new Uri(_url) };
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokens.LaunchToken);
+        var credential = client is "windows" or "android" ? _tokens.IssueNativeToken(client)
+            : ((ClientCredentials)_app.Services.GetService(typeof(ClientCredentials))!).Issue(agent is null ? ActorKind.Cli : ActorKind.Agent, agent ?? "cli").Token;
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credential);
         if (client is not null) http.DefaultRequestHeaders.Add(RequestSecurity.ClientHeader, client);
         if (agent is not null) http.DefaultRequestHeaders.Add(RequestSecurity.AgentHeader, agent);
         return http;

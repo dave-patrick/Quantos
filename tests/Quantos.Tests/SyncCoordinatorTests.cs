@@ -21,7 +21,7 @@ public sealed class SyncCoordinatorTests
         await using var app = Quantos.Backend.Program.Build([], new BackendOptions { Vault = Path.Combine(data.Root, "backend-vault"), ClientData = folder, Port = 0 }, new QuantosPaths(folder), tokens);
         await app.StartAsync();
         using var http = new HttpClient { BaseAddress = new Uri(app.Services.GetRequiredService<ServerAddress>().Url) };
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.LaunchToken);
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.IssueNativeToken("windows"));
         http.DefaultRequestHeaders.Add("X-Quantos-Client", "windows");
         var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();

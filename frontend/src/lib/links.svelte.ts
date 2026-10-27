@@ -3,6 +3,8 @@ import { layout, type Where } from './layout.svelte';
 import { app } from './state.svelte';
 import type { NodeDto, NodeSummary } from './types';
 import { tasks } from './tasks.svelte';
+import { isAndroidClient } from './platform';
+import { taskPopup, openTaskPopup, closeTaskPopup } from './taskPopup.svelte';
 
 export const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
@@ -13,8 +15,16 @@ export function whereFrom(event?: MouseEvent | KeyboardEvent | null): Where {
   return 'current';
 }
 
-export function openNode(id: string, where: Where = 'current', title?: string) {
+export async function openNode(id: string, where: Where = 'current', title?: string) {
   const summary = app.titleIndex.get(id);
+  if (!isAndroidClient) {
+    if (taskPopup.busy) return;
+    if (where === 'current' && (taskPopup.id || summary?.type === 'task' || tasks.get(id))) {
+      await openTaskPopup(id);
+      return;
+    }
+    if (taskPopup.id && !await closeTaskPopup()) return;
+  }
   return layout.open({ kind: 'node', nodeId: id, title: title ?? summary?.title ?? 'Note' }, where);
 }
 
@@ -128,6 +138,10 @@ export const tasksVersion = { get value() { return tasks.version; } };
 export const taskHooks = {
   toggleTask: (taskId: string, checked: boolean) => { tasks.setStatus(taskId, checked ? 'done' : 'todo').catch((e) => app.error(e)); },
   taskInfo: (taskId: string) => tasks.info(taskId),
-  openTask: (taskId: string, event: MouseEvent) => { openNode(taskId, whereFrom(event)); },
+  openTask: (taskId: string, event: MouseEvent) => {
+    if (!isAndroidClient && whereFrom(event) === 'current') {
+      void openTaskPopup(taskId, event.target instanceof HTMLElement ? event.target : null);
+    } else void openNode(taskId, whereFrom(event));
+  },
   restoreTask: (taskId: string) => { tasks.restore(taskId).catch((e) => app.error(e)); }
 };

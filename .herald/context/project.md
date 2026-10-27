@@ -72,7 +72,10 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   The real folder tree retains Notes/Daily/Tasks/Archive parents and empty folders. `noteFolders.ts`
   merges that tree with note summaries without flattening storage directories. New note and New
   folder use the selected physical path. Notes includes its own workspace picker.
-- Tasks open in normal pages. Task popups were removed after the owner clarified the Android scope.
+- Android tasks open in normal pages. Windows and browser task clicks open a temporary editor popup
+  over the retained workspace; Close/Escape flushes pending writes and restores focus and scroll.
+  Explicit new-tab/other-pane requests keep normal navigation. `taskPopup.svelte.ts` owns the
+  transient popup; `writeGate.ts` tracks submitted writes without persisting data or altering errors.
 - `type: task` implicitly belongs to the editable `#task` schema. `SupertagService` synthesizes its
   default until an explicit update creates a normal supertag file; native task fields keep stable
   keys without rekeying unrelated schemas. `TaskService` retains scheduling and completion logic.

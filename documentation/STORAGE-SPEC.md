@@ -23,7 +23,9 @@ tests). Moving the whole `Quantos\` folder keeps settings; the vault path is sto
 client-data/
   settings/
     client.json          vault path, window state, last workspace
-    backend.json         discovery file (port, pid, token), current user only
+    backend.json         discovery file (port, pid, bootstrap token, authVersion), current user only
+    connection-identities.json  paired actor metadata and bearer hashes, no native/plaintext tokens
+    client-credentials/  per-identity CLI cache (Windows DPAPI plus private ACL; Unix owner-only)
   cache/
     cache.sqlite         derived data; delete freely
   logs/
