@@ -11,8 +11,8 @@ client, an Android phone/tablet app, and your browser.
 ## Project status
 
 Releases 1.0, 1.1 and 1.2 of the [build plan](BUILD-PLAN.md) are built, and the app is published on
-[GitHub Releases](https://github.com/dave-patrick/Quantos/releases). Version 0.2.2 includes the portable
-Windows x64 package and a signed Android ARM64 Release APK (Android 8+). Windows updates from
+[GitHub Releases](https://github.com/dave-patrick/Quantos/releases). The current Windows x64 package is
+0.2.3; the latest signed Android ARM64 Release APK is 0.2.2 (Android 8+). Windows updates from
 *Settings › Updates*; install Android updates from the release APK using the same signing channel.
 Private debug APKs are separate from the public release certificate. See [Android](documentation/ANDROID.md)
 and [optional shared-vault server](documentation/SERVER.md) for offline sync and server MCP setup.

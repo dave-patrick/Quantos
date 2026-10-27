@@ -121,6 +121,15 @@ in the open folder. Empty folders are not shown because the phone view uses the 
 
 ## 1. Where things stand
 
+Latest Windows release: **0.2.3**, build **2026.27.10.15**, published October 27, 2026 from tag/source
+`05dada6`. Windows/browser task popups, sidebar metadata and credential separation are included.
+The final release passed 124 frontend, 242 backend-core and four native tests, archive validation,
+zero-warning self-check, startup HTTP 200, served build identity and installed executable hash checks.
+The owner's local staging copy was updated and restarted. GitHub latest-release metadata and both
+asset digests were verified publicly. Android's latest public APK remains 0.2.2; no phone update or
+shared-server deployment was performed. Full evidence and manual limits are in
+[the 0.2.3 release record](releases/0.2.3/RELEASE-CHECKLIST.md).
+
 | | |
 |---|---|
 | Latest release | [0.2.2](https://github.com/dave-patrick/Quantos/releases/tag/v0.2.2), build `2026.26.10.2`; Windows x64 ZIP and public signed Android ARM64 Release APK. SHA-256 and verification: [release checklist](releases/0.2.2/RELEASE-CHECKLIST.md). |

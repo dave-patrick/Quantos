@@ -46,6 +46,15 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-26; latest release 0.2.2, build 2026.26.10.2)
 
+- **Published Windows 0.2.3 (2026-10-27), build `2026.27.10.15`.** Source/tag `05dada6` includes
+  the Windows/browser popup, sidebar metadata layout and pending credential-separation work.
+  Release review found and fixed partial subtask retries: creation is retained and metadata is
+  retried on that task, with no duplicate and successful popup close in the browser acceptance check.
+  All 370 tests passed in the final checks; package/archive/self-check passed. The owner's staging
+  copy was replaced/restarted with matching executable hashes, HTTP 200 and the final served build ID.
+  GitHub latest is public v0.2.3 with the Windows ZIP and SHA256SUMS.txt only; both digests match.
+  Public Android stays on 0.2.2 and the phone was not changed. See releases/0.2.3/RELEASE-CHECKLIST.md.
+
 - **Task popup restored for Windows/browser (2026-10-27).** The owner explicitly wants task clicks
   in the Windows app and browser to edit in a popup while keeping their place; Android is excluded.
   The original workspace remains mounted and inert beneath the editor; Close/Escape waits for body,

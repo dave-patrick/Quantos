@@ -17,6 +17,8 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
+- Windows 0.2.3, build 2026.27.10.15, is published and staged locally. Public Android remains 0.2.2.
+  Windows/browser task popups retain the mounted workspace; Android keeps normal task pages.
 - BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. The 0.2.2 release set includes Windows x64 and a
   public release-signed Android ARM64 APK. The owner's phone stays on the private debug certificate.
   Semantic release and YYYY.DD.MM.revision build IDs are separate; About and filenames show both.
@@ -46,7 +48,8 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   an STA thread; the package build includes this tier. Shared native URL checks use
   `Core/Security/LocalOrigin`, and attachment file access uses `Core/Storage/FileBoundary`.
 - `documentation/SECURITY-REMEDIATION.md` tracks implemented security batches and open findings.
-  Tightened attachment/calendar/native boundaries do not yet fix shared-token actor impersonation.
+  Native, personal CLI and agent credentials now have distinct, server-bound identities; discovery
+  information cannot grant content writes. The remaining qualified audit items are still open.
 - The owner tests Quantos from `C:\Users\davem\Apps\Quantos\Quantos\application` (vault in
   `C:\Users\davem\Quantos\Vault`). After every build, stage it there with
   `pwsh tools/dev/stage.ps1`: it closes the client, replaces the three programs with the ones from
