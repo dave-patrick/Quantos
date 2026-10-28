@@ -54,8 +54,11 @@ open threads and the machine.
   242 backend/core and five native tests; packaged self-check has zero warnings. Installed/restarted
   the owner's test copy with matching executable hashes and Page loaded / HTTP 200. Native visual
   and maximize/restore checks were not completed by Computer Use. The owner subsequently confirmed
-  the appearance locally and authorized commit/push/publication. Preparing Windows 0.2.4 build
-  2026.28.10.17; numeric version advances for updater compatibility. Maximize/restore remains unverified.
+  the appearance locally and authorized commit/push/publication. Windows 0.2.4 build 2026.28.10.17
+  is now public; source/tag `960accd` is pushed. All 371 tests and package/self-check pass; public
+  download and both asset digests are verified. Owner test copy restarted with matching executable
+  hashes, HTTP 200 and served build 17. Numeric version advances for updater compatibility.
+  Maximize/restore and the other machine's updater installation remain unverified.
 
 - **Published Windows 0.2.3 (2026-10-27), build `2026.27.10.15`.** Source/tag `05dada6` includes
   the Windows/browser popup, sidebar metadata layout and pending credential-separation work.

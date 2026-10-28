@@ -17,9 +17,10 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
-- Windows 0.2.4, build 2026.28.10.17, is being prepared for publication with the native frame-theme
-  fix. The owner confirmed its appearance on private build 16; maximize/restore is not recertified.
-- Windows 0.2.3, build 2026.27.10.15, is published and staged locally. Public Android remains 0.2.2.
+- Windows 0.2.4, build 2026.28.10.17, is published and staged locally with the native frame-theme
+  fix. All 371 tests pass; public download and installed executable hashes are verified.
+  The owner confirmed appearance on private build 16; maximize/restore is not recertified.
+  Public Android remains 0.2.2.
   Windows/browser task popups retain the mounted workspace; Android keeps normal task pages.
 - BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. The 0.2.2 release set includes Windows x64 and a
   public release-signed Android ARM64 APK. The owner's phone stays on the private debug certificate.

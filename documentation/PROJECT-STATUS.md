@@ -5,13 +5,17 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-28. Windows 0.2.4, build 2026.28.10.17, is being prepared for publication;
+_Last updated: 2026-10-28. Windows 0.2.4, build 2026.28.10.17, is published and staged locally;
 public Android remains 0.2.2. Optional server/folder bridge deployments remain separate._
 
 The owner approved committing, pushing and publishing the Windows frame-theme fix after confirming
 the appearance locally on private 0.2.3 build 2026.28.10.16. The numeric release advances to 0.2.4
 because legacy updaters compare release versions rather than build IDs. See
 [the release checklist](releases/0.2.4/RELEASE-CHECKLIST.md) for current delivery evidence.
+Source/tag `960accd` is pushed. All 371 tests and package/self-check validations passed; public
+download SHA-256 matches GitHub, latest-release updater metadata is correct, and the owner's
+test copy restarted with matching executables and served build identity. Manual native
+maximize/restore and the other machine's updater installation remain unverified.
 
 ### Earlier implementation and verification history
 
