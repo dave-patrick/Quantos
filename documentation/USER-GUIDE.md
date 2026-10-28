@@ -84,7 +84,7 @@ use **Exit** from the tray icon menu. Exit saves your open notes first and warns
 couldn't be saved.
 Drag the blank strip above the app toolbar to move the window. Drag it while maximized to restore
 the window under the pointer and continue moving it.
-To resize a restored Windows window, drag any outer edge or corner. The narrow dark border is
+To resize a restored Windows window, drag any outer edge or corner. The narrow border is
 the resize area; restore a maximized window before resizing it.
 
 The top bar has a taller header with a larger Quantos wordmark and an 8px gap before the main
@@ -543,6 +543,8 @@ approval in the Windows client.
   Nord, Forest, Rosé, Solarized, Paper, Sky, High contrast), then change anything:
   - **Quantos Dark:** a lighter neutral gray page background with darker gray cards; the Windows app's
     title bar uses the same background colour.
+  - **Windows frame:** the resize border, title bar and window buttons follow the selected light,
+    dark or custom appearance immediately, including when reopening the app in light mode.
   - **Window size:** drag any edge or corner of the Windows app window to resize it.
   - Scrollbars are hidden to keep the workspace clear; wheel, touchpad, keyboard and touch scrolling
     continue to work.

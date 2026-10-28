@@ -74,7 +74,7 @@ public static class Mcp
                     {
                         ["protocolVersion"] = request?["params"]?["protocolVersion"]?.ToString() ?? "2025-06-18",
                         ["capabilities"] = new JsonObject { ["tools"] = new JsonObject() },
-                        ["serverInfo"] = new JsonObject { ["name"] = "quantos", ["version"] = "0.2.3" },
+                        ["serverInfo"] = new JsonObject { ["name"] = "quantos", ["version"] = "0.2.4" },
                         ["instructions"] = "Quantos is the user's personal knowledge vault of Markdown notes and tasks. Notes link with [[id|Title]]. Prefer reading before writing; keep the user's formatting."
                     },
                     "ping" => new JsonObject(),

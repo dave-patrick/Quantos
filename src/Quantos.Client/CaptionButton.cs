@@ -23,6 +23,17 @@ public sealed class CaptionButton : Control
     private readonly Glyph _glyph;
     private bool _hovered;
     private bool _pressed;
+    private Color _ink = Ink, _inkBright = InkBright, _hoverFill = HoverFill, _pressFill = PressFill;
+
+    public void ApplyAppearance(Color background, Color foreground, Color text, Color hover, Color active)
+    {
+        BackColor = background;
+        _ink = foreground;
+        _inkBright = text;
+        _hoverFill = hover;
+        _pressFill = active;
+        Invalidate();
+    }
 
     public CaptionButton(Glyph glyph)
     {
@@ -76,14 +87,14 @@ public sealed class CaptionButton : Control
     {
         var g = e.Graphics;
         g.Clear(BackColor);
-        var ink = Ink;
+        var ink = _ink;
         if (_hovered)
         {
-            var fill = _glyph == Glyph.Close ? CloseFill : (_pressed ? PressFill : HoverFill);
+            var fill = _glyph == Glyph.Close ? CloseFill : (_pressed ? _pressFill : _hoverFill);
             using var patch = RoundedPath(new Rectangle(3, 3, Width - 6, Height - 6), 5);
             using var brush = new SolidBrush(fill);
             g.FillPath(brush, patch);
-            ink = InkBright;
+            ink = _glyph == Glyph.Close ? Color.White : _inkBright;
         }
 
         // A 10x10 glyph box, centred, drawn on the pixel grid so the lines stay crisp.

@@ -17,6 +17,8 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
+- Windows 0.2.4, build 2026.28.10.17, is being prepared for publication with the native frame-theme
+  fix. The owner confirmed its appearance on private build 16; maximize/restore is not recertified.
 - Windows 0.2.3, build 2026.27.10.15, is published and staged locally. Public Android remains 0.2.2.
   Windows/browser task popups retain the mounted workspace; Android keeps normal task pages.
 - BUILD-PLAN Releases 1.0, 1.1 and 1.2 are built. The 0.2.2 release set includes Windows x64 and a
@@ -64,6 +66,9 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - Every user-visible change updates documentation/USER-GUIDE.md (also shown in the in-app Help).
 - Preserve existing project instructions, configuration, credentials, and application data.
 - Use Graft for code context when available, following the global and project Graft guidance.
+- Windows main-frame colors follow resolved frontend CSS through `windowAppearance.ts` and the
+  origin-checked `appearance` bridge message. `MainForm` accepts complete opaque hex palettes
+  only from its main page; `CaptionButton` updates its glyph/hover colors with the frame.
 - Herald compiler output replaces vendor files. Preserve and merge existing guidance before compiling.
 - Public landing pages use dark app-specific compositions with real approved brand assets; shared Atomic 22
   navigation links to the blue Notes directory. Publish only site/ via GitHub Pages. Never serve or

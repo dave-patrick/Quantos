@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><link rel="stylesheet" href="/src/styles/tokens.css"></head><body>
+<pre id="result">running</pre>
+<script type="module">
+const messages = [];
+window.chrome = { webview: { postMessage: (m) => messages.push(m), addEventListener() {} } };
+const { watchWindowAppearance } = await import('/src/lib/windowAppearance.ts');
+const wait = () => new Promise((r) => setTimeout(r, 100));
+const check = (condition, name) => { if (!condition) throw new Error(name); };
+try {
+  const stop = watchWindowAppearance();
+  await wait();
+  check(messages.at(-1)?.background === '#2a2b2d', 'initial dark palette');
+  document.documentElement.dataset.theme = 'light';
+  await wait();
+  check(messages.at(-1)?.background === '#f5f7fb', 'runtime light palette');
+  check(messages.at(-1)?.foreground === '#26364a', 'light caption foreground');
+  const style = document.createElement('style');
+  style.textContent = ':root[data-theme] { --bg: #faf0e6; --bg-hover: rgb(0 0 0 / 10%); }';
+  document.head.appendChild(style);
+  await wait();
+  check(messages.at(-1)?.background === '#faf0e6', 'custom stylesheet palette');
+  check(messages.at(-1)?.hover !== '#303133', 'translucent custom hover');
+  style.textContent = ':root[data-theme] { --bg: oklch(100% 0 0); }';
+  await wait();
+  check(messages.at(-1)?.background === '#ffffff', 'modern CSS color');
+  style.remove();
+  document.documentElement.style.setProperty('--bg', '#abcdef');
+  await wait();
+  check(messages.at(-1)?.background === '#abcdef', 'live custom background');
+  document.documentElement.style.removeProperty('--bg');
+  document.documentElement.dataset.theme = 'dark';
+  await wait();
+  check(messages.at(-1)?.background === '#2a2b2d', 'return to dark');
+  const count = messages.length;
+  document.head.appendChild(document.createElement('meta'));
+  await wait();
+  check(messages.length === count, 'deduplicate unchanged palette');
+  stop();
+  document.documentElement.dataset.theme = 'light';
+  await wait();
+  check(messages.length === count, 'observer cleanup');
+  const restart = watchWindowAppearance();
+  await wait();
+  check(messages.at(-1)?.background === '#f5f7fb', 'startup with saved light mode');
+  restart();
+  document.getElementById('result').textContent = 'PASS: dark/light runtime, custom CSS and live background, alpha and modern CSS colors, deduplication, cleanup, light startup';
+} catch (error) { document.getElementById('result').textContent = 'FAIL: ' + error.stack; }
+</script></body></html>

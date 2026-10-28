@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { watchWindowAppearance } from './lib/windowAppearance';
   import { ApiError, onUnauthorized } from './lib/api';
   import { startEvents, connection } from './lib/events';
   import { app } from './lib/state.svelte';
@@ -77,6 +78,7 @@
   }
 
   onMount(() => {
+    const stopWindowAppearance = watchWindowAppearance();
     onUnauthorized(signedOut);
     connection.listeners.add((c) => (app.connected = c));
     bridge.send({ type: 'ready' });
@@ -111,6 +113,7 @@
       }
     });
     boot();
+    return stopWindowAppearance;
   });
 </script>
 

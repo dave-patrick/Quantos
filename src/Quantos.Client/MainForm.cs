@@ -376,6 +376,9 @@ public sealed class MainForm : Form
         var type = msg.TryGetProperty("type", out var t) ? t.GetString() : null;
         switch (type)
         {
+            case "appearance":
+                if (main) ApplyAppearance(msg);
+                break;
             case "ready" or "client-info":
                 // Also asked for by Settings › Shortcuts when it opens, so it shows what's really registered.
                 source.PostWebMessageAsJson(JsonSerializer.Serialize(new { type = "client", version = Application.ProductVersion, captureHotkey = _prefs.CaptureHotkey, scratchpadHotkey = _prefs.ScratchpadHotkey, hotkeyProblems = _hotkeyProblems }));
@@ -426,6 +429,26 @@ public sealed class MainForm : Form
                 OpenFolder(msg.GetProperty("path").GetString() ?? "");
                 break;
         }
+    }
+
+    private void ApplyAppearance(JsonElement msg)
+    {
+        // Accept a complete opaque palette only; a popup must not recolor the main window.
+        var colors = new List<Color>();
+        foreach (var key in new[] { "background", "foreground", "text", "hover", "active" })
+        {
+            if (!msg.TryGetProperty(key, out var value) || value.ValueKind != JsonValueKind.String) return;
+            var hex = value.GetString();
+            if (hex is not { Length: 7 } || hex[0] != '#' || !hex.Skip(1).All(Uri.IsHexDigit)) return;
+            colors.Add(ColorTranslator.FromHtml(hex));
+        }
+        var background = colors[0];
+        BackColor = _titleBar.BackColor = _icon.BackColor = _status.BackColor = background;
+        _title.ForeColor = _status.ForeColor = colors[1];
+        _web.DefaultBackgroundColor = background;
+        foreach (var button in new[] { _btnMin, _btnMax, _btnClose })
+            button.ApplyAppearance(background, colors[1], colors[2], colors[3], colors[4]);
+        Invalidate(true);
     }
 
     /// <summary>Shows a folder of the vault (or of Quantos's own data) in Explorer.</summary>

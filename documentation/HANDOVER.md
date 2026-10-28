@@ -46,6 +46,17 @@ open threads and the machine.
 
 ## Open threads (as of 2026-10-26; latest release 0.2.2, build 2026.26.10.2)
 
+- **Windows light-mode frame (2026-10-28):** local fix sends resolved CSS palette colors through
+  the origin-checked bridge to repaint the custom resize edge, title bar and caption buttons.
+  Popup pages cannot recolor the main window. Release remains 0.2.3; private build 2026.28.10.16.
+  Native regression reproduced the old dark edge and passes after the fix; browser fixture covers
+  runtime switches, light startup and custom colors. Full package/ZIP checks passed with 124 frontend,
+  242 backend/core and five native tests; packaged self-check has zero warnings. Installed/restarted
+  the owner's test copy with matching executable hashes and Page loaded / HTTP 200. Native visual
+  and maximize/restore checks were not completed by Computer Use. The owner subsequently confirmed
+  the appearance locally and authorized commit/push/publication. Preparing Windows 0.2.4 build
+  2026.28.10.17; numeric version advances for updater compatibility. Maximize/restore remains unverified.
+
 - **Published Windows 0.2.3 (2026-10-27), build `2026.27.10.15`.** Source/tag `05dada6` includes
   the Windows/browser popup, sidebar metadata layout and pending credential-separation work.
   Release review found and fixed partial subtask retries: creation is retained and metadata is

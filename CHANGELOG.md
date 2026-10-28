@@ -9,6 +9,15 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 Optional server/folder-bridge binaries remain separately deployed from source.
 
+## 0.2.4 (2026-10-28)
+
+Windows x64 release, build **2026.28.10.17**. Android downloads remain on 0.2.2.
+
+- The Windows resize border, title bar and window buttons now follow the selected light, dark
+  or custom appearance, both at startup and while changing the theme.
+- The release version advances so existing Windows clients can detect this update; build IDs
+  alone are not compared by the updater.
+
 ## 0.2.3 (2026-10-27)
 
 Windows x64 release, build **2026.27.10.15**. Android downloads remain on 0.2.2.

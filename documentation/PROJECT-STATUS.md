@@ -5,15 +5,15 @@ open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
 for what shipped when. Keep this file current when you finish a piece of work.
 
-_Last updated: 2026-10-26, release set 0.2.2, build 2026.26.10.2 (Windows x64 and public Android ARM64;
-optional server/folder bridge deployed separately)._
+_Last updated: 2026-10-28. Windows 0.2.4, build 2026.28.10.17, is being prepared for publication;
+public Android remains 0.2.2. Optional server/folder bridge deployments remain separate._
 
-The owner authorized a production-signed public Android APK and a separate private debug update for
-their phone. Build IDs now follow Lohe's YYYY.DD.MM.revision convention, shown separately in About
-and artifact filenames; Android versionCode 202 follows Lohe's release-only version scheme.
-The Windows tag stays numeric for legacy updater compatibility. The installed owner copy remains
-on the 0.2.1 candidate, by latest request, so Settings › Updates can offer 0.2.2 after publication.
-Final Windows 0.2.2 was verified in an isolated sample vault (HTTP 200, About identity, native resize).
+The owner approved committing, pushing and publishing the Windows frame-theme fix after confirming
+the appearance locally on private 0.2.3 build 2026.28.10.16. The numeric release advances to 0.2.4
+because legacy updaters compare release versions rather than build IDs. See
+[the release checklist](releases/0.2.4/RELEASE-CHECKLIST.md) for current delivery evidence.
+
+### Earlier implementation and verification history
 
 Windows edge resizing is fixed and staged (October 26): the frameless host reserves a DPI-scaled
 outer strip so WebView2 cannot intercept its resize input. The strip disappears when maximized.
@@ -249,6 +249,20 @@ antivirus warnings, and a stronger update trust anchor than the checksum alone);
 `RELEASE-CHECKLIST.md` needs the 1.1/1.2 features.
 
 ## 5. Verification status
+
+- Windows frame theme (2026-10-28): local private build `2026.28.10.16` retains release `0.2.3`.
+  The main WebView sends resolved background/text/interaction colors through the existing trusted
+  bridge on initial render and CSS changes. Native frame, caption controls and WebView background
+  update together; malformed palettes and popup messages cannot recolor the main window.
+  Five native client tests pass, including the regression that failed against the old code;
+  124 frontend tests pass. Browser fixture `frontend/tests/windowAppearance.html` passed runtime
+  dark/light, light startup, custom stylesheet/inline background, translucent and modern CSS color,
+  deduplication and observer teardown checks. Svelte check has zero errors and nine existing warnings.
+  Full package/ZIP validation passed with 242 backend/core and five native tests. Packaged self-check
+  passed with zero warnings. The owner's test copy was replaced/restarted; all three executable
+  hashes match and startup reports Page loaded / HTTP 200. Native visual and maximize/restore
+  verification remains pending: Computer Use returned inaccessible control geometry and an unrelated
+  desktop screenshot, so no successful installed-window theme interaction is claimed.
 
 - Task popup (2026-10-27): Windows/browser clicks use the full editor over the retained workspace;
   Android stays on normal pages. Popup state is transient; API writes are observed for pending or
