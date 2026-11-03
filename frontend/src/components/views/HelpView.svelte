@@ -12,6 +12,10 @@
   import agents from '../../../../documentation/AGENT-ADAPTERS.md?raw';
   import plugins from '../../../../documentation/PLUGINS.md?raw';
   import server from '../../../../documentation/SERVER.md?raw';
+  import connecting from '../../../../documentation/CONNECTING-AI.md?raw';
+  import api from '../../../../documentation/API.md?raw';
+  import security from '../../../../documentation/SECURITY-MODEL.md?raw';
+  import storage from '../../../../documentation/STORAGE-SPEC.md?raw';
 
   /** Help: the user guide and the other guides, searchable, plus the live list of keyboard shortcuts. */
   let { tab }: { tab: Tab } = $props();
@@ -23,6 +27,10 @@
     { key: 'troubleshooting', label: 'Troubleshooting', icon: 'alert', text: troubleshooting },
     { key: 'cli', label: 'Command line', icon: 'terminal', text: cli },
     { key: 'agents', label: 'AI agents', icon: 'sparkles', text: agents },
+    { key: 'connecting', label: 'Connect an AI remotely', icon: 'globe', text: connecting },
+    { key: 'api', label: 'HTTP API', icon: 'code', text: api },
+    { key: 'security', label: 'Security model', icon: 'shield', text: security },
+    { key: 'storage', label: 'Storage format', icon: 'layers', text: storage },
     { key: 'plugins', label: 'Plugins', icon: 'zap', text: plugins }
   ];
   let doc = $state(untrack(() => tab.arg) && DOCS.some((d) => d.key === untrack(() => tab.arg)) ? untrack(() => tab.arg)! : 'guide');
@@ -85,6 +93,20 @@
     tab.arg = key; layout.persist();
     body?.scrollTo({ top: 0 });
   }
+  // The guides link to each other by file name (SERVER.md, API.md#section); in Help those open the guide here.
+  const FILES: Record<string, string> = {
+    'USER-GUIDE.md': 'guide', 'SERVER.md': 'server', 'TROUBLESHOOTING.md': 'troubleshooting', 'CLI-REFERENCE.md': 'cli', 'AGENT-ADAPTERS.md': 'agents',
+    'CONNECTING-AI.md': 'connecting', 'API.md': 'api', 'SECURITY-MODEL.md': 'security', 'STORAGE-SPEC.md': 'storage', 'PLUGINS.md': 'plugins'
+  };
+  function followLink(e: MouseEvent) {
+    const a = (e.target as HTMLElement | null)?.closest('a');
+    const m = a && /^(?:\.\/)?([A-Z][A-Z-]*\.md)(#.*)?$/.exec(a.getAttribute('href') ?? '');
+    const key = m && FILES[m[1]];
+    if (!key) return;
+    e.preventDefault();
+    pick(key);
+    if (m![2]) tick().then(tick).then(() => body?.querySelector('#help-' + CSS.escape(m![2].slice(1)))?.scrollIntoView({ block: 'start' }));
+  }
   async function openHit(key: string, title: string) {
     pick(key);
     await tick(); await tick();
@@ -108,7 +130,8 @@
     </nav>
   </aside>
 
-  <section class="content scroll" bind:this={body}>
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
+  <section class="content scroll" role="document" bind:this={body} onclick={followLink}>
     {#if hits}
       <p class="faint count">{hits.length ? `${hits.length} ${hits.length === 1 ? 'section' : 'sections'} mention “${query.trim()}”` : `Nothing in the guides mentions “${query.trim()}”.`}</p>
       {#each hits as h, i (i)}
