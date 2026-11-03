@@ -145,6 +145,19 @@ exposed. Copy MCP connection explicitly copies the separate agent key (marked se
 The server rejects cross-origin browser requests. T580 binds its container to loopback and exposes
 it through private Tailscale HTTPS. Hosted migration must preserve identity/data and protect HTTPS.
 
+## HTTP MCP endpoint (the app's own)
+
+`POST /mcp` on the loopback backend serves the agent tools to a client that takes a URL. It is gated like every other
+loopback route: the Host must be `127.0.0.1`/`localhost` on the backend's port and any `Origin` must be the app's own,
+so a web page cannot reach it. It accepts no cookie and no app or personal-CLI credential: only a paired **agent**
+connection key, created by the user in Settings › MCP › HTTP endpoint after native confirmation (ManagePermissions),
+listed under Paired connections and revocable there. The agent has exactly its own grants (read by default); a refusal
+is returned as a tool error, and there is no tool for shell, permanent delete or permission changes. It keeps no session
+state. Nothing is reachable until a key exists. It does not listen beyond loopback; use the shared server for other machines.
+
+The server can also run without Docker (`server/install-windows-native.ps1`): the same program and keys as the container,
+bound to loopback by default, with `-Listen` as the explicit choice to listen on a network address (plain HTTP).
+
 ## Google Tasks sync (optional)
 
 Off until the person connects. It adds three network destinations, used only by this feature and only after

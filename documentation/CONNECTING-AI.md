@@ -1,7 +1,8 @@
 # Connecting an AI to Quantos
 
-Start here if an AI (or script) on **another machine** needs to read or write your notes. This page
-says which door to use, gives the exact wire details, and lists the usual reasons a connection fails.
+Start here if an AI (or script) needs an **HTTP URL** to read or write your notes (Streamable HTTP MCP),
+whether it runs on this computer or another one. This page says which endpoint to use, gives the exact
+wire details, and lists the usual reasons a connection fails.
 Related pages: [AGENT-ADAPTERS.md](AGENT-ADAPTERS.md) (same-machine setup), [SERVER.md](SERVER.md)
 (running the shared server), [API.md](API.md) (the desktop backend's HTTP API),
 [SECURITY-MODEL.md](SECURITY-MODEL.md).
@@ -10,22 +11,59 @@ Related pages: [AGENT-ADAPTERS.md](AGENT-ADAPTERS.md) (same-machine setup), [SER
 
 | The AI runs… | Use | Reachable from another machine? |
 |---|---|---|
-| On the same computer as Quantos | **stdio MCP**: `quantos-cli mcp --agent <name>` | No. It talks to the app over `127.0.0.1`. |
-| On another computer | **Server MCP**: Streamable HTTP at `https://<server>/mcp` | **Yes. This is the one to use.** |
-| Anywhere, no MCP support | Function calling through `quantos-cli call`, or the server MCP with plain HTTP (below) | Server MCP only |
+| On the same computer as Quantos, and takes a **URL** | **The app's own endpoint**: Streamable HTTP at `http://127.0.0.1:<port>/mcp` (see below) | No. This computer only. |
+| On the same computer, and can start a program | **stdio MCP**: `quantos-cli mcp --agent <name>` | No. |
+| On another computer | **Server MCP**: Streamable HTTP at `https://<server>/mcp` | **Yes.** |
+| Anywhere, no MCP support | Function calling through `quantos-cli call`, or plain HTTP to either endpoint (below) | Server MCP only |
 
-The desktop app's backend (`http://127.0.0.1:<port>`, [API.md](API.md)) listens on this computer only
-and needs a credential approved by a person in the Windows client, so a remote machine cannot use it.
-For anything remote, run the optional shared server ([SERVER.md](SERVER.md)) and connect to its `/mcp`.
+Both HTTP endpoints speak the same protocol and offer the same nine tools. They differ in what they serve and who
+can reach them:
 
-## What you need from the server
+| | The app's endpoint | The shared server's endpoint |
+|---|---|---|
+| Serves | The vault open in the Windows app | A synced copy of the vault on the server |
+| Reachable from | This computer only (`127.0.0.1`) | Wherever you make it reachable (Tailscale, local network, HTTPS) |
+| Needs | The app running | The server running, [with Docker or without](SERVER.md) |
+| Key | A connection key you create in *Settings › MCP › HTTP endpoint* | The MCP key from the server |
+| Write access | Per agent, in *Settings › Plugins & permissions* | One switch, *Shared server MCP* |
+
+## The app's own endpoint
+
+Nothing can use it until you create a key. In the Windows app open *Settings › MCP › HTTP endpoint*, leave the
+agent name or choose one (for example `claude-remote`), and choose **Create connection key**. Confirm the prompt in the
+Windows client. The key is shown once, with a ready-made `{ "url": …, "headers": { "Authorization": "Bearer …" } }`.
+
+- **URL:** `http://127.0.0.1:<port>/mcp`. The port is in the Settings page; it is the app's own port, the one in
+  `client-data\settings\backend.json`. Only `127.0.0.1` and `localhost` are accepted as the host name.
+- **The key is an agent connection.** It shows under *Paired connections* (revoke it there), and the agent starts with
+  read access only. Give it more in *Settings › Plugins & permissions*, under the name you chose.
+- **Only agent keys work.** The personal CLI credential and the app's own credential get `403` or `401` on `/mcp`.
+- **It is stateless.** `POST` JSON-RPC messages; each gets a JSON reply (`Content-Type: application/json`). A client that
+  accepts only `text/event-stream` gets the reply as one event. There is no session id, no event stream (`GET` returns
+  `405`) and nothing to close (`DELETE` returns `405`). Batches are accepted.
+- **Browsers are refused** (`403` for any request carrying an `Origin` header other than the app's own).
+- A refusal comes back as a tool result with `isError: true` and a reason, for example that the agent has not been granted write access.
+
+Smoke test (replace `PORT` and `KEY`):
+
+```bash
+curl -s -X POST http://127.0.0.1:PORT/mcp -H "Authorization: Bearer KEY" -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+Everything under *Wire details* below applies to both endpoints, except that the app's endpoint answers with plain JSON
+and the server's answers with an event stream.
+
+## What you need from the shared server
+
+(For the app's own endpoint see the section above.)
 
 1. **The URL**, ending in `/mcp`. The AI's machine only has to be able to reach it; any of these work:
    - **Tailscale** (the standard Windows-host install): `https://<host>.<tailnet>.ts.net:8445/mcp`. The installer
      prints the HTTPS address; add `/mcp`. The AI's machine must be signed in to the same tailnet.
    - **Local network**: `http://<server's LAN address>:47831/mcp`, after installing with `-LanAddress` (see
-     [SERVER.md](SERVER.md)). This is plain HTTP, so the key and your notes are not encrypted on the wire; use it
-     only on a network you trust.
+     [SERVER.md](SERVER.md)), or `http://<address>:47830/mcp` for the install without Docker with `-Listen`. This is
+     plain HTTP, so the key and your notes are not encrypted on the wire; use it only on a network you trust.
    - **Any HTTPS address** you put in front of the server (a reverse proxy or tunnel): `https://<your host>/mcp`.
      Needed when the AI runs in someone else's cloud.
 2. **The MCP key**, a separate secret from the key the apps use. Get it with
@@ -161,9 +199,9 @@ There is no tool to delete, move or rename notes, run shell commands, or change 
 | A note was created but doesn't show in an app | The apps pick it up on their next sync (every 15 seconds while running and connected). *Sync now* in Settings forces it. |
 | `/health` and `serverInfo` report version `0.2.0` | That number is not kept in step with the apps' version; it does not tell you which build is running. |
 
-## For agents on the same computer
+## For agents that start a program on the same computer
 
 Use the stdio route in [AGENT-ADAPTERS.md](AGENT-ADAPTERS.md): `quantos-cli mcp --agent <name>`.
 It acts as the agent you name, with the permissions you've granted that agent, and the first connection
-needs approving in the Windows client. The desktop backend's HTTP API ([API.md](API.md)) is for programs
-that can't start a process; it is likewise local-only and credential-gated.
+needs approving in the Windows client. The desktop backend's REST API ([API.md](API.md)) is for programs
+that can't start a process and don't speak MCP; it is likewise local-only and credential-gated.

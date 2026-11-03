@@ -136,6 +136,7 @@ public static class Program
         UpdateEndpoints.Map(app);
         SyncEndpoints.Map(app);
         GoogleTasksEndpoints.Map(app);
+        McpHttpEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

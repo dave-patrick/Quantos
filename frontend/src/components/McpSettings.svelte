@@ -6,6 +6,7 @@
   import Icon from './Icon.svelte';
   import ServerMcpSettings from './ServerMcpSettings.svelte';
   import LocalConnections from './LocalConnections.svelte';
+  import HttpMcpSettings from './HttpMcpSettings.svelte';
   import { isAndroidClient } from '../lib/platform';
 
   /** Settings › MCP: the Model Context Protocol server and how to point an agent at it. */
@@ -79,6 +80,7 @@
 </p>
 
 <LocalConnections />
+<HttpMcpSettings />
 
 {#if info}
   <h3>Set up</h3>

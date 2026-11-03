@@ -130,6 +130,20 @@ All routes are user-only (403 for agents, plugins and automations, including `GE
 | `DELETE /api/google-tasks` | Disconnect: revokes the token, removes settings and sync state, keeps all tasks. |
 | `GET /oauth/google/callback` | Anonymous, GET only: Google's redirect after consent. Valid only for a pending sign-in with the matching `state`. |
 
+## MCP over HTTP (the app's own endpoint)
+
+`POST /mcp` is a stateless Model Context Protocol endpoint (Streamable HTTP) on the backend's address. It takes
+`Authorization: Bearer <agent connection key>` only; the personal CLI and app credentials are refused, a missing or wrong
+key is `401` with `WWW-Authenticate: Bearer`, and `GET` or `DELETE` is `405`. Host and Origin are checked before anything
+else, so only `127.0.0.1`/`localhost` and no cross-origin pages. Messages: `initialize`, `ping`, `tools/list`,
+`tools/call` (single or batched; notifications get `202`). The tools and their grants are those of `quantos-cli mcp`.
+Full details and a curl test: [CONNECTING-AI.md](CONNECTING-AI.md).
+
+| Route | Purpose |
+|---|---|
+| `GET /api/mcp-http` | `{ url, transport, defaultAgent, tools[] }`. |
+| `POST /api/mcp-http/connection` | User only. `{ name?, approval? }` creates an agent connection and returns `{ id, name, url, token, config }` once; needs native confirmation (428 with an `approval`, then retry with its id). Revoke it with `POST /api/auth/credentials/{id}/revoke`. |
+
 ## Command line reference
 
 See [CLI-REFERENCE.md](CLI-REFERENCE.md). Exit codes 0 ok, 1 failed, 2 usage, 3 not running, 4 not permitted.

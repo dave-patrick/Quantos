@@ -43,6 +43,13 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, C
             return;
         }
 
+        // The Streamable HTTP MCP endpoint takes only a paired agent connection (never a cookie), after the Host and Origin checks above.
+        if (McpHttp.Matches(request.Path))
+        {
+            await McpHttp.HandleAsync(ctx, credentials);
+            return;
+        }
+
         if (request.Path.StartsWithSegments("/auth/open"))
         {
             var session = tokens.Redeem(request.Query["code"]);

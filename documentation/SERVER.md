@@ -109,6 +109,26 @@ The server exposes `/health`, conditional `/sync` routes and `/mcp`. It does not
 desktop backend's filesystem, shell, launch-token or setup endpoints. Browser cross-origin
 requests are rejected. The standard install reaches the server through Tailscale HTTPS; a local-network address can be added (above).
 
+## Run on Windows without Docker
+
+`server/install-windows-native.ps1` runs the same server as a plain Windows program. It needs no Docker; the
+.NET SDK is used once to build it (or pass `-Binary` with a folder you already published).
+
+```
+pwsh server/install-windows-native.ps1 -Start                                  # this computer only, http://127.0.0.1:47830
+pwsh server/install-windows-native.ps1 -Listen http://192.168.1.20:47830 -Start  # also on your local network
+pwsh server/install-windows-native.ps1 -TailscaleHttpsPort 8445 -Start         # also over Tailscale HTTPS
+pwsh server/install-windows-native.ps1 -Uninstall                              # stop it and remove the scheduled task
+```
+
+It keeps everything under `~/Apps/QuantosServerNative/` (`-RuntimeDirectory` changes it): `app\` (the program),
+`data\` (the vault, client data and server identity), `keys\` (the app key `server-token` and the MCP key `mcp-token`,
+protected for your account) and `run-server.ps1` (the launcher). A scheduled task, *Quantos Server (native)*, starts it hidden at sign-in
+(`-NoTask` skips it). The server uses this computer's Windows time zone. `-Listen` takes several addresses separated by
+semicolons; anything but loopback is plain HTTP, and the script prints the firewall command that allows the port from your
+local subnet only (it does not change the firewall). Use a different `-RuntimeDirectory` and port to run a second copy.
+Connect an AI to it as described in [CONNECTING-AI.md](CONNECTING-AI.md); connect the apps with the app key.
+
 ## Move to a hosted server
 
 The container is portable. `server/compose.yaml` is a starting point for Docker Compose, using

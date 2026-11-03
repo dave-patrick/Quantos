@@ -7,6 +7,10 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **Streamable HTTP MCP in the app.** The Windows app now serves `POST /mcp` on its own loopback address for AI clients that take a URL instead of starting a program. Create a key in Settings › MCP › HTTP endpoint (an ordinary agent connection: read-only to start, revocable under Paired connections). The same nine tools as the command-line MCP; this computer only.
+- **Run the shared server without Docker.** `server/install-windows-native.ps1` builds and runs it as a hidden Windows program with a sign-in task, keys, optional `-Listen` network address and `-TailscaleHttpsPort`. `-Uninstall` removes it.
+- The server's tools and the app's endpoint now share one implementation (`VaultToolRunner`).
+
 Optional server/folder-bridge binaries remain separately deployed from source.
 
 ## 0.2.8 (2026-11-03)
