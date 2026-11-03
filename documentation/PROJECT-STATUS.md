@@ -1,6 +1,9 @@
 # Quantos project status and handoff
 
-### Google Tasks sync (2026-10-30, local, unreleased)
+### Google Tasks sync (released in Windows 0.2.5, build 2026.02.11.31, 2026-11-02)
+
+Public 0.2.5 has no built-in Google client; the owner's client lives in the git-ignored `build/google-client.json` and is embedded only in
+private builds (move the file aside before a public build). Frontend tests on Node 26 need `NODE_OPTIONS=--no-experimental-webstorage`.
 
 Optional two-way sync of title, notes, due date, done state and one level of subtasks between Quantos tasks and Google Tasks lists.
 Off by default; the owner brings their own Google Cloud Desktop-app client. Design (six reviewed drafts, with every owner decision listed):
