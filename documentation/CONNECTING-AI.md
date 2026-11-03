@@ -27,7 +27,7 @@ For anything remote, run the optional shared server ([SERVER.md](SERVER.md)) and
      [SERVER.md](SERVER.md)). This is plain HTTP, so the key and your notes are not encrypted on the wire; use it
      only on a network you trust.
    - **Any HTTPS address** you put in front of the server (a reverse proxy or tunnel): `https://<your host>/mcp`.
-     Needed when the AI runs in someone else's cloud, as Microsoft Copilot Studio does.
+     Needed when the AI runs in someone else's cloud.
 2. **The MCP key**, a separate secret from the key the apps use. Get it with
    *Settings › MCP › Shared server MCP › Copy MCP connection*, which copies
    `{ "url": "…/mcp", "headers": { "Authorization": "Bearer <key>" } }`, or read
@@ -121,8 +121,6 @@ claude mcp add --transport http quantos https://myserver.example.ts.net:8445/mcp
   }
 }
 ```
-
-**Microsoft Copilot** (GitHub Copilot in VS Code, Copilot Studio): see [COPILOT-SETUP.md](COPILOT-SETUP.md).
 
 **Your own code**: any MCP SDK's Streamable HTTP client (for example `streamablehttp_client` in the
 Python SDK, or `StreamableHTTPClientTransport` in the TypeScript SDK) with the URL and the header.

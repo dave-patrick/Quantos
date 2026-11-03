@@ -78,7 +78,6 @@ Copy-Item documentation/AGENT-ADAPTERS.md $pkg
 Copy-Item documentation/ANDROID.md $pkg
 Copy-Item documentation/SERVER.md $pkg
 Copy-Item documentation/CONNECTING-AI.md $pkg
-Copy-Item documentation/COPILOT-SETUP.md $pkg
 Copy-Item documentation/API.md $pkg
 Copy-Item documentation/SECURITY-MODEL.md $pkg
 Copy-Item documentation/STORAGE-SPEC.md $pkg
@@ -105,7 +104,7 @@ $archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
 try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
     $required = 'Quantos/application/Quantos.exe', 'Quantos/application/Quantos.Backend.exe',
-                'Quantos/application/quantos-cli.exe', 'Quantos/USER-GUIDE.md', 'Quantos/ANDROID.md', 'Quantos/SERVER.md', 'Quantos/CONNECTING-AI.md', 'Quantos/COPILOT-SETUP.md', 'Quantos/API.md',
+                'Quantos/application/quantos-cli.exe', 'Quantos/USER-GUIDE.md', 'Quantos/ANDROID.md', 'Quantos/SERVER.md', 'Quantos/CONNECTING-AI.md', 'Quantos/API.md',
                 'Quantos/Start Quantos.cmd', 'Quantos/Example Vault/automations.json'
     foreach ($name in $required) {
         if ($names -notcontains $name) { throw "The package is missing $name, so the updater could not install it." }
