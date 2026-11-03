@@ -9,6 +9,12 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 Optional server/folder-bridge binaries remain separately deployed from source.
 
+## 0.2.7 (2026-11-03)
+
+Windows x64 release. Android downloads remain on 0.2.2.
+
+- Help now includes the new guide for connecting an AI on another machine, plus the HTTP API, security model and storage format pages. Links between guides open in Help instead of looking for a file that isn't there, and the guides are in the download.
+
 ## 0.2.6 (2026-11-03)
 
 Windows x64 release. Android downloads remain on 0.2.2.

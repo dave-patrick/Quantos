@@ -8,8 +8,8 @@
     <ApplicationId>com.atomic22.quantos</ApplicationId>
     <ApplicationTitle>Quantos</ApplicationTitle>
     <RootNamespace>Quantos.Mobile</RootNamespace>
-    <ApplicationVersion>206</ApplicationVersion>
-    <ApplicationDisplayVersion>0.2.6</ApplicationDisplayVersion>
+    <ApplicationVersion>207</ApplicationVersion>
+    <ApplicationDisplayVersion>0.2.7</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <AndroidUseAssemblyStore>false</AndroidUseAssemblyStore>
     <RunAOTCompilation>false</RunAOTCompilation>
