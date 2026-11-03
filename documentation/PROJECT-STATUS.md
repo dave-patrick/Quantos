@@ -1,5 +1,14 @@
 # Quantos project status and handoff
 
+### 0.2.10 and the hosted shared server (2026-11-03, build 2026.03.11.40)
+
+0.2.10 only moves the note toolbar 36px clear of the pane close ×; not checked on screen on a second PC. The owner's hosted shared server runs on a
+Google Cloud e2-micro `quantosv1` (`us-west1-b`, Standard network tier, static IP, Debian 13) as a systemd service behind Caddy at
+`https://35-212-231-104.sslip.io` (Linux steps in [SERVER.md](SERVER.md); the keys live only in `/opt/quantos/keys/` on the VM). The owner's work
+network blocks `duckdns.org`, hence sslip.io. Not yet confirmed: the free-tier credit in Billing reports. There are no server-side backups (devices keep
+full copies); deletion protection is on. Frontend tests on Node 26 need `NODE_OPTIONS=--no-experimental-webstorage` (two `taskConflict` tests fail
+otherwise; the test setup is not fixed).
+
 ### Supertags and remote MCP docs (released in Windows 0.2.6/0.2.7, build 2026.03.11.35, 2026-11-03)
 
 `SupertagService.List` now adds an `implicit:<name>` entry (no fields) for every tag used in a note without a saved definition, so every tag is a

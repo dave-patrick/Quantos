@@ -129,6 +129,18 @@ semicolons; anything but loopback is plain HTTP, and the script prints the firew
 local subnet only (it does not change the firewall). Use a different `-RuntimeDirectory` and port to run a second copy.
 Connect an AI to it as described in [CONNECTING-AI.md](CONNECTING-AI.md); connect the apps with the app key.
 
+## Run on a Linux VM (Debian, no Docker)
+
+Verified on a Google Cloud e2-micro (Always Free: `us-west1`, Standard provisioning, standard persistent disk, 1 GB RAM plus a 1 GB swap file) running Debian 13.
+
+1. `dotnet publish src/Quantos.Server -c Release -r linux-x64 --no-self-contained -o <folder>`, tar the folder and upload it to `/opt/quantos/app`.
+2. On the VM install the ASP.NET Core 10 runtime (`dotnet-install.sh --channel 10.0 --runtime aspnetcore --install-dir /usr/share/dotnet`) **and `libicu76`**; without ICU the server aborts at start.
+3. Create a `quantos` user, `/opt/quantos/{app,data,keys}` and two random key files (at least 32 characters), `server-token` and `mcp-token`, owned by `quantos`, mode 600.
+4. A systemd unit running `dotnet Quantos.Server.dll` as `quantos` with `ASPNETCORE_URLS=http://127.0.0.1:8080`, `QUANTOS_SERVER_DATA`, `QUANTOS_SERVER_TOKEN_FILE`, `QUANTOS_MCP_TOKEN_FILE` and `TZ`.
+5. Caddy in front for HTTPS (the apps require `https://`). Put `reverse_proxy 127.0.0.1:8080` on its own line inside the site block; a one-line block is a syntax error. Open ports 80 and 443 and Caddy fetches the certificate itself. A name such as `35-212-231-104.sslip.io` works without owning a domain (some work networks block dynamic-DNS names).
+
+Check `https://<host>/health`, then connect the apps with the app key. Keep the keys out of chat and the repository; to rotate, rewrite the file and restart the service.
+
 ## Move to a hosted server
 
 The container is portable. `server/compose.yaml` is a starting point for Docker Compose, using

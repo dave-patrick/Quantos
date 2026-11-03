@@ -9,6 +9,13 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 Optional server/folder-bridge binaries remain separately deployed from source.
 
+## 0.2.10 (2026-11-03)
+
+Windows x64 release. Android downloads remain on 0.2.2.
+
+- **Note toolbar clears the pane close button.** The ⋮ and trash buttons in a note's top-right toolbar sat right next to the pane's × and were easy to hit by mistake; the toolbar now keeps 36px clear on the right (popup notes are unchanged).
+- **Shared server on Linux.** [SERVER.md](documentation/SERVER.md) now covers running the server on a Debian VM (for example a Google Cloud e2-micro) as a systemd service behind Caddy HTTPS, without Docker.
+
 ## 0.2.9 (2026-11-03)
 
 Windows x64 release. Android downloads remain on 0.2.2.
