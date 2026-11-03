@@ -20,7 +20,6 @@
   const plannedToday = $derived(mine.filter((t) => isOpen(t) && !queued.has(t.id) && t.planned?.slice(0, 10) === today && t.due?.slice(0, 10) !== today));
   const stalePlanned = $derived(mine.filter((t) => isOpen(t) && t.planned && t.planned.slice(0, 10) < today));
   const openInQueue = $derived(queue.filter(isOpen));
-  const effort = $derived(openInQueue.reduce((s, t) => s + (t.effortRollup ?? t.effort ?? 0), 0));
 
   async function rollover() {
     try {
@@ -69,7 +68,7 @@
     <header>
       <div>
         <h1><Icon name="sun" size={24} /> My Day</h1>
-        <p class="muted">{longDate(today)} · {openInQueue.length} open{effort ? ` · about ${Math.round(effort / 6) / 10} h planned` : ''}</p>
+        <p class="muted">{longDate(today)} · {openInQueue.length} open</p>
       </div>
     </header>
 

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Feature regression checks</title>
+<link rel="stylesheet" href="/src/styles/tokens.css"><link rel="stylesheet" href="/src/styles/base.css">+<style>body { overflow:auto; padding:24px; } #settings { max-width:800px; } #editor { border:1px solid var(--line); margin:20px 0; } #result { white-space:pre-wrap; } </style>
+</head><body><h1>Feature regression checks</h1><pre id="result">Running…</pre><div id="editor"></div><div id="settings"></div><div id="overlays"></div>
+<script type="module">
+const result = document.querySelector('#result');
+const passed = [];
+const check = (value, name) => { if (!value) throw Error(name); passed.push(name); };
+const pause = () => new Promise(resolve => setTimeout(resolve, 50));
+const until = async test => { for(let i=0;i<100;i++) { if(test()) return; await pause(); } throw Error('Timed out: '+test); };
+const click = text => { const button = [...document.querySelectorAll('button')].find(el => el.textContent.trim() === text); if (!button) throw Error('Missing button '+text); button.click(); };
+const input = (el, value) => { el.value = value; el.dispatchEvent(new Event('input',{bubbles:true})); };
+const blocks = Array.from({length:12}, (_,i) => ({id:'block-'+i,title:'Block '+(i+1),content:'Content number '+(i+1),uses:i}));
+let config = {automations:[]}, grants = {agents:{},plugins:{},automations:{}}, grantCalls=[];
+window.fetch = async (url, options={}) => {
+  const path = String(url).replace('/api/',''), body=options.body ? JSON.parse(options.body) : null;
+  let value;
+  if(path==='permissions') {
+    if(options.method==='PUT') {
+      grantCalls.push(body);
+      if(!body.approval) return Response.json({approval:{id:'grant-approval',state:'Pending'}},{status:428});
+      grants.automations[body.name]=body.permissions;
+    }
+    value={grants,safeMode:false};
+  } else if(path==='approvals/grant-approval') value={id:'grant-approval',state:'Approved'};
+  else if(path==='plugins'||path==='automations/recent') value=[];
+  else if(path==='config/automations.json') { if(body) config=body; value=config; }
+  else if(path==='synced-blocks') value=blocks;
+  else throw Error('Unexpected request '+path);
+  return Response.json(value);
+};
+try {
+  const {mount,tick} = await import('svelte');
+  const {EditorView} = await import('@codemirror/view');
+  const {EditorState} = await import('@codemirror/state');
+  const {markdown} = await import('@codemirror/lang-markdown');
+  const {spellCheckExtension,toggleSpellCheck} = await import('/src/lib/editor/spellcheck.ts');
+  const {activeEditor} = await import('/src/lib/activeEditor.ts');
+  const {run} = await import('/src/lib/commands.svelte.ts');
+  await import('/src/lib/editorCommands.ts');
+  const {app} = await import('/src/lib/state.svelte.ts');
+  const {approvals} = await import('/src/lib/approvals.svelte.ts');
+  const {isoDate} = await import('/src/lib/dates.ts');
+  const {slashCommands} = await import('/src/lib/editor/slash.ts');
+  mount((await import('/src/components/SyncedBlockPicker.svelte')).default,{target:document.querySelector('#overlays')});
+  const view = new EditorView({parent:document.querySelector('#editor'),state:EditorState.create({doc:'hello meeting project colour color qzxwvvv\n- qzxwvvv\n> qzxwvvv\n`qzxwvvv`',extensions:[markdown(),...spellCheckExtension()]})});
+  activeEditor.view=view; view.focus(); view.dispatch({effects:toggleSpellCheck.of(true)});
+  await until(()=>document.querySelectorAll('.cm-spell-error').length===3);
+  check([...document.querySelectorAll('.cm-spell-error')].every(el=>el.textContent==='qzxwvvv'),'English prose, list and quote checked offline; code skipped');
+  view.dispatch({effects:toggleSpellCheck.of(false)});
+  check(document.querySelectorAll('.cm-spell-error').length===0,'spell check toggle removes marks');
+  view.dispatch({changes:{from:0,to:view.state.doc.length,insert:'Replace me'},selection:{anchor:0,head:10}});
+  run('daily.date');
+  check(view.state.doc.toString()===isoDate(),'palette date replaces selection with local date');
+  const time=slashCommands.find(c=>c.id==='time'); time.apply(view,0,view.state.doc.length);
+  check(view.state.doc.toString()===new Date().toTimeString().slice(0,5),'slash time inserts current device time');
+  const selecting=run('edit.synced.insert');
+  await until(()=>document.querySelectorAll('[role="option"]').length===12);
+  check(document.querySelectorAll('[role="option"]').length===12,'picker exposes all twelve blocks');
+  const search=document.querySelector('[aria-label="Search synced blocks"]'); input(search,'number 12'); await tick();
+  check(document.querySelectorAll('[role="option"]').length===1,'picker searches block content');
+  search.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})); await selecting; await tick();
+  check(view.state.doc.toString().includes('<!--sync:block-11-->'),'keyboard inserts twelfth block');
+  check(document.activeElement===view.contentDOM,'insertion restores original editor focus');
+  const before=view.state.doc.toString(), cancelling=run('edit.synced.insert');
+  await until(()=>document.querySelector('[aria-label="Search synced blocks"]'));
+  document.querySelector('[aria-label="Search synced blocks"]').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  await cancelling; await tick(); check(view.state.doc.toString()===before && !document.querySelector('[role="dialog"]'),'Escape cancels without changing note');
+  mount((await import('/src/components/PluginSettings.svelte')).default,{target:document.querySelector('#settings')});
+  await until(()=>document.body.textContent.includes('Save an automation to configure its grants.'));
+  click('New automation'); await tick();
+  input(document.querySelector('[aria-label="Automation name"]'),'Archive completed');
+  const action=document.querySelector('[aria-label="Action"]'); action.value='archive'; action.dispatchEvent(new Event('change',{bubbles:true})); await tick();
+  click('Save automations'); await until(()=>document.querySelector('#settings .card strong')?.textContent==='Archive completed');
+  const card=document.querySelector('#settings .card');
+  const permission=label=>[...card.querySelectorAll('label')].find(el=>el.textContent.includes(label)).querySelector('input');
+  check(permission('Read content').checked && permission('Create and edit').checked && !permission('Move and archive').checked,'new saved automation exposes defaults without widening grants');
+  permission('Move and archive').click(); await until(()=>approvals.waiting); await approvals.poll();
+  await until(()=>grantCalls.length===2 && permission('Move and archive').checked);
+  check(grantCalls[0].approval===undefined && grantCalls[1].approval==='grant-approval' && grantCalls[1].permissions.includes('CreateEdit'),'archive permission uses approval and preserves edit permission');
+  input(document.querySelector('[aria-label="Automation name"]'),'Renamed automation'); await tick();
+  check(card.querySelector('strong').textContent==='Archive completed','unsaved rename keeps persisted permission identity');
+  result.textContent='PASS\n'+passed.join('\n'); window.fixture={view,run,app,passed};
+} catch(error) { result.textContent='FAIL: '+error.stack; }
+</script></body></html>

@@ -2,6 +2,7 @@ import { applyAccent, applyDensity, applyLook, type Density } from './appearance
 import { DEFAULT_LOOK, baseOf, fontStack, type Look } from './look';
 import { app } from './state.svelte';
 import { DEFAULT_SCRATCH_TARGETS, type ScratchTarget } from './scratch';
+import { normalizeSidebarCollapsed } from './sidebarCollapse';
 import { defaultPhoneNavigation, normalizePhoneNavigation } from './phoneNavigation';
 
 /** Per-device writing preferences (kept in this browser; vault settings live in settings.json). */
@@ -25,6 +26,7 @@ class Prefs {
   sidebarHidden = $state<string[]>([]);
   sidebarOrder = $state<string[]>([]);
   sidebarSections = $state<string[]>([]);
+  sidebarCollapsed = $state<Record<string, boolean>>({ planning: true, explore: true });
   /** Phone bottom bar, in order; More is always available. Local to this device. */
   phoneNavigation = $state<string[]>([...defaultPhoneNavigation]);
   /** Daily stream: leave out days with nothing written and no tasks. */
@@ -44,10 +46,11 @@ class Prefs {
       Object.assign(this, saved);
       this.look = { ...DEFAULT_LOOK, ...(saved.look ?? {}) };
       this.phoneNavigation = normalizePhoneNavigation(saved.phoneNavigation);
+      this.sidebarCollapsed = normalizeSidebarCollapsed(saved.sidebarCollapsed);
     } catch { /* ignore */ }
     $effect.root(() => {
       $effect(() => {
-        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, collapsibleHeadings: this.collapsibleHeadings, spellCheck: this.spellCheck, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, phoneNavigation: this.phoneNavigation, dailyHideEmpty: this.dailyHideEmpty, notesTree: this.notesTree, notesPreview: this.notesPreview, scratchTargets: this.scratchTargets, look: this.look };
+        const data = { typewriter: this.typewriter, editorSize: this.editorSize, editorWidth: this.editorWidth, showWordCount: this.showWordCount, writingTarget: this.writingTarget, fontFamily: this.fontFamily, lineHeight: this.lineHeight, density: this.density, accent: this.accent, reading: this.reading, collapsibleHeadings: this.collapsibleHeadings, spellCheck: this.spellCheck, sidebarHidden: this.sidebarHidden, sidebarOrder: this.sidebarOrder, sidebarSections: this.sidebarSections, sidebarCollapsed: this.sidebarCollapsed, phoneNavigation: this.phoneNavigation, dailyHideEmpty: this.dailyHideEmpty, notesTree: this.notesTree, notesPreview: this.notesPreview, scratchTargets: this.scratchTargets, look: this.look };
         applyDensity(this.density);
         applyAccent(this.accent);
         // A custom background decides light or dark, so light-only details (diagrams, the accent preset) follow it.

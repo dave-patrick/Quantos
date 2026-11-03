@@ -31,7 +31,7 @@ public sealed record CreateTaskRequest
     public string? Due { get; init; }
     public string? Planned { get; init; }
     public int? Priority { get; init; }
-    public int? Effort { get; init; }
+    public object? Effort { get; init; }
     public string? Parent { get; init; }
     public string? Project { get; init; }
     public IReadOnlyList<string>? Assignees { get; init; }
@@ -42,6 +42,10 @@ public sealed record CreateTaskRequest
     public IReadOnlyList<string>? Reminders { get; init; }
     public string? WaitingOn { get; init; }
     public string? Stage { get; init; }
+    /// <summary>Extra frontmatter written in the same atomic create. Only gtask_* keys are accepted (Google Tasks links).</summary>
+    public IReadOnlyDictionary<string, object?>? Extra { get; init; }
+    /// <summary>The completion stamp to record for a closed task instead of "now" (an imported task keeps its real time).</summary>
+    public string? Completed { get; init; }
 }
 
 public sealed record ReminderDto(string At, string? SnoozedUntil, string? Fired);
@@ -49,7 +53,7 @@ public sealed record ReminderDto(string At, string? SnoozedUntil, string? Fired)
 public sealed record TimeBlockDto(string Start, string End);
 
 public sealed record TaskDto(
-    string Id, string Title, string Workspace, string Path, string Status, int? Priority, string? Due, string? Planned, int? Effort,
+    string Id, string Title, string Workspace, string Path, string Status, int? Priority, string? Due, string? Planned, object? Effort,
     string? Project, IReadOnlyList<string> Assignees, string? WaitingOn, string? Parent, IReadOnlyList<string> DependsOn,
     string? Recurrence, string? Series, string? Occurrence, string? Completed, string? Source, TimeBlockDto? TimeBlock,
     IReadOnlyList<ReminderDto> Reminders, IReadOnlyList<string> Tags, string? Modified, string? Created, bool Archived,
@@ -80,6 +84,15 @@ public sealed partial class TaskService : ITaskHooks
         return hits.Count == 1 ? $"[[{hits[0].Id}|{hits[0].Title}]]" : project.Trim();
     }
 
+    public static object? NormalizeEffort(object? value)
+    {
+        var text = Props.Str(value)?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(text)) return null;
+        if (text is "low" or "medium" or "high") return text;
+        if (int.TryParse(text, out var minutes) && minutes >= 0) return minutes;
+        throw new QuantosException("Effort must be low, medium, or high.");
+    }
+
     // ---- create / read ------------------------------------------------------------------------
 
     public Node Create(CreateTaskRequest r, Actor actor)
@@ -92,7 +105,7 @@ public sealed partial class TaskService : ITaskHooks
         Put(TaskKeys.Priority, r.Priority is >= 1 and <= 4 ? r.Priority : null);
         Put(TaskKeys.Due, ValidDate(r.Due, "due"));
         Put(TaskKeys.Planned, ValidDate(r.Planned, "planned"));
-        Put(TaskKeys.Effort, r.Effort is > 0 ? r.Effort : null);
+        Put(TaskKeys.Effort, NormalizeEffort(r.Effort));
         Put(TaskKeys.Parent, r.Parent);
         Put(TaskKeys.Project, ProjectLink(r.Project, r.Workspace));
         Put(TaskKeys.WaitingOn, r.WaitingOn);
@@ -110,7 +123,12 @@ public sealed partial class TaskService : ITaskHooks
         }
         if (r.Reminders is { Count: > 0 })
             props[TaskKeys.Reminders] = r.Reminders.Select(at => (object?)new Dictionary<string, object?> { ["at"] = ValidDateTime(at) }).ToList();
-        if (TaskStatus.IsClosed(r.Status)) props[TaskKeys.Completed] = _writes.Clock.Stamp();
+        if (TaskStatus.IsClosed(r.Status)) props[TaskKeys.Completed] = string.IsNullOrWhiteSpace(r.Completed) ? _writes.Clock.Stamp() : r.Completed;
+        foreach (var (key, value) in r.Extra ?? new Dictionary<string, object?>())
+        {
+            if (!key.StartsWith("gtask_", StringComparison.Ordinal)) throw new QuantosException($"'{key}' can't be set when creating a task this way.");
+            if (value is not null) props[key] = value;
+        }
         return _writes.Create(new CreateNodeRequest { Title = title, Type = NodeTypes.Task, Workspace = r.Workspace, Body = r.Body, Tags = r.Tags, Properties = props }, actor);
     }
 
@@ -154,7 +172,7 @@ public sealed partial class TaskService : ITaskHooks
         var block = Props.Map(p, TaskKeys.TimeBlock);
         return new TaskDto(
             s.Id, s.Title, s.Workspace, s.Path, status, Props.Int(p, TaskKeys.Priority), Props.Str(p, TaskKeys.Due), Props.Str(p, TaskKeys.Planned),
-            Props.Int(p, TaskKeys.Effort), Props.Str(p, TaskKeys.Project), Props.List(p, TaskKeys.Assignees), Props.Str(p, TaskKeys.WaitingOn),
+            NormalizeEffort(p.GetValueOrDefault(TaskKeys.Effort)), Props.Str(p, TaskKeys.Project), Props.List(p, TaskKeys.Assignees), Props.Str(p, TaskKeys.WaitingOn),
             Props.LinkId(Props.Str(p, TaskKeys.Parent)), deps, Props.Str(p, TaskKeys.Recurrence), Props.Str(p, TaskKeys.Series),
             Props.Str(p, TaskKeys.Occurrence), Props.Str(p, TaskKeys.Completed), Props.Str(p, TaskKeys.Source),
             block is not null && block.GetValueOrDefault("start") is { } bs && block.GetValueOrDefault("end") is { } be ? new TimeBlockDto(bs, be) : null,
@@ -234,7 +252,7 @@ public sealed partial class TaskService : ITaskHooks
                 TaskKeys.Planned => ValidDate(Props.Str(value), "planned"),
                 TaskKeys.MyDay => ValidDate(Props.Str(value), "my day"),
                 TaskKeys.Priority => Props.Str(value) is null ? null : int.TryParse(Props.Str(value), out var pr) && pr is >= 1 and <= 4 ? pr : throw new QuantosException("Priority is 1 (highest) to 4."),
-                TaskKeys.Effort => Props.Str(value) is null ? null : int.TryParse(Props.Str(value), out var ef) && ef >= 0 ? ef : throw new QuantosException("Effort is a number of minutes."),
+                TaskKeys.Effort => NormalizeEffort(value),
                 TaskKeys.Parent => ValidateParent(id, Props.LinkId(Props.Str(value)) ?? Props.Str(value)),
                 TaskKeys.DependsOn => ValidateDependencies(id, value),
                 TaskKeys.Recurrence => Props.Str(value) is { } rule && Recurrence.Parse(rule) is null ? throw new QuantosException("Recurrence isn't recognised. Try daily, weekly, weekdays, monthly or an RRULE.") : value,

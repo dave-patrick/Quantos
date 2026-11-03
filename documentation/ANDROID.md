@@ -57,6 +57,14 @@ an included-app list, open **Tailscale › Settings › App split tunneling** an
 (`com.atomic22.quantos`). Otherwise the private server hostname may fail to resolve even while
 Tailscale shows Connected.
 
+## Google Tasks sync
+
+The optional Google Tasks sync (Settings › Google Tasks) runs inside the app's own backend. It syncs only while the app is open: it
+asks for a sync whenever the app comes to the front (`OnResume`) and then on its timer, and it stops when Android freezes or ends the
+process. Sign-in uses the system browser: the page sends `open-external` and the app opens only the Google consent page
+(`GoogleOAuth.IsConsentUrl`). Google redirects back to `http://127.0.0.1:{port}/oauth/google/callback`, which reaches the app's backend on the
+same device. **Verified on a physical phone (build 2026.02.11.30, 2026-11-02):** the loopback redirect reaches the app and two-way sync works. Android blocks the network of an app in the background (`blocked=APP_BACKGROUND`), and during consent the browser is in front, so the token exchange fails with a name-resolution error. `GoogleOAuth` therefore keeps the code when the exchange hits a network failure (8 minutes) and `GoogleTasksCoordinator.Kick()` (called from `OnResume`) finishes it when the app is back in front. The page tells the person to switch back to Quantos.
+
 ## Build
 
 Install .NET 10, the .NET Android workload (`dotnet workload install android`), JDK 17+, Android

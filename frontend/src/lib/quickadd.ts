@@ -5,7 +5,7 @@ export interface QuickTask {
   priority?: number;
   due?: string;
   planned?: string;
-  effort?: number;
+  effort?: number | string;
   tags: string[];
   recurrence?: string;
   project?: string;
@@ -59,6 +59,7 @@ export function parseQuickAdd(text: string, today = isoDate()): QuickTask {
     else if (token.toLowerCase() === '!myday') result.myDay = true;
     else if ((m = /^due:(.+)$/i.exec(token)) && parseDate(m[1], today)) result.due = parseDate(m[1], today);
     else if ((m = /^(?:plan:|@)(.+)$/i.exec(token)) && parseDate(m[1], today)) result.planned = parseDate(m[1], today);
+    else if ((m = /^~(low|medium|high)$/i.exec(token))) result.effort = m[1].toLowerCase();
     else if ((m = /^~(\d+)(m|h)?$/i.exec(token))) result.effort = Number(m[1]) * (m[2]?.toLowerCase() === 'h' ? 60 : 1);
     else if ((m = /^#([\w\-/]+)$/.exec(token))) result.tags.push(m[1]);
     else if ((m = /^\+([\w\-]+)$/.exec(token))) result.project = m[1].replace(/[-_]/g, ' ');

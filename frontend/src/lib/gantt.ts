@@ -3,7 +3,7 @@
  * dependencies are out of order. Pure functions, so the chart and the tests agree.
  */
 export interface GanttTask {
-  id: string; title: string; status: string; planned: string | null; due: string | null; effort: number | null;
+  id: string; title: string; status: string; planned: string | null; due: string | null; effort: number | string | null;
   dependsOn: string[]; project: string | null; created: string | null; completed: string | null; timeBlock: { start: string; end: string } | null;
 }
 export interface Bar { id: string; title: string; start: string; end: string; done: boolean; group: string; estimated: boolean }
@@ -34,7 +34,7 @@ export function daysBetween(a: string, b: string) {
 export function span(t: GanttTask): { start: string; end: string; estimated: boolean } | null {
   const start = d10(t.timeBlock?.start) ?? d10(t.planned);
   const end = d10(t.due) ?? d10(t.timeBlock?.end);
-  const days = Math.max(1, Math.ceil((t.effort ?? 0) / WORKDAY_MINUTES));
+  const days = Math.max(1, Math.ceil((typeof t.effort === 'number' ? t.effort : 0) / WORKDAY_MINUTES));
   if (start && end) return end >= start ? { start, end, estimated: false } : { start: end, end: start, estimated: false };
   if (start) return { start, end: addDays(start, days - 1), estimated: true };
   if (end) return { start: addDays(end, -(days - 1)), end, estimated: true };

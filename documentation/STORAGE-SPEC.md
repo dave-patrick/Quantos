@@ -115,6 +115,7 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 | `goal`, `parent`, `target` | Release 1.1 goals: a project's `goal` links a goal note (`type: goal`); a goal's `parent` links a broader goal; `target` is a goal's date. |
 | `time_spent` | Minutes of logged focus sessions (Release 1.1); each session is also a line under `## Focus` in the daily note: `- 09:00–09:25 · 25 min · [[id|Task]]` |
 | `tz` | Time zone used for `due`/`planned`/reminders. New files use the IANA name (`America/Phoenix`); Windows names in older files remain valid. |
+| `gtask_id`, `gtask_list` | Task, written only while the optional Google Tasks sync is on: the id of the linked Google task and of its list. They are written once when a task is linked and let another device re-link the same task. Everything else the sync tracks (etags, timestamps, last-synced values) stays outside the vault in per-device client data. Removing both keys unlinks the task. |
 
 ## 3. Inline references
 
@@ -265,3 +266,6 @@ volume, plus both secret files. See [SERVER.md](SERVER.md).
 ### Built-in task supertag
 
 `type: task` implies membership of `#task` for supertag counts, tag queries and property editing; existing files do not need a `tags: [task]` rewrite. Until customized, the global definition is synthesized with ID `builtin-task` and no physical file. An explicit update materializes a normal `type: supertag`, `title: task` definition via WriteService. It supplies editable fields with the existing task property keys (`status`, `priority`, `due`, `planned`, etc.). Field definitions may carry a stable `key` distinct from the display `name`. The `task` type name is fixed. Reminder/dependency/recurrence semantics continue to use TaskService. Renaming a task also refreshes its bound inline task labels through the existing derived write path.
+
+
+Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order). Task effort is Low, Medium, or High; quick add accepts `~low`, `~medium`, or `~high`. Older minute estimates remain until changed and continue to support duration-based planning; selecting an effort level replaces the old estimate.

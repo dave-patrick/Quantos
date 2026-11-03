@@ -112,6 +112,24 @@ and `POST /sync/mcp/connection`. `/mcp` uses the separate agent key and Streamab
 [SERVER.md](SERVER.md) for setup and migration. Android also maps authenticated, attachment-only
 `GET /api/android/pdf-info?path=…` and `/api/android/pdf-page?path=…&page=1` on its local backend.
 
+## Google Tasks sync API (optional)
+
+All routes are user-only (403 for agents, plugins and automations, including `GET`). Errors: 400 validation, 409 not ready
+(not connected, no preview, wrong vault), 502/503 Google problems.
+
+| Route | Purpose |
+|---|---|
+| `GET /api/google-tasks` | Status: `state` (`Off`, `Connected`, `NeedsReconnect`, `Paused`), `reason`, `hasCredentials`, `flow` (`idle`, `waiting`), `mappings[]` (`workspace`, `listId`, `listTitle`, `confirmed`, `state`, `reason`), `intervalSeconds`, `lastSynced`, `nextAttempt`, `error`, `counts` (last cycle), `pendingDeletes[]`, `problems[]`. Never returns secrets. |
+| `PUT /api/google-tasks/settings` | `{clientId?, clientSecret?, intervalSeconds?(30–900), mappings?}`. An empty secret keeps the saved one; changing the client ID or secret signs out; `mappings` omitted keeps them, `[]` removes all. |
+| `POST /api/google-tasks/connect` | Starts sign-in; returns `{authUrl}` for the system browser. |
+| `GET` / `POST /api/google-tasks/lists` | The account's lists / create one (`{title}`). |
+| `POST /api/google-tasks/preview` | `{workspace}` → `{cutoff, createInGoogle, importToQuantos, link, excluded}`. Reads only. |
+| `POST /api/google-tasks/confirm` | `{workspace, cutoff}`; needs a preview of that workspace and list made in this run of the app. |
+| `POST /api/google-tasks/sync` | Runs a cycle (waits for one already running); returns `{pushed, pulled, deleted, linked, skipped, conflicts, pendingDeletes, problems}`. |
+| `POST /api/google-tasks/deletes` | `{action: "apply" \| "cancel"}` for the held deletions. |
+| `DELETE /api/google-tasks` | Disconnect: revokes the token, removes settings and sync state, keeps all tasks. |
+| `GET /oauth/google/callback` | Anonymous, GET only: Google's redirect after consent. Valid only for a pending sign-in with the matching `state`. |
+
 ## Command line reference
 
 See [CLI-REFERENCE.md](CLI-REFERENCE.md). Exit codes 0 ok, 1 failed, 2 usage, 3 not running, 4 not permitted.

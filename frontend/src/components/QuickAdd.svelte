@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { priorityLabel, effortLabel } from '../lib/taskLevels';
   import { parseQuickAdd } from '../lib/quickadd';
   import { tasks } from '../lib/tasks.svelte';
   import { app } from '../lib/state.svelte';
@@ -6,7 +7,7 @@
   import { docs } from '../lib/docs.svelte';
   import Icon from './Icon.svelte';
 
-  let { defaults = {}, placeholder = 'Add a task: Call Sam due:fri !2 ~30m #client every week' }:
+  let { defaults = {}, placeholder = 'Add a task: Call Sam due:fri !2 ~medium #client every week' }:
     { defaults?: { planned?: string; due?: string; myDay?: boolean; parent?: string; project?: string; source?: string }; placeholder?: string } = $props();
 
   let text = $state('');
@@ -49,10 +50,10 @@
   {#if pending && !busy}<button class="btn" type="submit">Retry saving task</button>{/if}
   {#if preview}
     <span class="preview">
-      {#if preview.priority}<span>P{preview.priority}</span>{/if}
+      {#if preview.priority}<span>{priorityLabel(preview.priority)}</span>{/if}
       {#if preview.due}<span>due {preview.due}</span>{/if}
       {#if preview.planned}<span>plan {preview.planned}</span>{/if}
-      {#if preview.effort}<span>{preview.effort}m</span>{/if}
+      {#if preview.effort}<span>{effortLabel(preview.effort)}</span>{/if}
       {#if preview.recurrence}<span>↻ {preview.recurrence}</span>{/if}
       {#each preview.tags as t (t)}<span>#{t}</span>{/each}
     </span>

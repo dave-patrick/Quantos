@@ -13,7 +13,7 @@ export interface TaskDto {
   priority: number | null;
   due: string | null;
   planned: string | null;
-  effort: number | null;
+  effort: number | string | null;
   project: string | null;
   assignees: string[];
   waitingOn: string | null;
@@ -95,7 +95,7 @@ class Tasks {
     return updated;
   }
 
-  async create(input: { title: string; workspace: string; due?: string | null; planned?: string | null; priority?: number | null; parent?: string | null; project?: string | null; source?: string | null; recurrence?: string | null; effort?: number | null; assignees?: string[] }) {
+  async create(input: { title: string; workspace: string; due?: string | null; planned?: string | null; priority?: number | null; parent?: string | null; project?: string | null; source?: string | null; recurrence?: string | null; effort?: number | string | null; assignees?: string[] }) {
     const node = await api.post<NodeDto>('tasks', input);
     this.schedule();
     return node;

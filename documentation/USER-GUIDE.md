@@ -1,5 +1,12 @@
 # Quantos user guide
 
+Local fixes awaiting publication (October 28, 2026):
+
+- **Settings › Writing › Spell check** uses bundled US and UK English dictionaries offline. It checks prose in lists and quotes and skips code, numbers, identifiers and web addresses. Names and specialist vocabulary can still be underlined. Dictionary licences are available in About.
+- **Settings › Plugins & permissions › Automations › Grants** lists newly saved rules as well as existing grants. Save a new or renamed rule first, then enable **Move and archive** for archive actions and approve the change in the native client. Grants stay on this device and use saved rule names; renaming does not transfer permissions.
+- **Command palette › Insert today's date** inserts the current local date at the note's cursor or replaces selected text. Slash-menu **Today's date** and **Current time** use the device's date/time when inserted, including after midnight.
+- **Command palette › Insert synced block…** opens a searchable, scrollable chooser for all returned blocks. Search titles or content, use arrow keys and Enter to insert, or Escape to cancel. Focus returns to the original editor.
+
 Windows release: **0.2.3**. Latest public Android release: **0.2.2**. Private Android debug builds are separate from the
 public signed Release APK; keep using the same build channel to preserve update compatibility.
 About lists the release version and a separate build ID in `YYYY.DD.MM.revision` format (day before
@@ -346,6 +353,30 @@ workspace remembers its own tabs, splits and scroll positions.
 
 ---
 
+### Syncing tasks with Google Tasks (optional)
+
+**Settings › Google Tasks** keeps chosen workspaces in step with Google Tasks lists, so your tasks appear in Google's apps and
+widgets. It is off until you connect, and nothing is sent to Google before that.
+
+What syncs, both ways: a task's title, notes, due date (the date only), done or not done, and one level of subtasks. Everything else
+(priority, effort, planned date, reminders, tags, recurrence, dependencies and the rest) stays in Quantos. Recurring tasks, archived
+tasks and tasks that were finished more than 30 days before you set up are left out. If both sides changed the same thing, the Quantos
+version wins. A cancelled task shows as completed in Google. Links to other notes become plain text in Google, and an edit to the notes
+in Google turns links in that task's notes into plain text here. Notes over 8,000 characters, or containing embeds, are not synced.
+
+To set up:
+1. In the Google Cloud Console create a project, turn on the **Google Tasks API** and create an OAuth client of type **Desktop app**.
+2. On the consent screen set the publishing status to **In production**. While it says “Testing”, Google signs you out after 7 days. Google
+   shows an “unverified app” warning for your own client; that is expected.
+3. Paste the client ID and secret into **Settings › Google Tasks**, press **Save**, then **Connect** and approve in your browser.
+4. Add a row for each workspace and the Google list it should use (or make a new list), press **Review**, check the counts, then
+   **Confirm and sync this list**. Nothing syncs for a list until you confirm it.
+
+Deleting a task on one side deletes it on the other. If a lot of deletions turn up at once, Quantos holds them under **Deletions waiting**
+until you press **Apply** or **Cancel**. A task you edited since the last sync is never deleted because the other side deleted it.
+
+Use Google Tasks on one device at a time. On Android it syncs while the app is open. **Disconnect** signs out and stops syncing; your tasks stay.
+
 ## 4. Structure
 
 - **Supertags** turn notes into typed records: `#meeting` with *When*, *Status*, *Attendees*.
@@ -603,3 +634,15 @@ Search filters titles and tags in that folder. **New note** creates the note ins
 Use **Back** and **Forward** in the phone header to retrace folders and pages. After opening
 a note from a folder, **Back** returns to that folder. The chosen folder is retained with the
 workspace's page layout. Task chips open the task's normal page; no task popup is used.
+
+
+### Sidebar groups and compact Appearance settings
+
+The default sidebar groups destinations under **Everyday**, **Planning**, and **Explore and tools**. Expand a heading to see its destinations; opening a destination from another panel also reveals its group. **Customise sidebar** lets you choose visibility and order. Existing custom ordering stays unchanged.
+
+In **Settings > Appearance**, choose a theme and interface size directly. Expand **Theme colours and fonts** for all theme previews, custom colours, fonts and saving a vault style. Writing controls stay below this section. Task controls and settings choices wrap when their pane is narrow; long task metadata wraps within its row.
+
+
+Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order). Task effort is Low, Medium, or High; quick add accepts `~low`, `~medium`, or `~high`. Older minute estimates remain until changed and continue to support duration-based planning; selecting an effort level replaces the old estimate.
+
+Sidebar section expansion and custom navigation choices are retained on this device. The Windows client remembers its active browser profile when it must use a fallback profile.

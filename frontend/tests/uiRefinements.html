@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>UI refinement regression checks</title>
+<link rel="stylesheet" href="/src/styles/tokens.css"><link rel="stylesheet" href="/src/styles/base.css">
+<style>body{overflow:auto;padding:16px}#result{white-space:pre-wrap} .sample{container: pane / inline-size;display:flex;height:760px;max-width:100%;margin-bottom:20px}.sample>*{min-width:0}#tasks{width:450px}#settings{width:354px}#sidebar{width:248px}#status{height:26px;width:900px;max-width:100%;margin-bottom:20px}</style>
+</head><body><main><h1>UI refinement regression checks</h1><pre id="result">Running…</pre><div id="status"></div><div id="tasks" class="sample"></div><div id="settings" class="sample"></div><div id="sidebar" class="sample"></div></main>
+<script type="module">
+const results=[];
+const check=(ok,label)=>{if(!ok)throw Error(label);results.push(label)};
+const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+window.fetch=async url=>{
+  const path=String(url).replace('/api/','');
+  if(path.startsWith('tree?')) return Response.json({name:'default',path:'',folders:[],notes:[]});
+  if(path==='themes')return Response.json({files:[],active:null});
+  if(path==='config/settings.json')return Response.json({});
+  if(path==='templates')return Response.json([]);
+  throw Error('Unexpected fixture request: '+path);
+};
+try{
+  const {mount,tick}=await import('svelte');
+  const {app}=await import('/src/lib/state.svelte.ts');
+  const {prefs}=await import('/src/lib/prefs.svelte.ts');
+  const {tasks}=await import('/src/lib/tasks.svelte.ts');
+  const {contrast}=await import('/src/lib/look.ts');
+  app.workspace='default';app.workspaces=['default'];app.status={version:'test',vault:'Fixture/Vault'};app.connected=true;
+  prefs.sidebarOrder=[];prefs.sidebarHidden=[];prefs.look={...prefs.look,bg:null,text:null,accent:null,scale:1};app.theme='dark';
+  tasks.list=[{id:'fixture-task',title:'A task with long waiting metadata',workspace:'default',status:'waiting',priority:2,waitingOn:'Stakeholder'.repeat(40),assignees:[],dependsOn:[],reminders:[],tags:[],archived:false,blocked:false,subtaskCount:0,subtasksDone:0}];
+  mount((await import('/src/components/views/TasksView.svelte')).default,{target:document.querySelector('#tasks'),props:{tab:{kind:'tasks',title:'Tasks'}}});
+  mount((await import('/src/components/views/SettingsView.svelte')).default,{target:document.querySelector('#settings')});
+  mount((await import('/src/components/LeftSidebar.svelte')).default,{target:document.querySelector('#sidebar')});
+  mount((await import('/src/components/StatusBar.svelte')).default,{target:document.querySelector('#status')});
+  await tick();await frame();
+  const row=document.querySelector('#tasks .task'), chip=row.querySelector('.chip'), controls=document.querySelector('#tasks .controls');
+  check(chip.getBoundingClientRect().right<=row.getBoundingClientRect().right+1,'Long waiting metadata stays inside its task');
+  check(controls.scrollWidth<=controls.clientWidth+1,'Task toolbar fits a 450px pane');
+  const myday=row.querySelector('.myday');myday.focus();await frame();
+  check(document.activeElement===myday && getComputedStyle(myday).opacity==='1','Focused Add to My Day is visible');
+  const appearance=document.querySelector('#settings'), advanced=appearance.querySelector('details.advanced');
+  check(advanced && !advanced.open && appearance.querySelector('[aria-label="Theme"]'),'Appearance begins with compact theme picker');
+  check(advanced.querySelector('summary').getBoundingClientRect().height>=48,'Theme disclosure has a 48px touch target');
+  check(appearance.querySelector('[aria-label="Editor text size"]').getBoundingClientRect().top<appearance.getBoundingClientRect().bottom,'Writing size is visible without opening advanced theme controls');
+  for(const seg of appearance.querySelectorAll('.seg'))check(seg.scrollWidth<=seg.clientWidth+1,'Settings choices wrap within narrow pane');
+  advanced.open=true;await frame();
+  check(appearance.querySelectorAll('.preset').length===12,'All theme previews remain available');
+  check(appearance.scrollWidth<=appearance.clientWidth+1,'Expanded Appearance fits narrow pane');
+  advanced.open=false;
+  const planning=[...document.querySelectorAll('#sidebar button')].find(b=>b.textContent.trim()==='Planning');
+  check(planning?.getAttribute('aria-expanded')==='false','Advanced navigation begins collapsed');
+  planning.click();await tick();
+  check([...document.querySelectorAll('#sidebar button')].some(b=>b.textContent.trim()==='Gantt'),'Planning destinations remain reachable');
+  prefs.sidebarOrder=['tasks','notes'];await tick();
+  check(document.querySelector('#sidebar .item').textContent.trim()==='Tasks','Saved custom navigation order stays authoritative');
+  const status=document.querySelector('#status footer');
+  const hex=rgb=>'#'+rgb.match(/\d+/g).slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join('');
+  check(contrast(hex(getComputedStyle(status).color),hex(getComputedStyle(status).backgroundColor))>=4.5,'Dark status text meets AA contrast');
+  window.uiRefinementResults={passed:results};document.querySelector('#result').textContent='PASS\n'+results.join('\n');
+}catch(error){window.uiRefinementResults={passed:results,error:String(error),stack:error.stack};document.querySelector('#result').textContent='FAIL\n'+results.join('\n')+'\n'+error.stack;}
+</script></body></html>

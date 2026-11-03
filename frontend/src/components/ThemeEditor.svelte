@@ -52,7 +52,21 @@
   }
 </script>
 
-<div class="field top"><span>Theme</span>
+<div class="field"><span>Theme</span>
+  <select class="input font" aria-label="Theme" value={activePreset ?? ''} onchange={(e) => { const preset = PRESETS.find((p) => p.key === (e.target as HTMLSelectElement).value); if (preset) applyPreset(preset); }}>
+    {#if !activePreset}<option value="">Custom theme</option>{/if}
+    {#each PRESETS as p (p.key)}<option value={p.key}>{p.label}</option>{/each}
+  </select>
+</div>
+<!-- Apply resizing after dragging, so the control does not move under the pointer. -->
+<div class="field"><span>Interface size</span><input type="range" aria-label="Interface size" min="0.9" max="1.25" step="0.05" value={look.scale}
+  oninput={(e) => (scaleDraft = Number((e.target as HTMLInputElement).value))} onchange={(e) => { set({ scale: Number((e.target as HTMLInputElement).value) }); scaleDraft = null; }} />
+  <span class="mono">{Math.round((scaleDraft ?? look.scale) * 100)}%</span>
+  {#if look.scale !== 1}<button class="btn ghost" onclick={() => set({ scale: 1 })}>100%</button>{/if}</div>
+
+<details class="advanced">
+<summary>Theme colours and fonts</summary>
+<div class="field top"><span>Theme previews</span>
   <div class="presets" role="radiogroup" aria-label="Theme">
     {#each PRESETS as p (p.key)}
       {@const s = swatch(p)}
@@ -106,21 +120,19 @@
     {#if look[key]}<span class="preview" style={`font-family:"${look[key]}"`}>Quantos Aa 123</span>{/if}
   </div>
 {/each}
-<!-- Applied when the slider is let go: resizing everything while dragging moves the slider under the pointer. -->
-<div class="field"><span>Interface size</span><input type="range" aria-label="Interface size" min="0.9" max="1.25" step="0.05" value={look.scale}
-  oninput={(e) => (scaleDraft = Number((e.target as HTMLInputElement).value))} onchange={(e) => { set({ scale: Number((e.target as HTMLInputElement).value) }); scaleDraft = null; }} />
-  <span class="mono">{Math.round((scaleDraft ?? look.scale) * 100)}%</span>
-  {#if look.scale !== 1}<button class="btn ghost" onclick={() => set({ scale: 1 })}>100%</button>{/if}</div>
 <div class="row">
   <button class="btn" onclick={saveToVault}>Save as a vault style…</button>
   <button class="btn ghost" onclick={() => { prefs.look = { ...DEFAULT_LOOK }; prefs.accent = 'blue'; app.theme = 'dark'; }}>Reset theme</button>
 </div>
+</details>
 
 <style>
+  .advanced { margin: 14px 0; }
+  summary { cursor: pointer; color: var(--text-soft); min-height: 48px; padding: 8px 0; font-weight: 600; }
   .field { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
-  .field > span:first-child { width: 130px; color: var(--text-soft); flex: none; }
+  .field > span:first-child { width: 130px; max-width: 100%; color: var(--text-soft); flex: none; }
   .field.top { align-items: flex-start; }
-  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; flex: 1; min-width: 260px; max-width: 760px; }
+  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; flex: 1; min-width: min(260px, 100%); max-width: 760px; }
   .preset { display: grid; gap: 4px; padding: 6px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--bg-raised); cursor: pointer; text-align: left; }
   .preset.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .sample { position: relative; display: block; height: 52px; border-radius: 6px; background: var(--pbg); overflow: hidden; border: 1px solid color-mix(in srgb, var(--ptext) 15%, transparent); }
@@ -132,7 +144,8 @@
   input[type='color'] { width: 34px; height: 28px; padding: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: none; cursor: pointer; }
   input[type='color']:disabled { opacity: .4; cursor: default; }
   .hex { width: 110px; font-family: var(--font-mono); }
-  .font { width: 220px; }
+  .font { width: 220px; max-width: 100%; }
+  .field input[type='range'] { min-width: 0; max-width: 100%; }
   .preview { font-size: 15px; color: var(--text-soft); }
   .swatches { display: flex; gap: 6px; }
   .swatch { width: 22px; height: 22px; border-radius: 50%; background: var(--c); border: 2px solid transparent; cursor: pointer; padding: 0; }
@@ -144,5 +157,5 @@
   .small { font-size: 12.5px; }
   .indent { margin: -4px 0 6px 140px; }
   .mono { font-family: var(--font-mono); font-size: 12.5px; }
-  .row { display: flex; gap: 8px; margin: 14px 0 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; }
 </style>

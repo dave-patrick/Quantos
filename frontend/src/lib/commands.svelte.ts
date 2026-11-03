@@ -1,5 +1,5 @@
 import { api } from './api';
-import { isoDate } from './dates';
+import { insertTodaysDate } from './insertDate';
 import { docs } from './docs.svelte';
 import { layout } from './layout.svelte';
 import { openNode } from './links.svelte';
@@ -156,5 +156,5 @@ register(
   { id: 'theme.toggle', title: 'Switch light or dark theme', group: 'App', icon: 'moon', run: () => (app.theme = app.theme === 'dark' ? 'light' : 'dark') },
   { id: 'save.all', title: 'Save all', group: 'App', icon: 'download', run: () => docs.flushAll() },
   { id: 'cache.rebuild', title: 'Rebuild cache', group: 'Vault', icon: 'refresh', run: async () => { await api.post('system/rebuild'); app.toast('Cache rebuilt from the vault.', 'ok'); } },
-  { id: 'daily.date', title: `Insert today's date`, group: 'Edit', run: () => navigator.clipboard?.writeText(isoDate()) }
+  { id: 'daily.date', title: `Insert today's date`, group: 'Edit', run: insertTodaysDate }
 );

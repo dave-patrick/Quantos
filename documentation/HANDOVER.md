@@ -1,5 +1,19 @@
 # Handover: working on Quantos with its owner
 
+## Google Tasks sync (2026-10-30)
+
+The owner asked for Google Tasks as an optional replacement/counterpart for Quantos tasks: two-way, desktop and Android, they will register the
+Google Cloud project, and they are the only user. It is built and tested locally (see PROJECT-STATUS "Google Tasks sync") but **not committed,
+published or tried against a real Google account**. Open items for the owner: (1) create the Google Cloud Desktop-app client, set the consent screen to
+In production, and run Windows end to end (checklist in the design's "Verification criteria › Manual"); (2) Android loopback sign-in is verified on the phone (2026-11-02, build .30: connected, two-way sync confirmed). Android blocks a background app's network, so the code exchange is deferred until the app returns to the front (see ANDROID.md); the 60 s-wait run was not repeated; (3) check the refresh token still works on or after 2026-11-09. They chose local-wins over last-writer-wins for conflicts, and on 2026-11-02 approved all the design's flagged decisions (D1–D8, the Android loopback sign-in and the delete guard) as written. The design doc
+records six review rounds; the owner twice allowed a revision past the 3-revision cap and then chose to fold in the last findings and implement. Run `pwsh build/next-build.ps1` for the first build that contains it.
+
+## Local feature-gap fixes (2026-10-28)
+
+User approved fixing the four audited gaps and explicitly allowed editing before theme publication finished. These changes must not be pushed or published without a further request. Independent diagnosis confirmed all four causes. The source now uses lazy offline English spelling dictionaries, saved-rule automation grant controls through the existing native approval flow, current local date/time insertion, and a searchable synced-block picker without the eight-result truncation. No vault schema or backend permission policy changed. Browser acceptance is currently blocked by browser tooling; do not claim native/device verification from unit checks. Release 0.2.4/theme publication belongs to the other chat.
+
+Private Windows build `2026.28.10.19` (release `0.2.4`, dirty source mark) was packaged and installed/restarted in the owner's usual test copy. All 144 frontend, 242 backend/core and five native tests passed, as did typecheck (zero errors, nine existing warnings), ZIP checks, Herald and packaged self-check (zero warnings). Two independent review passes ended clean; the final pass includes chooser shortcut/Android Back handling. All three installed executable hashes match; startup and served shell/licences returned HTTP 200, and served assets contain build 19. No Android APK or phone update was made. Browser fixture execution remains unverified: automatic review blocked headless launch with “blocked by policy”, and in-app browser/panel attachment failed. Build 18 was interrupted before packaging to include the final keyboard fix; build 19 is the delivered set.
+
 What the previous agent learned about working on this project that isn't in the code or the plan.
 Read [PROJECT-STATUS.md](PROJECT-STATUS.md) for the technical picture; this file is about the owner, the
 open threads and the machine.
@@ -432,3 +446,15 @@ folders against the real folder API, including empty folders/Archive. Opening a 
 New note in the selected directory, Back and Forward passed. Before/after active counts matched
 (24 Default / 613 Videos); only the owned test note was trashed. Native evidence is under ignored
 `.dev/folders-icon-*`. Windows was not staged and no public release was made.
+
+
+### Interface refinements and native scan (2026-10-28)
+
+Private Windows and Android release 0.2.4/build 2026.28.10.21 is installed. All six review findings are fixed, plus native Android Capture naming/target size, the theme disclosure touch target, and embedded backend version identity. All 391 automated tests passed during the change; final adjustments passed typecheck (zero errors/nine existing warnings), 15 browser assertions and axe (no violations). Two independent review rounds ended clean. Windows ZIP/self-check passed (zero self-check warnings), all installed executable hashes match, and the client log confirms HTTP 200 at 14:24:24. Android built without warnings/errors, passed signature verification and install-r, and the physical SM-S948U confirms version/build, 48px controls, Notes/Back, real IME visibility, Tasks Options and Appearance reflow. Note/workspace counts are unchanged. Windows GUI automation remains unavailable; three source-supported host findings remain in UI-DESIGN-SCAN-2026-10-28.md. The owner confirmed that the phone theme change was intentional and requested keeping the current theme. No restoration or recovery preference writes were made; this item is resolved. No commit, push or public release. Preserve unrelated local feature-gap changes.
+
+
+Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order). Task effort is Low, Medium, or High; quick add accepts `~low`, `~medium`, or `~high`. Older minute estimates remain until changed and continue to support duration-based planning; selecting an effort level replaces the old estimate.
+
+Task level changes are uncommitted and require a browser walkthrough: the development sign-in failed against the existing service. My Day no longer shows a duration total because effort levels cannot be summed as minutes.
+
+Sidebar section expansion and custom navigation choices are retained on this device. The Windows client remembers its active browser profile when it must use a fallback profile.

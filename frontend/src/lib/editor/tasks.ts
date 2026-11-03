@@ -1,3 +1,4 @@
+import { priorityLabel } from '../taskLevels';
 import { RangeSetBuilder, StateEffect, type Extension } from '@codemirror/state';
 import { Decoration, EditorView, ViewPlugin, WidgetType, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 
@@ -59,7 +60,7 @@ function build(view: EditorView, hooks: TaskHooks) {
         if (textTo > textFrom && (checked || info?.deleted)) builder.add(textFrom, textTo, Decoration.mark({ class: info?.deleted ? 'cm-task-deleted' : 'cm-task-done' }));
         if (taskId && m[5]) {
           const commentFrom = textTo + (m[5].length - m[5].trimStart().length);
-          const label = info?.deleted ? 'deleted · restore' : [info?.due ? 'due ' + info.due.slice(5, 10) : '', info?.priority ? 'P' + info.priority : ''].filter(Boolean).join(' · ') || 'task';
+          const label = info?.deleted ? 'deleted · restore' : [info?.due ? 'due ' + info.due.slice(5, 10) : '', info?.priority ? priorityLabel(info.priority) : ''].filter(Boolean).join(' · ') || 'task';
           builder.add(commentFrom, textTo + m[5].length, Decoration.replace({ widget: new ChipWidget(taskId, label, !!info?.deleted) }));
         }
       }

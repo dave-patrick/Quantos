@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Quantos.Core.Tasks;
 
-public sealed record QuickTask(string Title, int? Priority, string? Due, string? Planned, int? Effort,
+public sealed record QuickTask(string Title, int? Priority, string? Due, string? Planned, object? Effort,
     IReadOnlyList<string> Tags, string? Recurrence, string? Project, bool MyDay)
 {
     /// <summary>True when the text held any token beyond the title.</summary>
@@ -60,7 +60,8 @@ public static partial class QuickAdd
                 : what switch { "day" => "daily", "weekday" => "weekdays", _ => what + "ly" };
             rest = rest.Remove(every.Index, every.Length).Insert(every.Index, " ");
         }
-        int? priority = null, effort = null;
+        int? priority = null;
+        object? effort = null;
         string? due = null, planned = null, project = null;
         var myDay = false;
         var tags = new List<string>();
@@ -72,6 +73,7 @@ public static partial class QuickAdd
             else if (token.Equals("!myday", StringComparison.OrdinalIgnoreCase)) myDay = true;
             else if ((m = DueToken().Match(token)).Success && ParseDate(m.Groups[1].Value, today) is { } d) due = d;
             else if ((m = PlanToken().Match(token)).Success && ParseDate(m.Groups[1].Value, today) is { } p) planned = p;
+            else if (Regex.IsMatch(token, @"^~(low|medium|high)$", RegexOptions.IgnoreCase)) effort = token[1..].ToLowerInvariant();
             else if ((m = EffortToken().Match(token)).Success)
                 effort = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture) * (m.Groups[2].Value.Equals("h", StringComparison.OrdinalIgnoreCase) ? 60 : 1);
             else if ((m = TagToken().Match(token)).Success) tags.Add(m.Groups[1].Value);

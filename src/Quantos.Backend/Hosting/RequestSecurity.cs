@@ -26,6 +26,10 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, C
             return;
         }
 
+        // Google's redirect after consent is a cross-site navigation, so this one exact route is handled before the
+        // Origin and Sec-Fetch-Site checks. It does its own validation (a pending sign-in and its secret state).
+        if (await GoogleOAuthCallback.TryHandleAsync(ctx)) return;
+
         var origin = request.Headers.Origin.ToString();
         if (origin.Length > 0 && !address.IsExpectedOrigin(origin))
         {
@@ -95,7 +99,7 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, C
             {
                 var path = request.Path;
                 if (path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/system") || path.StartsWithSegments("/api/auth") && path != "/api/auth/whoami"
-                    || path.StartsWithSegments("/api/plugins") || path.StartsWithSegments("/api/approvals"))
+                    || path.StartsWithSegments("/api/plugins") || path.StartsWithSegments("/api/approvals") || path.StartsWithSegments("/api/google-tasks"))
                 {
                     await Reject(ctx, StatusCodes.Status403Forbidden, "Only you can do that, not an agent or plugin.");
                     return;

@@ -6,6 +6,7 @@
   import { plugins } from '../lib/plugins.svelte';
   import { awaitApproval } from '../lib/approvals.svelte';
   import { bridge, isWindowsClient } from '../lib/platform';
+  import { automationGrantRows } from '../lib/automationGrants';
 
   const ALL = ['Read', 'CreateEdit', 'MoveArchive', 'TrashRestore', 'PermanentDelete', 'RunCommands', 'OutsideFiles', 'Network'] as const;
   const LABELS: Record<string, string> = {
@@ -19,6 +20,9 @@
   let automationsText = $state('');
   let automationError = $state('');
   let recent = $state<{ rule: string; title: string; at: string; outcome: string }[]>([]);
+  // Permission actors are named by persisted rules, never by unsaved editor text.
+  let savedAutomationNames = $state<string[]>([]);
+  const automationGrants = $derived(automationGrantRows(savedAutomationNames, grants.automations));
 
   async function load() {
     const p = await api.get<{ grants: typeof grants; safeMode: boolean }>('permissions');
@@ -27,6 +31,7 @@
     const a = await api.get<any>('config/automations.json').catch(() => null);
     automationsText = JSON.stringify(a ?? { automations: [] }, null, 2);
     rules = fromJson(Array.isArray(a) ? a : a?.automations ?? []);
+    savedAutomationNames = rules.map((rule) => rule.name);
     recent = await api.get('automations/recent');
   }
   onMount(load);
@@ -94,6 +99,7 @@
       if (!Array.isArray(list)) throw new Error('Expected { "automations": [ … ] }');
       for (const r of list) if (!r.name || !r.when?.property) throw new Error('Each automation needs a name and when.property');
       await api.put('config/automations.json', Array.isArray(parsed) ? { automations: parsed } : parsed);
+      savedAutomationNames = list.map((rule) => rule.name);
       automationError = '';
       app.toast('Automations saved.', 'ok');
     } catch (e) { automationError = (e as Error).message; }
@@ -183,9 +189,14 @@
       <button class="btn ghost" onclick={() => switchMode('form')}>Back to the form</button>
     {/if}
   </div>
-  {#each Object.entries(grants.automations) as [name, perms] (name)}
+  <h3>Grants</h3>
+  <p class="faint">Save new or renamed automations first. Grants use saved names and stay on this device; renaming a rule does not transfer its grants. New rules can read, create and edit content.</p>
+  {#each automationGrants as { name, permissions: perms, saved } (name)}
     <div class="card"><strong>{name}</strong>
+      {#if !saved}<p class="faint">No saved automation uses this name. These grants still apply if that name is used again.</p>{/if}
       <div class="perms">{#each ALL.slice(0, 4) as perm (perm)}<label class="check"><input type="checkbox" checked={perms.includes(perm)} onchange={() => toggle('Automation', name, perms, perm)} /> {LABELS[perm]}</label>{/each}</div></div>
+  {:else}
+    <p class="muted">Save an automation to configure its grants.</p>
   {/each}
   {#if recent.length}
     <h3>Recent runs</h3>

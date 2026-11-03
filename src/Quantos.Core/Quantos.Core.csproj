@@ -14,4 +14,10 @@
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
+  <!-- A private Google Cloud client for the optional Google Tasks sync. The file is git-ignored; when it exists the build embeds it,
+       so Settings shows a plain Connect button. Without it, people paste their own client (see documentation/GOOGLE-TASKS-SYNC-DESIGN.md). -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)../../build/google-client.json')">
+    <EmbeddedResource Include="../../build/google-client.json" LogicalName="google-client.json" />
+  </ItemGroup>
+
 </Project>

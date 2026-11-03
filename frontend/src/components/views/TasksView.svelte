@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { priorityLabel } from '../../lib/taskLevels';
   import { day } from '../../lib/today.svelte';
   import { tasks, type TaskDto } from '../../lib/tasks.svelte';
   import { app } from '../../lib/state.svelte';
@@ -54,7 +55,7 @@
       switch (group) {
         case 'due': return [dueBucket(t)];
         case 'project': return [label(t.project) ?? 'No project'];
-        case 'priority': return [t.priority ? `P${t.priority}` : 'No priority'];
+        case 'priority': return [t.priority ? priorityLabel(t.priority) : 'No priority'];
         case 'status': return [t.status];
         case 'stage': return [t.stage ?? 'No stage'];
         case 'assignee': return t.assignees.length ? t.assignees.map((a) => label(a)!) : ['Unassigned'];
@@ -159,8 +160,8 @@
   .inner.wide { max-width: none; }
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   h1 { font: 700 28px/1.2 var(--font-display); }
-  .controls { display: flex; gap: 6px; align-items: center; }
-  .controls .input { height: 30px; width: auto; font-size: 13px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; max-width: 100%; }
+  .controls .input { height: 30px; width: auto; max-width: 100%; min-width: 0; font-size: 13px; }
   .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
   .seg button { border: 0; background: none; color: var(--text-muted); padding: 5px 9px; display: grid; }
   .seg button.on { background: var(--accent-wash); color: var(--accent); }

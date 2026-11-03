@@ -86,7 +86,7 @@
         {#if !leaf}<button class="icon-btn" aria-label="Back" disabled={!layout.pane.back.length} onclick={back}><Icon name="arrow-left" size={21} /></button>{/if}
         <button class="icon-btn" aria-label="Forward" disabled={!layout.pane.forward.length} onclick={() => layout.forward()}><Icon name="arrow-right" size={21} /></button>
         <button class="icon-btn" aria-label="Search notes" onclick={() => open({ kind: 'search' })}><Icon name="search" size={21} /></button>
-        <button class="capture-button" onclick={() => capture.show()}><Icon name="inbox" size={19} /><span class="capture-label">Capture</span></button>
+        <button class="capture-button" aria-label="Quick capture" onclick={() => capture.show()}><Icon name="inbox" size={19} /><span class="capture-label">Capture</span></button>
       </div>
     {/if}
   </header>
@@ -142,7 +142,7 @@
   .phone-wordmark :global(svg) { height: 100%; width: auto; max-width: 132px; }
   .phone-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
   .icon-btn { min-width: 48px; min-height: 48px; background: transparent; flex-shrink: 0; }
-  .capture-button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 12px; border: 0; border-radius: 24px; background: var(--accent-wash); color: var(--accent-strong); font-weight: 600; }
+  .capture-button { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 48px; min-height: 48px; flex-shrink: 0; padding: 0 12px; border: 0; border-radius: 24px; background: var(--accent-wash); color: var(--accent-strong); font-weight: 600; }
   .phone-main, .phone-workspace { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
   .phone-workspace { flex: 1; }
   .phone-workspace[hidden] { display: none; }

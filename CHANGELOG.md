@@ -9,6 +9,16 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 Optional server/folder-bridge binaries remain separately deployed from source.
 
+## 0.2.5 (2026-11-02)
+
+Windows x64 release. Android downloads remain on 0.2.2.
+
+- **Google Tasks sync (optional, off by default).** Settings › Google Tasks keeps chosen workspaces in step with Google Tasks lists:
+  title, notes, due date, done state and one level of subtasks sync both ways; everything else stays local. You bring your own Google
+  Cloud client; each list is previewed and confirmed before it first syncs; large batches of deletions are held for review. Verified
+  two-way on an Android phone with a real Google account; the Windows walkthrough is still to do. Android finishes sign-in when you
+  switch back to the app. Design: `documentation/GOOGLE-TASKS-SYNC-DESIGN.md`.
+
 ## 0.2.4 (2026-10-28)
 
 Windows x64 release, build **2026.28.10.17**. Android downloads remain on 0.2.2.

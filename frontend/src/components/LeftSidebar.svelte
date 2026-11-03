@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { app } from '../lib/state.svelte';
   import { layout, type TabKind } from '../lib/layout.svelte';
   import { whereFrom } from '../lib/links.svelte';
@@ -9,6 +10,7 @@
   import { capture } from '../lib/capture.svelte';
   import Icon from './Icon.svelte';
   import { prefs } from '../lib/prefs.svelte';
+  import { toggleSidebarCollapsed } from '../lib/sidebarCollapse';
   import { api } from '../lib/api';
   import { onChange } from '../lib/events';
   import type { TreeFolder } from '../lib/types';
@@ -123,7 +125,21 @@
     };
   }
 
-  let collapsed = $state<Record<string, boolean>>({});
+  const navGroups = [
+    { key: 'work', label: 'Everyday', items: ['notes', 'daily', 'myday', 'tasks', 'capture'] },
+    { key: 'planning', label: 'Planning', items: ['timeline', 'gantt', 'review', 'sprints', 'goals', 'focus', 'habits'] },
+    { key: 'explore', label: 'Explore and tools', items: ['search', 'ask', 'graph', 'map', 'terminal'] }
+  ];
+  const groupedItems = $derived(navGroups.map((g) => ({ ...g, entries: shownItems.filter((i) => g.items.includes(i.key)) })).filter((g) => g.entries.length));
+  const toggleCollapsed = (key: string) => { prefs.sidebarCollapsed = toggleSidebarCollapsed(prefs.sidebarCollapsed, key); };
+  // Preserve the saved state on mount; later navigation reveals its destination.
+  let sawInitialActive = false;
+  $effect(() => {
+    const active = layout.activeTab?.kind;
+    if (!sawInitialActive) { sawInitialActive = true; return; }
+    const group = navGroups.find((g) => g.items.includes(active ?? ''));
+    if (group) untrack(() => { prefs.sidebarCollapsed[group.key] = false; });
+  });
   const isActive = (kind: TabKind, arg?: string) => layout.activeTab?.kind === kind && (arg === undefined || layout.activeTab?.arg === arg);
 
   function open(e: MouseEvent, kind: TabKind, label: string, arg?: string) {
@@ -132,13 +148,27 @@
   }
 </script>
 
+{#snippet nav_item(item: NavItem)}
+        {#if item.kind}
+          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)} oncontextmenu={(e) => { e.preventDefault(); layout.open({ kind: item.kind!, title: item.label }, 'other'); }} {...dnd(item.key)}>
+            <Icon name={item.icon} size={15} /> <span>{item.label}</span>
+          </button>
+        {:else if item.key === 'capture'}
+          <button class="item" onclick={() => capture.show()} {...dnd(item.key)}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
+        {:else if isNativeClient}
+          <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()} {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
+        {:else}
+          <div class="item disabled" title="The PowerShell terminal runs in the Windows client only." {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>
+        {/if}
+{/snippet}
+
 {#snippet section_pinned()}
     {#if views.pinned.length && showSection('pinned')}
       <section>
-        <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:pinned')} ondragend={endDrag} onclick={() => (collapsed.pinned = !collapsed.pinned)}>
-          <Icon name={collapsed.pinned ? 'chevron-right' : 'chevron-down'} size={12} /> Pinned views
+        <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:pinned')} ondragend={endDrag} onclick={() => toggleCollapsed('pinned')}>
+          <Icon name={prefs.sidebarCollapsed.pinned ? 'chevron-right' : 'chevron-down'} size={12} /> Pinned views
         </button>
-        {#if !collapsed.pinned}
+        {#if !prefs.sidebarCollapsed.pinned}
           {#each views.pinned as v (v.id)}
             <button class="item" class:active={isActive('view', v.id)} onclick={(e) => open(e, 'view', v.name, v.id)}>
               <Icon name={v.icon ?? 'star'} size={15} /> <span>{v.name}</span>
@@ -151,10 +181,10 @@
 {#snippet section_folders()}
     {#if (folders.length || views.saved.some((v) => v.virtualFolder)) && showSection('folders')}
       <section>
-        <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:folders')} ondragend={endDrag} onclick={() => (collapsed.folders = !collapsed.folders)}>
-          <Icon name={collapsed.folders ? 'chevron-right' : 'chevron-down'} size={12} /> Folders
+        <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:folders')} ondragend={endDrag} onclick={() => toggleCollapsed('folders')}>
+          <Icon name={prefs.sidebarCollapsed.folders ? 'chevron-right' : 'chevron-down'} size={12} /> Folders
         </button>
-        {#if !collapsed.folders}
+        {#if !prefs.sidebarCollapsed.folders}
           {#each folders as f (f.path)}
             <button class="item" style="padding-left:{12 + f.depth * 14}px" class:active={isActive('view', 'folder:' + f.path)}
               onclick={(e) => open(e, 'view', f.name, 'folder:' + f.path)}>
@@ -173,10 +203,10 @@
 {#snippet section_queries()}
     {#if showSection('queries')}
     <section>
-      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:queries')} ondragend={endDrag} onclick={() => (collapsed.queries = !collapsed.queries)}>
-        <Icon name={collapsed.queries ? 'chevron-right' : 'chevron-down'} size={12} /> Saved queries
+      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:queries')} ondragend={endDrag} onclick={() => toggleCollapsed('queries')}>
+        <Icon name={prefs.sidebarCollapsed.queries ? 'chevron-right' : 'chevron-down'} size={12} /> Saved queries
       </button>
-      {#if !collapsed.queries}
+      {#if !prefs.sidebarCollapsed.queries}
         {#each views.saved.filter((v) => !v.pinned && !v.virtualFolder) as v (v.id)}
           <button class="item" class:active={isActive('view', v.id)} onclick={(e) => open(e, 'view', v.name, v.id)}>
             <Icon name={v.virtualFolder ? 'folder' : 'filter'} size={15} /> <span>{v.name}</span>
@@ -190,10 +220,10 @@
 {#snippet section_tags()}
     {#if showSection('tags')}
     <section>
-      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:tags')} ondragend={endDrag} onclick={() => (collapsed.tags = !collapsed.tags)}>
-        <Icon name={collapsed.tags ? 'chevron-right' : 'chevron-down'} size={12} /> Supertags
+      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:tags')} ondragend={endDrag} onclick={() => toggleCollapsed('tags')}>
+        <Icon name={prefs.sidebarCollapsed.tags ? 'chevron-right' : 'chevron-down'} size={12} /> Supertags
       </button>
-      {#if !collapsed.tags}
+      {#if !prefs.sidebarCollapsed.tags}
         {#each supertags.tree as entry (entry.tag.name)}
           <button class="item" style="padding-left:{12 + entry.depth * 14}px" class:active={isActive('supertags', entry.tag.name)}
             onclick={(e) => open(e, 'supertags', '#' + entry.tag.name, entry.tag.name)}>
@@ -209,10 +239,10 @@
 {#snippet section_tools()}
     {#if showSection('tools')}
     <section>
-      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:tools')} ondragend={endDrag} onclick={() => (collapsed.tools = !collapsed.tools)}>
-        <Icon name={collapsed.tools ? 'chevron-right' : 'chevron-down'} size={12} /> Vault
+      <button class="heading" draggable="true" ondragstart={(e) => startDrag(e, 'section:tools')} ondragend={endDrag} onclick={() => toggleCollapsed('tools')}>
+        <Icon name={prefs.sidebarCollapsed.tools ? 'chevron-right' : 'chevron-down'} size={12} /> Vault
       </button>
-      {#if !collapsed.tools}
+      {#if !prefs.sidebarCollapsed.tools}
         {#each tools as item (item.kind)}
           <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind, item.label)}>
             <Icon name={item.icon} size={15} /> <span>{item.label}</span>
@@ -243,19 +273,22 @@
       </section>
     {:else}
     <section>
-      {#each shownItems as item (item.key)}
-        {#if item.kind}
-          <button class="item" class:active={isActive(item.kind)} onclick={(e) => open(e, item.kind!, item.label)} oncontextmenu={(e) => { e.preventDefault(); layout.open({ kind: item.kind!, title: item.label }, 'other'); }} {...dnd(item.key)}>
-            <Icon name={item.icon} size={15} /> <span>{item.label}</span>
-          </button>
-        {:else if item.key === 'capture'}
-          <button class="item" onclick={() => capture.show()} {...dnd(item.key)}><Icon name="inbox" size={15} /> <span>Quick capture</span></button>
-        {:else if isNativeClient}
-          <button class="item" class:active={terminal.open} onclick={() => terminal.toggle()} {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span></button>
-        {:else}
-          <div class="item disabled" title="The PowerShell terminal runs in the Windows client only." {...dnd(item.key)}><Icon name="terminal" size={15} /> <span>Terminal</span> <span class="requires-windows">Windows client</span></div>
-        {/if}
-      {/each}
+      {#if prefs.sidebarOrder.length}
+        <!-- Preserve saved custom ordering across the entire navigation list. -->
+        {#each shownItems as item (item.key)}{@render nav_item(item)}{/each}
+      {:else}
+        {#each groupedItems as group (group.key)}
+          <div class="nav-group">
+            <button class="heading" aria-expanded={!prefs.sidebarCollapsed[group.key]} onclick={() => toggleCollapsed(group.key)}>
+              <Icon name={prefs.sidebarCollapsed[group.key] ? 'chevron-right' : 'chevron-down'} size={12} /> {group.label}
+            </button>
+            {#if !prefs.sidebarCollapsed[group.key]}
+              {#each group.entries as item (item.key)}{@render nav_item(item)}{/each}
+            {/if}
+          </div>
+        {/each}
+      {/if}
+      <button class="item customise-link" onclick={() => (customizing = true)}><Icon name="sliders" size={14} /> Customise sidebar</button>
     </section>
     {/if}
 
@@ -270,11 +303,12 @@
     <button class="item" onclick={(e) => open(e, 'settings', 'Settings')} oncontextmenu={(e) => { e.preventDefault(); layout.open({ kind: 'settings', title: 'Settings' }, 'other'); }}><Icon name="settings" size={15} /> <span>Settings</span></button>
     <button class="icon-btn" title="Help (F1)" aria-label="Help" onclick={(e) => open(e, 'help', 'Help')}><Icon name="help" size={15} /></button>
     <button class="icon-btn" title="About Quantos" aria-label="About Quantos" onclick={(e) => open(e, 'about', 'About Quantos')}><Icon name="info" size={15} /></button>
-    <button class="icon-btn" title="Customise the sidebar" aria-label="Customise the sidebar" aria-pressed={customizing} onclick={() => (customizing = !customizing)}><Icon name="sliders" size={15} /></button>
   </footer>
 </aside>
 
 <style>
+  .nav-group + .nav-group { margin-top: 12px; }
+  .customise-link { margin-top: 10px; color: var(--text-muted); font-size: 13px; }
   .body { flex: 1; padding: 10px 8px; }
   section { display: grid; gap: 1px; margin-bottom: 14px; }
   .heading { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 0; background: none; font: 600 10.5px/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); text-align: left; }

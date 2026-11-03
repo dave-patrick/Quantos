@@ -18,6 +18,8 @@
     ['KaTeX', 'MIT', 'https://katex.org'],
     ['Mermaid', 'MIT', 'https://mermaid.js.org'],
     ['node-diff3', 'MIT', 'https://github.com/bhousel/node-diff3'],
+    ['nspell', 'MIT', 'https://github.com/wooorm/nspell'],
+    ['English spelling dictionaries (US and UK)', 'MIT and BSD', '/licenses/spell-check.txt'],
     ['world-atlas (Natural Earth data, public domain)', 'ISC', 'https://github.com/topojson/world-atlas'],
     ['.NET and ASP.NET Core', 'MIT', 'https://dot.net'],
     ['Microsoft.Data.Sqlite and SQLite', 'MIT; SQLite is public domain', 'https://sqlite.org'],

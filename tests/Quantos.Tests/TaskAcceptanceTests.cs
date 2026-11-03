@@ -10,6 +10,23 @@ public class TaskAcceptanceTests
 {
     private static TaskService T(TestVault v) => v.Session.Tasks;
 
+    [Theory]
+    [InlineData("low")]
+    [InlineData("medium")]
+    [InlineData("high")]
+    public void Effort_levels_survive_updates_and_recurrence(string level)
+    {
+        using var v = new TestVault();
+        var node = T(v).Create(new CreateTaskRequest { Title = "Recurring", Effort = 90, Recurrence = "daily" }, Actor.User);
+        Assert.Equal(90, T(v).Require(node.Id).Effort);
+        T(v).Update(node.Id, new Dictionary<string, object?> { ["effort"] = level }, [], Actor.User);
+        Assert.Equal(level, T(v).Require(node.Id).Effort);
+        Assert.Null(T(v).Require(node.Id).EffortRollup);
+        T(v).SetStatus(node.Id, TaskStatus.Done, Actor.User);
+        Assert.Equal(level, T(v).List().Single(t => t.Id != node.Id).Effort);
+        Assert.Equal(level, QuickAdd.Parse("Task ~" + level, new DateOnly(2026, 10, 29)).Effort);
+    }
+
     [Fact] // 13 tasks.1
     public void Recurring_occurrences_are_separate_and_never_duplicated()
     {

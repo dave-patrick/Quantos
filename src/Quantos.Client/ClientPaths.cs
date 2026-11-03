@@ -11,6 +11,36 @@ public sealed class ClientPaths
     public string Settings => Path.Combine(ClientData, "settings");
     public string Logs => Path.Combine(ClientData, "logs");
     public string WebView2 => Path.Combine(ClientData, "webview2");
+    private string ProfileFile => Path.Combine(Settings, "active-webview2.txt");
+    public string ActiveWebView2
+    {
+        get
+        {
+            try
+            {
+                var name = File.Exists(ProfileFile) ? File.ReadAllText(ProfileFile).Trim() : "";
+                if (name.StartsWith("webview2-", StringComparison.Ordinal) && name == Path.GetFileName(name))
+                {
+                    var candidate = Path.Combine(ClientData, name);
+                    if (Directory.Exists(candidate)) return candidate;
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            return WebView2;
+        }
+    }
+    public void RememberWebView2(string profile)
+    {
+        var full = Path.GetFullPath(profile);
+        var name = Path.GetFileName(full);
+        if (!string.Equals(Path.GetDirectoryName(full), ClientData, StringComparison.OrdinalIgnoreCase) ||
+            (name != "webview2" && !name.StartsWith("webview2-", StringComparison.Ordinal)))
+            throw new ArgumentException("Profile must be a Quantos browser profile.", nameof(profile));
+        try { Directory.CreateDirectory(Settings); File.WriteAllText(ProfileFile, name); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
     public string DiscoveryFile => Path.Combine(Settings, "backend.json");
     public string WindowFile => Path.Combine(Settings, "client-window.json");
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { priorityLabel, parsePriority } from '../lib/taskLevels';
   import { editorMenu, closeBlockMenu } from '../lib/editorMenu.svelte';
   import { tasks, type TaskStatus } from '../lib/tasks.svelte';
   import { app } from '../lib/state.svelte';
@@ -133,10 +134,10 @@
   }
 
   async function setPriority(taskId: string) {
-    const value = await app.ask('Priority', { placeholder: '1 (highest) to 4', value: taskInfo?.priority ? String(taskInfo.priority) : '' });
+    const value = await app.ask('Priority', { placeholder: 'Critical, High, Medium, or Low', value: taskInfo?.priority ? priorityLabel(taskInfo.priority) : '' });
     if (value === null) return;
-    const n = Number(value.trim());
-    tasks.update(taskId, n >= 1 && n <= 4 ? { priority: n } : {}, n >= 1 && n <= 4 ? [] : ['priority']).catch((e) => app.error(e));
+    const n = parsePriority(value);
+    tasks.update(taskId, n !== null ? { priority: n } : {}, n !== null ? [] : ['priority']).catch((e) => app.error(e));
   }
 
   /** A task is a note, so it goes to the trash like any other note, and can be brought back. */

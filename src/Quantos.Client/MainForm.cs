@@ -250,19 +250,21 @@ public sealed class MainForm : Form
     /// in use" (0x800700AA). When that happens the app starts on a fresh profile instead of
     /// refusing to open.
     /// </summary>
-    private async Task AttachToBrowser(CoreWebView2Environment env)
+    private async Task<CoreWebView2Environment> AttachToBrowser(CoreWebView2Environment env, string profile)
     {
         for (var attempt = 0; ; attempt++)
         {
             try
             {
                 await _web.EnsureCoreWebView2Async(env);
-                return;
+                _paths.RememberWebView2(profile);
+                return env;
             }
             catch (COMException ex) when (ex.HResult == unchecked((int)0x800700AA) && attempt < 3)
             {
                 var next = Path.Combine(_paths.ClientData, $"webview2-{DateTime.Now:yyyyMMdd-HHmmss}");
                 Directory.CreateDirectory(next);
+                profile = next;
                 _paths.Log($"The browser profile was in use; starting on a new one ({next}).");
                 _status.Text = "Starting on a fresh browser profile…";
                 env = await CoreWebView2Environment.CreateAsync(null, next);
@@ -276,7 +278,7 @@ public sealed class MainForm : Form
         {
             // The backend and the page's browser engine start at the same time; each takes a moment on a cold start.
             var clock = System.Diagnostics.Stopwatch.StartNew();
-            var profile = _paths.WebView2;
+            var profile = _paths.ActiveWebView2;
             Directory.CreateDirectory(profile);
             // Started on the UI thread (WebView2 wants that) but not awaited yet, so it runs alongside the backend start.
             var webview = CreateEnvironment();
@@ -291,8 +293,7 @@ public sealed class MainForm : Form
             Updater.CleanUp(_paths);
             _status.Text = "Opening…";
             var (env, envMs) = await webview;
-            _env = env;
-            await AttachToBrowser(env);
+            _env = await AttachToBrowser(env, profile);
             var viewMs = clock.ElapsedMilliseconds;
             _web.NavigationCompleted += (_, _) =>
             {

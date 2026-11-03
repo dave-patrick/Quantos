@@ -7,7 +7,7 @@ using TaskStatus = Quantos.Core.Tasks.TaskStatus;
 
 namespace Quantos.Backend.Api;
 
-public sealed record TaskCreateBody(string Title, string? Workspace, string? Body, string? Due, string? Planned, int? Priority, int? Effort,
+public sealed record TaskCreateBody(string Title, string? Workspace, string? Body, string? Due, string? Planned, int? Priority, JsonElement? Effort,
     string? Parent, string? Project, List<string>? Assignees, string? Source, string? Recurrence, List<string>? DependsOn, List<string>? Tags,
     List<string>? Reminders, string? Status, string? WaitingOn, string? Stage);
 
@@ -28,7 +28,7 @@ public static class TaskEndpoints
         api.MapPost("", (VaultHost host, HttpContext ctx, TaskCreateBody b) => NodeDto.From(host.Require().Tasks.Create(new CreateTaskRequest
         {
             Title = b.Title, Workspace = b.Workspace ?? Vault.DefaultWorkspace, Body = b.Body ?? "", Due = b.Due, Planned = b.Planned, Priority = b.Priority,
-            Effort = b.Effort, Parent = b.Parent, Project = b.Project, Assignees = b.Assignees, Source = b.Source, Recurrence = b.Recurrence,
+            Effort = b.Effort is { } effort ? Json.ToClr(effort) : null, Parent = b.Parent, Project = b.Project, Assignees = b.Assignees, Source = b.Source, Recurrence = b.Recurrence,
             DependsOn = b.DependsOn, Tags = b.Tags, Reminders = b.Reminders, Status = b.Status ?? TaskStatus.Todo, WaitingOn = b.WaitingOn, Stage = b.Stage
         }, ctx.Actor())));
 

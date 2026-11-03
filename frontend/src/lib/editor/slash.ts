@@ -2,6 +2,7 @@ import { foldEffect } from '@codemirror/language';
 import type { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
 import type { EditorView } from '@codemirror/view';
 import { headingNear, sectionOf } from './headings';
+import { isoDate } from '../dates';
 
 /**
  * The slash menu: type "/" and a list of things to put in the note appears. The menu is a plain
@@ -17,8 +18,9 @@ export interface SlashCommand {
   apply: (view: EditorView, from: number, to: number) => void;
 }
 
-const insert = (text: string, place: (text: string) => string = (t) => t) => (view: EditorView, from: number, to: number) => {
-  view.dispatch({ changes: { from, to, insert: place(text) }, selection: { anchor: from + place(text).length } });
+const insert = (text: string | (() => string)) => (view: EditorView, from: number, to: number) => {
+  const value = typeof text === 'function' ? text() : text;
+  view.dispatch({ changes: { from, to, insert: value }, selection: { anchor: from + value.length } });
   view.focus();
 };
 
@@ -32,8 +34,7 @@ const foldTheHeading = (view: EditorView) => {
   view.focus();
 };
 
-const today = new Date();
-const iso = (d: Date) => d.toISOString().slice(0, 10);
+const currentTime = () => new Date().toTimeString().slice(0, 5);
 
 export const slashCommands: SlashCommand[] = [
   { id: 'task', title: 'Task', hint: '- [ ] ', group: 'Blocks', apply: insert('- [ ] ') },
@@ -57,13 +58,13 @@ export const slashCommands: SlashCommand[] = [
   { id: 'code', title: 'Code block', hint: '```', group: 'Blocks', apply: insert('```\n') },
   { id: 'table', title: 'Table', hint: '| | |', group: 'Blocks', apply: insert('| | |\n|---|---|\n| | |') },
   { id: 'divider', title: 'Divider', hint: '---', group: 'Blocks', apply: insert('\n---\n') },
-  { id: 'date', title: "Today's date", hint: iso(today), group: 'Text', apply: insert(iso(today)) },
+  { id: 'date', title: "Today's date", get hint() { return isoDate(); }, group: 'Text', apply: insert(() => isoDate()) },
   {
     id: 'time',
     title: 'Current time',
-    hint: new Date().toTimeString().slice(0, 5),
+    get hint() { return currentTime(); },
     group: 'Text',
-    apply: insert(new Date().toTimeString().slice(0, 5))
+    apply: insert(currentTime)
   }
 ];
 

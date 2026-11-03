@@ -17,7 +17,12 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
-- Windows 0.2.4, build 2026.28.10.17, is published and staged locally with the native frame-theme
+- Local, unreleased: optional two-way Google Tasks sync (Settings › Google Tasks; design in
+  `documentation/GOOGLE-TASKS-SYNC-DESIGN.md`). Core `GoogleTasks/`, Backend `GoogleTasksCoordinator`, callback route handled
+  in `RequestSecurity` before the Origin/Sec-Fetch-Site checks. Not tried against a real Google account or the Android phone yet.
+- Private Windows and Android 0.2.4 build 2026.28.10.21 is installed with the interface refinements.
+  Browser regression checks and the physical phone scan pass; Windows GUI automation is unavailable.
+- Windows 0.2.4, build 2026.28.10.17, is published with the native frame-theme
   fix. All 371 tests pass; public download and installed executable hashes are verified.
   The owner confirmed appearance on private build 16; maximize/restore is not recertified.
   Public Android remains 0.2.2.
@@ -61,6 +66,8 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
   has asked for this on each new release, without asking again.
 
 ## Conventions
+
+- Spell checking lazily loads bundled English dictionaries from `lib/spellingDictionary.ts`; do not send note text to a spelling service. Preserve dictionary licences in `frontend/public/licenses/spell-check.txt`. Automation grant controls use saved rule names and the existing native approval endpoint, never unsaved form names. The synced-block picker is transient UI mounted beside the other overlays.
 - Every vault change goes through `WriteService`; never write vault files directly. Store feature data
   as plain note properties or Markdown and document new keys in documentation/STORAGE-SPEC.md.
 - Person-only actions check the actor kind; nothing uses the network unless the person asks.
@@ -88,3 +95,11 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - `type: task` implicitly belongs to the editable `#task` schema. `SupertagService` synthesizes its
   default until an explicit update creates a normal supertag file; native task fields keep stable
   keys without rekeying unrelated schemas. `TaskService` retains scheduling and completion logic.
+
+## Interface navigation and Appearance
+
+Default desktop/tablet sidebar destinations are grouped into Everyday, Planning, and Explore and tools. Preserve saved custom ordering and hidden items; choosing a destination from another panel reveals its group. Appearance starts with a native theme picker and interface scale, with previews/colours/fonts behind Theme colours and fonts. Keep settings rows and task controls responsive to their pane width, and preserve the compact Android shell.
+
+- Task priority uses numeric ordering 1 Critical through 4 Low; effort levels are low/medium/high strings. Legacy numeric effort remains minutes for compatibility and planning until replaced.
+
+- Sidebar section expansion is saved with per-device preferences. The Windows client records a successfully attached fallback WebView2 profile and reuses it on later starts; preserve all existing profiles.

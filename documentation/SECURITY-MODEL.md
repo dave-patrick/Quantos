@@ -145,6 +145,27 @@ exposed. Copy MCP connection explicitly copies the separate agent key (marked se
 The server rejects cross-origin browser requests. T580 binds its container to loopback and exposes
 it through private Tailscale HTTPS. Hosted migration must preserve identity/data and protect HTTPS.
 
+## Google Tasks sync (optional)
+
+Off until the person connects. It adds three network destinations, used only by this feature and only after
+connection: `accounts.google.com` (consent page, opened in the system browser), `oauth2.googleapis.com` (tokens)
+and `tasks.googleapis.com`.
+
+- **Credentials.** The person pastes their own Google Cloud OAuth client ID and secret; nothing is built in. The secret and the
+  refresh token are sealed with the device key protector (Windows DPAPI, Android Keystore) in per-device settings, never in the vault,
+  a backup, git, a log, an exception message or an API response. Disconnect revokes the token and deletes the settings and sync state.
+- **Sign-in callback.** Google redirects the browser to `http://127.0.0.1:{port}/oauth/google/callback`, a cross-site navigation. That one
+  exact path (GET only) is handled in `RequestSecurity` after the Host check and before the Origin and Sec-Fetch-Site checks. It acts only
+  while a sign-in that Quantos started is waiting and the unguessable `state` it generated comes back (single use, 10 minutes, PKCE S256).
+  A wrong state is refused without cancelling the real sign-in. The response sets no cookies and carries `Cache-Control: no-store`,
+  `Referrer-Policy: no-referrer`, `X-Content-Type-Options`, `X-Frame-Options: DENY` and a `default-src 'none'` CSP. Every other route keeps all checks.
+- **Who can use it.** Only the person (`ActorKind.User`) can read or change the settings and run a sync; agents, plugins and automations
+  are refused, including for reads. The sync engine itself writes as the system actor `System:google-tasks`, through `WriteService`.
+- **What leaves the device.** For linked tasks: title, notes, due date, done state and parent. Wiki-link ids are converted to their text first.
+  Priority, effort, planned dates, reminders, recurrence, dependencies, sprints, tags and all other fields never leave.
+- **Deletions.** Deletions sync both ways, but a batch larger than max(10, 25% of linked tasks) is held until the person applies or cancels it.
+  A task the person edited since the last sync is never trashed or deleted because the other side deleted it.
+
 ## Data safety
 
 See [STORAGE-SPEC.md](STORAGE-SPEC.md): atomic writes, conflict checks by content hash, history

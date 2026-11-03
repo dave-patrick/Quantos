@@ -44,10 +44,10 @@ public sealed partial class SupertagService(WriteService writes)
 
     private static List<FieldDef> TaskFields() => [
         new("Status", "status", "status", Quantos.Core.Tasks.TaskStatus.All, false, "todo", null, null),
-        new("Priority", "priority", "select", ["1", "2", "3", "4"], false, null, "1 is highest; 4 is lowest.", null),
+        new("Priority", "priority", "select", ["1", "2", "3", "4"], false, null, "1 Critical, 2 High, 3 Medium, 4 Low.", null),
         new("Due", "due", "date", null, false, null, null, null),
         new("Planned", "planned", "date", null, false, null, null, null),
-        new("Effort", "effort", "number", null, false, null, "Minutes", null),
+        new("Effort", "effort", "select", ["low", "medium", "high"], false, null, "Effort level", null),
         new("Project", "project", "node", null, false, null, null, null),
         new("Stage", "stage", "text", null, false, null, null, null),
         new("Assignees", "assignees", "nodes", null, false, null, null, null),

@@ -9,6 +9,7 @@ import { layout } from './layout.svelte';
 import type { NodeDto } from './types';
 import type { EditorView } from '@codemirror/view';
 import { toTaskLines } from './totask';
+import { pickSyncedBlock, type SyncedBlockChoice } from './syncedBlockPicker.svelte';
 
 /**
  * Puts a block on its own lines after the cursor's line, selects `placeholder` inside it so typing
@@ -79,22 +80,17 @@ async function makeSynced() {
 async function insertSynced() {
   const view = editorOrHint();
   if (!view) return;
-  const blocks = await api.get<{ id: string; title: string; content: string; uses: number }[]>('synced-blocks');
-  if (!blocks.length) { app.toast('No synced blocks yet. Select text and use “Make selection a synced block”.', 'info'); return; }
-  app.dialog = {
-    title: 'Insert synced block',
-    message: 'Edits to any copy update every copy.',
-    actions: [
-      ...blocks.slice(0, 8).map((b) => ({
-        label: `${b.title} (${b.uses} use${b.uses === 1 ? '' : 's'})`,
-        run: () => {
-          app.dialog = null;
-          insertBlock(view, `<!--sync:${b.id}-->\n${b.content}\n<!--/sync-->\n`);
-        }
-      })),
-      { label: 'Cancel', run: () => (app.dialog = null) }
-    ]
-  };
+  if (view.state.readOnly) { app.toast('This note is read-only.', 'info'); return; }
+  try {
+    const blocks = await api.get<SyncedBlockChoice[]>('synced-blocks');
+    if (!blocks.length) { app.toast('No synced blocks yet. Select text and use “Make selection a synced block”.', 'info'); return; }
+    if (!view.dom.isConnected || view.state.readOnly) return;
+    const block = await pickSyncedBlock(blocks);
+    if (!view.dom.isConnected) return;
+    if (!block) { view.focus(); return; }
+    if (view.state.readOnly) { app.toast('This note is read-only.', 'info'); view.focus(); return; }
+    insertBlock(view, `<!--sync:${block.id}-->\n${block.content}\n<!--/sync-->\n`);
+  } catch (e) { app.error(e); }
 }
 
 async function embedSelection() {

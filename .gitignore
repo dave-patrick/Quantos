@@ -24,3 +24,6 @@ TestResults/
 /server/mcp-token
 /src/Quantos.Backend/.dev/
 /.impeccable/review/
+
+# Private Google Cloud client for the optional Google Tasks sync (embedded into local builds; never commit)
+build/google-client.json

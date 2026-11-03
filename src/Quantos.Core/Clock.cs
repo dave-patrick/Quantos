@@ -29,6 +29,9 @@ public class Clock(TimeProvider? provider = null)
 
     public string Stamp() => Now.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);
 
+    /// <summary>An instant in this device's zone, in the same format as <see cref="Stamp"/>.</summary>
+    public string Format(DateTimeOffset value) => TimeZoneInfo.ConvertTime(value, Zone).ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);
+
     /// <summary>Sortable UTC stamp used for history and trash names.</summary>
     public string FileStamp() => UtcNow.ToString("yyyyMMdd'T'HHmmssfff", CultureInfo.InvariantCulture);
 }

@@ -14,6 +14,9 @@ About shows release and build separately. Artifacts use
 `Quantos-<release>-build-<build-id>-<platform>[-<configuration>].<extension>`.
 Android's versionCode follows Lohe: `major * 10000 + minor * 100 + patch` (each part 0..99),
 while versionName is the release version. Debug and public Release certificates are separate.
+Keep `android/Backend/Quantos.Android.Backend.csproj`'s `Version` aligned with
+`android/Quantos.Android.csproj`'s `ApplicationDisplayVersion`: About reads the embedded backend
+version, whereas Android App info reads the package version.
 
 Keep GitHub release tags numeric (`v0.2.1`) while supporting pre-0.2.1 Windows clients: their updater
 rejects build-suffixed tags. Put the build ID in the release title, About and asset filenames.

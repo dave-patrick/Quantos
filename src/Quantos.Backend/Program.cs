@@ -46,7 +46,7 @@ public static class Program
         return 0;
     }
 
-    public static WebApplication Build(string[] args, BackendOptions options, QuantosPaths paths, AccessTokens? tokens = null)
+    public static WebApplication Build(string[] args, BackendOptions options, QuantosPaths paths, AccessTokens? tokens = null, Action<IServiceCollection>? configureServices = null)
     {
         var settings = ClientSettings.Load(paths);
         var port = PickPort(options.Port ?? settings.Port ?? BackendOptions.DefaultPort);
@@ -59,6 +59,9 @@ public static class Program
             k.AddServerHeader = false;
         });
         builder.Logging.AddProvider(new FileLoggerProvider(paths.Logs));
+        // Request logging would record the query string of the Google sign-in redirect (code and state). Not left to appsettings.json,
+        // which the Android build does not carry.
+        builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
         builder.Services.ConfigureHttpJsonOptions(o =>
         {
             o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -75,6 +78,14 @@ public static class Program
         builder.Services.AddSingleton<ClientPresence>();
         builder.Services.AddSingleton<SyncCoordinator>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<SyncCoordinator>());
+        builder.Services.AddSingleton(Quantos.Core.GoogleTasks.BuiltInGoogleClient.Load());
+        builder.Services.AddSingleton(new Quantos.Core.GoogleTasks.GoogleTasksSettingsStore(paths.Settings));
+        builder.Services.AddSingleton(new Quantos.Core.GoogleTasks.GoogleOAuth(new HttpClient { Timeout = TimeSpan.FromSeconds(30) }));
+        builder.Services.AddSingleton<Quantos.Core.GoogleTasks.IGoogleTasksApiFactory>(sp =>
+            new GoogleTasksApiFactory(new HttpClient(), sp.GetRequiredService<Quantos.Core.GoogleTasks.GoogleOAuth>(), sp.GetRequiredService<Quantos.Core.GoogleTasks.GoogleTasksSettingsStore>()));
+        builder.Services.AddSingleton<GoogleTasksCoordinator>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<GoogleTasksCoordinator>());
+        configureServices?.Invoke(builder.Services);
         builder.Services.AddHostedService(sp => new NativeControlServer(paths, sp.GetRequiredService<ServerAddress>(), sp.GetRequiredService<AccessTokens>(), sp.GetRequiredService<ILogger<NativeControlServer>>()));
 
         var app = builder.Build();
@@ -124,6 +135,7 @@ public static class Program
         PlanningEndpoints.Map(app);
         UpdateEndpoints.Map(app);
         SyncEndpoints.Map(app);
+        GoogleTasksEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));
         app.MapFallback(async ctx =>
         {

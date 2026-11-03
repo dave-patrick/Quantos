@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { priorityLabel, effortLabel } from '../lib/taskLevels';
   import { fieldProblem } from '../lib/fields';
   import type { Doc } from '../lib/docs.svelte';
   import { supertags, type FieldDef } from '../lib/supertags.svelte';
@@ -120,10 +121,20 @@
       <dl class="grid">
         {#each fields as field (field.key)}
           {@const value = node.properties[field.key]}
-          {@const problem = validate(field, value)}
+          {@const problem = node.type === 'task' && (field.key === 'priority' || field.key === 'effort') ? null : validate(field, value)}
           <dt title={field.description ?? (field.inherited ? `From #${field.inherited}` : '')}>{field.name}{field.required ? ' *' : ''}</dt>
           <dd class:invalid={!!problem}>
-            {#if field.type === 'checkbox'}
+            {#if node.type === 'task' && field.key === 'priority'}
+              <select aria-label={field.name} class="cell" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLSelectElement).value)}>
+                <option value=""></option>{#each [1, 2, 3, 4] as n}<option value={String(n)}>{priorityLabel(n)}</option>{/each}
+              </select>
+            {:else if node.type === 'task' && field.key === 'effort'}
+              <select aria-label={field.name} class="cell" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLSelectElement).value)}>
+                <option value=""></option>
+                {#if value != null && !['low', 'medium', 'high'].includes(String(value))}<option value={display(value)} disabled>{effortLabel(typeof value === 'number' ? value : String(value))}</option>{/if}
+                {#each ['low', 'medium', 'high'] as level}<option value={level}>{effortLabel(level)}</option>{/each}
+              </select>
+            {:else if field.type === 'checkbox'}
               <input type="checkbox" aria-label={field.name} checked={value === true || value === 'true'} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).checked)} />
             {:else if field.type === 'select' || field.type === 'status'}
               <select aria-label={field.name} class="cell" value={display(value)} onchange={(e) => setValue(field.key, (e.target as HTMLSelectElement).value)}>

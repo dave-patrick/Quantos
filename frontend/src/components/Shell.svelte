@@ -26,6 +26,7 @@
   import BlockMenu from './BlockMenu.svelte';
   import TaskPopup from './TaskPopup.svelte';
   import { taskPopup } from '../lib/taskPopup.svelte';
+  import { syncedBlockPicker } from '../lib/syncedBlockPicker.svelte';
 
   let today = $state('');
   onMount(() => watchDate((d) => (today = d)));
@@ -37,7 +38,7 @@
   });
 
   function onkeydown(e: KeyboardEvent) {
-    if (taskPopup.id || taskPopup.busy || app.dialog || app.asking || aiJob.open) return;
+    if (taskPopup.id || taskPopup.busy || app.dialog || app.asking || aiJob.open || syncedBlockPicker.request) return;
     handleGlobalKey(e);
   }
 </script>

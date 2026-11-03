@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { priorityLabel, effortLabel, parsePriority } from '../lib/taskLevels';
   import { day } from '../lib/today.svelte';
   import { tasks, type TaskDto } from '../lib/tasks.svelte';
   import { openNode, whereFrom } from '../lib/links.svelte';
@@ -41,10 +42,10 @@
   }
 
   async function setPriority() {
-    const value = await app.ask('Priority', { placeholder: '1 (highest) to 4', value: task.priority ? String(task.priority) : '' });
+    const value = await app.ask('Priority', { placeholder: 'Critical, High, Medium, or Low', value: task.priority ? priorityLabel(task.priority) : '' });
     if (value === null) return;
-    const n = Number(value.trim());
-    try { await tasks.update(task.id, n >= 1 && n <= 4 ? { priority: n } : {}, n >= 1 && n <= 4 ? [] : ['priority']); } catch (e) { app.error(e); }
+    const n = parsePriority(value);
+    try { await tasks.update(task.id, n !== null ? { priority: n } : {}, n !== null ? [] : ['priority']); } catch (e) { app.error(e); }
   }
 
   /** A task is a note, so it goes to the trash like any other note, and can be brought back. */
@@ -93,13 +94,13 @@
     </button>
   </span>
   <span class="chips">
-    {#if (dense || stacked) && task.priority}<span class="chip" title={'Priority ' + task.priority}><Icon name="flag" size={11} /> P{task.priority}</span>{/if}
+    {#if (dense || stacked) && task.priority}<span class="chip" title={'Priority ' + priorityLabel(task.priority)}><Icon name="flag" size={11} /> {priorityLabel(task.priority)}</span>{/if}
     {#if task.blocked}<span class="chip warn" title="Waiting on another task"><Icon name="lock" size={11} /> blocked</span>{/if}
     {#if task.status === 'doing'}<span class="chip accent">doing</span>{/if}
     {#if task.status === 'waiting' || task.waitingOn}<span class="chip" title="Waiting on">⏳ {task.waitingOn ?? 'waiting'}</span>{/if}
     {#if !dense && task.recurrence}<span class="chip" title={task.recurrence}><Icon name="repeat" size={11} /></span>{/if}
     {#if !dense && task.subtaskCount}<span class="chip" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
-    {#if !dense && (task.effortRollup ?? task.effort)}<span class="chip" title="Effort">{task.effortRollup ?? task.effort}m</span>{/if}
+    {#if !dense && task.effort}<span class="chip" title="Effort">{effortLabel(task.effort)}</span>{/if}
     {#if projectName && !compact && !dense}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
     {#if task.assignees.length && !compact && !dense}<span class="chip"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
     {#if task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
@@ -131,12 +132,12 @@
   .title:hover { color: var(--accent-strong); }
   .closed .title { color: var(--text-faint); text-decoration: line-through; }
   .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; min-width: 0; }
-  .chip { display: inline-flex; align-items: center; gap: 3px; font: 11px/18px var(--font-mono); color: var(--text-muted); border: 1px solid var(--line); border-radius: 9px; padding: 0 6px; white-space: nowrap; }
+  .chip { display: inline-flex; align-items: center; gap: 3px; font: 11px/18px var(--font-mono); color: var(--text-muted); border: 1px solid var(--line); border-radius: 9px; padding: 0 6px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
   .chip.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 60%, transparent); font-weight: 600; }
   .chip.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
   .chip.accent { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
   .myday { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; }
-  .task:hover .myday, .myday.on { opacity: 1; }
+  .task:hover .myday, .myday:focus-visible, .myday.on { opacity: 1; }
   .myday.on { color: var(--warn); }
   /* Deleting a task is one click on the row itself. It stays quiet until the row is hovered or the
      button is reached with the keyboard. */

@@ -170,6 +170,12 @@ public sealed class MainActivity : Activity
                         Reply(new { type = "mcp-copied" });
                     }
                     break;
+                case "open-external":
+                    // Only the Google consent page: the page asks for it asynchronously, where a normal link tap would be ignored.
+                    var consent = msg.GetProperty("url").GetString();
+                    if (Quantos.Core.GoogleTasks.GoogleOAuth.IsConsentUrl(consent))
+                        try { StartActivity(new Intent(Intent.ActionView, Uri.Parse(consent!))); } catch (ActivityNotFoundException) { }
+                    break;
                 case "notification-status": ReplyNotificationPermission(); break;
                 case "request-notifications":
                     if (OperatingSystem.IsAndroidVersionAtLeast(33) && CheckSelfPermission(Manifest.Permission.PostNotifications) != Permission.Granted)
@@ -278,6 +284,13 @@ public sealed class MainActivity : Activity
     {
         Reply(new { type = "flush" });
         base.OnPause();
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+        // Google Tasks syncs only while the app is open: ask for a sync as soon as it comes to the front.
+        host?.App.Services.GetService<Quantos.Backend.Hosting.GoogleTasksCoordinator>()?.Kick();
     }
 
     protected override void OnDestroy()

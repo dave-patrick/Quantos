@@ -12,6 +12,7 @@
   import UpdateSettings from '../UpdateSettings.svelte';
   import McpSettings from '../McpSettings.svelte';
   import SyncSettings from '../SyncSettings.svelte';
+  import GoogleTasksSettings from '../GoogleTasksSettings.svelte';
   import PhoneNavigationSettings from '../PhoneNavigationSettings.svelte';
   import { vaultSettings } from '../../lib/vaultSettings.svelte';
   import { templatesStore } from '../../lib/templates.svelte';
@@ -22,7 +23,7 @@
 
   import type { Tab } from '../../lib/layout.svelte';
   let { tab }: { tab?: Tab } = $props();
-  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates' | 'sync' | 'phone-navigation';
+  type Section = 'general' | 'editor' | 'vault' | 'shortcuts' | 'toolbar' | 'plugins' | 'ai' | 'agents' | 'backups' | 'updates' | 'sync' | 'google-tasks' | 'phone-navigation';
   let section = $state<Section>('general');
   let navSide = $state<'left' | 'right' | 'top' | 'bottom'>('left');
   // A link can open a particular section ("Open AI settings").
@@ -34,7 +35,7 @@
   <h1 class="visually-hidden">Settings</h1>
   <label class="phone-settings-select">Settings section
     <select class="input" bind:value={section}>
-      <option value="general">Appearance</option><option value="editor">Writing</option><option value="vault">Vault</option><option value="sync">Shared vault</option>
+      <option value="general">Appearance</option><option value="editor">Writing</option><option value="vault">Vault</option><option value="sync">Shared vault</option><option value="google-tasks">Google Tasks</option>
       <option value="shortcuts">Shortcuts</option><option value="toolbar">Toolbar</option><option value="plugins">Plugins & permissions</option><option value="ai">AI</option>
       {#if isAndroidClient}<option value="phone-navigation">Phone navigation</option>{/if}
       <option value="agents">MCP</option><option value="backups">Backups</option><option value="updates">Updates</option>
@@ -42,7 +43,7 @@
   </label>
   <nav>
     {#if isAndroidClient}<button class:on={section === 'phone-navigation'} onclick={() => section = 'phone-navigation'}>Phone navigation</button>{/if}
-    {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['sync', 'Shared vault'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
+    {#each [['general', 'Appearance'], ['editor', 'Writing'], ['vault', 'Vault'], ['sync', 'Shared vault'], ['google-tasks', 'Google Tasks'], ['shortcuts', 'Shortcuts'], ['toolbar', 'Toolbar'], ['plugins', 'Plugins & permissions'], ['ai', 'AI'], ['agents', 'MCP'], ['backups', 'Backups'], ['updates', 'Updates']] as [key, label] (key)}
       <button class:on={section === key} onclick={() => (section = key as typeof section)}>{label}</button>
     {/each}
   </nav>
@@ -87,6 +88,7 @@
       <label class="check"><input type="checkbox" bind:checked={prefs.showWordCount} /> Show word count, characters and reading time</label>
       <label class="check"><input type="checkbox" bind:checked={prefs.collapsibleHeadings} /> Collapsible headings</label>
       <label class="check"><input type="checkbox" bind:checked={prefs.spellCheck} /> Spell check (underline unknown words)</label>
+      <p class="faint">Checks English spelling with bundled US and UK dictionaries. Works offline; code and web addresses are skipped.</p>
       <p class="faint">Set a writing target for a note from its ⋯ menu.</p>
     {:else if section === 'vault'}
       <h2>Vault</h2>
@@ -109,6 +111,8 @@
       <p class="muted">{isAndroidClient ? 'Use Settings › Shared vault › Android files › Export vault to keep a portable copy outside the app.' : 'Use Settings › Backups to configure rolling backups, make a backup now, or verify and restore a saved copy.'}</p>
     {:else if section === 'sync'}
       <SyncSettings />
+    {:else if section === 'google-tasks'}
+      <GoogleTasksSettings />
     {:else if section === 'shortcuts'}
       <ShortcutSettings />
     {:else if section === 'toolbar'}
@@ -144,9 +148,10 @@
   .body { padding: 24px 32px 80px; max-width: 860px; }
   .body > h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
   .body > h3 { font: 700 16px/1.3 var(--font-display); margin: 26px 0 6px; padding: 10px 14px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; }
-  .field { display: flex; align-items: center; gap: 14px; margin: 12px 0; }
-  .field > span:first-child { width: 160px; color: var(--text-soft); }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+  .field { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 12px 0; min-width: 0; }
+  .field > span:first-child { width: 160px; max-width: 100%; color: var(--text-soft); }
+  .field .input, .field input[type='range'] { min-width: 0; max-width: 100%; }
+  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
   .seg button { border: 0; background: none; padding: 6px 14px; color: var(--text-muted); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
   /* The custom styles: one applied at a time, so they can't fight each other. */

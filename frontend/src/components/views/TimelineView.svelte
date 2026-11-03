@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { duration } from '../../lib/taskLevels';
   import { tasks, type TaskDto } from '../../lib/tasks.svelte';
   import { app } from '../../lib/state.svelte';
   import { addDays, isoDate, longDate } from '../../lib/dates';
@@ -39,7 +40,7 @@
     if (!t) return;
     const y = e.clientY - grid.getBoundingClientRect().top - dragOffset;
     const start = startHour * 60 + Math.max(0, Math.round(y / rowPx)) * slot;
-    const length = t.timeBlock ? minutesOf(t.timeBlock.end) - minutesOf(t.timeBlock.start) : Math.max(15, Math.min(240, t.effort ?? 30));
+    const length = t.timeBlock ? minutesOf(t.timeBlock.end) - minutesOf(t.timeBlock.start) : Math.max(15, Math.min(240, duration(t.effort) ?? 30));
     try { await tasks.update(id, { time_block: { start: stamp(day, start), end: stamp(day, start + length) } }); }
     catch (err) { app.error(err); }
   }
@@ -49,7 +50,7 @@
     const m = /^(\d{1,2}):(\d{2})$/.exec(value);
     if (!m) return;
     const start = Number(m[1]) * 60 + Number(m[2]);
-    const length = Math.max(15, Math.min(240, t.effort ?? 30));
+    const length = Math.max(15, Math.min(240, duration(t.effort) ?? 30));
     try { await tasks.update(t.id, { time_block: { start: stamp(day, start), end: stamp(day, start + length) } }); }
     catch (err) { app.error(err); }
   }

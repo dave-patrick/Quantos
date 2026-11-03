@@ -102,18 +102,18 @@ public sealed class PlanningService(WriteService writes, TaskService tasks)
         var done = live.Where(t => t.Status == TaskStatus.Done).ToList();
         return new SprintDto(s.Id, s.Title, start?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), end?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             Props.Str(s.Properties, SprintGoal), state, Props.Int(s.Properties, Capacity),
-            live.Count, done.Count, live.Sum(t => t.Effort ?? 0), done.Sum(t => t.Effort ?? 0));
+            live.Count, done.Count, live.Sum(t => t.Effort is int n ? n : 0), done.Sum(t => t.Effort is int n ? n : 0));
     }
 
     /// <summary>Remaining work per day: effort in minutes when every task has an estimate, otherwise a task count.</summary>
     private List<BurnPoint> Burndown(SprintDto s, IReadOnlyList<TaskDto> members, out string unit)
     {
         var live = members.Where(t => t.Status != TaskStatus.Cancelled).ToList();
-        var byEffort = live.Count > 0 && live.All(t => t.Effort is > 0);
+        var byEffort = live.Count > 0 && live.All(t => t.Effort is int n && n > 0);
         unit = byEffort ? "min" : "tasks";
         var points = new List<BurnPoint>();
         if (Props.Date(s.Start) is not { } start || Props.Date(s.End) is not { } end) return points;
-        double Weight(TaskDto t) => byEffort ? t.Effort!.Value : 1;
+        double Weight(TaskDto t) => byEffort ? (int)t.Effort! : 1;
         var total = live.Sum(Weight);
         var span = Math.Max(1, end.DayNumber - start.DayNumber);
         for (var d = start; d <= end; d = d.AddDays(1))

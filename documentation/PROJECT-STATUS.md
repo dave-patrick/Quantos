@@ -1,5 +1,24 @@
 # Quantos project status and handoff
 
+### Google Tasks sync (2026-10-30, local, unreleased)
+
+Optional two-way sync of title, notes, due date, done state and one level of subtasks between Quantos tasks and Google Tasks lists.
+Off by default; the owner brings their own Google Cloud Desktop-app client. Design (six reviewed drafts, with every owner decision listed):
+[GOOGLE-TASKS-SYNC-DESIGN.md](GOOGLE-TASKS-SYNC-DESIGN.md). Code: Core `GoogleTasks/` (`GoogleTasksSyncEngine`, `GoogleTasksApi`, `GoogleOAuth`,
+`GoogleTasksMapper`, state and settings stores), Backend `Hosting/GoogleTasksCoordinator.cs`, `Hosting/GoogleOAuthCallback.cs` (called from
+`RequestSecurity` before the Origin/Sec-Fetch-Site checks), `Api/GoogleTasksEndpoints.cs`; frontend `components/GoogleTasksSettings.svelte`,
+`lib/googleTasks.ts`; Android `open-external` and `OnResume` in `MainActivity.cs`. Task frontmatter gains `gtask_id`/`gtask_list`.
+Verified: 40 Core/API/OAuth tests and 7 Backend integration tests (callback through the real middleware with `Sec-Fetch-Site: cross-site`,
+access control, settings/preview/confirm/sync rules), 5 frontend tests, browser fixture `frontend/tests/googleTasks.html` (16 checks, axe clean, no overflow at 390px).
+**Not verified:** any real Google account (consent, token refresh beyond 7 days, real API behaviour), a real Windows walkthrough (Windows is not connected yet; the phone is, and syncs `default` to My Tasks). Owner decisions to keep in mind: local wins on same-field conflicts (not last-writer-wins),
+`cancelled` pushes as completed, notes over 8,000 characters or with embeds are not synced, wiki-links become plain text through Google, one syncing device is recommended.
+
+### Local feature-gap fixes (2026-10-28, awaiting publication)
+
+Four audited user-facing gaps are fixed in source: spell checking uses lazy bundled US/UK Hunspell dictionaries; saved automation names obtain grant controls while retaining existing approval enforcement; palette and slash date/time commands insert fresh local values; and synced-block insertion uses a searchable chooser for every returned block. Regression failures were captured before fixes. All 144 frontend tests pass; type checking has zero errors and nine existing warnings. A browser fixture at `frontend/tests/featureGaps.html` exercises the visible flows against synthetic API responses; browser execution remains unverified because the browser tooling failed. No Android/native runtime acceptance is claimed. The changes remain local and must not be pushed or published without a request.
+
+Delivered privately as Windows release `0.2.4`, build `2026.28.10.19`, with a dirty source mark. The full package passed all 391 tests (144 frontend, 242 backend/core, five native), archive validation and packaged self-check with zero warnings. Installed/restarted the owner's test copy: all executable hashes match, startup is HTTP 200, and served assets carry build 19. Dictionary licences, including the transitive library notice, are served successfully. Two independent reviews ended clean. Graft/Herald context is refreshed. Manual feature-flow and Android verification remain outstanding; the fixture is not evidence of a completed browser run. No commit, push or public release occurred for these fixes.
+
 For anyone (person or AI agent) picking up work on Quantos. Read [HANDOVER.md](HANDOVER.md) (the owner,
 open threads, the machine) and this, then
 [BUILD-PLAN.md](../BUILD-PLAN.md) for the full plan and decision log, and [CHANGELOG.md](../CHANGELOG.md)
@@ -425,3 +444,15 @@ zero warnings/errors. Actual phone taps verified a folder list matching the API 
 were unchanged by acceptance cleanup. APK icon extraction and Android App info both confirmed the
 correct Q icon. This supersedes the earlier active-note-only folder limitation; no Windows staging
 or public release was performed.
+
+
+### Interface refinements (2026-10-28)
+
+Private Windows and Android release 0.2.4/build 2026.28.10.21 is installed. All six review findings are fixed, plus native Android Capture naming/target size, the theme disclosure touch target, and embedded backend version identity. All 391 automated tests passed during the change; final adjustments passed typecheck (zero errors/nine existing warnings), 15 browser assertions and axe (no violations). Two independent review rounds ended clean. Windows ZIP/self-check passed (zero self-check warnings), all installed executable hashes match, and the client log confirms HTTP 200 at 14:24:24. Android built without warnings/errors, passed signature verification and install-r, and the physical SM-S948U confirms version/build, 48px controls, Notes/Back, real IME visibility, Tasks Options and Appearance reflow. Note/workspace counts are unchanged. Windows GUI automation remains unavailable; three source-supported host findings remain in UI-DESIGN-SCAN-2026-10-28.md. The owner confirmed that the phone theme change was intentional and requested keeping the current theme. No restoration or recovery preference writes were made; this item is resolved. No commit, push or public release. Preserve unrelated local feature-gap changes.
+
+
+Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order). Task effort is Low, Medium, or High; quick add accepts `~low`, `~medium`, or `~high`. Older minute estimates remain until changed and continue to support duration-based planning; selecting an effort level replaces the old estimate.
+
+Task level changes are uncommitted and require a browser walkthrough: the development sign-in failed against the existing service. My Day no longer shows a duration total because effort levels cannot be summed as minutes.
+
+Sidebar section expansion and custom navigation choices are retained on this device. The Windows client remembers its active browser profile when it must use a fallback profile.

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { effortLabel } from '../../lib/taskLevels';
   import { api } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
   import { day } from '../../lib/today.svelte';
@@ -134,6 +135,7 @@
       </form>
     {:else if detail}
       {@const s = detail.sprint}
+      {@const hasLevels = detail.tasks.some(t => t.status !== 'cancelled' && typeof t.effort === 'string')}
       <header>
         <h1><button class="link" onclick={(e) => openNode(s.id, whereFrom(e) === 'current' ? 'new' : whereFrom(e), s.title)}>{s.title}</button> <span class="state {s.state}">{s.state}</span></h1>
         <p class="faint">{range(s)}{s.goal ? ` · ${s.goal}` : ''}</p>
@@ -141,8 +143,12 @@
 
       <div class="cards">
         <div class="card"><b>{s.done}/{s.tasks}</b><span>tasks done</span></div>
-        <div class="card"><b>{hours(s.effortDone)} / {hours(s.effort)}</b><span>estimated work done</span></div>
-        {#if s.capacity}<div class="card" class:over={s.effort > s.capacity}><b>{pct(s.effort, s.capacity)}%</b><span>of {hours(s.capacity)} capacity planned</span></div>{/if}
+        {#if hasLevels}
+          <div class="card"><b>Unavailable</b><span>duration totals for effort levels</span></div>
+        {:else}
+          <div class="card"><b>{hours(s.effortDone)} / {hours(s.effort)}</b><span>estimated work done</span></div>
+          {#if s.capacity}<div class="card" class:over={s.effort > s.capacity}><b>{pct(s.effort, s.capacity)}%</b><span>of {hours(s.capacity)} capacity planned</span></div>{/if}
+        {/if}
       </div>
 
       {#if chart}
@@ -174,7 +180,7 @@
       {#if adding}
         <div class="backlog">
           {#each backlog as t (t.id)}
-            <div class="task"><button class="icon-btn" aria-label={`Add ${t.title}`} onclick={() => addTask(t)}><Icon name="plus" size={14} /></button><span class="tt">{t.title}</span>{#if t.effort}<span class="faint mono">{hours(t.effort)}</span>{/if}{#if t.due}<span class="faint mono">due {t.due.slice(0, 10)}</span>{/if}</div>
+            <div class="task"><button class="icon-btn" aria-label={`Add ${t.title}`} onclick={() => addTask(t)}><Icon name="plus" size={14} /></button><span class="tt">{t.title}</span>{#if t.effort}<span class="faint mono">{effortLabel(t.effort)}</span>{/if}{#if t.due}<span class="faint mono">due {t.due.slice(0, 10)}</span>{/if}</div>
           {:else}<p class="faint">The backlog is empty: every open task is in a sprint.</p>{/each}
         </div>
       {/if}
@@ -185,7 +191,7 @@
           <div class="task" class:done={t.status === 'done'}>
             <input type="checkbox" aria-label={`Done: ${t.title}`} checked={t.status === 'done'} onchange={() => toggle(t)} />
             <button class="tt link" onclick={(e) => openNode(t.id, whereFrom(e) === 'current' ? 'new' : whereFrom(e), t.title)}>{t.title}</button>
-            {#if t.effort}<span class="faint mono">{hours(t.effort)}</span>{/if}
+            {#if t.effort}<span class="faint mono">{effortLabel(t.effort)}</span>{/if}
             {#if t.blocked}<span class="chip warn">blocked</span>{/if}
             <button class="icon-btn rm" title="Take out of this sprint" aria-label={`Take ${t.title} out of the sprint`} onclick={() => removeTask(t)}><Icon name="x" size={13} /></button>
           </div>

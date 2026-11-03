@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Google Tasks settings checks</title>
+<link rel="stylesheet" href="/src/styles/tokens.css"><link rel="stylesheet" href="/src/styles/base.css"><style>body { overflow:auto; padding:16px; } #settings { max-width:800px; } #result { white-space:pre-wrap; }</style>
+</head><body><h1>Google Tasks settings checks</h1><pre id="result">Running…</pre><main id="settings"></main>
+<script type="module">
+// Drives the real settings component against synthetic API responses (no Google, no backend).
+const result = document.querySelector('#result');
+const passed = [];
+const check = (value, name) => { if (!value) throw Error(name); passed.push(name); };
+const pause = () => new Promise(resolve => setTimeout(resolve, 50));
+const until = async (test, ms = 6000) => { for (let i = 0; i < ms / 50; i++) { if (test()) return; await pause(); } throw Error('Timed out: ' + test); };
+const text = () => document.querySelector('#settings').textContent;
+const button = label => [...document.querySelectorAll('button, a.btn')].find(el => el.textContent.trim() === label);
+const input = (el, value) => { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); };
+const choose = (el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); };
+const calls = [];
+let status = { state: 'Off', hasCredentials: false, flow: 'idle', mappings: [], intervalSeconds: 120, lastSynced: null, nextAttempt: null, error: null,
+  counts: { linked: 0, pushed: 0, pulled: 0, skipped: 0, pendingDeletes: 0 }, pendingDeletes: [], problems: [] };
+window.fetch = async (url, options = {}) => {
+  const path = String(url).replace('/api/', ''), method = options.method ?? 'GET', body = options.body ? JSON.parse(options.body) : null;
+  calls.push(method + ' ' + path + (body ? ' ' + JSON.stringify(body) : ''));
+  if (path === 'google-tasks/' && method === 'GET') return Response.json(status);
+  if (path === 'google-tasks/settings') {
+    if (body.clientId) status = { ...status, hasCredentials: true };
+    if (body.mappings) status = { ...status, mappings: body.mappings.map(m => ({ ...m, confirmed: false, state: 'Paused', reason: 'Review the preview first' })) };
+    return Response.json(status);
+  }
+  if (path === 'google-tasks/connect') return Response.json({ authUrl: 'https://accounts.google.com/o/oauth2/v2/auth?state=x' });
+  if (path === 'google-tasks/lists' && method === 'GET') return Response.json([{ id: 'L1', title: 'My Tasks' }, { id: 'L2', title: 'Work' }]);
+  if (path === 'google-tasks/preview') return Response.json({ cutoff: '2026-10-01T00:00:00Z', createInGoogle: 3, importToQuantos: 2, link: 1, excluded: 4 });
+  if (path === 'google-tasks/confirm') { status = { ...status, mappings: status.mappings.map(m => ({ ...m, confirmed: true, state: 'Ok', reason: null })) }; return Response.json(status); }
+  if (path === 'google-tasks/sync') { status = { ...status, lastSynced: new Date().toISOString(), counts: { ...status.counts, pushed: 3, pulled: 2, skipped: 1 } }; return Response.json({}); }
+  throw Error('Unexpected request ' + method + ' ' + path);
+};
+try {
+  const { mount, tick } = await import('svelte');
+  const { app } = await import('/src/lib/state.svelte.ts');
+  app.workspaces = ['default', 'work'];
+  mount((await import('/src/components/GoogleTasksSettings.svelte')).default, { target: document.querySelector('#settings') });
+  await until(() => text().includes('Not set up'));
+  check(button('Connect').disabled, 'Connect is disabled until a client is saved');
+  const [id, secret] = document.querySelectorAll('form input');
+  check(secret.type === 'password', 'the secret is a password field');
+  input(id, 'cid'); input(secret, 'shh'); await tick();
+  button('Save').click();
+  await until(() => !button('Connect').disabled);
+  check(calls.some(c => c.startsWith('PUT google-tasks/settings') && c.includes('"clientId":"cid"')), 'credentials are saved');
+  check(document.querySelector('input[type=password]').value === '', 'the secret is cleared after saving');
+  button('Connect').click();
+  await until(() => button('Continue to Google'));
+  check(button('Continue to Google').getAttribute('href').startsWith('https://accounts.google.com/'), 'ordinary browsers get a Continue to Google link');
+  check(button('Continue to Google').rel.includes('noopener'), 'the link opens without opener access');
+
+  status = { ...status, state: 'Connected' };
+  await until(() => button('Add a list'), 7000);
+  button('Add a list').click(); await tick();
+  button('Add a list').click(); await tick();
+  const selects = () => [...document.querySelectorAll('.rows select')];
+  choose(selects()[0], 'default'); choose(selects()[1], 'L1'); choose(selects()[2], 'work'); choose(selects()[3], 'L1'); await tick();
+  check(text().includes('“My Tasks” is used twice') && button('Save lists').disabled, 'a list used twice is refused before saving');
+  choose(selects()[3], 'L2'); await tick();
+  check(!button('Save lists').disabled, 'valid rows can be saved');
+  button('Save lists').click();
+  await until(() => button('Review'));
+  check(calls.some(c => c.includes('"mappings":[{"workspace":"default","listId":"L1","listTitle":"My Tasks"}')), 'the chosen lists are saved with titles');
+  check(text().includes('Review what will happen'), 'an unconfirmed list asks for a review');
+  button('Review').click();
+  await until(() => text().includes('3 tasks will be created in Google'));
+  check(text().includes('2 will be added here') && text().includes('1 already match') && text().includes('4 left out'), 'the preview shows every count in plain words');
+  button('Confirm and sync this list').click();
+  await until(() => text().includes('Last synced'));
+  check(calls.indexOf(calls.find(c => c.startsWith('POST google-tasks/confirm'))) < calls.indexOf(calls.find(c => c.startsWith('POST google-tasks/sync'))), 'the preview is confirmed before the first sync');
+  check(text().includes('3 sent · 2 received · 1 left alone'), 'the status line reports the last cycle');
+
+  status = { ...status, pendingDeletes: [{ taskId: 'a', title: 'Buy milk', direction: 'toGoogle' }, { taskId: 'b', title: '', direction: 'toQuantos' }], counts: { ...status.counts, pendingDeletes: 2 } };
+  await until(() => text().includes('Deletions waiting'), 4000);
+  check(text().includes('Deleted here — will be deleted in Google') && text().includes('Untitled task'), 'held deletions are listed with what will happen');
+  check(button('Apply') && button('Cancel') && !button('Apply').disabled, 'Apply and Cancel are available');
+  await until(() => document.activeElement?.textContent === 'Deletions waiting', 1500);
+  check(true, 'focus moves to the deletions heading');
+  result.textContent = 'PASS\n' + passed.map(p => '✓ ' + p).join('\n');
+} catch (e) {
+  result.textContent = 'FAIL: ' + e.message + '\n' + passed.map(p => '✓ ' + p).join('\n') + '\n' + calls.join('\n');
+}
+</script></body></html>
