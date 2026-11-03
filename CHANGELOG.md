@@ -7,11 +7,15 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+Optional server/folder-bridge binaries remain separately deployed from source.
+
+## 0.2.6 (2026-11-03)
+
+Windows x64 release. Android downloads remain on 0.2.2.
+
 - Every tag used in a note now counts as a supertag: it is listed in the sidebar and *Manage supertags* with no fields until you edit it, instead of needing a separate definition first.
 - Server MCP errors now say why (read-only key, note not found) instead of "An error occurred invoking…".
 - New [documentation/CONNECTING-AI.md](documentation/CONNECTING-AI.md): connecting an AI on another machine to the server MCP (URL, headers, client configs, curl test, troubleshooting).
-
-Optional server/folder-bridge binaries remain separately deployed from source.
 
 ## 0.2.5 (2026-11-02)
 
