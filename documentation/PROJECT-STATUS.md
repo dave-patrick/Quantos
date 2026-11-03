@@ -1,5 +1,13 @@
 # Quantos project status and handoff
 
+### Supertags and remote MCP docs (build 2026.03.11.32, 2026-11-03, unreleased)
+
+`SupertagService.List` now adds an `implicit:<name>` entry (no fields) for every tag used in a note without a saved definition, so every tag is a
+supertag in the sidebar and Manage supertags; `Update` and `Rename` save the definition first (`Materialize`). Stored tags are unchanged. Server MCP tool
+errors are now `McpException`s so agents see the reason (the MCP SDK hides other messages). [CONNECTING-AI.md](CONNECTING-AI.md) is the guide for an AI on
+another machine (server `/mcp`, MCP key, `Origin` header gives 403). Not verified: the supertag change in the real UI; the client configurations in that guide against real clients.
+The server's `/health` version is hard-coded `0.2.0`.
+
 ### Google Tasks sync (released in Windows 0.2.5, build 2026.02.11.31, 2026-11-02)
 
 Public 0.2.5 has no built-in Google client; the owner's client lives in the git-ignored `build/google-client.json` and is embedded only in

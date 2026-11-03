@@ -22,6 +22,21 @@ public class TaskSupertagTests
     }
 
     [Fact]
+    public void A_tag_used_in_a_note_is_listed_as_a_supertag_and_can_be_edited()
+    {
+        using var v = new TestVault();
+        v.Writes.Create(new CreateNodeRequest { Title = "Standup", Tags = ["meeting"] }, Actor.User);
+        var listed = Assert.Single(v.Session.Supertags.List(), t => t.Name == "meeting");
+        Assert.Equal(1, listed.Count);
+        Assert.Empty(listed.Fields);
+        var saved = v.Session.Supertags.Update(listed.Id, new(null, null, null, null, null,
+            [new() { ["name"] = "When", ["type"] = "date" }], null, null, null, null), Actor.User);
+        Assert.DoesNotContain("implicit:", saved.Id);
+        Assert.Equal("when", Assert.Single(saved.Fields).Key);
+        Assert.Single(v.Session.Supertags.List(), t => t.Name == "meeting");
+    }
+
+    [Fact]
     public void Explicit_migration_includes_existing_tasks_without_an_explicit_task_tag()
     {
         using var v = new TestVault();

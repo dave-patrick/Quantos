@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
+using ModelContextProtocol;
 using ModelContextProtocol.Server;
 using Quantos.Core;
 using Quantos.Core.Security;
@@ -13,12 +14,26 @@ public sealed class SharedVaultTools(VaultSession vault)
 {
     public const string AgentName = "server-mcp";
     private static readonly Actor Agent = new(ActorKind.Agent, AgentName);
-    private T Run<T>(Func<T> action) => vault.Writes.Exclusive(() =>
+    // The MCP SDK hides every exception message except McpException's, so a refusal (read-only key, note not found) would
+    // reach the agent as "An error occurred invoking ..." with no reason.
+    private T Run<T>(Func<T> action)
     {
-        vault.Permissions.Demand(Agent, Permission.Read, "Read the shared vault");
-        vault.Reconciler.Run();
-        return action();
-    });
+        try
+        {
+            return vault.Writes.Exclusive(() =>
+            {
+                vault.Permissions.Demand(Agent, Permission.Read, "Read the shared vault");
+                vault.Reconciler.Run();
+                return action();
+            });
+        }
+        catch (Exception ex) when (ex is QuantosException or PermissionDeniedException or ApprovalRequiredException)
+        {
+            throw new McpException(ex is PermissionDeniedException
+                ? ex.Message.TrimEnd('.') + ". The server MCP is read-only unless write access is turned on in Settings › MCP › Shared server MCP."
+                : ex.Message);
+        }
+    }
     private string Resolve(string name)
     {
         if (Ulid.IsValid(name) && vault.Writes.Get(name) is not null) return name;

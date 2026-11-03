@@ -62,6 +62,9 @@ provider keys, permissions, open-pane layouts and linked-folder absolute paths d
 
 ## Server MCP and write access
 
+To point an AI on another machine at this, see [CONNECTING-AI.md](CONNECTING-AI.md): the URL, headers,
+client configurations, a curl test and troubleshooting.
+
 The server provides Streamable HTTP MCP at `/mcp`, using the official MCP C# SDK. Its nine tools
 match the existing Quantos MCP tools: search/read notes, list tasks, run queries, create notes,
 append to notes, create/complete tasks and capture text. They use the same vault services as the

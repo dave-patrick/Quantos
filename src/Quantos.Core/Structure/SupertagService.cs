@@ -42,6 +42,11 @@ public sealed partial class SupertagService(WriteService writes)
             }).ToList()
         }, []);
 
+    public const string ImplicitPrefix = "implicit:";
+
+    private static NodeSummary ImplicitDefinition(string name) => new(ImplicitPrefix + name, "", name, NodeTypes.Supertag, "", [], "", null, false, false,
+        new Dictionary<string, object?>(), []);
+
     private static List<FieldDef> TaskFields() => [
         new("Status", "status", "status", Quantos.Core.Tasks.TaskStatus.All, false, "todo", null, null),
         new("Priority", "priority", "select", ["1", "2", "3", "4"], false, null, "1 Critical, 2 High, 3 Medium, 4 Low.", null),
@@ -66,8 +71,12 @@ public sealed partial class SupertagService(WriteService writes)
         // A workspace definition overrides a global one with the same name.
         var byName = new Dictionary<string, NodeSummary>(StringComparer.OrdinalIgnoreCase);
         foreach (var d in defs.OrderBy(d => d.Workspace.Length)) byName[d.Title] = d;
-        var counts = TagCounts(workspace);
+        var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var counts = TagCounts(workspace, names);
         if (!byName.ContainsKey("task")) byName["task"] = DefaultTask();
+        // Every tag in use is a supertag: one with no saved definition is listed with no fields until it's edited.
+        foreach (var used in names.Values)
+            if (!byName.ContainsKey(used)) byName[used] = ImplicitDefinition(used);
 
         var own = byName.Values.ToDictionary(d => d.Title, d => OwnFields(d), StringComparer.OrdinalIgnoreCase);
         // Namespacing: when two tags define the same key with different types, the newer definition's key becomes "tag.key".
@@ -189,11 +198,15 @@ public sealed partial class SupertagService(WriteService writes)
         return options is null ? null : Props.List(new Dictionary<string, object?> { ["o"] = options }, "o");
     }
 
-    private Dictionary<string, int> TagCounts(string? workspace)
+    private Dictionary<string, int> TagCounts(string? workspace, Dictionary<string, string>? names = null)
     {
         var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var n in Cache.List(workspace, includeArchived: false, limit: 1_000_000))
-            foreach (var t in n.Type == NodeTypes.Task ? n.Tags.Append("task").Distinct(StringComparer.OrdinalIgnoreCase) : n.Tags) counts[t.ToLowerInvariant()] = counts.GetValueOrDefault(t.ToLowerInvariant()) + 1;
+            foreach (var t in n.Type == NodeTypes.Task ? n.Tags.Append("task").Distinct(StringComparer.OrdinalIgnoreCase) : n.Tags)
+            {
+                counts[t.ToLowerInvariant()] = counts.GetValueOrDefault(t.ToLowerInvariant()) + 1;
+                if (names is not null && NormalizeTag(t).Length > 0) names.TryAdd(t, NormalizeTag(t));
+            }
         return counts;
     }
 
@@ -204,11 +217,19 @@ public sealed partial class SupertagService(WriteService writes)
         var name = NormalizeTag(input.Name ?? "");
         if (name.Length == 0 || name.Contains(' ')) throw new QuantosException("A supertag name can't be empty or contain spaces.");
         var scope = input.Scope ?? "";
-        if (List(scope.Length == 0 ? null : scope).Any(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && t.Scope == scope && t.Id != TaskDefinitionId))
+        if (List(scope.Length == 0 ? null : scope).Any(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && t.Scope == scope && t.Id != TaskDefinitionId && !t.Id.StartsWith(ImplicitPrefix)))
             throw new QuantosException($"#{name} already exists.", 409);
         var props = Properties(input, name, scope);
         var node = writes.Create(new CreateNodeRequest { Title = name, Type = NodeTypes.Supertag, Workspace = scope, Body = input.Description ?? "", Properties = props }, actor);
         return Get(node.Id, scope.Length == 0 ? null : scope) ?? throw new QuantosException("The supertag wasn't indexed.");
+    }
+
+    /// <summary>Saves the definition behind a tag that has only been used so far, so it can be edited or renamed.</summary>
+    private SupertagDto Materialize(string id, Actor actor)
+    {
+        var name = id[ImplicitPrefix.Length..];
+        if (Get(name) is { } saved && !saved.Id.StartsWith(ImplicitPrefix) && saved.Id != TaskDefinitionId) return saved;
+        return Create(new SupertagInput(name, null, null, null, "", null, null, null, null, null), actor);
     }
 
     public SupertagDto Update(string id, SupertagInput input, Actor actor)
@@ -219,6 +240,7 @@ public sealed partial class SupertagService(WriteService writes)
             if (existing is not null && existing.Id != TaskDefinitionId) return Update(existing.Id, input, actor);
             return Create(input with { Name = "task", Scope = "" }, actor);
         }
+        if (id.StartsWith(ImplicitPrefix)) return Update(Materialize(id, actor).Id, input, actor);
         var current = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
         var props = Properties(input with { Name = current.Name }, current.Name, current.Scope);
         var remove = new List<string>();
@@ -280,6 +302,7 @@ public sealed partial class SupertagService(WriteService writes)
     /// </summary>
     public SupertagDto Rename(string id, string newName, Actor actor)
     {
+        if (id.StartsWith(ImplicitPrefix)) id = Materialize(id, actor).Id;
         var tag = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
         if (tag.Name.Equals("task", StringComparison.OrdinalIgnoreCase)) throw new QuantosException("#task is the built-in task type. Edit its properties instead of renaming it.");
         newName = NormalizeTag(newName);

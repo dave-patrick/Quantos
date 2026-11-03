@@ -193,6 +193,11 @@ tools = quantos.schemas("anthropic")          # pass to the model
 text, ok = quantos.call("search_notes", {"query": "budget"})   # when the model asks for a tool
 ```
 
+## An agent on another computer
+
+Everything above runs on the same computer as Quantos. For an agent on a different machine, use the
+shared server's HTTPS MCP endpoint: see [CONNECTING-AI.md](CONNECTING-AI.md).
+
 ## The HTTP API
 
 Before starting a framework, run `quantos-cli status --agent <name>` interactively and approve
