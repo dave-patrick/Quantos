@@ -1,6 +1,6 @@
 # Quantos project status and handoff
 
-### Supertags and remote MCP docs (build 2026.03.11.32, 2026-11-03, unreleased)
+### Supertags and remote MCP docs (released in Windows 0.2.6, build 2026.03.11.33, 2026-11-03)
 
 `SupertagService.List` now adds an `implicit:<name>` entry (no fields) for every tag used in a note without a saved definition, so every tag is a
 supertag in the sidebar and Manage supertags; `Update` and `Rename` save the definition first (`Materialize`). Stored tags are unchanged. Server MCP tool
