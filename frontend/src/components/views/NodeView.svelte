@@ -192,7 +192,7 @@
 <svelte:window onkeydown={onKey} />
 
 <div class="node-view" data-node-id={id}>
-  <div class="bar">
+  <div class="bar" class:in-pane={!popup}>
     <nav class="crumbs" aria-label="Location">
       {#if !popup}{#each crumbs as c, i (i)}<button class="crumb link" title={`Go to ${c.label}`} onclick={c.go}>{c.label}</button><Icon name="chevron-right" size={11} />{/each}{/if}
       {#if zoom}
@@ -314,6 +314,8 @@
   .popup-properties { display: block !important; }
   .node-view { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 38px; padding: 0 10px 0 16px; flex: none; }
+  /* The pane's close button sits in the top-right corner (Pane.svelte .close-active), so keep the toolbar clear of it. */
+  .bar.in-pane { padding-right: 36px; }
   .crumbs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: var(--text-faint); font-size: 12.5px; white-space: nowrap; }
   .crumb { overflow: hidden; text-overflow: ellipsis; }
   .crumb.current { color: var(--text-muted); }
