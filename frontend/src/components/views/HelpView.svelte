@@ -13,6 +13,7 @@
   import plugins from '../../../../documentation/PLUGINS.md?raw';
   import server from '../../../../documentation/SERVER.md?raw';
   import connecting from '../../../../documentation/CONNECTING-AI.md?raw';
+  import copilot from '../../../../documentation/COPILOT-SETUP.md?raw';
   import api from '../../../../documentation/API.md?raw';
   import security from '../../../../documentation/SECURITY-MODEL.md?raw';
   import storage from '../../../../documentation/STORAGE-SPEC.md?raw';
@@ -28,6 +29,7 @@
     { key: 'cli', label: 'Command line', icon: 'terminal', text: cli },
     { key: 'agents', label: 'AI agents', icon: 'sparkles', text: agents },
     { key: 'connecting', label: 'Connect an AI remotely', icon: 'globe', text: connecting },
+    { key: 'copilot', label: 'Microsoft Copilot', icon: 'sparkles', text: copilot },
     { key: 'api', label: 'HTTP API', icon: 'code', text: api },
     { key: 'security', label: 'Security model', icon: 'shield', text: security },
     { key: 'storage', label: 'Storage format', icon: 'layers', text: storage },
@@ -96,7 +98,7 @@
   // The guides link to each other by file name (SERVER.md, API.md#section); in Help those open the guide here.
   const FILES: Record<string, string> = {
     'USER-GUIDE.md': 'guide', 'SERVER.md': 'server', 'TROUBLESHOOTING.md': 'troubleshooting', 'CLI-REFERENCE.md': 'cli', 'AGENT-ADAPTERS.md': 'agents',
-    'CONNECTING-AI.md': 'connecting', 'API.md': 'api', 'SECURITY-MODEL.md': 'security', 'STORAGE-SPEC.md': 'storage', 'PLUGINS.md': 'plugins'
+    'CONNECTING-AI.md': 'connecting', 'COPILOT-SETUP.md': 'copilot', 'API.md': 'api', 'SECURITY-MODEL.md': 'security', 'STORAGE-SPEC.md': 'storage', 'PLUGINS.md': 'plugins'
   };
   function followLink(e: MouseEvent) {
     const a = (e.target as HTMLElement | null)?.closest('a');

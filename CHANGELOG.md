@@ -7,6 +7,9 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- The shared server can also listen on the local network: `server/install-windows-host.ps1 -LanAddress <ip>` (plain HTTP on `-LanPort`, default 47831; `-SkipTailscale` for hosts without Tailscale). Tailscale is no longer described as required.
+- New [documentation/COPILOT-SETUP.md](documentation/COPILOT-SETUP.md): connecting GitHub Copilot in VS Code and Copilot Studio to the server MCP, and why Microsoft 365 Copilot plugins can't (OAuth only). It is in Help and in the download.
+
 Optional server/folder-bridge binaries remain separately deployed from source.
 
 ## 0.2.7 (2026-11-03)

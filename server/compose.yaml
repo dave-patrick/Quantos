@@ -8,6 +8,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:47830:8080"
+      # To also listen on the local network, add a line such as:  - "192.168.1.20:47831:8080"
+      # (plain HTTP; allow the port through the firewall for your local subnet only).
     volumes:
       - quantos-data:/data
     environment:

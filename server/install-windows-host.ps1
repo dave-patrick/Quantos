@@ -5,7 +5,12 @@ param(
     [string]$VolumeName = 'quantos-data',
     [string]$TimeZone = 'America/Phoenix',
     [int]$Port = 47830,
-    [int]$HttpsPort = 8445
+    [int]$HttpsPort = 8445,
+    # Also listen on this local-network address (for example 192.168.1.20), in addition to the loopback port Tailscale uses.
+    [string]$LanAddress = '',
+    [int]$LanPort = 47831,
+    # For a server reached only on the local network, without Tailscale.
+    [switch]$SkipTailscale
 )
 $ErrorActionPreference = 'Stop'
 $keys = Join-Path $RuntimeDirectory 'keys'
@@ -32,7 +37,9 @@ if ($existing -eq $ContainerName) {
 }
 $serverKey = Join-Path $keys 'server-token'
 $mcpKey = Join-Path $keys 'mcp-token'
-& docker run -d --name $ContainerName --restart unless-stopped -p "127.0.0.1:${Port}:8080" `
+$publish = @('-p', "127.0.0.1:${Port}:8080")
+if ($LanAddress) { $publish += @('-p', "${LanAddress}:${LanPort}:8080") }
+& docker run -d --name $ContainerName --restart unless-stopped @publish `
     -v "${VolumeName}:/data" `
     --mount "type=bind,source=$serverKey,target=/run/secrets/server-token,readonly" `
     --mount "type=bind,source=$mcpKey,target=/run/secrets/mcp-token,readonly" `
@@ -48,6 +55,13 @@ for ($attempt = 0; $attempt -lt 30; $attempt++) {
     Start-Sleep -Seconds 1
 }
 if (-not $healthy) { throw 'Quantos Server did not become healthy. Inspect docker logs quantos-server.' }
-& tailscale serve --bg "--https=$HttpsPort" "http://127.0.0.1:$Port"
-if ($LASTEXITCODE -ne 0) { throw 'The server is healthy locally, but Tailscale HTTPS could not be configured.' }
+if (-not $SkipTailscale) {
+    & tailscale serve --bg "--https=$HttpsPort" "http://127.0.0.1:$Port"
+    if ($LASTEXITCODE -ne 0) { throw 'The server is healthy locally, but Tailscale HTTPS could not be configured.' }
+}
 Write-Output "Quantos Server is healthy. Vault volume: $VolumeName; keys are protected in the runtime keys folder."
+if ($LanAddress) {
+    # The firewall is not changed for you. Allow the port only from your local network, then use http://${LanAddress}:${LanPort}/mcp for MCP.
+    Write-Output "Listening on the local network at http://${LanAddress}:${LanPort} (plain HTTP: the MCP key is not encrypted on the wire). To allow it through Windows Firewall from your local subnet only, run as administrator:"
+    Write-Output "  New-NetFirewallRule -DisplayName 'Quantos Server (LAN)' -Direction Inbound -Protocol TCP -LocalPort $LanPort -RemoteAddress LocalSubnet -Action Allow"
+}

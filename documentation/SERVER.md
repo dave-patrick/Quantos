@@ -92,9 +92,22 @@ in the apps. Keys are in `~/Apps/QuantosServer/keys/` on the host; do not commit
 The installer uses `America/Phoenix` for the owner's server time zone; its `-TimeZone` argument
 and the Compose `TZ` setting control which day server MCP daily capture uses.
 
+### Listening on the local network too
+
+Tailscale is not required for the server MCP. To also reach the server from other computers on your local
+network, install with a LAN address: `server/install-windows-host.ps1 -LanAddress 192.168.1.20` (the server
+host's own address; `-LanPort` defaults to 47831). Add `-SkipTailscale` if the host doesn't use Tailscale. The
+installer does not change the firewall; it prints the `New-NetFirewallRule` command that allows the port from
+the local subnet only. With Compose, add a second `ports:` line such as `"192.168.1.20:47831:8080"`.
+
+The LAN port is **plain HTTP**: the keys and your notes are not encrypted on the wire, so use it only on a
+network you trust. An MCP client can use `http://192.168.1.20:47831/mcp`. The Quantos apps' own sync still
+requires an `https://` address, so Windows and Android sync should keep using the Tailscale (or another HTTPS)
+address. Allowing plain HTTP for app sync would be a code change and a security decision, not done here.
+
 The server exposes `/health`, conditional `/sync` routes and `/mcp`. It does not expose the local
 desktop backend's filesystem, shell, launch-token or setup endpoints. Browser cross-origin
-requests are rejected. Tailscale access is required for the initial home-server setup.
+requests are rejected. The standard install reaches the server through Tailscale HTTPS; a local-network address can be added (above).
 
 ## Move to a hosted server
 

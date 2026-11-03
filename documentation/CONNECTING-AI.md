@@ -20,10 +20,14 @@ For anything remote, run the optional shared server ([SERVER.md](SERVER.md)) and
 
 ## What you need from the server
 
-1. **The URL**, ending in `/mcp`. For the standard Windows-host install this is
-   `https://<host>.<tailnet>.ts.net:8445/mcp` (the installer prints the HTTPS address; add `/mcp`).
-   The remote machine must be able to reach it, which for a Tailscale address means it is signed in to
-   the same tailnet.
+1. **The URL**, ending in `/mcp`. The AI's machine only has to be able to reach it; any of these work:
+   - **Tailscale** (the standard Windows-host install): `https://<host>.<tailnet>.ts.net:8445/mcp`. The installer
+     prints the HTTPS address; add `/mcp`. The AI's machine must be signed in to the same tailnet.
+   - **Local network**: `http://<server's LAN address>:47831/mcp`, after installing with `-LanAddress` (see
+     [SERVER.md](SERVER.md)). This is plain HTTP, so the key and your notes are not encrypted on the wire; use it
+     only on a network you trust.
+   - **Any HTTPS address** you put in front of the server (a reverse proxy or tunnel): `https://<your host>/mcp`.
+     Needed when the AI runs in someone else's cloud, as Microsoft Copilot Studio does.
 2. **The MCP key**, a separate secret from the key the apps use. Get it with
    *Settings › MCP › Shared server MCP › Copy MCP connection*, which copies
    `{ "url": "…/mcp", "headers": { "Authorization": "Bearer <key>" } }`, or read
@@ -51,8 +55,10 @@ on the app key, and `403` on an `Origin` header.
 - **Protocol version:** initialise with `2025-03-26`; the server accepts it.
 - **Browsers and anything that sends an `Origin` header are refused with `403`.** Only non-browser
   clients (command-line tools, agent frameworks, servers) can connect. A web page cannot.
-- **TLS:** the apps require HTTPS, and a plain `http://` address is only for testing on the server
-  host itself. Redirects are not followed with credentials.
+- **HTTP or HTTPS:** the server itself speaks plain HTTP on its port and does not care which address reached it.
+  HTTPS comes from whatever sits in front (Tailscale, a proxy). The **Quantos apps' own sync** requires an
+  `https://` address, but MCP clients take whatever URL they are given, so a plain `http://` LAN address works
+  for MCP. Redirects are not followed with credentials.
 
 ### Smoke test with curl
 
@@ -116,6 +122,8 @@ claude mcp add --transport http quantos https://myserver.example.ts.net:8445/mcp
 }
 ```
 
+**Microsoft Copilot** (GitHub Copilot in VS Code, Copilot Studio): see [COPILOT-SETUP.md](COPILOT-SETUP.md).
+
 **Your own code**: any MCP SDK's Streamable HTTP client (for example `streamablehttp_client` in the
 Python SDK, or `StreamableHTTPClientTransport` in the TypeScript SDK) with the URL and the header.
 If you would rather not use MCP, the three curl calls above are the whole protocol.
@@ -144,8 +152,8 @@ There is no tool to delete, move or rename notes, run shell commands, or change 
 
 | What you see | Cause and fix |
 |---|---|
-| Connection refused, timeout, DNS failure | The remote machine can't reach the server. For Tailscale, check it is signed in to the same tailnet and that `https://<host>:8445/health` answers from that machine. Port 47830 is bound to the host's loopback only on purpose; use the HTTPS port (8445 by default). |
-| TLS or certificate error | Use the `https://…ts.net:8445` address Tailscale serves, not the machine's IP or the plain `http://127.0.0.1:47830` address. |
+| Connection refused, timeout, DNS failure | The remote machine can't reach the server. Test `/health` from that machine first. Tailscale: it must be signed in to the same tailnet, and use port 8445. Local network: the server must have been installed with `-LanAddress`, Windows Firewall must allow the port (47831) from your subnet, and the address is the server host's LAN address. Port 47830 is bound to the host's loopback only on purpose. |
+| TLS or certificate error | Use the `https://…ts.net:8445` address Tailscale serves, not the machine's IP. For a LAN address use `http://`, not `https://`: nothing on that port speaks TLS. |
 | `401` | Missing, mistyped or wrong key. `/mcp` takes the **MCP key**, not the app key. Check there is no trailing newline or quote in the header, and that the word `Bearer`, a space, and the key are all present. A `401` with the right key means the server has no MCP key configured (`GET /sync/mcp` with the app key shows `"enabled": false`). |
 | `403` | The request carried an `Origin` header. Browsers and some web-based agent hosts add one. Use a non-browser client, or one that doesn't send `Origin`. |
 | `404` | Wrong path. The endpoint is `/mcp` (no trailing path), not `/` or `/api/…`. |
