@@ -48,6 +48,13 @@ Five rebuilds (2026-11-07):
   search keep answering during a save, a sync or a rebuild.
 - Frontend tests run on Node 25+ (in-memory storage when Node's own hides the page storage).
 
+Frontend tooling (2026-11-07): Vite 6 → 8, Vitest 3 → 5, the Svelte Vite plugin 5 → 7, happy-dom 15 → 21
+and TypeScript 5.9 → 6.0. The frontend build went from 38 s to 4 s. TypeScript 7 is not used yet:
+it no longer includes the programming interface that svelte-check (the Svelte type checker) needs, and
+svelte-check supports TypeScript 5 and 6 only. Math now uses KaTeX's own fonts: small fonts used to be
+inlined as data: URLs, which the app's content security policy blocks, so some symbols fell back to
+other fonts.
+
 ## 0.2.10 (2026-11-03)
 
 Windows x64 release. Android downloads remain on 0.2.2.

@@ -10,16 +10,16 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tsconfig/svelte": "^5.0.8",
     "@types/nspell": "^2.1.6",
     "axe-core": "^4.10.2",
-    "happy-dom": "^15.11.7",
+    "happy-dom": "^21.0.4",
     "svelte": "^5.57.2",
     "svelte-check": "^4.7.6",
-    "typescript": "^5.9.3",
-    "vite": "^6.4.4",
-    "vitest": "^3.2.7"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",

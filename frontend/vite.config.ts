@@ -21,6 +21,9 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2022',
     chunkSizeWarningLimit: 1500,
+    // Fonts stay files: the backend's content security policy allows fonts only from the app itself
+    // (font-src 'self'), so a small font inlined as a data: URL (KaTeX's) would be blocked.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf|eot)$/i.test(file) ? false : undefined),
     sourcemap: false
   },
   test: {

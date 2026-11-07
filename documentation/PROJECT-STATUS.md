@@ -1,5 +1,15 @@
 # Quantos project status and handoff
 
+### Frontend tooling upgrade (2026-11-07, not yet released)
+
+Vite 8, Vitest 5, @sveltejs/vite-plugin-svelte 7, happy-dom 21, TypeScript 6.0.3 (lockfile regenerated).
+TypeScript 7 is blocked: its npm package ships the native compiler without the JavaScript compiler API,
+and svelte-check 4.7.8 accepts TypeScript ^5 || ^6 only; revisit when svelte-check supports 7.
+`vite.config.ts` keeps fonts as files (`assetsInlineLimit`), fixing a CSP block on KaTeX fonts that
+existed before the upgrade. Checked: 157 frontend tests, svelte-check 0/0, build, and a headless
+browser session against a dev backend (note editing, live query, KaTeX, Mermaid, local graph,
+Settings › Vault history limit with its confirmation) with no console errors.
+
 ### Five rebuilds (2026-11-07, not yet released)
 
 Owner asked for all five proposed rebuilds; version-history default chosen as "last 10 versions per

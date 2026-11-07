@@ -2,7 +2,9 @@
 // Rebuild 3 (2026-11-07): events carry data, numbered; stores patch themselves and reload only after a gap.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-describe('event stream numbering', () => {
+// These tests import the stores fresh (cold module transforms), which can pass the default 5 s on a
+// busy machine running the whole suite in parallel.
+describe('event stream numbering', { timeout: 30_000 }, () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
 
   it('asks pages to reload after a gap in the numbers or a reconnect, not otherwise', async () => {
@@ -55,7 +57,7 @@ describe('event stream numbering', () => {
   });
 });
 
-describe('tasks store', () => {
+describe('tasks store', { timeout: 30_000 }, () => {
   afterEach(() => { vi.resetModules(); vi.doUnmock('../src/lib/api'); vi.doUnmock('../src/lib/events'); vi.useRealTimers(); });
 
   it('refreshes only the changed task and its parent, and ignores note saves', async () => {
