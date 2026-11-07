@@ -134,27 +134,43 @@ public sealed partial class TaskService : ITaskHooks
 
     public TaskDto? Get(string id)
     {
-        var index = new TaskIndex(AllSummaries());
+        var index = CurrentIndex();
         return index.ById.TryGetValue(id, out var summary) ? ToDto(summary, index) : null;
+    }
+
+    private sealed record IndexSnapshot(long Generation, TaskIndex Index);
+    private IndexSnapshot? _index; // replaced whole, so readers on other threads never see half of one
+
+    /// <summary>
+    /// The task index, rebuilt only when the cache has changed since it was last built. Looking up one
+    /// task used to read and parse every task in the vault each time.
+    /// </summary>
+    private TaskIndex CurrentIndex()
+    {
+        var generation = Cache.Generation; // read before listing: a change during the read just forces the next rebuild
+        if (_index is { } cached && cached.Generation == generation) return cached.Index;
+        var index = new TaskIndex(AllSummaries());
+        _index = new IndexSnapshot(generation, index);
+        return index;
     }
 
     public TaskDto Require(string id) => Get(id) ?? throw new QuantosException("Task not found.", 404);
 
     public IReadOnlyList<TaskDto> List(string? workspace = null, bool includeClosed = true, bool includeArchived = false)
     {
-        var all = AllSummaries();
-        var index = new TaskIndex(all);
-        return all.Where(s => (workspace is null || s.Workspace == workspace) && (includeArchived || !s.Archived))
+        var index = CurrentIndex();
+        return index.All.Where(s => (workspace is null || s.Workspace == workspace) && (includeArchived || !s.Archived))
             .Select(s => ToDto(s, index))
             .Where(t => includeClosed || !TaskStatus.IsClosed(t.Status))
             .ToList();
     }
 
-    private List<NodeSummary> AllSummaries() => Cache.List(type: NodeTypes.Task, includeArchived: true, limit: 1_000_000).ToList();
+    private List<NodeSummary> AllSummaries() => Cache.List(type: NodeTypes.Task, includeArchived: true).ToList();
 
     /// <summary>Tasks by id and by parent, built once per listing so each task's lookups are cheap.</summary>
     private sealed class TaskIndex(IReadOnlyList<NodeSummary> all)
     {
+        public IReadOnlyList<NodeSummary> All { get; } = all;
         public Dictionary<string, NodeSummary> ById { get; } = all.GroupBy(s => s.Id).ToDictionary(g => g.Key, g => g.First());
         public ILookup<string, NodeSummary> Children { get; } = all
             .Select(c => (Parent: Props.LinkId(Props.Str(c.Properties, TaskKeys.Parent)), Child: c))

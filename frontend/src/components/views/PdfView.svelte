@@ -4,13 +4,13 @@
   import { app } from '../../lib/state.svelte';
   import { docs } from '../../lib/docs.svelte';
   import { openNode } from '../../lib/links.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { api } from '../../lib/api';
   import { isAndroidClient } from '../../lib/platform';
 
   /** PDF viewing and citations (BUILD-PLAN 8D.8): the browser's own viewer, plus "cite this page". */
   let { tab }: { tab: Tab } = $props();
-  const [path, hash] = (tab.arg ?? '').split('#');
+  const [path, hash] = (untrack(() => tab.arg) ?? '').split('#');
   let page = $state(Number(/page=(\d+)/.exec(hash ?? '')?.[1] ?? 1));
   let pages = $state(0);
   let pdfError = $state('');
@@ -20,7 +20,7 @@
   });
   $effect(() => { if (pages) page = Math.max(1, Math.min(pages, Math.floor(Number(page) || 1))); });
   const src = $derived(isAndroidClient ? `/api/android/pdf-page?path=${encodeURIComponent(path)}&page=${page}` : `/api/files/${path}#page=${page}`);
-  const name = tab.title ?? 'PDF';
+  const name = untrack(() => tab.title) ?? 'PDF';
 
   /** The note's tab is closed or hidden: add the citation through the document store, where the caret was. */
   async function citeInto(id: string, md: string) {

@@ -57,7 +57,7 @@ public sealed partial class AutomationService : IDisposable
         _writes = writes;
         _tasks = tasks;
         _notifications = notifications;
-        foreach (var n in writes.Cache.List(includeArchived: true, limit: 1_000_000)) _snapshot[n.Id] = Flatten(n.Properties, n.Tags);
+        foreach (var n in writes.Cache.List(includeArchived: true)) _snapshot[n.Id] = Flatten(n.Properties, n.Tags);
         writes.Changes.Changed += OnChanged;
     }
 

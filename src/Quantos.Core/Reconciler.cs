@@ -1,4 +1,5 @@
 using System.Text;
+using Quantos.Core.Cache;
 using Quantos.Core.Storage;
 
 namespace Quantos.Core;
@@ -39,21 +40,38 @@ public sealed class Reconciler(WriteService writes)
         int scanned = 0, changed = 0, added = 0, adopted = 0;
         var ids = new Dictionary<string, string>(); // id -> rel path that owns it
 
+        // Pass 1: which files changed since the cache last saw them (cheap: size and time only).
+        var files = new List<(string Abs, string Rel, FileInfo Info, CachedFile? Hit, bool Unchanged)>();
         foreach (var abs in Vault.EnumerateNodeFiles())
         {
-            scanned++;
             var rel = Vault.Relative(abs);
-            seen.Add(rel);
             var info = new FileInfo(abs);
-            if (cached.TryGetValue(rel, out var hit) && hit.MTime == info.LastWriteTimeUtc.Ticks && hit.Size == info.Length && Ulid.IsValid(hit.Id))
+            var hit = cached.GetValueOrDefault(rel);
+            files.Add((abs, rel, info, hit, hit is not null && hit.MTime == info.LastWriteTimeUtc.Ticks && hit.Size == info.Length && Ulid.IsValid(hit.Id)));
+        }
+
+        // Pass 2: read and parse the changed files on all cores. This is most of the time on a first
+        // open or a rebuild, and parsing one file doesn't depend on any other.
+        var parsed = new (Node? Node, string? Error)[files.Count];
+        Parallel.For(0, files.Count, i =>
+        {
+            if (files[i].Unchanged) return;
+            try { parsed[i] = (Node.FromText(files[i].Rel, AtomicFile.ReadAllText(files[i].Abs)), null); }
+            catch (IOException ex) { parsed[i] = (null, ex.Message); }
+        });
+
+        // Pass 3: in the original order, so identity decisions are the same as before.
+        for (var i = 0; i < files.Count; i++)
+        {
+            var (abs, rel, info, hit, unchanged) = files[i];
+            scanned++;
+            seen.Add(rel);
+            if (unchanged)
             {
-                if (!ids.TryAdd(hit.Id, rel)) pending.Add((abs, rel, Node.FromText(rel, AtomicFile.ReadAllText(abs)), false));
+                if (!ids.TryAdd(hit!.Id, rel)) pending.Add((abs, rel, Node.FromText(rel, AtomicFile.ReadAllText(abs)), false));
                 continue;
             }
-            string content;
-            try { content = AtomicFile.ReadAllText(abs); }
-            catch (IOException ex) { diagnostics.Add(new Diagnostic("error", "unreadable", ex.Message, rel)); continue; }
-            var node = Node.FromText(rel, content);
+            if (parsed[i].Node is not { } node) { diagnostics.Add(new Diagnostic("error", "unreadable", parsed[i].Error ?? "", rel)); continue; }
             if (hit is not null && hit.Hash == node.Hash && Ulid.IsValid(node.Id) && ids.TryAdd(node.Id, rel))
             {
                 writes.Cache.Upsert(node, info.LastWriteTimeUtc.Ticks, info.Length); // only the timestamp moved
@@ -99,7 +117,7 @@ public sealed class Reconciler(WriteService writes)
             // its own only version, so there's nothing to copy yet.
             if (!isNew || Directory.Exists(Path.Combine(Vault.History, node.Id)))
                 writes.History.Record(node.Id, Encoding.UTF8.GetBytes(node.Content), HistoryStore.External);
-            writes.Index(abs, node.Content);
+            writes.Index(abs, node); // already parsed above
             if (node.Workspace.Length > 0 && Vault.WorkspaceOf(rel) is { Length: > 0 } folderWs && folderWs != node.Workspace)
                 diagnostics.Add(new Diagnostic("warning", "workspace-mismatch", $"Frontmatter says workspace '{node.Workspace}' but the file is in '{folderWs}'. The folder wins.", rel, node.Id));
             writes.Changes.Publish(new ChangeEvent(isNew ? ChangeKind.Created : ChangeKind.Updated, node.Id, rel, Hash: node.Hash, Origin: "external"));

@@ -78,7 +78,7 @@ public sealed partial class MapService(WriteService writes)
     {
         writes.Permissions.Demand(actor, Permission.Read, "Read note locations");
         var list = new List<Place>();
-        foreach (var n in writes.Cache.List(workspace, includeArchived: false, limit: 1_000_000))
+        foreach (var n in writes.Cache.List(workspace, includeArchived: false))
             if (Parse(n.Properties) is { } p)
                 list.Add(new Place(n.Id, n.Title, n.Type, n.Workspace, Math.Round(p.Lat, 6), Math.Round(p.Lng, 6), Props.Str(n.Properties, "place"), n.Tags));
         return list;

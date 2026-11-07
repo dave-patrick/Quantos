@@ -45,5 +45,19 @@ before and after the fix that went with 0.1.5.3:
 The 0.1.5.3 column looks at every note in the vault instead of only the first few thousand, so the
 query returns the notes it should — 1,667 of them, not 1,334 — for about the same time.
 
+**Code-scan fixes (2026-11-06, Linux cloud machine, 2 cores, same test; not comparable with the
+Windows tables above except as before/after on one machine):**
+
+| Operation | Before | After |
+|---|---|---|
+| First open (index everything) | 8.2 s | 2.4 s |
+| Rebuild the cache from scratch | 5.6 s | 1.8 s |
+| Restart with nothing changed | 116 ms | 150 ms (noise range 112–150 ms) |
+| Save | 5.7 ms | 5.3 ms |
+
+The big change: full-text rows were deleted by an id column FTS5 can't index, so every save and every
+file indexed on first open scanned the whole full-text table. A `search_map` table now maps each node
+to its row id. Statement reuse and parallel parsing account for the rest.
+
 **Still to measure on the target laptop:** the same test on the KPMG laptop (antivirus scanning of
 writes, and a slower disk, will raise save and first-open times), and a vault inside a synced folder.

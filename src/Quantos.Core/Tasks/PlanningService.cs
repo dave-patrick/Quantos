@@ -35,7 +35,7 @@ public sealed class PlanningService(WriteService writes, TaskService tasks)
     {
         writes.Permissions.Demand(actor, Permission.Read, "Read sprints");
         var (all, props) = Tasks(workspace);
-        return writes.Cache.List(workspace, Sprint, includeArchived: false, limit: 10_000)
+        return writes.Cache.List(workspace, Sprint, includeArchived: false)
             .Select(s => ToSprint(s, Members(s.Id, all, props)))
             .OrderByDescending(s => s.Start).ToList();
     }
@@ -45,7 +45,7 @@ public sealed class PlanningService(WriteService writes, TaskService tasks)
         writes.Permissions.Demand(actor, Permission.Read, "Read a sprint");
         var node = writes.Require(id);
         if (node.Type != Sprint) throw new QuantosException("That note isn't a sprint.", 404);
-        var summary = writes.Cache.List(node.Workspace, Sprint, includeArchived: true, limit: 10_000).First(s => s.Id == id);
+        var summary = writes.Cache.List(node.Workspace, Sprint, includeArchived: true).First(s => s.Id == id);
         var (all, props) = Tasks(node.Workspace);
         var members = Members(id, all, props);
         var dto = ToSprint(summary, members);
@@ -87,7 +87,7 @@ public sealed class PlanningService(WriteService writes, TaskService tasks)
     {
         writes.Permissions.Demand(actor, Permission.Read, "Read the backlog");
         var (all, props) = Tasks(workspace);
-        var sprints = writes.Cache.List(workspace, Sprint, includeArchived: true, limit: 10_000).Select(s => s.Id).ToHashSet();
+        var sprints = writes.Cache.List(workspace, Sprint, includeArchived: true).Select(s => s.Id).ToHashSet();
         return all.Where(t => t.Status is not (TaskStatus.Done or TaskStatus.Cancelled) && !t.Archived
             && !(props.TryGetValue(t.Id, out var p) && Props.LinkId(Props.Str(p, Sprint)) is { } id && sprints.Contains(id))).ToList();
     }
@@ -127,7 +127,7 @@ public sealed class PlanningService(WriteService writes, TaskService tasks)
     private (IReadOnlyList<TaskDto> All, Dictionary<string, IReadOnlyDictionary<string, object?>> Props) Tasks(string workspace)
     {
         var all = tasks.List(workspace, includeClosed: true);
-        var props = writes.Cache.List(workspace, NodeTypes.Task, includeArchived: false, limit: 1_000_000)
+        var props = writes.Cache.List(workspace, NodeTypes.Task, includeArchived: false)
             .ToDictionary(s => s.Id, s => (IReadOnlyDictionary<string, object?>)s.Properties);
         return (all, props);
     }
@@ -143,7 +143,7 @@ public sealed class PlanningService(WriteService writes, TaskService tasks)
         // Projects are notes typed or tagged "project", and any note that tasks name as their project.
         var all = tasks.List(workspace, includeClosed: true).Where(t => t.Status != TaskStatus.Cancelled).ToList();
         var named = all.Select(t => Props.LinkId(t.Project)).OfType<string>().ToHashSet();
-        var nodes = writes.Cache.List(workspace, null, includeArchived: false, limit: 1_000_000)
+        var nodes = writes.Cache.List(workspace, null, includeArchived: false)
             .Where(n => n.Type is Goal or NodeTypes.Project || (n.Type != NodeTypes.Task && (named.Contains(n.Id) || n.Tags.Contains(NodeTypes.Project, StringComparer.OrdinalIgnoreCase))))
             .ToList();
         var byId = nodes.ToDictionary(n => n.Id);

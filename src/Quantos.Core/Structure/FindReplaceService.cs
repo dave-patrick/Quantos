@@ -116,7 +116,7 @@ public sealed partial class FindReplaceService(WriteService writes)
 
     private IEnumerable<Node> Candidates(ReplaceQuery q)
     {
-        var ids = q.Ids is { Count: > 0 } ? q.Ids : writes.Cache.List(q.Workspace, includeArchived: false, limit: 1_000_000).Select(n => n.Id).ToList();
+        var ids = q.Ids is { Count: > 0 } ? q.Ids : writes.Cache.List(q.Workspace, includeArchived: false).Select(n => n.Id).ToList();
         foreach (var id in ids)
         {
             var node = writes.Get(id);

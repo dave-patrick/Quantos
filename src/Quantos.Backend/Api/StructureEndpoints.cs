@@ -45,7 +45,7 @@ public static class StructureEndpoints
         api.MapGet("/dictionary", (VaultHost host, string? workspace) =>
         {
             var session = host.Require();
-            var nodes = session.Cache.List(workspace, includeArchived: true, limit: 1_000_000);
+            var nodes = session.Cache.List(workspace, includeArchived: true);
             var tags = session.Supertags.List(workspace);
             return nodes.SelectMany(n => n.Properties.Select(p => (Key: p.Key, Value: p.Value, n.Type)))
                 .GroupBy(x => x.Key)

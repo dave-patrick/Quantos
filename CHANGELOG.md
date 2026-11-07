@@ -9,6 +9,26 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 Optional server/folder-bridge binaries remain separately deployed from source.
 
+Code-scan fixes (2026-11-06):
+
+- Trashing a task whose subtasks have their own subtasks no longer stops halfway with "not found";
+  every level goes to the trash, and restoring the top task brings them all back.
+- Vaults with more than 5,000 notes: the notes list, link lookups and query text search no longer
+  silently stop at 5,000 (or 10,000/100,000/1,000,000 elsewhere).
+- Linux (the Docker shared server): a second backend can no longer open a vault another one owns.
+- Faster first open and cache rebuild (5,000 notes: 8.2 s → 2.4 s, 5.6 s → 1.8 s): full-text rows are
+  removed by row id instead of scanning the table, index statements are reused, and changed files
+  are parsed on all cores. Existing caches rebuild once (cache version 12).
+- Opening a task no longer rereads every task; after a save the app refreshes only the changed
+  notes' titles (new `GET /api/nodes/{id}/summary`) instead of the whole list; meaning search
+  re-reads only notes whose files changed.
+- The notes list draws 200 rows at a time and adds more as you scroll, instead of stopping at 600.
+- Attachments over 200 MB are refused while uploading instead of after reading them into memory.
+- Windows executables are published ReadyToRun (backend start ~23% faster in a Linux measurement;
+  each executable is larger).
+- Tests run on GitHub (Windows and Linux) for every push. Patch-level package updates. Type check
+  now has zero warnings.
+
 ## 0.2.10 (2026-11-03)
 
 Windows x64 release. Android downloads remain on 0.2.2.

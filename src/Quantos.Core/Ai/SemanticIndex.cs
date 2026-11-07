@@ -31,6 +31,9 @@ public sealed class SemanticIndex : IDisposable
     private int _pending;
     private bool _working;
     private string? _error;
+    /// <summary>Note id → hash of its file when it was last found up to date. Only notes whose file
+    /// changed since are read again, instead of every note in the vault after each save.</summary>
+    private readonly Dictionary<string, string> _checked = new();
 
     public SemanticIndex(WriteService writes, string databasePath, Func<AiEndpoint?> endpoint, Func<string, string?> key, AiClient client)
     {
@@ -64,7 +67,7 @@ public sealed class SemanticIndex : IDisposable
     }
 
     /// <summary>Re-checks every note (after settings change, or by the user).</summary>
-    public void Refresh() { _error = null; _wake.Release(); }
+    public void Refresh() { _error = null; lock (_gate) _checked.Clear(); _wake.Release(); }
 
     private void OnChanged(ChangeEvent e)
     {
@@ -73,7 +76,7 @@ public sealed class SemanticIndex : IDisposable
     }
 
     private List<NodeSummary> Candidates() =>
-        _writes.Cache.List(includeArchived: false, limit: 1_000_000).Where(n => !Skipped.Contains(n.Type)).ToList();
+        _writes.Cache.List(includeArchived: false).Where(n => !Skipped.Contains(n.Type)).ToList();
 
     private async Task Loop()
     {
@@ -104,14 +107,21 @@ public sealed class SemanticIndex : IDisposable
             foreach (var gone in Ids().Where(id => !live.Contains(id)).ToList()) Exec("DELETE FROM chunks WHERE node_id=$id", ("$id", gone));
             _vectors = null;
         }
+        var fileHashes = new Dictionary<string, string>();
+        foreach (var f in _writes.Cache.AllFiles()) if (!string.IsNullOrEmpty(f.Id)) fileHashes[f.Id] = f.Hash;
         var todo = new List<(string Id, string Hash, List<string> Chunks)>();
+        var current = new List<(string Id, string FileHash)>();
+        lock (_gate) foreach (var gone in _checked.Keys.Where(k => !live.Contains(k)).ToList()) _checked.Remove(gone);
         foreach (var n in notes)
         {
+            var fileHash = fileHashes.GetValueOrDefault(n.Id);
+            lock (_gate) if (fileHash is not null && _checked.TryGetValue(n.Id, out var seen) && seen == fileHash) continue;
             var node = _writes.Get(n.Id);
             if (node is null) continue;
             var chunks = Chunk(node.Title, node.Body);
             var hash = Hash(string.Join("\u0001", chunks));
             if (StoredHash(n.Id) != hash) todo.Add((n.Id, hash, chunks));
+            if (fileHash is not null) current.Add((n.Id, fileHash));
         }
         _pending = todo.Count;
         _working = todo.Count > 0;
@@ -133,8 +143,10 @@ public sealed class SemanticIndex : IDisposable
                 tx.Commit();
                 _vectors = null;
             }
-            _pending = todo.Count(t => queue.Skip(start + BatchSize).Any(q => q.Id == t.Id));
+            _pending = queue.Skip(start + BatchSize).Select(q => q.Id).Distinct().Count();
         }
+        // Everything read this round is now indexed; remember it so it isn't read again until it changes.
+        lock (_gate) foreach (var (id, fileHash) in current) _checked[id] = fileHash;
     }
 
     /// <summary>The notes whose passages are closest in meaning to the query, best passage per note.</summary>
@@ -207,7 +219,7 @@ public sealed class SemanticIndex : IDisposable
     private static float[] FromBytes(byte[] b) { var v = new float[b.Length / 4]; Buffer.BlockCopy(b, 0, v, 0, b.Length); return v; }
     private static string Hash(string s) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(s)))[..32];
 
-    private void Clear() { Exec("DELETE FROM chunks"); _vectors = null; }
+    private void Clear() { Exec("DELETE FROM chunks"); _vectors = null; _checked.Clear(); }
     private string? StoredHash(string id) { lock (_gate) return ScalarText("SELECT hash FROM chunks WHERE node_id=$id LIMIT 1", ("$id", id)); }
     private List<string> Ids()
     {

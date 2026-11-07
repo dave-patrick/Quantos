@@ -22,9 +22,16 @@ public sealed class AttachmentStore(WriteService writes)
         writes.Permissions.Demand(actor, Permission.CreateEdit, $"Add attachment {fileName}");
         var ext = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
         if (!Allowed.Contains(ext)) throw new QuantosException($"Files of type {ext} can't be attached.");
+        const long MaxBytes = 200L * 1024 * 1024;
+        if (content.CanSeek && content.Length - content.Position > MaxBytes) throw new QuantosException("Attachments are limited to 200 MB.");
+        // Copy in pieces and stop as soon as the limit is passed, instead of reading a huge upload into memory first.
         using var buffer = new MemoryStream();
-        content.CopyTo(buffer);
-        if (buffer.Length > 200 * 1024 * 1024) throw new QuantosException("Attachments are limited to 200 MB.");
+        var chunk = new byte[81920];
+        for (int read; (read = content.Read(chunk, 0, chunk.Length)) > 0;)
+        {
+            if (buffer.Length + read > MaxBytes) throw new QuantosException("Attachments are limited to 200 MB.");
+            buffer.Write(chunk, 0, read);
+        }
         var bytes = buffer.ToArray();
         var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
         var rel = $"attachments/{hash[..2]}/{hash}{ext}";

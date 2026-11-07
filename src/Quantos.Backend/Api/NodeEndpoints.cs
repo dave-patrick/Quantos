@@ -25,6 +25,10 @@ public static class NodeEndpoints
         // The notes browser: every note's first words, by id (Release 1.2 follow-up).
         api.MapGet("/nodes/excerpts", (VaultHost host) => host.Require().Cache.Excerpts());
 
+        // One note's list entry, so clients can refresh a single title after a change instead of the whole list.
+        api.MapGet("/nodes/{id}/summary", (VaultHost host, string id) =>
+            host.Require().Cache.Get(id) is { } summary ? Results.Ok(summary) : Results.NotFound(new { error = "Not found." }));
+
         api.MapGet("/nodes/{id}", (VaultHost host, string id) =>
             host.Require().Writes.Get(id) is { } node ? Results.Ok(NodeDto.From(node)) : Results.NotFound(new { error = "Not found." }));
 
@@ -226,7 +230,7 @@ public static class NodeEndpoints
     private static TreeFolder Tree(VaultSession session, string workspace, bool includeArchived)
     {
         var root = session.Vault.WorkspaceDir(workspace);
-        var nodes = session.Cache.List(workspace, null, includeArchived: true, limit: 100_000)
+        var nodes = session.Cache.List(workspace, null, includeArchived: true)
             .Where(n => includeArchived || !Vault.IsArchivedPath(n.Path))
             .GroupBy(n => n.Path[..n.Path.LastIndexOf('/')], StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);

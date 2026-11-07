@@ -19,6 +19,17 @@
   let tag = $state('');
   let folder = $state('');
   let sort = $state<'modified' | 'created' | 'title'>('modified');
+  /** Rows drawn so far. More are drawn as the list scrolls, so long vaults stay quick and every note is reachable. */
+  const PAGE = 200;
+  let rendered = $state(PAGE);
+  $effect(() => { void query; void type; void tag; void folder; void sort; rendered = PAGE; });
+  /** Draws the next page when the end of the list scrolls into view. */
+  function more(node: HTMLElement) {
+    if (typeof IntersectionObserver === 'undefined') { rendered = Infinity; return {}; }
+    const io = new IntersectionObserver((entries) => { if (entries.some((x) => x.isIntersecting)) rendered += PAGE; }, { rootMargin: '400px' });
+    io.observe(node);
+    return { destroy: () => io.disconnect() };
+  }
   let showArchived = $state(false);
   let everywhere = $state(false);
   let current = $state<string | null>(null);
@@ -191,7 +202,7 @@
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       const next = shown[Math.max(0, Math.min(shown.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))];
-      if (next) { select(next.id); tick().then(() => list?.querySelector<HTMLElement>(`[data-id="${next.id}"] .pick`)?.focus()); }
+      if (next) { const at = shown.indexOf(next); if (at >= rendered) rendered = at + PAGE; select(next.id); tick().then(() => list?.querySelector<HTMLElement>(`[data-id="${next.id}"] .pick`)?.focus()); }
     } else if (e.key === 'Enter' && current) { e.preventDefault(); openNode(current, e.ctrlKey ? 'new' : 'current', shown[i]?.title); }
     else if (e.key === ' ' && current && !(e.target as HTMLElement).closest('input')) { e.preventDefault(); togglePick(current); }
   }
@@ -286,7 +297,7 @@
       <!-- Each row: a tick box, then the note as a button (arrows move between rows, Enter opens). -->
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <ul class="scroll list" bind:this={list} aria-label="Notes" onkeydown={keys}>
-        {#each shown.slice(0, 600) as n (n.id)}
+        {#each shown.slice(0, rendered) as n (n.id)}
           <li class="row" class:on={current === n.id} class:arch={n.archived} data-id={n.id}
             oncontextmenu={(e) => openNoteMenu(e, n.id)}>
             <input type="checkbox" aria-label={`Select ${n.title}`} checked={picked.has(n.id)} onchange={() => togglePick(n.id)} />
@@ -307,7 +318,7 @@
         {:else}
           <li class="faint empty">No notes match.</li>
         {/each}
-        {#if shown.length > 600}<li class="faint empty">Showing the first 600; filter to narrow it down.</li>{/if}
+        {#if shown.length > rendered}<li class="faint empty" use:more>Loading more notes…</li>{/if}
       </ul>
       {/if}
     </section>

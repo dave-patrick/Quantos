@@ -410,38 +410,56 @@ public sealed partial class WriteService
         Permissions.Demand(actor, Permission.TrashRestore, $"Move {id} to trash");
         lock (_gate)
         {
+            // Check everything that will move before moving anything, so a cascade never stops halfway.
             var node = Require(id);
-            var abs = Vault.Absolute(node.Path);
-            History.Record(id, Encoding.UTF8.GetBytes(node.Content), HistoryStore.Before);
-            var (entryDir, destination) = TrashBin.Plan(id, abs);
-            var entry = new TrashEntry
-            {
-                EntryId = Path.GetFileName(entryDir), Id = id, Title = node.Title, Type = node.Type, OriginalPath = node.Path,
-                FileName = Path.GetFileName(abs), TrashedAt = Clock.Now,
-                Referrers = Cache.Referrers(id).Where(r => r != id).ToList()
-            };
-            var manifestRel = Vault.Relative(Path.Combine(entryDir, "manifest.json"));
-            var op = new JournalOperation { Description = $"Trash '{node.Title}'" };
-            op.Steps.Add(JournalStep.Write(manifestRel, null, JsonSerializer.Serialize(entry, Json)));
-            op.Steps.Add(JournalStep.Move(node.Path, Vault.Relative(destination)));
-            Journal.Execute(op);
-            Cache.Remove(node.Path);
-            Changes.Publish(new ChangeEvent(ChangeKind.Trashed, id, null, node.Path, Origin: actor.ToString(), Data: entry));
-            // A task takes its subtasks with it: they are part of the same piece of work.
-            foreach (var child in SubtaskIds(id)) Trash(child, actor);
+            var subtasks = SubtaskIds(id);
+            var entry = TrashOne(node, actor);
+            // A task takes its subtasks (and theirs) with it: they are part of the same piece of work.
+            foreach (var child in subtasks)
+                if (Cache.PathOf(child) is not null) TrashOne(Require(child), actor);
             return entry;
         }
     }
 
-    /// <summary>The tasks that are subtasks of this one, and their subtasks, deepest last.</summary>
+    /// <summary>Moves one node to the trash. Callers hold <c>_gate</c>.</summary>
+    private TrashEntry TrashOne(Node node, Actor actor)
+    {
+        var id = node.Id;
+        var abs = Vault.Absolute(node.Path);
+        History.Record(id, Encoding.UTF8.GetBytes(node.Content), HistoryStore.Before);
+        var (entryDir, destination) = TrashBin.Plan(id, abs);
+        var entry = new TrashEntry
+        {
+            EntryId = Path.GetFileName(entryDir), Id = id, Title = node.Title, Type = node.Type, OriginalPath = node.Path,
+            FileName = Path.GetFileName(abs), TrashedAt = Clock.Now,
+            Referrers = Cache.Referrers(id).Where(r => r != id).ToList()
+        };
+        var manifestRel = Vault.Relative(Path.Combine(entryDir, "manifest.json"));
+        var op = new JournalOperation { Description = $"Trash '{node.Title}'" };
+        op.Steps.Add(JournalStep.Write(manifestRel, null, JsonSerializer.Serialize(entry, Json)));
+        op.Steps.Add(JournalStep.Move(node.Path, Vault.Relative(destination)));
+        Journal.Execute(op);
+        Cache.Remove(node.Path);
+        Changes.Publish(new ChangeEvent(ChangeKind.Trashed, id, null, node.Path, Origin: actor.ToString(), Data: entry));
+        return entry;
+    }
+
+    /// <summary>
+    /// The tasks that are subtasks of this one, and their subtasks, parents before children. One pass
+    /// over the tasks builds a parent → children map; a visited set stops a parent loop from spinning.
+    /// </summary>
     private List<string> SubtaskIds(string parentId)
     {
-        var children = Cache.List(type: NodeTypes.Task, includeArchived: true, limit: 1_000_000)
-            .Where(t => string.Equals(Tasks.Props.LinkId(Tasks.Props.Str(t.Properties, Tasks.TaskKeys.Parent)), parentId, StringComparison.OrdinalIgnoreCase))
-            .Select(t => t.Id)
-            .ToList();
+        var children = Cache.List(type: NodeTypes.Task, includeArchived: true)
+            .Select(t => (Parent: Tasks.Props.LinkId(Tasks.Props.Str(t.Properties, Tasks.TaskKeys.Parent)), t.Id))
+            .Where(p => !string.IsNullOrEmpty(p.Parent))
+            .ToLookup(p => p.Parent!, p => p.Id, StringComparer.OrdinalIgnoreCase);
         var all = new List<string>();
-        foreach (var child in children) { all.Add(child); all.AddRange(SubtaskIds(child)); }
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { parentId };
+        var queue = new Queue<string>([parentId]);
+        while (queue.Count > 0)
+            foreach (var child in children[queue.Dequeue()])
+                if (seen.Add(child)) { all.Add(child); queue.Enqueue(child); }
         return all;
     }
 
@@ -839,6 +857,14 @@ public sealed partial class WriteService
     }
 
     /// <summary>Updates the derived indexes for one file.</summary>
+    /// <summary>Indexes a file that has already been parsed (saves parsing it a second time).</summary>
+    public Node Index(string abs, Node node)
+    {
+        var info = new FileInfo(abs);
+        Cache.Upsert(node, info.LastWriteTimeUtc.Ticks, info.Length);
+        return node;
+    }
+
     public Node Index(string abs, string? content = null)
     {
         content ??= AtomicFile.ReadAllText(abs);

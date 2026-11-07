@@ -65,7 +65,7 @@ public sealed partial class SupertagService(WriteService writes)
 
     public IReadOnlyList<SupertagDto> List(string? workspace = null)
     {
-        var defs = Cache.List(type: NodeTypes.Supertag, includeArchived: false, limit: 100_000)
+        var defs = Cache.List(type: NodeTypes.Supertag, includeArchived: false)
             .Where(d => d.Workspace.Length == 0 || workspace is null || d.Workspace == workspace)
             .ToList();
         // A workspace definition overrides a global one with the same name.
@@ -201,7 +201,7 @@ public sealed partial class SupertagService(WriteService writes)
     private Dictionary<string, int> TagCounts(string? workspace, Dictionary<string, string>? names = null)
     {
         var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var n in Cache.List(workspace, includeArchived: false, limit: 1_000_000))
+        foreach (var n in Cache.List(workspace, includeArchived: false))
             foreach (var t in n.Type == NodeTypes.Task ? n.Tags.Append("task").Distinct(StringComparer.OrdinalIgnoreCase) : n.Tags)
             {
                 counts[t.ToLowerInvariant()] = counts.GetValueOrDefault(t.ToLowerInvariant()) + 1;
@@ -313,7 +313,7 @@ public sealed partial class SupertagService(WriteService writes)
 
         var op = new JournalOperation { Description = $"Rename #{tag.Name} to #{newName}" };
         var touched = new List<string>();
-        foreach (var n in Cache.List(includeArchived: true, limit: 1_000_000))
+        foreach (var n in Cache.List(includeArchived: true))
         {
             var usesTag = n.Tags.Any(t => t.Equals(tag.Name, StringComparison.OrdinalIgnoreCase));
             var isChild = n.Type == NodeTypes.Supertag && string.Equals(Props.Str(n.Properties, "parent"), tag.Name, StringComparison.OrdinalIgnoreCase);
@@ -359,7 +359,7 @@ public sealed partial class SupertagService(WriteService writes)
         var tag = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
         var tags = WithDescendants(tag.Name);
         int changed = 0, skipped = 0;
-        foreach (var n in Cache.List(includeArchived: true, limit: 1_000_000).Where(n => n.Tags.Any(tags.Contains) || (n.Type == NodeTypes.Task && tags.Contains("task"))))
+        foreach (var n in Cache.List(includeArchived: true).Where(n => n.Tags.Any(tags.Contains) || (n.Type == NodeTypes.Task && tags.Contains("task"))))
         {
             if (!n.Properties.TryGetValue(fieldKey, out var raw) || raw is null) continue;
             var value = Props.Str(raw);

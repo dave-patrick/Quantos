@@ -12,7 +12,7 @@
   <Import Project="../SharedAspNet.targets" />
   <ItemGroup>
     <ProjectReference Include="../../src/Quantos.Core/Quantos.Core.csproj" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.14" />
     <Compile Include="../../src/Quantos.Backend/**/*.cs" Exclude="../../src/Quantos.Backend/bin/**;../../src/Quantos.Backend/obj/**" />
     <Compile Include="GlobalUsings.cs" />
     <EmbeddedResource Include="../../src/Quantos.Backend/wwwroot/**">

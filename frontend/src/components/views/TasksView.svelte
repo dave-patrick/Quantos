@@ -10,8 +10,7 @@
   import Icon from '../Icon.svelte';
   import { isCompactAndroid } from '../../lib/platform';
 
-  let { tab }: { tab: Tab } = $props();
-  void tab;
+  let {}: { tab: Tab } = $props();
 
   type Group = 'none' | 'due' | 'project' | 'priority' | 'status' | 'stage' | 'assignee';
   let group = $state<Group>('due');

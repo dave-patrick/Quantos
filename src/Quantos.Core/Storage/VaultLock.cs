@@ -24,7 +24,12 @@ public sealed class VaultLock : IDisposable
         FileStream stream;
         try
         {
-            stream = new FileStream(vault.LockFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 1, FileOptions.DeleteOnClose);
+            // On Windows, FileShare.Read keeps the lock exclusive for writers while still letting
+            // ReadOwner show who holds it. On Linux and macOS .NET maps sharing to flock(): anything
+            // but FileShare.None takes a *shared* lock, which a second backend can also take, so the
+            // vault would not be protected (the Docker server runs on Linux).
+            var share = OperatingSystem.IsWindows() ? FileShare.Read : FileShare.None;
+            stream = new FileStream(vault.LockFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, share, 1, FileOptions.DeleteOnClose);
         }
         catch (IOException)
         {

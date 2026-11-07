@@ -10,8 +10,7 @@
   import { prefs } from '../../lib/prefs.svelte';
   import { tasks } from '../../lib/tasks.svelte';
 
-  let { tab, today }: { tab: Tab; today: string } = $props();
-  void tab;
+  let { today }: { tab: Tab; today: string } = $props();
 
   let days = $state<{ date: string; node: NodeDto | null }[]>([]);
   let loading = $state(false);

@@ -107,7 +107,7 @@
 <aside class="rightbar" aria-label="Inspector" bind:this={box}>
   {#each app.rightPanels as tab, i (i + ':' + tab)}
     <section class="part" class:dragging={draggingIndex === i} style={`flex:${app.rightHeights[i] ?? 1} 1 0`}>
-      <header class="head" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragover={(e) => onDragOver(e, i)} ondragend={onDragEnd}>
+      <header class="head" role="group" aria-label={`${typeOf(tab).label} panel, drag to reorder`} draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragover={(e) => onDragOver(e, i)} ondragend={onDragEnd}>
         <span class="grip" aria-hidden="true">⋮⋮</span>
         <Icon name={typeOf(tab).icon} size={14} />
         <span class="title">{typeOf(tab).label}</span>

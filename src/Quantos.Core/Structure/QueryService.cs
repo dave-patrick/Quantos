@@ -42,11 +42,11 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
     {
         // Every note in the vault has to be considered. A filter that only saw the first page
         // would quietly leave the rest out, and the number of results shown to the person would
-        // be wrong. The cache is read a page at a time, so the whole vault is seen without holding
-        // all of it at once, and only the notes that match are kept.
+        // be wrong. The cache is read in one call (one consistent snapshot: paging across separate
+        // reads could skip a note that changed in between) and only the notes that match are kept.
         var workspaces = WorkspaceList(spec.Workspaces, activeWorkspace);
         var wanted = spec.Tags is { Count: > 0 } ? spec.Tags.Select(t => tags.WithDescendants(t)).ToList() : null;
-        var hits = spec.Text is { Length: > 0 } text ? writes.Cache.Search(text, null, 5000).Select(h => h.Id).ToHashSet() : null;
+        var hits = spec.Text is { Length: > 0 } text ? writes.Cache.SearchIds(text) : null;
 
         bool Match(NodeSummary n)
         {
@@ -64,17 +64,7 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
             return true;
         }
 
-        var list = new List<NodeSummary>();
-        var matched = new HashSet<string>();
-        const int PageSize = 10_000;
-        for (var offset = 0; ; offset += PageSize)
-        {
-            var page = writes.Cache.List(null, null, spec.IncludeArchived, PageSize, offset);
-            if (page.Count == 0) break;
-            foreach (var n in page)
-                if (matched.Add(n.Id) && Match(n)) list.Add(n);
-            if (page.Count < PageSize) break;
-        }
+        var list = writes.Cache.List(null, null, spec.IncludeArchived).Where(Match).ToList();
 
         IOrderedEnumerable<NodeSummary>? ordered = null;
         foreach (var s in spec.Sort ?? [new QuerySort("modified", "desc")])

@@ -21,9 +21,15 @@ public sealed record LinkRef(string SourceId, string SourceTitle, string SourceW
 /// </summary>
 public sealed partial class CacheIndex : IDisposable
 {
-    public const int Version = 11; // rebuild derived workspace assignments from physical paths
+    public const int Version = 12; // search_map: delete full-text rows by rowid instead of scanning the whole table
     private readonly SqliteConnection _db;
     private readonly Lock _gate = new();
+    private long _generation;
+
+    /// <summary>Goes up on every change to the cache, so callers can keep derived data until it moves.</summary>
+    public long Generation => Interlocked.Read(ref _generation);
+
+    private void Changed() => Interlocked.Increment(ref _generation);
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public string DatabasePath { get; }
@@ -55,6 +61,9 @@ public sealed partial class CacheIndex : IDisposable
                     WasReset = true;
                 }
                 Exec(db, "PRAGMA quick_check");
+                // Lists are ordered newest first; without this index every list sorts the whole table.
+                // Added here (not only in CreateSchema) so existing caches gain it without a rebuild.
+                Exec(db, "CREATE INDEX IF NOT EXISTS nodes_modified ON nodes(modified DESC, id)");
                 return db;
             }
             catch (SqliteException) when (attempt == 0)
@@ -77,7 +86,7 @@ public sealed partial class CacheIndex : IDisposable
         Exec(db, """
             DROP TABLE IF EXISTS files; DROP TABLE IF EXISTS nodes; DROP TABLE IF EXISTS aliases;
             DROP TABLE IF EXISTS links; DROP TABLE IF EXISTS search; DROP TABLE IF EXISTS inline_tasks;
-            DROP TABLE IF EXISTS attachment_refs;
+            DROP TABLE IF EXISTS attachment_refs; DROP TABLE IF EXISTS search_map;
             CREATE TABLE files(path TEXT PRIMARY KEY COLLATE NOCASE, id TEXT, hash TEXT, mtime INTEGER, size INTEGER);
             CREATE INDEX files_id ON files(id);
             CREATE TABLE nodes(id TEXT PRIMARY KEY, path TEXT COLLATE NOCASE, title TEXT, type TEXT, workspace TEXT,
@@ -95,7 +104,11 @@ public sealed partial class CacheIndex : IDisposable
             CREATE INDEX inline_tasks_note ON inline_tasks(note_id);
             CREATE TABLE attachment_refs(node_id TEXT, path TEXT COLLATE NOCASE);
             CREATE INDEX attachment_refs_path ON attachment_refs(path);
+            CREATE INDEX attachment_refs_node ON attachment_refs(node_id);
             CREATE VIRTUAL TABLE search USING fts5(id UNINDEXED, title, body, tokenize='unicode61 remove_diacritics 2');
+            -- FTS5 can't index the UNINDEXED id column, so deleting by id scanned every row on every save
+            -- (quadratic on a first open). This maps each node to its full-text rowid instead.
+            CREATE TABLE search_map(id TEXT PRIMARY KEY, rid INTEGER);
             """);
         Exec(db, $"INSERT OR REPLACE INTO meta(key, value) VALUES('cache_version', '{Version}')");
     }
@@ -107,7 +120,7 @@ public sealed partial class CacheIndex : IDisposable
         {
             var bound = Scalar(_db, "SELECT value FROM meta WHERE key='vault_root'");
             if (bound is not null && string.Equals(bound, vaultRoot, StringComparison.OrdinalIgnoreCase)) return;
-            if (bound is not null) { CreateSchema(_db); WasReset = true; }
+            if (bound is not null) { DropStatements(); CreateSchema(_db); WasReset = true; Changed(); }
             Exec(_db, "INSERT OR REPLACE INTO meta(key, value) VALUES('vault_root', $v)", ("$v", vaultRoot));
             if (bound is null && Scalar(_db, "SELECT COUNT(*) FROM files") != "0") WasReset = true;
         }
@@ -115,7 +128,7 @@ public sealed partial class CacheIndex : IDisposable
 
     public void Clear()
     {
-        lock (_gate) { CreateSchema(_db); WasReset = true; }
+        lock (_gate) { DropStatements(); CreateSchema(_db); WasReset = true; Changed(); }
     }
 
     // ---- writes -----------------------------------------------------------------------------
@@ -138,6 +151,7 @@ public sealed partial class CacheIndex : IDisposable
                 owner._batch?.Commit();
                 owner._batch?.Dispose();
                 owner._batch = null;
+                owner.Changed();
             }
         }
     }
@@ -146,36 +160,40 @@ public sealed partial class CacheIndex : IDisposable
     {
         lock (_gate)
         {
+            Changed();
             using var tx = _batch is null ? _db.BeginTransaction() : null;
+            _local = tx;
             RemoveInternal(node.Path, node.Id);
-            Exec(_db, "INSERT INTO files(path, id, hash, mtime, size) VALUES($p, $id, $h, $m, $s)",
+            Run("INSERT INTO files(path, id, hash, mtime, size) VALUES($p, $id, $h, $m, $s)",
                 ("$p", node.Path), ("$id", node.Id), ("$h", node.Hash), ("$m", mtime), ("$s", size));
             if (!string.IsNullOrEmpty(node.Id))
             {
-                Exec(_db, "INSERT OR REPLACE INTO nodes VALUES($id, $p, $t, $type, $ws, $tags, $c, $mod, $a, $ro, $props)",
+                Run("INSERT OR REPLACE INTO nodes VALUES($id, $p, $t, $type, $ws, $tags, $c, $mod, $a, $ro, $props)",
                     ("$id", node.Id), ("$p", node.Path), ("$t", node.Title), ("$type", node.Type), ("$ws", node.Workspace),
                     ("$tags", JsonSerializer.Serialize(node.Tags, Json)), ("$c", node.Created), ("$mod", node.Modified),
                     ("$a", node.Archived ? 1 : 0), ("$ro", node.ReadOnly ? 1 : 0), ("$props", JsonSerializer.Serialize(node.Properties, Json)));
                 foreach (var alias in node.Aliases)
-                    Exec(_db, "INSERT INTO aliases VALUES($a, $id)", ("$a", alias), ("$id", node.Id));
+                    Run("INSERT INTO aliases VALUES($a, $id)", ("$a", alias), ("$id", node.Id));
                 foreach (var link in Links.Find(node.Body))
-                    Exec(_db, "INSERT INTO links VALUES($s, $t, $k, $f, $c)", ("$s", node.Id),
+                    Run("INSERT INTO links VALUES($s, $t, $k, $f, $c)", ("$s", node.Id),
                         ("$t", link.IsResolved ? link.Target : "?" + link.Target), ("$k", link.Kind == LinkKind.Embed ? "embed" : "link"),
                         ("$f", link.Fragment), ("$c", ContextLine(node.Body, link.Start)));
                 // Links held in properties (an owner, attendees) count as links too: backlinks, graph, renames.
                 foreach (var (key, value) in node.Properties)
                     foreach (var text in PropertyStrings(value))
                         foreach (var link in Links.Find(text).Where(l => l.IsResolved))
-                            Exec(_db, "INSERT INTO links VALUES($s, $t, 'link', $f, $c)", ("$s", node.Id), ("$t", link.Target), ("$f", link.Fragment), ("$c", $"{key}: {text}"));
+                            Run("INSERT INTO links VALUES($s, $t, 'link', $f, $c)", ("$s", node.Id), ("$t", link.Target), ("$f", link.Fragment), ("$c", $"{key}: {text}"));
                 foreach (var region in Links.SyncRegions(node.Body))
-                    Exec(_db, "INSERT INTO links VALUES($s, $t, $k, NULL, $c)", ("$s", node.Id), ("$t", region.Id), ("$k", "sync"), ("$c", ContextLine(region.Content, 0)));
+                    Run("INSERT INTO links VALUES($s, $t, $k, NULL, $c)", ("$s", node.Id), ("$t", region.Id), ("$k", "sync"), ("$c", ContextLine(region.Content, 0)));
                 foreach (var task in Links.InlineTasks(node.Body))
-                    Exec(_db, "INSERT INTO inline_tasks VALUES($n, $t, $c, $x)", ("$n", node.Id), ("$t", task.Id), ("$c", task.Checked ? 1 : 0), ("$x", task.Text));
+                    Run("INSERT INTO inline_tasks VALUES($n, $t, $c, $x)", ("$n", node.Id), ("$t", task.Id), ("$c", task.Checked ? 1 : 0), ("$x", task.Text));
                 foreach (var attachment in Attachments.Find(node.Body))
-                    Exec(_db, "INSERT INTO attachment_refs VALUES($n, $p)", ("$n", node.Id), ("$p", attachment));
-                Exec(_db, "INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", Links.PlainText(node.Body)));
+                    Run("INSERT INTO attachment_refs VALUES($n, $p)", ("$n", node.Id), ("$p", attachment));
+                Run("INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", Links.PlainText(node.Body)));
+                Run("INSERT OR REPLACE INTO search_map(id, rid) VALUES($id, last_insert_rowid())", ("$id", node.Id));
             }
             tx?.Commit();
+            _local = null;
         }
     }
 
@@ -183,24 +201,28 @@ public sealed partial class CacheIndex : IDisposable
     {
         lock (_gate)
         {
+            Changed();
             using var tx = _batch is null ? _db.BeginTransaction() : null;
+            _local = tx;
             RemoveInternal(path, null);
             tx?.Commit();
+            _local = null;
         }
     }
 
     private void RemoveInternal(string path, string? id)
     {
-        var existingId = Scalar(_db, "SELECT id FROM files WHERE path=$p", ("$p", path));
+        var existingId = RunScalar("SELECT id FROM files WHERE path=$p", ("$p", path));
         foreach (var target in new[] { existingId, id }.Where(x => !string.IsNullOrEmpty(x)).Distinct())
         {
             // Only remove node rows owned by this path (a duplicate id elsewhere keeps its row).
-            var owner = Scalar(_db, "SELECT path FROM nodes WHERE id=$id", ("$id", target));
+            var owner = RunScalar("SELECT path FROM nodes WHERE id=$id", ("$id", target));
             if (owner is not null && !string.Equals(owner, path, StringComparison.OrdinalIgnoreCase) && target != id) continue;
-            foreach (var table in new[] { "aliases WHERE id", "links WHERE src", "inline_tasks WHERE note_id", "attachment_refs WHERE node_id", "search WHERE id", "nodes WHERE id" })
-                Exec(_db, $"DELETE FROM {table}=$id", ("$id", target));
+            Run("DELETE FROM search WHERE rowid IN (SELECT rid FROM search_map WHERE id=$id)", ("$id", target));
+            foreach (var table in new[] { "aliases WHERE id", "links WHERE src", "inline_tasks WHERE note_id", "attachment_refs WHERE node_id", "search_map WHERE id", "nodes WHERE id" })
+                Run($"DELETE FROM {table}=$id", ("$id", target));
         }
-        Exec(_db, "DELETE FROM files WHERE path=$p", ("$p", path));
+        Run("DELETE FROM files WHERE path=$p", ("$p", path));
     }
 
     private static string ContextLine(string body, int index)
@@ -245,7 +267,9 @@ public sealed partial class CacheIndex : IDisposable
         lock (_gate) return QueryNodes("WHERE id=$id", ("$id", id)).FirstOrDefault();
     }
 
-    public IReadOnlyList<NodeSummary> List(string? workspace = null, string? type = null, bool includeArchived = false, int limit = 5000, int offset = 0)
+    /// <summary>Nodes newest first. <paramref name="limit"/> −1 (the default) means every match: a silent
+    /// cap made large vaults lose notes from lists and link lookups.</summary>
+    public IReadOnlyList<NodeSummary> List(string? workspace = null, string? type = null, bool includeArchived = false, int limit = -1, int offset = 0)
     {
         lock (_gate)
         {
@@ -256,7 +280,7 @@ public sealed partial class CacheIndex : IDisposable
             if (!includeArchived) where.Add("archived=0");
             // The id breaks ties so paging through the vault can neither skip nor repeat a note.
             var clause = (where.Count > 0 ? "WHERE " + string.Join(" AND ", where) : "")
-                + $" ORDER BY modified DESC, id ASC LIMIT {limit} OFFSET {offset}";
+                + $" ORDER BY modified DESC, id ASC LIMIT {(limit < 0 ? -1 : limit)} OFFSET {Math.Max(0, offset)}";
             return QueryNodes(clause, [.. args]);
         }
     }
@@ -286,6 +310,31 @@ public sealed partial class CacheIndex : IDisposable
         // Nothing found: try again with each word's ending trimmed, so a typo ("lauch") still finds "launch".
         if (hits.Count == 0 && ToFtsQuery(query, loose: true) is { Length: > 0 } loose && loose != fts) hits = RunSearch(loose, workspace, limit);
         return hits;
+    }
+
+    /// <summary>
+    /// Every node id matching a full-text query, with no cap (for query filters, where a cap would
+    /// silently drop matches and give a wrong total). Same typo fallback as <see cref="Search"/>.
+    /// </summary>
+    public HashSet<string> SearchIds(string query)
+    {
+        var fts = ToFtsQuery(query);
+        if (fts.Length == 0) return [];
+        var ids = RunSearchIds(fts);
+        if (ids.Count == 0 && ToFtsQuery(query, loose: true) is { Length: > 0 } loose && loose != fts) ids = RunSearchIds(loose);
+        return ids;
+    }
+
+    private HashSet<string> RunSearchIds(string fts)
+    {
+        lock (_gate)
+        {
+            using var cmd = Command(_db, "SELECT id FROM search WHERE search MATCH $q", ("$q", fts));
+            using var r = cmd.ExecuteReader();
+            var ids = new HashSet<string>();
+            while (r.Read()) ids.Add(r.GetString(0));
+            return ids;
+        }
     }
 
     private List<SearchHit> RunSearch(string fts, string? workspace, int limit)
@@ -544,6 +593,40 @@ public sealed partial class CacheIndex : IDisposable
         return cmd;
     }
 
+    // Index writes run the same dozen statements for every note. Keeping their commands lets SQLite
+    // reuse each compiled statement instead of re-parsing the SQL thousands of times on first open.
+    private readonly Dictionary<string, SqliteCommand> _statements = new(StringComparer.Ordinal);
+    private SqliteTransaction? _local;
+
+    private SqliteCommand Statement(string sql, (string Name, object? Value)[] args)
+    {
+        if (!_statements.TryGetValue(sql, out var cmd))
+        {
+            cmd = _db.CreateCommand();
+            cmd.CommandText = sql;
+            _statements[sql] = cmd;
+        }
+        cmd.Transaction = _batch ?? _local; // a cached command must be told which transaction is open
+        cmd.Parameters.Clear();
+        foreach (var (name, value) in args) cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);
+        return cmd;
+    }
+
+    /// <summary>Executes a cached statement. Callers hold <c>_gate</c>.</summary>
+    private void Run(string sql, params (string, object?)[] args) => Statement(sql, args).ExecuteNonQuery();
+
+    private string? RunScalar(string sql, params (string, object?)[] args)
+    {
+        var result = Statement(sql, args).ExecuteScalar();
+        return result is null or DBNull ? null : Convert.ToString(result, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private void DropStatements()
+    {
+        foreach (var cmd in _statements.Values) cmd.Dispose();
+        _statements.Clear();
+    }
+
     private static void Exec(SqliteConnection db, string sql, params (string, object?)[] args)
     {
         using var cmd = Command(db, sql, args);
@@ -559,6 +642,6 @@ public sealed partial class CacheIndex : IDisposable
 
     public void Dispose()
     {
-        lock (_gate) _db.Dispose();
+        lock (_gate) { DropStatements(); _db.Dispose(); }
     }
 }

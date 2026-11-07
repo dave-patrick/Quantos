@@ -56,7 +56,7 @@ public sealed partial class TemplateService
     }
 
     public IReadOnlyList<TemplateDto> List() =>
-        _writes.Cache.List(type: NodeTypes.Template, limit: 10_000).OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase)
+        _writes.Cache.List(type: NodeTypes.Template).OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase)
             .Select(t => new TemplateDto(t.Id, t.Title, t.Path, t.Tags, Props.Str(t.Properties, "description"),
                 t.Properties.Where(p => p.Key != "description").ToDictionary(p => p.Key, p => p.Value))).ToList();
 

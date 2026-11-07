@@ -57,7 +57,7 @@ public static class RelationEndpoints
             if (id is null)
             {
                 // Workspace overview: the most connected notes (notes with no links would only be scattered dots).
-                var all = cache.List(workspace, includeArchived: false, limit: 100_000);
+                var all = cache.List(workspace, includeArchived: false);
                 var degree = cache.LinkDegrees();
                 foreach (var n in all.Where(n => degree.GetValueOrDefault(n.Id) > 0).OrderByDescending(n => degree[n.Id]).Take(150)) nodes[n.Id] = (n.Title, n.Type, n.Workspace, 0);
                 foreach (var n in nodes.Keys.ToList())

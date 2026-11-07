@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { fieldProblem } from '../lib/fields';
   import { api } from '../lib/api';
   import { app } from '../lib/state.svelte';
@@ -11,7 +12,7 @@
   let { tag, onclose }: { tag: Supertag; onclose: () => void } = $props();
 
   let title = $state('');
-  let values = $state<Record<string, unknown>>(Object.fromEntries(tag.allFields.map((f) => [f.key, f.default ?? (f.type === 'checkbox' ? false : '')])));
+  let values = $state<Record<string, unknown>>(Object.fromEntries(untrack(() => tag.allFields).map((f) => [f.key, f.default ?? (f.type === 'checkbox' ? false : '')])));
   let tried = $state(false);
   let busy = $state(false);
 

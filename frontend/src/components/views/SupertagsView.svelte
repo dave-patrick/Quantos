@@ -11,7 +11,7 @@
 
   let { tab }: { tab: Tab } = $props();
 
-  let selectedName = $state(tab.arg ?? '');
+  let selectedName = $state(untrack(() => tab.arg) ?? '');
   const selected = $derived(supertags.byName(selectedName));
   let draft = $state<{ parent: string; color: string; icon: string; layout: string; template: string; autoApply: boolean; description: string; fields: { name: string; key?: string; type: FieldType; options: string; required: boolean; description: string }[] } | null>(null);
   let newName = $state('');

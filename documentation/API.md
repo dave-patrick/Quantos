@@ -29,6 +29,7 @@ never `X-Quantos-Agent` or `X-Quantos-Client`. Do not log credentials or sign-in
 |---|---|
 | `GET /api/nodes?workspace=&type=&archived=` | Summaries |
 | `GET /api/nodes/{id}` | Full node: properties, body, exact `content`, `hash` |
+| `GET /api/nodes/{id}/summary` | One node's list entry (same shape as `GET /api/nodes` rows); 404 when gone |
 | `POST /api/nodes` | Create `{ title, type?, workspace?, body?, tags?, properties?, folder? }` |
 | `PUT /api/nodes/{id}` | Save full text `{ content, baseHash }` → 200, or **409** with `diskContent`/`diskHash` |
 | `PATCH /api/nodes/{id}` | `{ baseHash?, set?, remove?, body? }` property or body change |

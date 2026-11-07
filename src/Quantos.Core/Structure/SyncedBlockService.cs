@@ -23,7 +23,7 @@ public sealed class SyncedBlockService
     }
 
     public IReadOnlyList<SyncedBlockDto> List() =>
-        _writes.Cache.List(type: NodeTypes.SyncedBlock, limit: 10_000)
+        _writes.Cache.List(type: NodeTypes.SyncedBlock)
             .Select(s => _writes.Get(s.Id) is { } n ? new SyncedBlockDto(n.Id, n.Title, n.Body.Trim(), _writes.Cache.Backlinks(n.Id).Count(b => b.Kind == "sync"), n.Modified) : null)
             .OfType<SyncedBlockDto>().ToList();
 

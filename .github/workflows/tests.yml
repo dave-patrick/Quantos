@@ -1,0 +1,60 @@
+name: Tests
+# Runs every test on each push and pull request, on Windows (where the app runs) and Linux (where the
+# optional shared-vault server runs in Docker). Nothing is built for release or published here.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['site/**', '**/*.md', 'brand/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend install
+        working-directory: frontend
+        run: npm ci
+      - name: Frontend type check
+        working-directory: frontend
+        run: npm run check
+      - name: Frontend tests
+        working-directory: frontend
+        run: npm test
+      - name: Frontend build (embedded in the backend, which the backend tests need)
+        working-directory: frontend
+        run: npm run build
+
+      - name: Backend and core tests (Windows)
+        if: runner.os == 'Windows'
+        run: dotnet test tests/Quantos.Tests -c Release --nologo
+      - name: Native Windows client tests
+        if: runner.os == 'Windows'
+        run: dotnet test tests/Quantos.Client.Tests -c Release --nologo
+      # On Linux, tests that need the Windows credential store (saving Google sign-in and API keys)
+      # and the Windows-path OneDrive warning are left out; everything else, including the vault
+      # lock the Docker server relies on, runs.
+      - name: Backend and core tests (Linux)
+        if: runner.os == 'Linux'
+        run: >-
+          dotnet test tests/Quantos.Tests -c Release --nologo
+          --filter "FullyQualifiedName!~GoogleTasksBackendTests&FullyQualifiedName!~GoogleTasksBuiltInClientTests&FullyQualifiedName!~A_token_refresh_in_flight_when_credentials_change_is_not_cached&FullyQualifiedName!~A_onedrive_vault_path_shows_the_warning"

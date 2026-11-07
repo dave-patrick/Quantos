@@ -18,7 +18,7 @@ public sealed class GraphService(WriteService writes)
         writes.Permissions.Demand(actor, Permission.Read, "Read the knowledge graph");
         limit = Math.Clamp(limit, 20, 1000);
         var cache = writes.Cache;
-        var all = cache.List(workspace, includeArchived: false, limit: 1_000_000)
+        var all = cache.List(workspace, includeArchived: false)
             .Where(n => types is not { Count: > 0 } || types.Contains(n.Type))
             .Where(n => n.Type is not (NodeTypes.Template or NodeTypes.SyncedBlock) || types?.Contains(n.Type) == true)
             .ToDictionary(n => n.Id);

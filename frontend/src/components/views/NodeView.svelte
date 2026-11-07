@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ago } from '../../lib/today.svelte';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import type { EditorView } from '@codemirror/view';
   import { EditorView as CMView } from '@codemirror/view';
   import { api } from '../../lib/api';
@@ -24,8 +24,10 @@
 
   let { tab, id, paneIndex, popup = false }: { tab: Tab; id: string; paneIndex: number; popup?: boolean } = $props();
 
-  const doc = docs.acquire(id);
-  onDestroy(() => docs.release(id));
+  // The pane remounts this view for another note, so the id it opened with is the one it keeps.
+  const docId = untrack(() => id);
+  const doc = docs.acquire(docId);
+  onDestroy(() => docs.release(docId));
 
   let scroller = $state<HTMLDivElement | null>(null);
   let view = $state<EditorView | null>(null);

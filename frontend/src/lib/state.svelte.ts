@@ -1,5 +1,5 @@
-import { api, instanceId } from './api';
-import { onChange } from './events';
+import { api, ApiError, instanceId } from './api';
+import { connection, onChange } from './events';
 import type { LinkedFolder, NodeSummary, Status } from './types';
 import { isCompactAndroid } from './platform';
 
@@ -33,6 +33,8 @@ class AppState {
   asking = $state<AskSpec | null>(null);
 
   private titleTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Ids changed since the last title refresh; null means reload the whole list. */
+  private changedTitles: Set<string> | null = new Set();
   private toastId = 0;
 
   constructor() {
@@ -101,8 +103,14 @@ class AppState {
         }, 200);
       });
     });
+    let wasDown = false;
+    connection.listeners.add((up) => {
+      if (!up) wasDown = true;
+      else if (wasDown) { wasDown = false; this.scheduleTitles(null); }
+    });
     onChange((e) => {
-      if (['Created', 'Updated', 'Moved', 'Trashed', 'Restored', 'Deleted', 'Archived', 'Unarchived', 'Reindexed'].includes(e.kind)) this.scheduleTitles();
+      if (['Created', 'Updated', 'Moved', 'Trashed', 'Restored', 'Deleted', 'Archived', 'Unarchived', 'Reindexed'].includes(e.kind))
+        this.scheduleTitles(e.kind === 'Reindexed' ? null : e.id);
       if (e.kind === 'Reindexed') this.refreshStatus();
     });
   }
@@ -123,9 +131,39 @@ class AppState {
     this.titles = titles;
   }
 
-  scheduleTitles() {
+  /**
+   * Refreshes the title list a moment after changes settle. A change to a few known notes fetches
+   * only those notes; anything else (a reindex, a reconnect, a burst of many changes, or a caller
+   * that doesn't say which note) reloads the whole list. Reloading every note's details after each
+   * save was the slow path in large vaults.
+   */
+  scheduleTitles(id?: string | null) {
+    if (id && this.changedTitles) this.changedTitles.add(id);
+    else this.changedTitles = null;
     if (this.titleTimer) clearTimeout(this.titleTimer);
-    this.titleTimer = setTimeout(() => this.loadTitles().catch(() => {}), 400);
+    this.titleTimer = setTimeout(() => this.flushTitles().catch(() => {}), 400);
+  }
+
+  private async flushTitles() {
+    const ids = this.changedTitles;
+    this.changedTitles = new Set();
+    if (!ids || ids.size > 25 || this.titles.length === 0) return this.loadTitles();
+    if (ids.size === 0) return;
+    const fresh = new Map<string, NodeSummary | null>();
+    try {
+      await Promise.all([...ids].map(async (id) => {
+        try { fresh.set(id, await api.get<NodeSummary>(`nodes/${encodeURIComponent(id)}/summary`)); }
+        catch (e) { if (e instanceof ApiError && e.status === 404) fresh.set(id, null); else throw e; }
+      }));
+    } catch {
+      return this.loadTitles(); // an older backend without the endpoint, or a network blip
+    }
+    // Changed notes move to the front, matching the server's newest-first order.
+    const changed = [...fresh.values()].filter((n): n is NodeSummary => !!n);
+    const titles = [...changed, ...this.titles.filter((t) => !fresh.has(t.id))];
+    for (const [id, n] of fresh) { if (n) this.titleIndex.set(id, n); else this.titleIndex.delete(id); }
+    this.titleIndex = new Map(this.titleIndex);
+    this.titles = titles;
   }
 
   isOwnEvent(origin: string | null) {

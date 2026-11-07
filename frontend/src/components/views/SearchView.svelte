@@ -6,11 +6,11 @@
   import { snippetHtml } from '../../lib/text';
   import type { SearchHit } from '../../lib/types';
   import Icon from '../Icon.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { ai } from '../../lib/ai.svelte';
 
   let { tab }: { tab: Tab } = $props();
-  let query = $state(tab.arg ?? '');
+  let query = $state(untrack(() => tab.arg) ?? '');
   let scope = $state<'all' | 'active'>('all');
   // Words: the full-text index. Meaning: the AI embedding index, when it's set up (Release 1.1).
   let mode = $state<'words' | 'meaning'>('words');

@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Quantos.Core\Quantos.Core.csproj" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.14" />
   </ItemGroup>
 
   <!-- The built frontend is embedded so the backend stays a single file. -->

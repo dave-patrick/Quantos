@@ -1,5 +1,17 @@
 # Quantos project status and handoff
 
+### Code-scan fixes (2026-11-06, not yet released)
+
+Fixes from a code scan; details in CHANGELOG "Unreleased". New regression tests in
+`tests/Quantos.Tests/ScanFixTests.cs`; new CI workflow `.github/workflows/tests.yml` (Windows full suite,
+Linux minus the Windows-credential-store tests). Verified on Linux only: 316/316 backend/core tests in the
+CI filter (the 28 left out need the Windows credential store or a Windows path), 154 frontend tests,
+type check with zero errors and zero warnings, a win-x64 ReadyToRun publish of the backend. **Not
+verified:** a Windows build/package, the native client tests, the notes list's scroll-to-load in a real
+window, and an Android build. Left for an owner decision: version-history pruning (history is never
+trimmed), splitting the cache's single connection/lock for concurrent reads, and the startup
+`PRAGMA quick_check` cost on very large caches.
+
 ### 0.2.10 and the hosted shared server (2026-11-03, build 2026.03.11.40)
 
 0.2.10 only moves the note toolbar 36px clear of the pane close ×; not checked on screen on a second PC. The owner's hosted shared server runs on a

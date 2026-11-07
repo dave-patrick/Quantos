@@ -10,7 +10,7 @@ public static class Integrity
     {
         var vault = writes.Vault;
         var list = new List<Diagnostic>();
-        var known = writes.Cache.List(includeArchived: true, limit: 1_000_000).ToDictionary(n => n.Id);
+        var known = writes.Cache.List(includeArchived: true).ToDictionary(n => n.Id);
         var checkedFiles = 0;
         var ids = new Dictionary<string, string>();
 

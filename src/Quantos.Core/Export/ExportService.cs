@@ -118,7 +118,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
     {
         writes.Permissions.Demand(actor, Permission.Read, $"Publish {scope}");
         var vault = writes.Vault;
-        var summaries = writes.Cache.List(scope, null, includeArchived: false, limit: 100_000)
+        var summaries = writes.Cache.List(scope, null, includeArchived: false)
             .Where(n => !Storage.Vault.IsArchivedPath(n.Path))
             .OrderBy(n => n.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
