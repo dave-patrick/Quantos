@@ -100,5 +100,8 @@ jobs:
           Stop-Process -Id $backend.Id -Force -ErrorAction SilentlyContinue
           if (-not $ok) { throw 'The backend did not answer from the package.' }
 
-          & (Join-Path $app 'quantos-cli.exe') --help | Select-Object -First 3 | Out-Host
-          if ($LASTEXITCODE -ne 0) { throw "quantos-cli failed (exit $LASTEXITCODE)." }
+          # Capture first: cutting the pipeline short (Select-Object -First) leaves no exit code.
+          $help = & (Join-Path $app 'quantos-cli.exe') --help
+          $code = $LASTEXITCODE
+          $help | Select-Object -First 3 | Out-Host
+          if ($code -ne 0) { throw "quantos-cli failed (exit $code)." }
