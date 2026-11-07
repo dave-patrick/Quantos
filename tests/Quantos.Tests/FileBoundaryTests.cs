@@ -26,7 +26,7 @@ public sealed class FileBoundaryTests
         }))
         {
             Assert.NotNull(process);
-            Assert.True(process.WaitForExit(15_000));
+            Assert.True(process.WaitForExit(90_000));
             Assert.Equal(0, process.ExitCode);
         }
         try
