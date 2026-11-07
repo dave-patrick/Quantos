@@ -133,13 +133,21 @@ public sealed partial class SupertagService(WriteService writes)
     /// <summary>The tag and every tag that inherits from it (used by queries: #event matches #meeting if meeting extends event).</summary>
     public HashSet<string> WithDescendants(string tag, string? workspace = null)
     {
-        var all = List(workspace);
+        // Only saved definitions can name a parent, so this reads just those (as List does, a workspace
+        // definition overrides a global one) instead of building the full list, which counts every
+        // tag use in the vault.
+        var byName = new Dictionary<string, NodeSummary>(StringComparer.OrdinalIgnoreCase);
+        foreach (var d in Cache.List(type: NodeTypes.Supertag, includeArchived: false)
+                     .Where(d => d.Workspace.Length == 0 || workspace is null || d.Workspace == workspace)
+                     .OrderBy(d => d.Workspace.Length))
+            byName[d.Title] = d;
+        var parents = byName.Values.Select(d => (d.Title, Parent: Props.Str(d.Properties, "parent"))).Where(x => x.Parent is not null).ToList();
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { NormalizeTag(tag) };
         for (var changed = true; changed;)
         {
             changed = false;
-            foreach (var t in all)
-                if (t.Parent is not null && result.Contains(t.Parent) && result.Add(t.Name)) changed = true;
+            foreach (var (name, parent) in parents)
+                if (result.Contains(parent!) && result.Add(name)) changed = true;
         }
         return result;
     }
@@ -359,7 +367,7 @@ public sealed partial class SupertagService(WriteService writes)
         var tag = Get(id) ?? throw new QuantosException("Supertag not found.", 404);
         var tags = WithDescendants(tag.Name);
         int changed = 0, skipped = 0;
-        foreach (var n in Cache.List(includeArchived: true).Where(n => n.Tags.Any(tags.Contains) || (n.Type == NodeTypes.Task && tags.Contains("task"))))
+        foreach (var n in Cache.Find(new NodeFilter { IncludeArchived = true, TagSets = [tags] }).Where(n => n.Tags.Any(tags.Contains) || (n.Type == NodeTypes.Task && tags.Contains("task"))))
         {
             if (!n.Properties.TryGetValue(fieldKey, out var raw) || raw is null) continue;
             var value = Props.Str(raw);

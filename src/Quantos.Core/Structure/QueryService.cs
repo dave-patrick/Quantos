@@ -64,7 +64,21 @@ public sealed partial class QueryService(WriteService writes, SupertagService ta
             return true;
         }
 
-        var list = writes.Cache.List(null, null, spec.IncludeArchived).Where(Match).ToList();
+        // SQL narrows with the indexes (type, workspace, folder, tags, text hits); Match still checks
+        // every row, so the result is exactly what Match accepts and SQL only saves work.
+        var folderPrefix = spec.Folder is { Length: > 0 } f0 ? f0.TrimEnd('/') + "/" : null;
+        var candidates = writes.Cache.Find(new NodeFilter
+        {
+            Ids = hits,
+            Workspaces = workspaces,
+            SchemaRecordsInAnyWorkspace = true,
+            Types = spec.Types is { Count: > 0 } ? spec.Types : null,
+            ExcludeTypes = spec.Types is not { Count: > 0 } && folderPrefix is null ? [NodeTypes.Supertag, NodeTypes.Template, NodeTypes.SyncedBlock] : null,
+            IncludeArchived = spec.IncludeArchived,
+            FolderPrefix = folderPrefix,
+            TagSets = wanted?.Select(set => (IReadOnlyCollection<string>)set).ToList()
+        });
+        var list = candidates.Where(Match).ToList();
 
         IOrderedEnumerable<NodeSummary>? ordered = null;
         foreach (var s in spec.Sort ?? [new QuerySort("modified", "desc")])

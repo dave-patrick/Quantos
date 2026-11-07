@@ -1,6 +1,6 @@
 <script lang="ts">
   import { api } from '../lib/api';
-  import { onChange } from '../lib/events';
+  import { onChange, isContentChange } from '../lib/events';
   import { openNode } from '../lib/links.svelte';
   import { onMount } from 'svelte';
 
@@ -84,7 +84,7 @@
   onMount(() => {
     const ro = new ResizeObserver(() => { if (box) width = box.clientWidth; });
     if (box) ro.observe(box);
-    const off = onChange(() => { clearTimeout(timer); timer = setTimeout(load, 800); });
+    const off = onChange((e) => { if (isContentChange(e)) { clearTimeout(timer); timer = setTimeout(load, 800); } });
     return () => { ro.disconnect(); off(); };
   });
 

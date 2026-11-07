@@ -1,5 +1,5 @@
 import { api, ApiError, instanceId } from './api';
-import { connection, onChange } from './events';
+import { onChange, onResync } from './events';
 import type { LinkedFolder, NodeSummary, Status } from './types';
 import { isCompactAndroid } from './platform';
 
@@ -103,15 +103,14 @@ class AppState {
         }, 200);
       });
     });
-    let wasDown = false;
-    connection.listeners.add((up) => {
-      if (!up) wasDown = true;
-      else if (wasDown) { wasDown = false; this.scheduleTitles(null); }
-    });
+    onResync(() => this.scheduleTitles(null));
     onChange((e) => {
-      if (['Created', 'Updated', 'Moved', 'Trashed', 'Restored', 'Deleted', 'Archived', 'Unarchived', 'Reindexed'].includes(e.kind))
-        this.scheduleTitles(e.kind === 'Reindexed' ? null : e.id);
-      if (e.kind === 'Reindexed') this.refreshStatus();
+      if (e.kind === 'Reindexed') { this.scheduleTitles(null); this.refreshStatus(); return; }
+      if (!e.id) return;
+      // The event carries the note's new list entry: apply it directly, no request needed.
+      if (e.summary && ['Created', 'Updated', 'Moved', 'Restored', 'Archived', 'Unarchived'].includes(e.kind)) this.applyTitles(new Map([[e.id, e.summary]]));
+      else if (e.kind === 'Trashed' || e.kind === 'Deleted') this.applyTitles(new Map([[e.id, null]]));
+      else if (['Created', 'Updated', 'Moved', 'Restored', 'Archived', 'Unarchived'].includes(e.kind)) this.scheduleTitles(e.id);
     });
   }
 
@@ -158,11 +157,17 @@ class AppState {
     } catch {
       return this.loadTitles(); // an older backend without the endpoint, or a network blip
     }
-    // Changed notes move to the front, matching the server's newest-first order.
+    this.applyTitles(fresh);
+  }
+
+  /** Puts changed notes at the front (the server's newest-first order) and drops removed ones (null). */
+  private applyTitles(fresh: Map<string, NodeSummary | null>) {
+    if (fresh.size === 0) return;
     const changed = [...fresh.values()].filter((n): n is NodeSummary => !!n);
     const titles = [...changed, ...this.titles.filter((t) => !fresh.has(t.id))];
-    for (const [id, n] of fresh) { if (n) this.titleIndex.set(id, n); else this.titleIndex.delete(id); }
-    this.titleIndex = new Map(this.titleIndex);
+    const index = new Map(this.titleIndex);
+    for (const [id, n] of fresh) { if (n) index.set(id, n); else index.delete(id); }
+    this.titleIndex = index;
     this.titles = titles;
   }
 

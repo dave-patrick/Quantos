@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-  Builds the no-install Quantos package: Quantos\application\ (three self-contained single-file
-  executables), the user guide, the example vault, and a zip of it all.
+  Builds the no-install Quantos package: Quantos\application\ (the three programs sharing one
+  self-contained .NET runtime), the user guide, the example vault, and a zip of it all.
 
 .PARAMETER Mark
   Puts a build mark (the commit the package was built from) next to the version in the app's
@@ -60,14 +60,27 @@ if (-not $SkipTests) {
 Step 'Publish'
 if (Test-Path $pkg) { Remove-Item -LiteralPath $pkg -Recurse -Force }
 New-Item -ItemType Directory -Force $app | Out-Null
-$common = @('-c', 'Release', '-r', $Runtime, '--self-contained', 'true', '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true',
-            '-p:EnableCompressionInSingleFile=false', '-p:PublishReadyToRun=true', '-p:DebugType=none', "-p:Version=$Version", '--nologo', '-o', $app)
-foreach ($project in 'src/Quantos.Backend', 'src/Quantos.Client', 'src/Quantos.Cli') {
+# The three programs are published into one folder and share one copy of the .NET runtime (until
+# 0.2.10 each was a single-file .exe carrying its own). The Windows client goes last: its files are
+# the Windows builds of the few libraries the programs share, at the same versions.
+$common = @('-c', 'Release', '-r', $Runtime, '--self-contained', 'true', '-p:PublishReadyToRun=true',
+            '-p:SatelliteResourceLanguages=en', '-p:DebugType=none', "-p:Version=$Version", '--nologo', '-o', $app)
+foreach ($project in 'src/Quantos.Backend', 'src/Quantos.Cli', 'src/Quantos.Client') {
     dotnet publish $project @common | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "Publish failed: $project" }
 }
-# Single-file builds need nothing beside the executables.
-Get-ChildItem -LiteralPath $app -File | Where-Object { $_.Extension -ne '.exe' } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force }
+# Not needed at run time: library documentation, the IIS file, and other platforms' PowerShell modules.
+Get-ChildItem -LiteralPath $app -File | Where-Object { $_.Name -eq 'web.config' -or ($_.Extension -eq '.xml' -and (Test-Path (Join-Path $app ($_.BaseName + '.dll')))) } |
+    ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force }
+$unix = Join-Path $app 'runtimes/unix'
+if (Test-Path $unix) { Remove-Item -LiteralPath $unix -Recurse -Force }
+# Updaters already installed copy only the files directly in application\, so subfolders (PowerShell's
+# modules and reference assemblies) travel as one zip that Quantos.exe unpacks at start (PackedFolders.cs).
+$folders = @(Get-ChildItem -LiteralPath $app -Directory)
+if ($folders.Count -gt 0) {
+    Compress-Archive -Path ($folders | ForEach-Object FullName) -DestinationPath (Join-Path $app 'quantos-folders.zip') -CompressionLevel Optimal
+    $folders | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
+}
 
 Step 'Documents and example vault'
 Copy-Item documentation/USER-GUIDE.md $pkg
@@ -96,22 +109,28 @@ if (Test-Path $zip) { Remove-Item -LiteralPath $zip -Force }
 Compress-Archive -Path $pkg -DestinationPath $zip -CompressionLevel Optimal
 
 Step 'Check the package'
-# The updater only installs a package laid out as Quantos\application\..., and it copies single files
-# from that folder, so the three programs have to be whole single-file executables there. A package
-# built any other way is refused on the owner's machine ("This isn't a Quantos package").
+# The updater only installs a package laid out as Quantos\application\..., and it copies only the files
+# directly in that folder: everything the programs need must be there, with subfolders packed into
+# quantos-folders.zip. A package without the three programs is refused ("This isn't a Quantos package").
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
 try {
     $names = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
     $required = 'Quantos/application/Quantos.exe', 'Quantos/application/Quantos.Backend.exe',
-                'Quantos/application/quantos-cli.exe', 'Quantos/USER-GUIDE.md', 'Quantos/ANDROID.md', 'Quantos/SERVER.md', 'Quantos/CONNECTING-AI.md', 'Quantos/API.md',
+                'Quantos/application/quantos-cli.exe', 'Quantos/application/quantos-folders.zip',
+                'Quantos/application/Quantos.dll', 'Quantos/application/Quantos.Backend.dll', 'Quantos/application/quantos-cli.dll',
+                'Quantos/application/coreclr.dll', 'Quantos/application/WebView2Loader.dll', 'Quantos/USER-GUIDE.md', 'Quantos/ANDROID.md', 'Quantos/SERVER.md', 'Quantos/CONNECTING-AI.md', 'Quantos/API.md',
                 'Quantos/Start Quantos.cmd', 'Quantos/Example Vault/automations.json'
     foreach ($name in $required) {
         if ($names -notcontains $name) { throw "The package is missing $name, so the updater could not install it." }
     }
+    $nested = @($names | Where-Object { $_ -like 'Quantos/application/*/*' })
+    if ($nested.Count -gt 0) { throw "Installed updaters skip files in subfolders of application\: $($nested[0])" }
 }
 finally { $archive.Dispose() }
 
 $size = '{0:N1} MB' -f ((Get-Item $zip).Length / 1MB)
 Write-Host "`nDone: $zip ($size)" -ForegroundColor Green
-Get-ChildItem $app | Select-Object Name, @{ n = 'MB'; e = { '{0:N1}' -f ($_.Length / 1MB) } } | Format-Table | Out-Host
+$files = @(Get-ChildItem -LiteralPath $app -File)
+Write-Host ("application\: {0} files, {1:N1} MB" -f $files.Count, (($files | Measure-Object Length -Sum).Sum / 1MB))
+$files | Where-Object Extension -eq '.exe' | Select-Object Name, @{ n = 'MB'; e = { '{0:N1}' -f ($_.Length / 1MB) } } | Format-Table | Out-Host

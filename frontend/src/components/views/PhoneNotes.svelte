@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { onChange } from '../../lib/events';
+  import { onChange, isContentChange } from '../../lib/events';
   import { noteFolders, noteFolderLocation, parentFolder, folderLabels } from '../../lib/noteFolders';
   import WorkspaceSwitcher from '../WorkspaceSwitcher.svelte';
   import { layout, type Tab } from '../../lib/layout.svelte';
@@ -28,7 +28,7 @@
     } catch (e) { if (serial === request) treeError = 'Could not load all folders. Retry to refresh the list.'; }
   }
   $effect(() => { const workspace = app.workspace; tree = null; loadTree(workspace); });
-  onMount(() => onChange(() => { clearTimeout(timer); timer = setTimeout(() => loadTree(), 300); }));
+  onMount(() => onChange((e) => { if (isContentChange(e)) { clearTimeout(timer); timer = setTimeout(() => loadTree(), 300); } }));
   onDestroy(() => { request++; clearTimeout(timer); });
   function browse(folder: string) {
     layout.open({ kind: 'notes', arg: folder === root ? undefined : 'folderpath:' + folder, title: 'Notes' }).catch(e => app.error(e));

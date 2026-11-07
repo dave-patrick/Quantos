@@ -3,7 +3,7 @@
   import { onMount, tick } from 'svelte';
   import { api } from '../../lib/api';
   import { app } from '../../lib/state.svelte';
-  import { onChange } from '../../lib/events';
+  import { onChange, isContentChange, onResync } from '../../lib/events';
   import { layout, type Tab } from '../../lib/layout.svelte';
   import { views, type SavedView, type ViewLayout, type Filter } from '../../lib/views.svelte';
   import { supertags } from '../../lib/supertags.svelte';
@@ -43,7 +43,9 @@
     }
     if (!saved && !embedded) editingSpec = true;
     run();
-    return onChange(() => { clearTimeout(timer); timer = setTimeout(run, 400); });
+    const off = onChange((e) => { if (isContentChange(e)) { clearTimeout(timer); timer = setTimeout(run, 400); } });
+    const off2 = onResync(() => run());
+    return () => { off(); off2(); };
   });
 
   async function run() {

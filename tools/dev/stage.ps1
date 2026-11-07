@@ -7,9 +7,9 @@
   C:\Users\davem\Quantos\Vault), so a build that isn't put there isn't being used. This script:
     1. optionally runs build/build.ps1,
     2. closes the running client and waits for its WebView2 browser processes to go,
-    3. replaces the three programs in the application folder with the ones from
+    3. replaces the program files in the application folder with the ones from
        publish\Quantos\application (renaming the old ones to *.old first, because a running
-       .exe can be renamed but not overwritten),
+       .exe or .dll can be renamed but not overwritten),
     4. copies the updated documents across,
     5. starts Quantos.exe and checks the client log.
 
@@ -88,6 +88,7 @@ foreach ($orphan in $orphans) { Stop-Process -Id $orphan.ProcessId -Force -Error
 Start-Sleep -Seconds 2
 Write-Host "Quantos stopped ($($orphans.Count) leftover WebView2 processes ended)."
 Step 'Replacing the program files'
+$copied = 0
 foreach ($file in Get-ChildItem (Join-Path $Package 'application') -File) {
     $target = Join-Path $app $file.Name
     $old = "$target.old"
@@ -99,8 +100,10 @@ foreach ($file in Get-ChildItem (Join-Path $Package 'application') -File) {
     }
     if (Test-Path $target) { Move-Item $target $old -Force }
     Copy-Item $file.FullName $target -Force
-    Write-Host "  $($file.Name)"
+    $copied++
 }
+Write-Host "  $copied program files"
+# Single-file programs (0.2.10 and earlier) are gone; their leftover temporary copies don't matter.
 
 Step 'Refreshing the documents'
 foreach ($doc in 'USER-GUIDE.md', 'TROUBLESHOOTING.md', 'CLI-REFERENCE.md', 'PLUGINS.md', 'AGENT-ADAPTERS.md', 'ANDROID.md', 'SERVER.md') {

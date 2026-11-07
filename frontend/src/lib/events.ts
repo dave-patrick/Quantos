@@ -4,6 +4,10 @@ type Handler = (event: ChangeEvent) => void;
 type Relay = { kind: 'change'; event: ChangeEvent } | { kind: 'state'; connected: boolean } | { kind: 'ask' };
 
 const handlers = new Set<Handler>();
+const resyncHandlers = new Set<() => void>();
+let lastSeq = 0;
+let hadConnection = false;   // connected at least once
+let missedSome = false;      // disconnected since then
 let source: EventSource | null = null;
 let started = false;
 let leading = false;
@@ -13,13 +17,32 @@ let lastHeard = 0;
 
 export const connection = { connected: false, listeners: new Set<(connected: boolean) => void>() };
 
+function resync() {
+  resyncHandlers.forEach((h) => { try { h(); } catch (err) { console.error(err); } });
+}
+
 function setConnected(value: boolean) {
+  if (!value && hadConnection) missedSome = true;
+  if (value && !connection.connected && missedSome) {
+    // Back after a break: events may have been missed, so everything that shows data reloads.
+    missedSome = false;
+    lastSeq = 0;
+    queueMicrotask(resync);
+  }
+  if (value) hadConnection = true;
   connection.connected = value;
   connection.listeners.forEach((l) => l(value));
   if (leading) relay?.postMessage({ kind: 'state', connected: value } satisfies Relay);
 }
 
 function dispatch(event: ChangeEvent) {
+  // Events are numbered; a gap (the stream dropped some) or a restart (numbers start again) means
+  // this page's data may be stale, so it reloads instead of trusting the next patch.
+  if (typeof event.seq === 'number' && event.seq > 0) {
+    const gap = lastSeq > 0 && event.seq !== lastSeq + 1;
+    lastSeq = event.seq;
+    if (gap) queueMicrotask(resync);
+  }
   handlers.forEach((h) => {
     try { h(event); } catch (err) { console.error(err); }
   });
@@ -77,6 +100,17 @@ export function startEvents() {
     if (!source) openSource();
     return new Promise<never>(() => {});  // held until this page closes
   });
+}
+
+/** Called when this page may have missed events (a reconnect or a gap); reload what you show. */
+export function onResync(handler: () => void) {
+  resyncHandlers.add(handler);
+  return () => resyncHandlers.delete(handler);
+}
+
+/** True for events about notes, tasks and files; false for notifications, approvals and shell jobs. */
+export function isContentChange(event: ChangeEvent) {
+  return !['Notification', 'Approval', 'ShellJob'].includes(event.kind);
 }
 
 export function onChange(handler: Handler) {

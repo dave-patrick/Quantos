@@ -112,7 +112,26 @@ public sealed class VaultSession : IDisposable
     public ReconcileReport Start()
     {
         LastReconcile = Reconciler.Run(fullRebuild: Cache.WasReset);
+        ApplyHistoryLimit();
         return LastReconcile;
+    }
+
+    private readonly CancellationTokenSource _stopping = new();
+    private int _pruning;
+
+    /// <summary>
+    /// Trims every note's version history to the vault's limit in the background (at start, and when
+    /// the setting changes). Saves trim their own note as they go, so this only catches up the rest.
+    /// </summary>
+    public void ApplyHistoryLimit()
+    {
+        if (Interlocked.Exchange(ref _pruning, 1) == 1) return;
+        _ = Task.Run(() =>
+        {
+            try { Writes.History.PruneAll(_stopping.Token); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            finally { Interlocked.Exchange(ref _pruning, 0); }
+        });
     }
 
     public ReconcileReport RebuildCache()
@@ -129,6 +148,7 @@ public sealed class VaultSession : IDisposable
 
     public void Dispose()
     {
+        _stopping.Cancel();
         Watcher?.Dispose();
         Automations.Dispose();
         Ai.Dispose();

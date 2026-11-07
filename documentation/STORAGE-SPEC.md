@@ -147,7 +147,9 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 
 - **History.** Before any write replaces a file, the previous content is copied to
   `.history/<id>/<UTC yyyyMMddTHHmmssfff>.md`. History is keyed by id, so it stays readable
-  after the node moves or is renamed.
+  after the node moves or is renamed. Each note keeps its newest N versions, where N is
+  `historyKeep` in `Vault/settings.json` (default 10; 0 keeps every version). Older versions are
+  deleted when the note is next saved, and for every note when the setting changes or the vault opens.
 - **Trash.** Trashing moves the file to `.trash/<UTC timestamp>_<id>/<original filename>` and
   writes `manifest.json` beside it: id, title, original relative path, trashed time, and the
   ids of nodes that referenced it. Trash never expires. Restore puts the file back at the

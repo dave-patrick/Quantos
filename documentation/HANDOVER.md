@@ -1,5 +1,15 @@
 # Handover: working on Quantos with its owner
 
+## Code scan and five rebuilds (2026-11-06/07)
+
+The owner asked for a code scan, then "fix everything", then all five proposed rebuilds. Committed and pushed to
+`main` (not released). Things to know: the Windows package is now a shared runtime folder (437 files) rather
+than three single-file executables; installed updaters copy only top-level files, so any subfolder must go in
+`quantos-folders.zip` (the build script refuses nested files). Version history keeps 10 versions per note by
+default (owner's choice; *Settings › Vault › Version history*). Open decisions offered to the owner: the
+TypeScript 7 / Vite 8 / Vitest 5 upgrade. The owner's test copy runs the new layout; the first install of it
+through the in-app updater happens with the next release.
+
 ## Google Tasks sync (2026-10-30)
 
 The owner asked for Google Tasks as an optional replacement/counterpart for Quantos tasks: two-way, desktop and Android, they will register the

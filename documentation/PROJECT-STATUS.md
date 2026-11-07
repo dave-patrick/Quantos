@@ -1,5 +1,23 @@
 # Quantos project status and handoff
 
+### Five rebuilds (2026-11-07, not yet released)
+
+Owner asked for all five proposed rebuilds; version-history default chosen as "last 10 versions per
+note" (setting, 0 = all). Details in CHANGELOG "Unreleased". Where: `build/build.ps1` and
+`src/Quantos.Client/PackedFolders.cs` (shared runtime folder; subfolders packed into
+`quantos-folders.zip` because installed updaters copy only top-level files), `HistoryStore.cs` +
+`VaultSession.ApplyHistoryLimit` + Settings › Vault, `Changes.cs` (`Summary`, `Seq`) +
+`VaultHost.Emit` + `frontend/src/lib/events.ts` (`onResync`, `isContentChange`) + `state.svelte.ts` /
+`tasks.svelte.ts`, `CacheIndex.cs` (`Find`/`NodeFilter`, `node_tags`, `nodes.parent`, `Descendants`,
+reader pool). Verified on the owner's PC: Windows build passed 353 backend/core and 7 native tests and
+157 frontend tests; package built (437 files, 254 MB; zip 109 MB) with no subfolders; client
+self-check passed and unpacked the support folders; packaged backend answered and the CLI connected;
+renaming every loaded file of a running backend works (the updater relies on that). Staged into the
+owner's test copy: first start rebuilt the cache and trimmed history (page 8.9 s), next start page
+1.6 s (was 2.5–3 s). **Not verified:** an update installed by the 0.2.10 updater from a published
+release (the package layout is built for it, and CI checks the package), the PowerShell terminal in
+the new layout, Android.
+
 ### Code-scan fixes (2026-11-06, not yet released)
 
 Fixes from a code scan; details in CHANGELOG "Unreleased". New regression tests in
@@ -278,7 +296,7 @@ Paths are relative to the repository root. "Core" is `src/Quantos.Core`, "Backen
 | Fixes after 0.1.5.2 | Core `Structure/QueryService.cs` (every note in the vault is considered, not just the first page), `Cache/CacheIndex.cs` (`Excerpts` reads the body from the full-text table), `Markdown/Frontmatter.cs` (the parsed values are dropped when the document changes) |
 | Collapsible headings and spell check | Frontend `lib/editor/setup.ts` (heading fold compartment), `lib/editor/headings.ts` (level-aware folding and the arrow on each heading), `lib/editor/spellcheck.ts` (new), `lib/prefs.svelte.ts` (`collapsibleHeadings`, `spellCheck`), `components/views/SettingsView.svelte` (toggles), `lib/editor/theme.ts` (`cm-spell-error`, `cm-heading-toggle`) |
 | Block selection, dragging blocks and the block menu on a selection | Frontend `lib/editor/blockselect.ts` (Ctrl-click selection, drag to move, the drop line), `lib/editor/blockinfo.ts` (`fencedLines`), `lib/editor/blockmenu.ts` and `components/BlockMenu.svelte` (the menu works on every selected block), `lib/editorMenu.svelte.ts` (`blocks`) |
-| Single-exe build | Client hosts Kestrel in-process (`src/Quantos.Client/BackendConnection.cs` calls `Quantos.Backend.Program.Build`); no separate `Quantos.Backend.exe` to orphan |
+| Single-exe build | Client hosts Kestrel in-process (`src/Quantos.Client/BackendConnection.cs` calls `Quantos.Backend.Program.Build`); no separate `Quantos.Backend.exe` to orphan. Since 2026-11-07 the three programs share one runtime folder instead of being single-file executables (`build/build.ps1`, `src/Quantos.Client/PackedFolders.cs`) |
 | Header and toolbar test update (2026-10-23) | `components/Shell.svelte` (60px header row, including mobile), `components/Header.svelte` (23.75px wordmark); `lib/toolbar.svelte.ts` and `lib/customize.svelte.ts` remove three navigation actions from defaults and clean persisted toolbar settings; `components/ToolbarSettings.svelte` excludes them from editor options. Daily stream, My Day and Tasks remain commands and views. |
 | Neutral dark background (2026-10-23) | `styles/tokens.css` uses a lighter neutral gray page background (`#2a2b2d`) with darker tinted gray cards (`#202123`); `lib/look.ts` uses the same neutral base when deriving custom accents. `Quantos.Client/MainForm.cs` matches the native window bar to the page background. |
 | Unified sidebar card (2026-10-23) | `components/LeftSidebar.svelte` uses a subtly lighter single panel with unboxed navigation rows and quiet hover/active fills. |

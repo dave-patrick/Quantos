@@ -59,5 +59,10 @@ The big change: full-text rows were deleted by an id column FTS5 can't index, so
 file indexed on first open scanned the whole full-text table. A `search_map` table now maps each node
 to its row id. Statement reuse and parallel parsing account for the rest.
 
+**Five rebuilds (2026-11-07):** same test and machine as the code-scan table: a tag query
+(`tag: …`, 240 matches) went from 54 ms to about 1 ms; most of the old time was building the full
+supertag list (which counts every tag in the vault) just to find a tag's children. On the owner's
+Windows PC (679 notes), the client's start-up line went from 2.5–3 s to 1.6 s to a loaded page.
+
 **Still to measure on the target laptop:** the same test on the KPMG laptop (antivirus scanning of
 writes, and a slower disk, will raise save and first-open times), and a vault inside a synced folder.

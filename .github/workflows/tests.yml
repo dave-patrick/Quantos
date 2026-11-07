@@ -58,3 +58,47 @@ jobs:
         run: >-
           dotnet test tests/Quantos.Tests -c Release --nologo
           --filter "FullyQualifiedName!~GoogleTasksBackendTests&FullyQualifiedName!~GoogleTasksBuiltInClientTests&FullyQualifiedName!~A_token_refresh_in_flight_when_credentials_change_is_not_cached&FullyQualifiedName!~A_onedrive_vault_path_shows_the_warning"
+
+  # Builds the Windows package the way a release is built and starts each program from it: the three
+  # programs share one runtime folder, so a missing or mismatched file shows up here, not on a PC.
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build the package
+        shell: pwsh
+        run: ./build/build.ps1 -SkipTests
+      - name: Start each program from the package
+        shell: pwsh
+        run: |
+          $app = Resolve-Path publish/Quantos/application
+          $data = Join-Path $env:RUNNER_TEMP 'quantos-smoke'
+          New-Item -ItemType Directory -Force (Join-Path $data 'vault') | Out-Null
+
+          # The client unpacks its support folders (PowerShell modules) before anything else.
+          $client = Start-Process (Join-Path $app 'Quantos.exe') -ArgumentList '--selfcheck', '--quiet', '--client-data', (Join-Path $data 'client') -PassThru
+          if (-not $client.WaitForExit(120000)) { $client.Kill(); throw 'The client self-check did not finish.' }
+          Get-Content (Join-Path $data 'client/logs/*.log') -ErrorAction SilentlyContinue | Out-Host
+          if (-not (Test-Path (Join-Path $app 'runtimes/win/lib/net10.0/Modules'))) { throw 'The client did not unpack its support folders.' }
+          if (-not (Test-Path (Join-Path $app 'quantos-folders.stamp'))) { throw 'The client did not record the unpacked folders.' }
+
+          $backend = Start-Process (Join-Path $app 'Quantos.Backend.exe') -ArgumentList '--vault', (Join-Path $data 'vault'), '--port', '48123', '--client-data', (Join-Path $data 'backend') -PassThru
+          $ok = $false
+          for ($i = 0; $i -lt 60 -and -not $ok; $i++) {
+            Start-Sleep -Seconds 1
+            try { $ok = (Invoke-WebRequest 'http://127.0.0.1:48123/' -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } catch { }
+          }
+          Stop-Process -Id $backend.Id -Force -ErrorAction SilentlyContinue
+          if (-not $ok) { throw 'The backend did not answer from the package.' }
+
+          & (Join-Path $app 'quantos-cli.exe') --help | Select-Object -First 3 | Out-Host
+          if ($LASTEXITCODE -ne 0) { throw "quantos-cli failed (exit $LASTEXITCODE)." }

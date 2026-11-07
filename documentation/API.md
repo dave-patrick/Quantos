@@ -78,7 +78,10 @@ never `X-Quantos-Agent` or `X-Quantos-Client`. Do not log credentials or sign-in
 ### Push channel
 
 `GET /api/events` is a server-sent event stream: `event: change` with
-`{ kind, id, path, oldPath, hash, origin, data }`. Kinds: Created, Updated, Moved, Trashed, Restored,
+`{ kind, id, path, oldPath, hash, origin, data, summary, seq }`. `summary` is the node's list entry after
+the change (as in `GET /api/nodes`) for Created, Updated, Moved, Archived, Unarchived and Restored, or
+null when not known (during a start-up scan). `seq` numbers events 1, 2, 3 … per backend run; a client
+that sees a gap or a smaller number has missed events and should reload. Kinds: Created, Updated, Moved, Trashed, Restored,
 Deleted, Archived, Unarchived, Conflict, Reindexed, Notification, Approval, ShellJob. `origin` ends
 with `#<instance>` for writes made by a page that sent `X-Quantos-Instance`, so a page can ignore its
 own changes. A comment line is sent every 20 seconds. The bundled frontend opens one stream per browser, not per tab: the

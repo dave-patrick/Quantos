@@ -29,6 +29,25 @@ Code-scan fixes (2026-11-06):
 - Tests run on GitHub (Windows and Linux) for every push. Patch-level package updates. Type check
   now has zero warnings.
 
+Five rebuilds (2026-11-07):
+
+- **One shared runtime for the three programs.** Quantos.exe, Quantos.Backend.exe and quantos-cli.exe
+  now share one set of .NET files in `application\` instead of each carrying its own inside a
+  single-file .exe. Download 168 MB → 109 MB; installed size 427 MB → 254 MB; no unpacking to a
+  temporary folder at start. Subfolders (PowerShell modules) travel as `quantos-folders.zip`, which
+  Quantos.exe unpacks at start, so updates install through the updater already on people's PCs.
+- **Version history keeps the last 10 versions of each note** by default (*Settings › Vault ›
+  Version history*; 0 keeps everything). Older versions are deleted on the next save, and for every
+  note when the vault opens or the setting changes.
+- **Live updates carry the data.** Change events include the note's list entry and a sequence number;
+  the app updates titles and tasks from the event (a note save no longer reloads every task), and
+  reloads only after it missed events (a reconnect or a gap). Panels ignore notifications and approvals.
+- **Indexed tags, folders and subtasks.** Tag, folder, type and subtask lookups run in the cache's
+  indexes (cache version 13: rebuilds once). A tag query over 5,000 notes: 54 ms → about 1 ms.
+- **Reads no longer wait for writes.** The cache has one writer and a pool of readers, so lists and
+  search keep answering during a save, a sync or a rebuild.
+- Frontend tests run on Node 25+ (in-memory storage when Node's own hides the page storage).
+
 ## 0.2.10 (2026-11-03)
 
 Windows x64 release. Android downloads remain on 0.2.2.

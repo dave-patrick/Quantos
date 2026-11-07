@@ -84,6 +84,12 @@ export interface TreeNode { id: string; title: string; type: string; path: strin
 
 export type ChangeKind = 'Created' | 'Updated' | 'Moved' | 'Trashed' | 'Restored' | 'Deleted' | 'Archived' | 'Unarchived' | 'Conflict' | 'Reindexed' | 'Notification' | 'Approval';
 
-export interface ChangeEvent { kind: ChangeKind; id: string | null; path: string | null; oldPath: string | null; hash: string | null; origin: string | null; data: any }
+export interface ChangeEvent {
+  kind: ChangeKind; id: string | null; path: string | null; oldPath: string | null; hash: string | null; origin: string | null; data: any;
+  /** The node's list entry after the change, when the backend knows it (newer backends). */
+  summary?: NodeSummary | null;
+  /** Position in the backend's event stream; gaps mean events were missed. */
+  seq?: number;
+}
 
 export interface Approval { id: string; actor: { kind: string; name: string }; permission: string; description: string; requested: string; state: string }

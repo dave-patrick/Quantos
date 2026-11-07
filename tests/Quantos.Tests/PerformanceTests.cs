@@ -1,3 +1,4 @@
+using Quantos.Core.Structure;
 using System.Diagnostics;
 using Quantos.Core;
 using Quantos.Core.Security;
@@ -55,9 +56,15 @@ public class PerformanceTests(ITestOutputHelper output)
         for (var i = 0; i < 20; i++) v.Session.Cache.Backlinks(ids[rng.Next(ids.Count)]);
         output.WriteLine($"Backlinks: {sw.Elapsed.TotalMilliseconds / 20:F2} ms per note");
 
+        v.Session.Queries.RunText("where: status = open\nsort: title\nlimit: 200", "default"); // warm up
         sw.Restart();
-        var q = v.Session.Queries.RunText("where: status = open\nsort: title\nlimit: 200", "default");
-        output.WriteLine($"Query over all notes: {sw.Elapsed.TotalMilliseconds:F0} ms ({q.Total} matches)");
+        QueryResult q = null!;
+        for (var i = 0; i < 5; i++) q = v.Session.Queries.RunText("where: status = open\nsort: title\nlimit: 200", "default");
+        output.WriteLine($"Query over all notes: {sw.Elapsed.TotalMilliseconds / 5:F0} ms ({q.Total} matches)");
+        sw.Restart();
+        QueryResult tq = null!;
+        for (var i = 0; i < 5; i++) tq = v.Session.Queries.RunText("tag: " + Words[1] + "\nlimit: 200", "default");
+        output.WriteLine($"Query by tag: {sw.Elapsed.TotalMilliseconds / 5:F0} ms ({tq.Total} matches)");
 
         var target = v.Writes.Require(ids[notes / 2]);
         sw.Restart();

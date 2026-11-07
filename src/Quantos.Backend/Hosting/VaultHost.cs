@@ -67,7 +67,7 @@ public sealed class VaultHost : IDisposable
             if (old is not null) old.Changes.Changed -= Forward;
             _session = session;
             session.Changes.Changed += Forward;
-            session.Approvals.Requested += a => Changed?.Invoke(new ChangeEvent(ChangeKind.Approval, null, null, Data: a));
+            session.Approvals.Requested += a => Emit(new ChangeEvent(ChangeKind.Approval, null, null, Data: a));
             old?.Dispose();
             Settings.VaultPath = check.Path;
             Settings.RecentVaults.RemoveAll(v => Vault.PathEquals(v, check.Path));
@@ -76,12 +76,24 @@ public sealed class VaultHost : IDisposable
             Settings.Save(Paths);
             _log.LogInformation("Opened vault {Vault}: scanned {Scanned}, changed {Changed}, added {Added}, removed {Removed}, adopted {Adopted} in {Elapsed}",
                 check.Path, report.Scanned, report.Changed, report.Added, report.Removed, report.Adopted, report.Elapsed);
-            Changed?.Invoke(new ChangeEvent(ChangeKind.Reindexed, null, null, Data: new { vault = check.Path }));
+            Emit(new ChangeEvent(ChangeKind.Reindexed, null, null, Data: new { vault = check.Path }));
             return report;
         }
     }
 
-    private void Forward(ChangeEvent e) => Changed?.Invoke(e);
+    private void Forward(ChangeEvent e) => Emit(e);
+
+    private long _seq;
+
+    /// <summary>Every event to clients goes out here, numbered in order, so a client can tell when it missed some.</summary>
+    private void Emit(ChangeEvent e)
+    {
+        var handlers = Changed;
+        if (handlers is null) return;
+        lock (_emitGate) handlers(e with { Seq = ++_seq }); // numbered and handed over in the same order
+    }
+
+    private readonly Lock _emitGate = new();
 
     private static string NearestExisting(string path)
     {

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { readFileSync } from 'node:fs';
@@ -21,6 +22,9 @@ export default defineConfig({
     target: 'es2022',
     chunkSizeWarningLimit: 1500,
     sourcemap: false
+  },
+  test: {
+    setupFiles: ['./tests/setup.ts']
   },
   server: {
     // Help shows the guides from documentation/ (one folder up), and About the LICENSE beside it.

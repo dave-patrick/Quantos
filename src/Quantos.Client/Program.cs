@@ -7,6 +7,8 @@ internal static class Program
     {
         var paths = ClientPaths.Resolve(Arg(args, "--client-data"));
         AppDomain.CurrentDomain.UnhandledException += (_, e) => paths.Log("Fatal: " + e.ExceptionObject);
+        // Before anything loads from them (PowerShell's modules): see PackedFolders.
+        PackedFolders.EnsureUnpacked(ClientPaths.AppDirectory, paths.Log);
         ApplicationConfiguration.Initialize();
 
         if (args.Contains("--selfcheck"))

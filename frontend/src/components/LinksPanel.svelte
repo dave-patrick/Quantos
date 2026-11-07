@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '../lib/api';
   import { layout } from '../lib/layout.svelte';
-  import { onChange } from '../lib/events';
+  import { onChange, isContentChange } from '../lib/events';
   import { openNode, openTarget, whereFrom } from '../lib/links.svelte';
   import { app } from '../lib/state.svelte';
   import type { LinkRef } from '../lib/types';
@@ -22,7 +22,7 @@
   }
 
   $effect(() => { load(id).catch(() => {}); });
-  onMount(() => onChange(() => { clearTimeout(timer); timer = setTimeout(() => load(id).catch(() => {}), 400); }));
+  onMount(() => onChange((e) => { if (isContentChange(e)) { clearTimeout(timer); timer = setTimeout(() => load(id).catch(() => {}), 400); } }));
 
   // Backlink filtering (BUILD-PLAN 8C.14): by text, workspace and link kind.
   const visible = $derived(backlinks.filter((b) =>

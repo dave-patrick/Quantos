@@ -69,7 +69,10 @@ public static class VaultEndpoints
 
         api.MapPut("/config/{name}", (VaultHost host, HttpContext ctx, string name, JsonNode? body) =>
         {
-            host.Require().Config.Write(name, body, ctx.Actor());
+            var session = host.Require();
+            session.Config.Write(name, body, ctx.Actor());
+            // The version-history limit lives in settings.json; apply a new limit to existing history now.
+            if (name.Equals("settings.json", StringComparison.OrdinalIgnoreCase)) session.ApplyHistoryLimit();
             return Results.NoContent();
         });
 

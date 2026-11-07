@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { onChange } from '../lib/events';
+  import { onChange, isContentChange, onResync } from '../lib/events';
   import { runQueryText, type QueryResult } from '../lib/query';
   import DataTable from './DataTable.svelte';
   import { exportRowsAsCsv } from '../lib/csvexport';
@@ -17,7 +17,9 @@
 
   onMount(() => {
     run();
-    return onChange(() => { clearTimeout(timer); timer = setTimeout(run, 500); });
+    const off = onChange((e) => { if (isContentChange(e)) { clearTimeout(timer); timer = setTimeout(run, 500); } });
+    const off2 = onResync(() => run());
+    return () => { off(); off2(); };
   });
 </script>
 

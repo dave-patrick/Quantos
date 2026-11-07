@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { api, ApiError } from '../lib/api';
   import { app } from '../lib/state.svelte';
-  import { onChange } from '../lib/events';
+  import { onChange, isContentChange, onResync } from '../lib/events';
   import { layout } from '../lib/layout.svelte';
   import { openNode, whereFrom } from '../lib/links.svelte';
   import type { NodeDto, TreeFolder, TreeNode } from '../lib/types';
@@ -23,7 +23,7 @@
     try { tree = await api.get<TreeFolder>(`tree?workspace=${workspace}&archived=${showArchive}`); } catch { tree = null; }
   }
 
-  onMount(() => onChange(() => { clearTimeout(timer); timer = setTimeout(load, 250); }));
+  onMount(() => { const off = onChange((e) => { if (isContentChange(e)) { clearTimeout(timer); timer = setTimeout(load, 250); } }); const off2 = onResync(() => load()); return () => { off(); off2(); }; });
   $effect(() => { void app.workspace; void showArchive; load(); });
 
   const flat = $derived.by(() => {

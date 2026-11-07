@@ -68,7 +68,7 @@ Nothing needs installing and you don't need admin rights.
 
 ```
 Quantos\
-  application\          the programs (Quantos.exe, Quantos.Backend.exe, quantos-cli.exe)
+  application\          the programs (Quantos.exe, Quantos.Backend.exe, quantos-cli.exe) and the files they share
   client-data\          created on first start: settings, cache, logs (safe to delete the cache)
   Start Quantos.cmd     opens the Windows client
   Open in browser.cmd   starts Quantos and opens it in your browser instead
@@ -411,7 +411,9 @@ Use Google Tasks on one device at a time. On Android it syncs while the app is o
 
 ## 5. Files, history and recovery
 
-- **History:** every saved version is kept (`.history` in the vault). Open it from the clock button
+- **History:** each note keeps its last 10 saved versions (`.history` in the vault). Change the number
+  in *Settings › Vault › Version history* (0 keeps every version); lowering it deletes older versions.
+  Open it from the clock button
   on any note and pick a version. *Since then* shows what changed from it to now; *Made in this
   version* shows what that save changed. Changed words are marked inside each line, property changes
   are listed in their own table, unchanged stretches fold away, and the arrows jump between changes.

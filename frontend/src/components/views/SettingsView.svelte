@@ -29,6 +29,20 @@
   // A link can open a particular section ("Open AI settings").
   $effect(() => { if (tab?.arg) section = tab.arg as Section; });
   let switching = $state(false);
+
+  /** Vault/settings.json "historyKeep": versions kept per note (default 10, 0 = all). */
+  const historyKeep = $derived(typeof vaultSettings.data.historyKeep === 'number' ? vaultSettings.data.historyKeep : 10);
+  async function setHistoryKeep(input: HTMLInputElement) {
+    const next = Math.floor(Number(input.value));
+    if (!Number.isFinite(next) || next < 0 || next > 10000) { input.value = String(historyKeep); app.toast('Enter a number from 0 to 10,000.', 'error'); return; }
+    if (next === historyKeep) return;
+    const fewer = next !== 0 && (historyKeep === 0 || next < historyKeep);
+    if (fewer && !(await app.confirm(`Keep only ${next} ${next === 1 ? 'version' : 'versions'} of each note?`, 'Older versions are deleted from every note’s history. This can’t be undone.', 'Delete older versions', 'danger'))) {
+      input.value = String(historyKeep); return;
+    }
+    try { await vaultSettings.set('historyKeep', next === 10 ? null : next); app.toast('Version history setting saved.', 'ok'); }
+    catch (e) { input.value = String(historyKeep); app.error(e); }
+  }
 </script>
 
 <div class="settings" class:nav-left={navSide === 'left'} class:nav-right={navSide === 'right'} class:nav-top={navSide === 'top'} class:nav-bottom={navSide === 'bottom'}>
@@ -107,6 +121,11 @@
       <label class="check"><input type="checkbox" checked={vaultSettings.data.inlineTasks !== false}
         onchange={(e) => vaultSettings.set('inlineTasks', (e.target as HTMLInputElement).checked ? null : false)} />
         Turn “- [ ] …” lines in notes into tasks automatically</label>
+      <h3>Version history</h3>
+      <div class="field"><span>Versions to keep for each note</span>
+        <input class="input narrow" type="number" min="0" max="10000" step="1" aria-label="Versions to keep for each note"
+          value={historyKeep} onchange={(e) => setHistoryKeep(e.currentTarget)} /></div>
+      <p class="muted">Older versions are deleted. 0 keeps every version.</p>
       <h3>Backups</h3>
       <p class="muted">{isAndroidClient ? 'Use Settings › Shared vault › Android files › Export vault to keep a portable copy outside the app.' : 'Use Settings › Backups to configure rolling backups, make a backup now, or verify and restore a saved copy.'}</p>
     {:else if section === 'sync'}

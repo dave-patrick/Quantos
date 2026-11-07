@@ -50,6 +50,9 @@ public sealed partial class WriteService
         Changes = changes;
         Clock = clock;
         History = new HistoryStore(vault, clock);
+        // Events carry the changed node's list entry; skipped during a start-up scan, where thousands
+        // of events go out at once and clients reload instead.
+        Changes.Describe = id => Cache.InBatch ? null : Cache.Get(id);
         TrashBin = new TrashStore(vault, clock);
         Journal = new Journal(vault) { BeforeChange = SnapshotBefore };
     }
@@ -444,24 +447,8 @@ public sealed partial class WriteService
         return entry;
     }
 
-    /// <summary>
-    /// The tasks that are subtasks of this one, and their subtasks, parents before children. One pass
-    /// over the tasks builds a parent → children map; a visited set stops a parent loop from spinning.
-    /// </summary>
-    private List<string> SubtaskIds(string parentId)
-    {
-        var children = Cache.List(type: NodeTypes.Task, includeArchived: true)
-            .Select(t => (Parent: Tasks.Props.LinkId(Tasks.Props.Str(t.Properties, Tasks.TaskKeys.Parent)), t.Id))
-            .Where(p => !string.IsNullOrEmpty(p.Parent))
-            .ToLookup(p => p.Parent!, p => p.Id, StringComparer.OrdinalIgnoreCase);
-        var all = new List<string>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { parentId };
-        var queue = new Queue<string>([parentId]);
-        while (queue.Count > 0)
-            foreach (var child in children[queue.Dequeue()])
-                if (seen.Add(child)) { all.Add(child); queue.Enqueue(child); }
-        return all;
-    }
+    /// <summary>The tasks that are subtasks of this one, and their subtasks, parents before children (indexed in the cache).</summary>
+    private IReadOnlyList<string> SubtaskIds(string parentId) => Cache.Descendants(parentId);
 
     public Node Restore(string entryId, Actor actor)
     {
