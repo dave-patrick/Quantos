@@ -11,6 +11,8 @@
   import ContextMenu from '../ContextMenu.svelte';
   import type { ContextMenuItem } from '../ContextMenu.svelte';
   import { prefs } from '../../lib/prefs.svelte';
+  import { copyNoteLocation } from '../../lib/noteClipboard';
+  import { isNoteContent, isNoteFolder } from '../../lib/noteVisibility';
 
   /** Notes browser: every note in a filterable, sortable list with a preview beside it. */
   let excerpts = $state<Record<string, string>>({});
@@ -102,6 +104,12 @@
     return [
       { label: 'Open', icon: 'file-text', run: () => { openNode(id); noteMenu = null; } },
       { label: 'Open in other pane', icon: 'split', run: () => { openNode(id, 'other'); noteMenu = null; } },
+      ...(n ? [
+        { separator: true },
+        { label: 'Copy filename', icon: 'copy', run: () => { void copyNoteLocation(n.path, 'filename'); } },
+        { label: 'Copy path', icon: 'copy', run: () => { void copyNoteLocation(n.path, 'folder'); } },
+        { label: 'Copy path + filename', icon: 'copy', run: () => { void copyNoteLocation(n.path, 'full'); } },
+      ] : []),
       { separator: true },
       { label: 'Move to trash', icon: 'trash', danger: true, run: () => { noteMenu = null; void trashNote(id); } },
     ];
@@ -117,6 +125,7 @@
     const top: Folder = { name: '', path: '', folders: [], notes: [] };
     const seed = (t: TreeFolder, into: Folder, depth: number) => {
       for (const c of t.folders) {
+        if (!isNoteFolder(c.path)) continue;
         if (c.name === 'archive' && !showArchived) continue;
         const f: Folder = { name: depth === 0 ? LABELS[c.name] ?? c.name : c.name, path: c.path, folders: [], notes: [] };
         into.folders.push(f);
@@ -179,7 +188,7 @@
   /** The folder a note sits in, under its workspace's Notes (or type) folder. */
   const folderOf = (n: NodeSummary) => n.path.split('/').slice(3, -1).join('/');
 
-  const scope = $derived(app.titles.filter((n) => (everywhere || n.workspace === app.workspace) && (showArchived || !n.archived) && n.type !== 'synced_block'));
+  const scope = $derived(app.titles.filter((n) => (everywhere || n.workspace === app.workspace) && (showArchived || !n.archived) && isNoteContent(n)));
   const tags = $derived([...new Set(scope.flatMap((n) => n.tags))].sort((a, b) => a.localeCompare(b)));
   const folders = $derived([...new Set(scope.map(folderOf).filter(Boolean))].sort());
   const shown = $derived.by(() => {

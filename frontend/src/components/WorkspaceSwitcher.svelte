@@ -29,12 +29,13 @@
     const folderPath = await app.ask('Link a folder', {
       message: 'Quantos reads and writes the Markdown in this folder in place, so the other app and Quantos both work on the same files.',
       placeholder: 'D:\\Notes',
+      folder: true,
       confirmLabel: 'Next'
     });
     if (!folderPath) return;
-    const path = folderPath.trim().replace(/[\\/]+$/, '');
+    const path = folderPath.trim();
     if (!path) return;
-    let clean = (path.split(/[\\/]/).pop() ?? 'linked').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'linked';
+    let clean = (path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() ?? 'linked').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'linked';
     const taken = (n: string) => app.workspaces.includes(n) || app.linked.some((l) => l.name === n);
     if (taken(clean)) {
       const chosen = await app.ask('Name for this folder', { placeholder: clean, confirmLabel: 'Link' });

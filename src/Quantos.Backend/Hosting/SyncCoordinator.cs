@@ -11,7 +11,7 @@ public sealed record SyncConnectionBody(string Url, string? Token);
 public sealed record SyncStatus(string? Url, bool Busy, DateTimeOffset? LastSynced, string? Error, IReadOnlyList<SyncConflict> Conflicts);
 
 /// <summary>The UI always talks to its local backend. Network loss only pauses this worker.</summary>
-public sealed class SyncCoordinator(VaultHost host) : BackgroundService
+public sealed class SyncCoordinator(VaultHost host, FolderBridgeCoordinator bridges) : BackgroundService
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private readonly SemaphoreSlim gate = new(1);
@@ -57,6 +57,7 @@ public sealed class SyncCoordinator(VaultHost host) : BackgroundService
     }
     public async Task Configure(SyncConnectionBody body, CancellationToken ct)
     {
+        using var bridgePause = await bridges.PauseForChange(ct);
         await EnterForChange(ct);
         try
         {
@@ -74,6 +75,7 @@ public sealed class SyncCoordinator(VaultHost host) : BackgroundService
     }
     public async Task Disconnect(CancellationToken ct)
     {
+        using var bridgePause = await bridges.PauseForChange(ct);
         await EnterForChange(ct);
         try { if (File.Exists(ConfigFile)) File.Delete(ConfigFile); error = null; lastSynced = null; }
         finally { gate.Release(); }

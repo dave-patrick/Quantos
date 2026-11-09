@@ -8,6 +8,8 @@
   import QueryView from './QueryView.svelte';
   import FormDialog from '../FormDialog.svelte';
   import Icon from '../Icon.svelte';
+  import { vaultSettings } from '../../lib/vaultSettings.svelte';
+  import { newTagScope } from '../../lib/tagScope';
 
   let { tab }: { tab: Tab } = $props();
 
@@ -15,19 +17,42 @@
   const selected = $derived(supertags.byName(selectedName));
   let draft = $state<{ parent: string; color: string; icon: string; layout: string; template: string; autoApply: boolean; description: string; fields: { name: string; key?: string; type: FieldType; options: string; required: boolean; description: string }[] } | null>(null);
   let newName = $state('');
-  let newScope = $state('');
+  let newScope = $state('@default');
+  let scope = $state('');
+  let scopeFor = '';
+  let scopeBusy = $state(false);
+  let scopeReady = $state(false);
   let renameTo = $state('');
   let formOpen = $state(false);
   let migrate = $state<{ field: string; toType: string; toKey: string } | null>(null);
 
   const types: FieldType[] = ['text', 'number', 'date', 'datetime', 'checkbox', 'select', 'multiselect', 'node', 'nodes', 'person', 'url', 'email', 'status'];
 
-  onMount(() => { supertags.load(); templatesStore.load(); });
+  onMount(() => { supertags.load(); templatesStore.load(); vaultSettings.load().then(() => { scopeReady = true; }); });
 
   // The list reloads whenever any note changes, so a fresh copy of the selected tag arrives often.
   // Unsaved edits to it are kept; the draft is rebuilt only for another tag or when nothing is edited.
   let draftFor = '';
-  let baseline = '';
+  let baseline = $state('');
+  const draftDirty = $derived(draft !== null && JSON.stringify(draft) !== baseline);
+  $effect(() => {
+    if (selected && scopeReady && scopeFor !== `${app.workspace}:${selected.id}:${selected.scope}`) {
+      scope = selected.id === 'builtin-task' || selected.id.startsWith('implicit:')
+        ? newTagScope(vaultSettings.data.defaultTagScope, app.workspace, app.workspaces) : selected.scope;
+      scopeFor = `${app.workspace}:${selected.id}:${selected.scope}`;
+    }
+  });
+
+  async function saveScope() {
+    if (!selected || scopeBusy || draftDirty) return;
+    scopeBusy = true;
+    try {
+      await api.put(`supertags/${encodeURIComponent(selected.id)}/scope`, { scope });
+      await supertags.load();
+      app.toast('Tag scope saved. Existing notes and values were kept.', 'ok');
+    } catch (e) { app.error(e); }
+    finally { scopeBusy = false; }
+  }
   $effect(() => {
     const t = selected;
     untrack(() => {
@@ -57,7 +82,8 @@
     const name = newName.trim().replace(/^#/, '');
     if (!name) return;
     try {
-      await api.post('supertags', { name, scope: newScope, fields: [] });
+      await vaultSettings.load();
+      await api.post('supertags', { name, scope: newScope === '@default' ? newTagScope(vaultSettings.data.defaultTagScope, app.workspace, app.workspaces) : newScope, fields: [] });
       await supertags.load();
       newName = '';
       select(name);
@@ -65,20 +91,27 @@
   }
 
   async function saveDraft() {
-    if (!selected || !draft) return;
+    if (!selected || !draft || scopeBusy || !scopeReady) return;
+    const definition = selected;
+    const edit = draft;
+    const workspace = app.workspace;
+    scopeBusy = true;
     try {
-      await api.put(`supertags/${selected.id}`, {
-        parent: draft.parent, color: draft.color, icon: draft.icon, layout: draft.layout, template: draft.template, autoApplyTemplate: draft.autoApply,
-        description: draft.description,
-        fields: draft.fields.filter((f) => f.name.trim()).map((f) => ({
+      const id = definition.id === 'builtin-task' || definition.id.startsWith('implicit:')
+        ? (await api.put<Supertag>(`supertags/${encodeURIComponent(definition.id)}/scope`, { scope })).id : definition.id;
+      await api.put(`supertags/${id}`, {
+        parent: edit.parent, color: edit.color, icon: edit.icon, layout: edit.layout, template: edit.template, autoApplyTemplate: edit.autoApply,
+        description: edit.description,
+        fields: edit.fields.filter((f) => f.name.trim()).map((f) => ({
           name: f.name.trim(), key: f.key, type: f.type, required: f.required, description: f.description || undefined,
           options: f.type === 'select' || f.type === 'multiselect' || f.type === 'status' ? f.options.split(',').map((s) => s.trim()).filter(Boolean) : undefined
         }))
       });
-      baseline = JSON.stringify(draft); // saved: the next copy from the server replaces the draft
-      await supertags.load();
+      if (draft === edit) baseline = JSON.stringify(edit); // saved: next server copy replaces this draft
+      await supertags.load(workspace);
       app.toast('Supertag saved. Existing values were kept as they are.', 'ok');
     } catch (e) { app.error(e); }
+    finally { scopeBusy = false; }
   }
 
   async function rename() {
@@ -106,7 +139,7 @@
   <div class="scroll list" role="navigation" aria-label="Supertags">
     <form class="new" onsubmit={(e) => { e.preventDefault(); create(); }}>
       <input class="input" aria-label="New supertag name" bind:value={newName} placeholder="New supertag" />
-      <select class="input" aria-label="Scope" bind:value={newScope} title="Scope"><option value="">Global</option>{#each app.workspaces as w (w)}<option value={w}>{w} only</option>{/each}</select>
+      <select class="input" aria-label="New tag scope" bind:value={newScope} title="Scope"><option value="@default">Use default ({vaultSettings.data.defaultTagScope === 'shared' ? 'shared' : 'workspace-specific'})</option><option value="">Shared across workspaces</option>{#each app.workspaces as w (w)}<option value={w}>{w} only</option>{/each}</select>
       <button class="btn primary" type="submit">Add</button>
     </form>
     {#each supertags.tree as entry (entry.tag.id)}
@@ -126,12 +159,19 @@
         <h1><span class="swatch" style="background:{selected.color ?? 'var(--accent)'}" aria-hidden="true"></span>#{selected.name}</h1>
         <div class="tools">
           <button class="btn primary" onclick={() => (formOpen = true)}><Icon name="plus" size={14} /> New #{selected.name}</button>
-          <button class="btn" onclick={saveDraft}>Save changes</button>
+          <button class="btn" onclick={saveDraft} disabled={scopeBusy || !scopeReady}>Save changes</button>
         </div>
       </header>
       {#if selected.error}<p class="warn"><Icon name="alert" size={14} /> {selected.error}</p>{/if}
 
       <div class="grid">
+        <label class="wide">Scope
+          <span class="inline"><select class="input" aria-label="Tag scope" bind:value={scope} disabled={scopeBusy}>
+            <option value="">Shared across workspaces</option>
+            {#each app.workspaces as w (w)}<option value={w}>{w} only</option>{/each}
+          </select><button class="btn" onclick={saveScope} disabled={scopeBusy || !scopeReady || draftDirty || (scope === selected.scope && selected.id !== 'builtin-task' && !selected.id.startsWith('implicit:'))}>Save scope</button></span>
+          <span class="faint">{draftDirty ? 'Save your field changes before changing scope.' : 'Changes where this definition is available. Existing note tags and values stay intact.'}</span>
+        </label>
         <label>Inherits from
           <select class="input" bind:value={draft.parent}><option value="">Nothing</option>
             {#each supertags.list.filter((t) => t.name !== selected.name) as t (t.id)}<option value={t.name}>#{t.name}</option>{/each}</select></label>

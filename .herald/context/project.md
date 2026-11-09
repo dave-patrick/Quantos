@@ -103,3 +103,8 @@ Default desktop/tablet sidebar destinations are grouped into Everyday, Planning,
 - Task priority uses numeric ordering 1 Critical through 4 Low; effort levels are low/medium/high strings. Legacy numeric effort remains minutes for compatibility and planning until replaced.
 
 - Sidebar section expansion is saved with per-device preferences. The Windows client records a successfully attached fallback WebView2 profile and reuses it on later starts; preserve all existing profiles.
+
+## Tag scope and app-hosted folder bridges
+
+- Supertag definitions use existing shared/workspace storage. Scope moves are journaled through WriteService, preserve IDs/content, reject collisions and newly introduced inheritance cycles across effective workspace graphs. Frontend caches schemas by workspace; properties resolve against the note workspace. New managed tags default workspace-specific, configurable via settings.json defaultTagScope.
+- FolderBridgeCoordinator hosts Windows mappings while backend is open. Save captures immutable encrypted sync connection, GUID state stays in private client-data; recovery is retained on remove. PauseForChange lease disables and drains workers across shared connection changes/vault switches. Source paths resolve physical Windows identities, reject overlaps/reparse paths, and never reconcile original source files. Configure on Windows; phones consume shared workspaces.

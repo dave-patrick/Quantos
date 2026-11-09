@@ -8,6 +8,9 @@
   import { app } from '../lib/state.svelte';
   import { openNode, searchTitles } from '../lib/links.svelte';
   import Icon from './Icon.svelte';
+  import { api, ApiError } from '../lib/api';
+  import { vaultSettings } from '../lib/vaultSettings.svelte';
+  import { newTagScope } from '../lib/tagScope';
 
   let { doc, compact = false, editSchema = true }: { doc: Doc; compact?: boolean; editSchema?: boolean } = $props();
 
@@ -15,7 +18,8 @@
     'recurrence', 'series', 'series_day', 'occurrence', 'reminders', 'completed', 'source', 'time_block', 'tz', 'date', 'stage']);
 
   const node = $derived(doc.node);
-  const tagDefs = $derived((node?.type === 'task' ? [...new Set(['task', ...node.tags])] : node?.tags ?? []).map((t) => supertags.byName(t)).filter((t) => !!t));
+  $effect(() => { if (node) void supertags.load(node.workspace); });
+  const tagDefs = $derived((node?.type === 'task' ? [...new Set(['task', ...node.tags])] : node?.tags ?? []).map((t) => supertags.byName(t, node?.workspace)).filter((t) => !!t));
   const fields = $derived.by(() => {
     const seen = new Set<string>();
     const out: FieldDef[] = [];
@@ -77,8 +81,22 @@
   async function addTag() {
     const tag = tagInput.trim().replace(/^#/, '');
     if (!tag || !node) return;
-    if (!node.tags.includes(tag)) await doc.setProperties({ tags: [...node.tags, tag] });
-    tagInput = ''; showTagInput = false;
+    const target = doc;
+    const workspace = node.workspace;
+    try {
+      await Promise.all([supertags.load(workspace), vaultSettings.load()]);
+      const definition = supertags.byName(tag, workspace);
+      if (!definition || definition.id.startsWith('implicit:')) {
+        try {
+          await api.post('supertags', { name: tag, scope: newTagScope(vaultSettings.data.defaultTagScope, workspace, app.workspaces), fields: [] });
+        } catch (e) {
+          if (!(e instanceof ApiError && e.status === 409)) throw e;
+        }
+        await supertags.load(workspace);
+      }
+      if (target.node && !target.node.tags.includes(tag)) await target.setProperties({ tags: [...target.node.tags, tag] });
+      if (doc === target) { tagInput = ''; showTagInput = false; }
+    } catch (e) { app.error(e); }
   }
 
   async function removeTag(tag: string) {
@@ -96,7 +114,7 @@
     <div class="tags">
       {#if node.type === 'task' && editSchema}<button class="add-tag" title="Edit the task supertag and its properties" onclick={() => layout.open({ kind: 'supertags', arg: 'task', title: '#task' })}><Icon name="hash" size={12} /> task · Edit properties</button>{/if}
       {#each node.tags.filter(t => node.type !== 'task' || t.toLowerCase() !== 'task') as tag (tag)}
-        {@const def = supertags.byName(tag)}
+        {@const def = supertags.byName(tag, node.workspace)}
         <span class="tag" style="--tag:{def?.color ?? 'var(--accent)'}">#{tag}
           <button aria-label="Remove tag {tag}" onclick={() => removeTag(tag)}><Icon name="x" size={10} /></button></span>
       {/each}
@@ -104,7 +122,7 @@
         <form onsubmit={(e) => { e.preventDefault(); addTag(); }}>
           <!-- svelte-ignore a11y_autofocus -->
           <input class="tag-input" list="tag-options" bind:this={tagEl} bind:value={tagInput} placeholder="supertag" autofocus onblur={() => { if (!tagInput) showTagInput = false; }} />
-          <datalist id="tag-options">{#each supertags.list as t (t.id)}<option value={t.name}></option>{/each}</datalist>
+          <datalist id="tag-options">{#each supertags.listFor(node.workspace) as t (t.id)}<option value={t.name}></option>{/each}</datalist>
         </form>
       {:else}
         <button class="add-tag" onclick={() => (showTagInput = true)}><Icon name="hash" size={12} /> Add supertag</button>

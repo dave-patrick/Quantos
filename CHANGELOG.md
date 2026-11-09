@@ -7,7 +7,17 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
-Optional server/folder-bridge binaries remain separately deployed from source.
+Standalone shared-server and external folder-bridge binaries remain separately deployed from source.
+
+## 0.2.11 (2026-11-09)
+
+Windows x64 and public release-signed Android ARM64. Build **2026.09.11.46**.
+
+- **Workspace-specific tags.** New managed tags default to the current workspace. Settings › Vault › Tags sets the default; Manage supertags can share an individual definition or move it into a workspace. Existing note values are preserved.
+- **Cleaner Notes browsing.** Supertag definitions and synced blocks stay out of Notes lists, trees and folder counts. Definitions remain available in Manage supertags and Files.
+- **Copy note locations.** Right-click a note in Notes or Files to copy its filename, containing folder, or full path and filename. Linked folders use their original location.
+- **Windows folder browsing.** Link a folder dialogs now support the native folder picker as well as manual path entry.
+- **Folder bridge setup in the app.** Windows Settings › Shared vault can save, start, stop and remove a link between an original Markdown folder and a shared workspace. Links run while Quantos is open; other devices use the shared workspace. Saving a link does not start transfers. Original files, private credentials and recovery data are preserved.
 
 Code-scan fixes (2026-11-06):
 

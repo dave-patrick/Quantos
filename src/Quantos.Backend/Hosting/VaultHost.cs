@@ -25,6 +25,8 @@ public sealed class VaultHost : IDisposable
 
     /// <summary>Forwards change events from whichever session is open.</summary>
     public event Action<ChangeEvent>? Changed;
+    /// <summary>Drains external folder transfers before changing the open vault.</summary>
+    public event Func<IDisposable>? Changing;
 
     public VaultSession Require() => _session ?? throw new QuantosException("No vault is open. Choose one in the app.", 409);
 
@@ -52,6 +54,7 @@ public sealed class VaultHost : IDisposable
         lock (_gate)
         {
             if (_session is not null && Vault.PathEquals(_session.Vault.Root, check.Path)) return _session.LastReconcile ?? _session.Start();
+            using var change = Changing?.Invoke();
             var session = new VaultSession(check.Path, Paths);
             ReconcileReport report;
             try

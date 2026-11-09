@@ -29,6 +29,14 @@
   // A link can open a particular section ("Open AI settings").
   $effect(() => { if (tab?.arg) section = tab.arg as Section; });
   let switching = $state(false);
+  let tagScopeBusy = $state(false);
+  async function setTagDefault(value: string) {
+    const previous = vaultSettings.data.defaultTagScope;
+    tagScopeBusy = true;
+    try { await vaultSettings.set('defaultTagScope', value); app.toast('Default tag scope saved.', 'ok'); }
+    catch (e) { vaultSettings.data.defaultTagScope = previous; app.error(e); }
+    finally { tagScopeBusy = false; }
+  }
 
   /** Vault/settings.json "historyKeep": versions kept per note (default 10, 0 = all). */
   const historyKeep = $derived(typeof vaultSettings.data.historyKeep === 'number' ? vaultSettings.data.historyKeep : 10);
@@ -121,6 +129,14 @@
       <label class="check"><input type="checkbox" checked={vaultSettings.data.inlineTasks !== false}
         onchange={(e) => vaultSettings.set('inlineTasks', (e.target as HTMLInputElement).checked ? null : false)} />
         Turn “- [ ] …” lines in notes into tasks automatically</label>
+      <h3>Tags</h3>
+      <label class="field">Default tag scope
+        <select class="input" aria-label="Default tag scope" value={vaultSettings.data.defaultTagScope === 'shared' ? 'shared' : 'workspace'} disabled={tagScopeBusy}
+          onchange={(e) => setTagDefault(e.currentTarget.value)}>
+          <option value="workspace">Workspace-specific</option><option value="shared">Shared across workspaces</option>
+        </select>
+      </label>
+      <p class="muted">Applies to new tags created in Supertags or added through note properties. Each tag can override this in Supertags. Imported tags and inline hashtags keep their existing values. Linked folders use shared definitions.</p>
       <h3>Version history</h3>
       <div class="field"><span>Versions to keep for each note</span>
         <input class="input narrow" type="number" min="0" max="10000" step="1" aria-label="Versions to keep for each note"

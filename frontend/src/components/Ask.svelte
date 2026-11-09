@@ -3,12 +3,38 @@
   import { modal } from '../lib/modal';
   import { searchTitles } from '../lib/links.svelte';
   import type { NodeSummary } from '../lib/types';
+  import { isWindowsClient } from '../lib/platform';
+  import { startFolderPick } from '../lib/folderPicker';
 
   /** The text question and note picker behind app.ask and app.pickNote. */
   const spec = $derived(app.asking);
   let value = $state('');
   let active = $state(0);
   let field = $state<HTMLInputElement | null>(null);
+  let picking = $state(false);
+  let pickerError = $state('');
+  let cancelPick: (() => void) | undefined;
+
+  $effect(() => {
+    const current = spec;
+    picking = false;
+    pickerError = '';
+    return () => { cancelPick?.(); cancelPick = undefined; };
+  });
+
+  function browse() {
+    if (!spec || picking) return;
+    const current = spec;
+    picking = true;
+    pickerError = '';
+    cancelPick = startFolderPick(value, (result) => {
+      if (app.asking !== current) return;
+      picking = false;
+      pickerError = result.error ?? '';
+      if (!result.error && result.path !== null) value = result.path;
+      queueMicrotask(() => field?.focus());
+    });
+  }
 
   $effect(() => {
     if (!spec) return;
@@ -59,10 +85,16 @@
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ask-title" use:modal={{ onclose: () => spec.done(null) }}>
       <h2 id="ask-title">{spec.title}</h2>
       {#if spec.message}<p>{spec.message}</p>{/if}
+      <div class="path-entry">
       <input class="input" bind:this={field} bind:value {onkeydown} oninput={() => (active = 0)} placeholder={spec.placeholder ?? ''}
         inputmode={spec.numeric ? 'numeric' : undefined} aria-label={spec.title}
         role={spec.notes ? 'combobox' : undefined} aria-expanded={spec.notes ? matches.length > 0 : undefined}
         aria-controls={spec.notes ? 'ask-matches' : undefined} aria-activedescendant={spec.notes && matches[active] ? `ask-${matches[active].id}` : undefined} />
+      {#if spec.folder && isWindowsClient}
+        <button class="btn browse" onclick={browse} disabled={picking}>{picking ? 'Choosing…' : 'Browse…'}</button>
+      {/if}
+      </div>
+      {#if pickerError}<p role="alert">{pickerError}</p>{/if}
       {#if spec.notes}
         <div class="matches" id="ask-matches" role="listbox" aria-label="Matching notes">
           {#each matches as n, i (n.id)}
@@ -89,6 +121,9 @@
   h2 { font: 700 18px/1.3 var(--font-display); }
   p { color: var(--text-soft); white-space: pre-wrap; }
   .input { width: 100%; }
+  .path-entry { display: flex; gap: 8px; align-items: center; }
+  .path-entry .input { min-width: 0; flex: 1; }
+  .browse { flex-shrink: 0; }
   .matches { display: flex; flex-direction: column; max-height: 280px; overflow: auto; margin: -4px 0; }
   .matches button { display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 6px 8px; border-radius: 6px; }
   .matches button.on { background: var(--accent-wash); }

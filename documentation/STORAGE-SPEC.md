@@ -271,3 +271,7 @@ volume, plus both secret files. See [SERVER.md](SERVER.md).
 
 
 Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order). Task effort is Low, Medium, or High; quick add accepts `~low`, `~medium`, or `~high`. Older minute estimates remain until changed and continue to support duration-based planning; selecting an effort level replaces the old estimate.
+
+### Tag scope preference
+
+`settings.json.defaultTagScope` is `workspace` (default when absent) or `shared`. Managed tag creation resolves this to the note/current normal workspace or the shared scope. Per-definition scope remains the existing physical `supertags/` versus `workspaces/<name>/supertags/` location and workspace frontmatter. No new note property format is introduced. Plain imported/inline tags do not automatically materialize schemas. Linked sources keep shared definitions.

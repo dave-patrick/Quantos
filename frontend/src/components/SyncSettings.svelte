@@ -3,6 +3,7 @@
   import { api } from '../lib/api';
   import { app } from '../lib/state.svelte';
   import { bridge, isAndroidClient } from '../lib/platform';
+  import FolderBridgeSettings from './FolderBridgeSettings.svelte';
   interface Conflict { id: string; path: string; localHash: string | null; remoteHash: string | null; detected: string }
   interface Status { url: string | null; busy: boolean; lastSynced: string | null; error: string | null; conflicts: Conflict[] }
   let status = $state<Status | null>(null);
@@ -75,6 +76,7 @@
       {/each}
     </ul>
   {/if}
+  <FolderBridgeSettings />
   {#if isAndroidClient}
     <h3>Android files</h3>
     <p>Quantos keeps its vault in private device storage. Export a copy before uninstalling the app.</p>

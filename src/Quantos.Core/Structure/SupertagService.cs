@@ -127,8 +127,55 @@ public sealed partial class SupertagService(WriteService writes)
         return result.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    public SupertagDto? Get(string nameOrId, string? workspace = null) =>
-        List(workspace).FirstOrDefault(t => t.Id == nameOrId || t.Name.Equals(NormalizeTag(nameOrId), StringComparison.OrdinalIgnoreCase));
+    public SupertagDto? Get(string nameOrId, string? workspace = null)
+    {
+        // Resolve IDs in their own scope, even when a local definition shadows a shared name.
+        if (Cache.Get(nameOrId) is { Type: NodeTypes.Supertag } saved)
+            return List(saved.Workspace).FirstOrDefault(t => t.Id == nameOrId);
+        return List(workspace).FirstOrDefault(t => t.Id == nameOrId || t.Name.Equals(NormalizeTag(nameOrId), StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Changes only a definition's scope. Tagged notes retain their data.</summary>
+    public SupertagDto ChangeScope(string id, string scope, Actor actor) => writes.Exclusive(() =>
+    {
+        if (scope.Length > 0 && (writes.Vault.IsLinked(scope) || !writes.Vault.WorkspaceNames().Contains(scope)))
+            throw new QuantosException("Choose an existing workspace or shared scope.");
+        var synthetic = id == TaskDefinitionId || id.StartsWith(ImplicitPrefix);
+        var current = synthetic ? null : Get(id) ?? throw new QuantosException("Supertag not found.", 404);
+        var name = id == TaskDefinitionId ? "task" : synthetic ? NormalizeTag(id[ImplicitPrefix.Length..]) : current!.Name;
+        var raw = Cache.List(type: NodeTypes.Supertag, includeArchived: true).ToList();
+        if (raw.Any(t => t.Id != id && t.Workspace == scope && t.Title.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            throw new QuantosException($"#{name} already has a definition in that scope.", 409);
+        if (synthetic)
+        {
+            var fields = (id == TaskDefinitionId ? TaskFields() : []).Select(f => new Dictionary<string, object?> {
+                ["name"] = f.Name, ["key"] = f.Key, ["type"] = f.Type, ["options"] = f.Options,
+                ["required"] = f.Required, ["default"] = f.Default, ["description"] = f.Description
+            }).ToList();
+            return CreateDefinition(new(name, null, id == TaskDefinitionId ? "#78b6ff" : null, id == TaskDefinitionId ? "check-square" : null, scope, fields,
+                null, false, id == TaskDefinitionId ? "table" : null, null), actor, preserveUsedName: id.StartsWith(ImplicitPrefix));
+        }
+        var node = writes.Require(id);
+        if (node.Type != NodeTypes.Supertag) throw new QuantosException("This is not a supertag.");
+        if (node.ReadOnly || node.Locked || node.Archived || writes.Vault.LinkedFolderOf(node.Path) is not null)
+            throw new QuantosException("Unlock or restore this definition before changing its scope; linked definitions stay in their original folder.");
+        if (node.Workspace == scope) return current!;
+        var after = raw.Select(t => t.Id == id ? t with { Workspace = scope } : t).ToList();
+        foreach (var workspace in writes.Vault.WorkspaceNames().Append(""))
+        {
+            Dictionary<string, NodeSummary> Graph(List<NodeSummary> defs) => defs
+                .Where(t => !t.Archived && (t.Workspace.Length == 0 || t.Workspace == workspace))
+                .OrderBy(t => t.Workspace.Length).GroupBy(t => t.Title, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Last(), StringComparer.OrdinalIgnoreCase);
+            var beforeGraph = Graph(raw);
+            var afterGraph = Graph(after);
+            foreach (var graphName in afterGraph.Keys)
+                if (Chain(afterGraph, graphName).Error is not null && Chain(beforeGraph, graphName).Error is null)
+                    throw new QuantosException($"Changing scope would create an inheritance loop in {(workspace.Length == 0 ? "shared tags" : workspace)}.");
+        }
+        writes.MoveToWorkspace(id, scope, actor);
+        return Get(id)!;
+    });
 
     /// <summary>The tag and every tag that inherits from it (used by queries: #event matches #meeting if meeting extends event).</summary>
     public HashSet<string> WithDescendants(string tag, string? workspace = null)
@@ -220,17 +267,20 @@ public sealed partial class SupertagService(WriteService writes)
 
     // ---- changes ------------------------------------------------------------------------------
 
-    public SupertagDto Create(SupertagInput input, Actor actor)
+    public SupertagDto Create(SupertagInput input, Actor actor) => CreateDefinition(input, actor);
+
+    private SupertagDto CreateDefinition(SupertagInput input, Actor actor, bool preserveUsedName = false) => writes.Exclusive(() =>
     {
         var name = NormalizeTag(input.Name ?? "");
-        if (name.Length == 0 || name.Contains(' ')) throw new QuantosException("A supertag name can't be empty or contain spaces.");
+        var inUse = preserveUsedName && Cache.List(includeArchived: true).Any(n => n.Tags.Any(t => NormalizeTag(t).Equals(name, StringComparison.OrdinalIgnoreCase)));
+        if (name.Length == 0 || (name.Contains(' ') && !inUse)) throw new QuantosException("A supertag name can't be empty or contain spaces.");
         var scope = input.Scope ?? "";
-        if (List(scope.Length == 0 ? null : scope).Any(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && t.Scope == scope && t.Id != TaskDefinitionId && !t.Id.StartsWith(ImplicitPrefix)))
+        if (Cache.List(type: NodeTypes.Supertag, includeArchived: true).Any(t => t.Title.Equals(name, StringComparison.OrdinalIgnoreCase) && t.Workspace == scope))
             throw new QuantosException($"#{name} already exists.", 409);
         var props = Properties(input, name, scope);
         var node = writes.Create(new CreateNodeRequest { Title = name, Type = NodeTypes.Supertag, Workspace = scope, Body = input.Description ?? "", Properties = props }, actor);
-        return Get(node.Id, scope.Length == 0 ? null : scope) ?? throw new QuantosException("The supertag wasn't indexed.");
-    }
+        return Get(node.Id) ?? throw new QuantosException("The supertag wasn't indexed.");
+    });
 
     /// <summary>Saves the definition behind a tag that has only been used so far, so it can be edited or renamed.</summary>
     private SupertagDto Materialize(string id, Actor actor)
@@ -269,7 +319,8 @@ public sealed partial class SupertagService(WriteService writes)
             {
                 // Block inheritance loops before they're written.
                 var all = List(scope.Length == 0 ? null : scope).ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase);
-                for (var cursor = parent; cursor is not null; cursor = all.GetValueOrDefault(cursor)?.Parent)
+                var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                for (var cursor = parent; cursor is not null && visited.Add(cursor); cursor = all.GetValueOrDefault(cursor)?.Parent)
                     if (cursor.Equals(name, StringComparison.OrdinalIgnoreCase)) throw new QuantosException($"#{name} can't inherit from #{parent}: that would make a loop.");
                 props["parent"] = parent;
             }

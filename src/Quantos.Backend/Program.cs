@@ -77,6 +77,8 @@ public static class Program
         builder.Services.AddSingleton(new Quantos.Core.Updates.UpdateService(Api.SystemEndpoints.Version, paths.ClientData));
         builder.Services.AddSingleton<ClientPresence>();
         builder.Services.AddSingleton<SyncCoordinator>();
+        builder.Services.AddSingleton<FolderBridgeCoordinator>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<FolderBridgeCoordinator>());
         builder.Services.AddHostedService(sp => sp.GetRequiredService<SyncCoordinator>());
         builder.Services.AddSingleton(Quantos.Core.GoogleTasks.BuiltInGoogleClient.Load());
         builder.Services.AddSingleton(new Quantos.Core.GoogleTasks.GoogleTasksSettingsStore(paths.Settings));
@@ -135,6 +137,7 @@ public static class Program
         PlanningEndpoints.Map(app);
         UpdateEndpoints.Map(app);
         SyncEndpoints.Map(app);
+        FolderBridgeEndpoints.Map(app);
         GoogleTasksEndpoints.Map(app);
         McpHttpEndpoints.Map(app);
         app.MapFallback("/api/{**rest}", () => Results.NotFound(new { error = "No such endpoint." }));

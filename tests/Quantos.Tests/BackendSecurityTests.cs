@@ -49,6 +49,21 @@ public sealed class BackendSecurityTests : IAsyncLifetime
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("bridge-agent")]
+    public async Task Folder_bridge_status_and_all_mutations_are_person_only(string? agent)
+    {
+        using var http = Client(token: true, agent: agent);
+        Assert.Equal(HttpStatusCode.Forbidden, (await http.GetAsync("api/folder-bridges/")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await http.PostAsJsonAsync("api/folder-bridges/", new { folder = _root, workspace = "test" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await http.PostAsJsonAsync("api/folder-bridges/test/start", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await http.PostAsJsonAsync("api/folder-bridges/test/stop", new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await http.DeleteAsync("api/folder-bridges/test")).StatusCode);
+        using var user = Client(token: true, client: "windows");
+        Assert.Equal(HttpStatusCode.OK, (await user.GetAsync("api/folder-bridges/")).StatusCode);
+    }
+
+    [Theory]
     [InlineData("x/../../../escaped-calendar")]
     [InlineData("x\\..\\..\\..\\escaped-calendar")]
     [InlineData("not-a-workspace")]

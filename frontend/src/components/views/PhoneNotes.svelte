@@ -11,6 +11,7 @@
   import { newNote } from '../../lib/commands.svelte';
   import { ago } from '../../lib/today.svelte';
   import Icon from '../Icon.svelte';
+  import { isNoteContent } from '../../lib/noteVisibility';
   let { tab }: { tab: Tab } = $props();
   let query = $state('');
   const linked = $derived(app.linked.some(l => l.name === app.workspace));
@@ -33,7 +34,7 @@
   function browse(folder: string) {
     layout.open({ kind: 'notes', arg: folder === root ? undefined : 'folderpath:' + folder, title: 'Notes' }).catch(e => app.error(e));
   }
-  const notes = $derived(app.titles.filter(n => n.workspace === app.workspace));
+  const notes = $derived(app.titles.filter(n => n.workspace === app.workspace && isNoteContent(n)));
   const folders = $derived(noteFolders(tree, notes, root));
   const childFolders = $derived(folders.filter(f => f.path !== root && parentFolder(f.path).toLowerCase() === currentFolder.toLowerCase()));
   const currentNotes = $derived(notes.filter(n => parentFolder(n.path).toLowerCase() === currentFolder.toLowerCase())

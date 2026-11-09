@@ -8,6 +8,24 @@ before connecting it.
 
 ## Link a folder managed by Google Drive or another app
 
+On Windows, open **Settings › Shared vault**, connect the shared server, then choose **Link a
+folder…**. Browse to the original folder and choose or name its shared workspace. **Save link**
+keeps it stopped; **Start sync** asks you to back up both copies and stop any other bridge first.
+This app-managed bridge **runs while Quantos is open** on the computer with the source folder.
+The same screen shows transfer status, errors and conflict counts, and provides **Stop sync**
+and **Remove link**. Removal keeps the source, server copy, checkpoints and recovery data intact.
+Linking again creates fresh sync state and combines both copies again. Changing the shared-server
+connection or opening a different local vault stops app-managed bridges before that change completes.
+If the saved connection changed, remove the stopped link and create a replacement.
+
+Unlink an existing local Quantos link to the source first, leaving its original files intact, and
+use the shared workspace instead. One folder/workspace can have only one app-managed bridge.
+Known external bridge installations are rejected rather than overwritten; stop and migrate those
+separately. Custom installations and bridges on other computers cannot be discovered automatically.
+App-managed state is under `client-data/folder-bridges/<id>/`, outside the original folder; the
+existing encrypted shared-server credential is reused without creating a plaintext key file.
+Android uses the resulting shared workspace and does not run a source-folder bridge.
+
 Run the optional **folder bridge on the host that has the original folder**. It keeps the shared
 server's workspace and the original Markdown files in sync in both directions. Windows and Android
 then use that shared workspace normally, including offline edits. Other programs can keep using the

@@ -320,15 +320,17 @@ public sealed partial class WriteService
 
     public Node MoveToWorkspace(string id, string workspace, Actor actor)
     {
-        Vault.ValidateWorkspaceName(workspace);
         Permissions.Demand(actor, Permission.MoveArchive, $"Move {id} to workspace {workspace}");
         lock (_gate)
         {
             var node = Require(id);
+            if (workspace.Length > 0) Vault.ValidateWorkspaceName(workspace);
+            else if (node.Type != NodeTypes.Supertag || node.Archived)
+                throw new QuantosException("Only active supertags can use shared scope.");
             if (node.Workspace == workspace) return node;
             if (Vault.LinkedFolderOf(node.Path) is not null)
                 throw new QuantosException("A note in a linked folder stays where it is: the folder belongs to another app.");
-            Vault.EnsureWorkspace(workspace);
+            if (workspace.Length > 0) Vault.EnsureWorkspace(workspace);
             var abs = Vault.Absolute(node.Path);
             var folder = node.Archived ? Path.Combine(Vault.WorkspaceDir(workspace), "archive") : Vault.FolderFor(workspace, node.Type, DailyDate(node));
             var newAbs = node.Type == NodeTypes.Daily && !node.Archived

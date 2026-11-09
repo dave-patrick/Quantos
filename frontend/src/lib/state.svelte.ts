@@ -191,7 +191,7 @@ class AppState {
   }
 
   /** Asks for a line of text; resolves to the trimmed answer, or null when cancelled. */
-  ask(title: string, options: { message?: string; value?: string; placeholder?: string; confirmLabel?: string; numeric?: boolean } = {}): Promise<string | null> {
+  ask(title: string, options: { message?: string; value?: string; placeholder?: string; confirmLabel?: string; numeric?: boolean; folder?: boolean } = {}): Promise<string | null> {
     return new Promise((resolve) => {
       this.asking = { title, ...options, done: (answer) => { this.asking = null; resolve(answer === null ? null : answer.trim()); } };
     });
@@ -223,6 +223,7 @@ class AppState {
 export const app = new AppState();
 
 export interface AskSpec {
+  folder?: boolean;
   title: string;
   message?: string;
   value?: string;

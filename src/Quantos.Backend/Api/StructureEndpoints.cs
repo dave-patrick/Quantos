@@ -9,6 +9,7 @@ namespace Quantos.Backend.Api;
 public sealed record SupertagBody(string? Name, string? Parent, string? Color, string? Icon, string? Scope, List<Dictionary<string, JsonElement>>? Fields,
     string? Template, bool? AutoApplyTemplate, string? Layout, string? Description);
 public sealed record MigrateBody(string Field, string? ToType, string? ToKey);
+public sealed record SupertagScopeBody(string Scope);
 public sealed record ApplyTemplateBody(string TemplateId);
 public sealed record TemplateCreateBody(string Title, string? Body);
 public sealed record QueryTextBody(string Text, string? Workspace);
@@ -24,6 +25,8 @@ public static class StructureEndpoints
         api.MapGet("/supertags", (VaultHost host, string? workspace) => host.Require().Supertags.List(workspace));
         api.MapPost("/supertags", (VaultHost host, HttpContext ctx, SupertagBody b) => host.Require().Supertags.Create(Input(b), ctx.Actor()));
         api.MapPut("/supertags/{id}", (VaultHost host, HttpContext ctx, string id, SupertagBody b) => host.Require().Supertags.Update(id, Input(b), ctx.Actor()));
+        api.MapPut("/supertags/{id}/scope", (VaultHost host, HttpContext ctx, string id, SupertagScopeBody b) =>
+            host.Require().Supertags.ChangeScope(id, b.Scope ?? throw new QuantosException("Choose a scope."), ctx.Actor()));
         api.MapPost("/supertags/{id}/rename", (VaultHost host, HttpContext ctx, string id, RenameBody b) => host.Require().Supertags.Rename(id, b.Title, ctx.Actor()));
         api.MapPost("/supertags/{id}/migrate", (VaultHost host, HttpContext ctx, string id, MigrateBody b) =>
         {

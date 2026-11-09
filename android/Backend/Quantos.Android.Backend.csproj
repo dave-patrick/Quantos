@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Quantos.Android.Backend</AssemblyName>
     <RootNamespace>Quantos.Backend</RootNamespace>
-    <Version>0.2.10</Version>
+    <Version>0.2.11</Version>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>

@@ -9,6 +9,7 @@
   import Icon from './Icon.svelte';
   import TreeBranch from './TreeBranch.svelte';
   import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
+  import { copyNoteLocation } from '../lib/noteClipboard';
 
   let tree = $state<TreeFolder | null>(null);
   let filter = $state('');
@@ -151,6 +152,10 @@
       { label: 'Open', icon: 'file-text', run: () => openNode(n.id, 'current', n.title) },
       { label: 'Open in the other pane', icon: 'split', run: () => openNode(n.id, 'other', n.title) },
       { label: 'Rename…', icon: 'edit', run: () => rename(n) },
+      { separator: true },
+      { label: 'Copy filename', icon: 'copy', run: () => { void copyNoteLocation(n.path, 'filename'); } },
+      { label: 'Copy path', icon: 'copy', run: () => { void copyNoteLocation(n.path, 'folder'); } },
+      { label: 'Copy path + filename', icon: 'copy', run: () => { void copyNoteLocation(n.path, 'full'); } },
       { separator: true },
       { label: 'Export as Markdown', icon: 'download', run: () => exportNote(n, 'md') },
       { label: 'Export as HTML', icon: 'download', run: () => exportNote(n, 'html') },

@@ -516,3 +516,30 @@ Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order).
 Task level changes are uncommitted and require a browser walkthrough: the development sign-in failed against the existing service. My Day no longer shows a duration total because effort levels cannot be summed as minutes.
 
 Sidebar section expansion and custom navigation choices are retained on this device. The Windows client remembers its active browser profile when it must use a fallback profile.
+
+## Link a folder: native Browse (2026-11-09)
+
+Added an optional folder mode to Ask, a request-correlated frontend picker helper, and an origin-checked main-page Windows bridge handler. The native picker is deferred outside the WebView callback, owned by the client, and guarded against concurrent requests. Cancellation/error preserves text; dialog cleanup ignores late replies. Linked drive/UNC root paths retain their separators. Release remains 0.2.10; private build 2026.09.11.41. Validation: 163 frontend, 353 backend/core and seven native tests passed; svelte-check has zero errors/warnings. Independent design and code reviews passed with no remaining findings. Browser acceptance covered selection/root path, cancel, error, manual entry and late replies. Package/ZIP and self-check passed (zero self-check warnings). Staged/restarted owner copy: HTTP 200 and matching executable/managed assembly hashes. Actual Windows picker selection populated the path; cancelling a reopened picker preserved it. Dialog left empty and ready for the owner. Existing .NET test analyzer and WindowsBase reference warnings remain. No commit, push, public release or Android build.
+
+## Note location clipboard commands (2026-11-09)
+
+Notes list/tree and Files context menus now offer Copy filename, Copy path (containing folder), and Copy path + filename (full location). Linked-folder locations resolve against the configured external root. Shared helper preserves Windows/UNC/POSIX roots and reports clipboard failures. Private build 2026.09.11.42, release unchanged at 0.2.10. Design/readiness and independent code review passed. Nine focused tests, zero-error/warning typecheck and browser acceptance of all three commands in both menus plus failure feedback passed. Packaging/staging results recorded at handoff.
+
+Validation complete: 172 frontend, 353 backend/core and seven native tests passed; initial backend run hit a temporary test-log access crash, isolated retry passed. Package/ZIP and self-check passed (zero self-check warnings). Owner copy staged/restarted with HTTP 200 and matching executable/managed assembly hashes. No commit, push or public release. Browser verified both menus using intercepted clipboard writes; native clipboard interaction was not separately exercised.
+
+
+## Tag scope and folder bridge settings (2026-11-09)
+
+Per-tag scope editing, workspace-filtered schema caches and a vault-wide new-tag scope preference are implemented. Default is workspace-specific. Owner requested existing tags in videos; offline maintenance uses verified backup, isolated rehearsal, atomic manifest and unchanged note hashes. App-hosted folder-bridge setup/status/start/stop/removal is implemented under Settings > Shared vault; Windows only, runs while app backend is open, saves stopped, preserves source and private recovery. Immutable encrypted connection binding and pause/drain lease cover disconnect, server reconfigure and vault changes. No live bridge mapping was configured. See final validation record appended after build.
+
+Migration completed and verified: 836 formerly implicit tags now have Videos-specific definitions; all 1,278 preexisting note files have unchanged hashes. Existing names, including spaces, are preserved. Default setting saved as workspace-specific. Backup and manifest: C:\Users\davem\Projects\Quantos-maintenance\scope-migration-2026-11-09-3. Initial preflight attempts made no source changes. Inline-only hashtag text was left unchanged, matching existing app tag semantics. Validation: 175 frontend, 373 backend/core (sequential retry after native sign-in timeout), seven native tests; zero typecheck errors/warnings. Browser covers default persistence, both scope directions, explicit default-workspace selection under shared preference and bridge stopped-save/cancel-start/remove fixture. No actual folder bridge configured or started.
+
+
+Delivery: private Windows release 0.2.10 build 2026.09.11.44 packaged/ZIP verified, self-check zero warnings; staged/restarted owner's copy with matching executable and managed-assembly hashes and startup HTTP 200. All 555 automated tests passed. Existing folder picker and clipboard work was preserved. No commit, push, public release, Android APK install, or real folder-bridge transfer. Owner vault migration verified separately above.
+
+
+## Notes definition visibility fix (2026-11-09)
+
+Desktop/phone Notes now excludes supertag definitions and synced blocks, including physical folder counts and the vault-owned Supertags directory. Tagged content remains visible; Files and Manage supertags unchanged. Frontend-only filter change, no vault data writes.
+
+Delivery: Windows 0.2.10 build 2026.09.11.45 installed/restarted with HTTP 200 and matching executable/managed assembly hashes. All 178 frontend tests passed; svelte-check zero errors/warnings; independent review no findings. Browser before/after verified definition rows 3 to 0 with 20 content rows retained, tree schema rows absent, Manage supertags still retained all three test definitions. Package/ZIP and self-check passed (zero self-check warnings). Backend unchanged; its previously passing suites were not rerun for this frontend-only fix. No vault data changed, no commit/push or Android installation.

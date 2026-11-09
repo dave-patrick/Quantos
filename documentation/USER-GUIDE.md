@@ -648,3 +648,23 @@ In **Settings > Appearance**, choose a theme and interface size directly. Expand
 Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order). Task effort is Low, Medium, or High; quick add accepts `~low`, `~medium`, or `~high`. Older minute estimates remain until changed and continue to support duration-based planning; selecting an effort level replaces the old estimate.
 
 Sidebar section expansion and custom navigation choices are retained on this device. The Windows client remembers its active browser profile when it must use a fallback profile.
+
+## Browsing for a linked folder (Windows)
+
+Open the workspace menu, choose **Link a folder…**, then **Browse…** to select an existing folder. The selected path appears in the dialog; choose **Next** to link it. Cancelling the folder picker keeps your entry. You can also type or paste a path. Browser and Android clients use path entry.
+
+## Copy a note's file location (2026-11-09)
+
+Right-click a note in Notes (list or tree) or the Files panel and choose **Copy filename** for its stored filename including `.md`, **Copy path** for its containing folder, or **Copy path + filename** for its full file location. Linked notes use their configured external folder. Copy failures display an error.
+
+## Tag scope and defaults (2026-11-09)
+
+In **Settings › Vault › Tags**, choose **Workspace-specific** (the default) or **Shared across workspaces** for new managed tags. This applies when creating a supertag or adding a new tag through note properties. Imported tags and inline hashtag text keep their existing values. A linked folder uses shared definitions because its files belong to another app.
+
+In **Manage supertags**, select a tag and change **Scope**, then choose **Save scope**. Save any field changes first. Workspace definitions override a shared definition with the same name. Scope changes keep tagged notes and their stored values intact; duplicate definitions, locked/archived definitions, and new inheritance loops are refused. New scope choices apply to the definition, not to the note files using it.
+
+On Windows, **Settings › Shared vault › Link an original folder** lets you browse an original folder, choose/name its shared workspace, and save a stopped link. Choose **Start sync** to begin, or **Stop sync** to pause. It runs while Quantos is open. Remove link keeps original files, server content and recovery state. If the folder is already linked locally, unlink that local link first without deleting its files. Android uses the resulting shared workspace; configure the source link on Windows.
+
+### Notes browser content
+
+Notes lists, trees and mobile folder counts exclude supertag definitions and synced blocks. Manage definitions in **Manage supertags**; their files remain available in the **Files** panel. Notes carrying supertags remain normal visible notes.

@@ -5,6 +5,13 @@ const root = 'workspaces/default';
 const folder = (path: string, folders: TreeFolder[] = [], nodes: TreeNode[] = []): TreeFolder => ({ path, name: path.split('/').at(-1)!, folders, nodes });
 const node = (id: string, path: string): TreeNode => ({ id, path, title: id, type: 'note', modified: null, archived: false });
 describe('physical note folders', () => {
+  it('excludes schema files and their folder from note counts', () => {
+    const visible = node('content', root+'/nodes/one.md');
+    const definition = { ...node('definition', root+'/supertags/meeting.md'), type: 'supertag' };
+    const entries = noteFolders(folder(root, [folder(root+'/nodes', [], [visible]), folder(root+'/supertags', [], [definition])]), [visible, definition], root);
+    expect(entries.some(f => f.path.includes('/supertags'))).toBe(false);
+    expect(entries.find(f => f.path === root)?.count).toBe(1);
+  });
   it('keeps Notes, Tasks and Daily as separate containing folders', () => {
     const notes = [node('a', root+'/nodes/one.md'), node('b', root+'/tasks/two.md'), node('c', root+'/daily/2026/day.md')];
     const entries = noteFolders(null, notes, root);

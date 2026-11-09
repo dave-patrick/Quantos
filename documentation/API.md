@@ -102,6 +102,13 @@ Client → page: `client {version, captureHotkey, scratchpadHotkey}`, `flush` (r
 
 ## Optional shared-vault API
 
+Windows app-managed folder bridges use person-only `/api/folder-bridges/`: `GET` reports platform
+support, connection availability, normal workspaces and mapping status without credentials; `POST`
+accepts `{folder, workspace}` and saves a stopped immutable mapping. `POST /{id}/start` enables it;
+`POST /{id}/stop` durably disables and drains transfers. `DELETE /{id}` stops and archives the link
+while retaining source/server files and all private recovery state. Replacement links use fresh state.
+Workers run only while the local backend is open. Connection/vault changes stop and drain them.
+
 The local `/api/sync` endpoints are restricted to the person using the app; agent and plugin actors
 cannot configure connections or MCP permissions. `GET /api/sync/` returns connection status,
 last successful sync, error and conflicts. `PUT /api/sync/` accepts `{url, token?}`; `DELETE` disconnects
@@ -151,3 +158,7 @@ Full details and a curl test: [CONNECTING-AI.md](CONNECTING-AI.md).
 ## Command line reference
 
 See [CLI-REFERENCE.md](CLI-REFERENCE.md). Exit codes 0 ok, 1 failed, 2 usage, 3 not running, 4 not permitted.
+
+### Supertag scope
+
+`PUT /api/supertags/{id}/scope` with `{ "scope": "videos" }` moves an active definition to an existing normal workspace; an empty scope shares it across workspaces. It preserves the definition ID and field data. Collisions, locked/read-only/archived/linked definitions and newly introduced effective inheritance cycles are refused before the move. Synthetic task or implicit tag IDs materialize a definition in the chosen scope and return its real ID; clients must use that returned ID for subsequent schema edits. Existing used tag names (including imported names with spaces) are preserved when materialized.

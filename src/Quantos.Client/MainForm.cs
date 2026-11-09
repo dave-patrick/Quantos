@@ -372,11 +372,41 @@ public sealed class MainForm : Form
 
     // ---- bridge ---------------------------------------------------------------------------------
 
+    private bool _folderPickerOpen;
+
     private void HandleMessage(JsonElement msg, CoreWebView2 source, bool main)
     {
         var type = msg.TryGetProperty("type", out var t) ? t.GetString() : null;
         switch (type)
         {
+            case "pick-folder":
+                if (!main || !msg.TryGetProperty("requestId", out var id) || id.ValueKind != JsonValueKind.String) break;
+                var requestId = id.GetString();
+                if (string.IsNullOrWhiteSpace(requestId) || requestId.Length > 128) break;
+                var initialPath = msg.TryGetProperty("path", out var initial) && initial.ValueKind == JsonValueKind.String ? initial.GetString() : null;
+                void Reply(string? path, string? error = null)
+                {
+                    try { source.PostWebMessageAsJson(JsonSerializer.Serialize(new { type = "folder-picked", requestId, path, error })); }
+                    catch (Exception ex) { _paths.Log("Folder picker reply failed: " + ex.Message); }
+                }
+                if (_folderPickerOpen) { Reply(null, "A folder picker is already open."); break; }
+                _folderPickerOpen = true;
+                try
+                {
+                    BeginInvoke(() =>
+                    {
+                        try
+                        {
+                            using var picker = new FolderBrowserDialog { Description = "Choose a folder to link", UseDescriptionForTitle = true, ShowNewFolderButton = false };
+                            if (Directory.Exists(initialPath)) picker.SelectedPath = initialPath;
+                            Reply(picker.ShowDialog(this) == DialogResult.OK ? picker.SelectedPath : null);
+                        }
+                        catch (Exception ex) { Reply(null, "Could not open the folder picker: " + ex.Message); }
+                        finally { _folderPickerOpen = false; }
+                    });
+                }
+                catch (Exception ex) { _folderPickerOpen = false; Reply(null, "Could not open the folder picker: " + ex.Message); }
+                break;
             case "appearance":
                 if (main) ApplyAppearance(msg);
                 break;

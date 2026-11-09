@@ -9,7 +9,7 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <Product>Quantos</Product>
     <Company>Atomic 22 Industries</Company>
-    <Version>0.2.10</Version>
+    <Version>0.2.11</Version>
   </PropertyGroup>
 
   <ItemGroup>

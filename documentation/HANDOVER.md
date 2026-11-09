@@ -468,3 +468,30 @@ Task priority is Critical, High, Medium, or Low (stored as 1–4 in that order).
 Task level changes are uncommitted and require a browser walkthrough: the development sign-in failed against the existing service. My Day no longer shows a duration total because effort levels cannot be summed as minutes.
 
 Sidebar section expansion and custom navigation choices are retained on this device. The Windows client remembers its active browser profile when it must use a fallback profile.
+
+## Folder selection (2026-11-09)
+
+The Windows Link a folder dialog now offers Browse alongside manual path entry. The owned native picker returns a correlated selection without linking until Next; cancellation preserves the entry. Other clients retain path entry. Drive and UNC roots are preserved. Private Windows build 2026.09.11.41 retains release 0.2.10. Validation and staging results are recorded in PROJECT-STATUS.md.
+
+## Note location copy commands (2026-11-09)
+
+Owner requested three separate actions: filename including extension, containing folder path, full path plus filename. Added to Notes list/tree and Files menus; linked locations use their external root. Private Windows build 2026.09.11.42 retains release 0.2.10. Design/readiness and independent review passed; browser checks exercised both menus and clipboard denial. Existing unrelated native folder-picker changes were preserved and included in the build.
+
+Validation complete: 172 frontend, 353 backend/core and seven native tests passed; initial backend run hit a temporary test-log access crash, isolated retry passed. Package/ZIP and self-check passed (zero self-check warnings). Owner copy staged/restarted with HTTP 200 and matching executable/managed assembly hashes. No commit, push or public release. Browser verified both menus using intercepted clipboard writes; native clipboard interaction was not separately exercised.
+
+
+## Tag scope and bridge setup (2026-11-09)
+
+Owner chose workspace-specific new tags by default and migration of existing tags to videos. Scope editor uses separate Save scope; schema saves materialize implicit/task fallbacks by returned ID to avoid editing another workspace. Active workspace and document workspace schema caches are separate. Folder bridge settings use existing Core transfer engine with app-hosted workers and explicit Start. Original folders, external bridge installations and credentials remain untouched. Source reviews passed after scope/archived graph/synthetic ID fixes and bridge physical-path/lifecycle fixes. Completion checks appended below.
+
+Migration completed and verified: 836 formerly implicit tags now have Videos-specific definitions; all 1,278 preexisting note files have unchanged hashes. Existing names, including spaces, are preserved. Default setting saved as workspace-specific. Backup and manifest: C:\Users\davem\Projects\Quantos-maintenance\scope-migration-2026-11-09-3. Initial preflight attempts made no source changes. Inline-only hashtag text was left unchanged, matching existing app tag semantics. Validation: 175 frontend, 373 backend/core (sequential retry after native sign-in timeout), seven native tests; zero typecheck errors/warnings. Browser covers default persistence, both scope directions, explicit default-workspace selection under shared preference and bridge stopped-save/cancel-start/remove fixture. No actual folder bridge configured or started.
+
+
+Delivery: private Windows release 0.2.10 build 2026.09.11.44 packaged/ZIP verified, self-check zero warnings; staged/restarted owner's copy with matching executable and managed-assembly hashes and startup HTTP 200. All 555 automated tests passed. Existing folder picker and clipboard work was preserved. No commit, push, public release, Android APK install, or real folder-bridge transfer. Owner vault migration verified separately above.
+
+
+## Notes excludes schema definitions (2026-11-09)
+
+Fixed the Notes content filter on desktop and phone, including folder counts and the managed Supertags directory. Notes carrying tags remain visible; Files/Manage supertags retain definitions. Independent diagnosis confirmed broad title-index filtering caused the regression after materializing schemas. Browser before-fix reproduced three definition rows, after-fix none with 20 content rows retained. No vault data or schema changes. Frontend regression checks and final staging recorded below.
+
+Delivery: Windows 0.2.10 build 2026.09.11.45 installed/restarted with HTTP 200 and matching executable/managed assembly hashes. All 178 frontend tests passed; svelte-check zero errors/warnings; independent review no findings. Browser before/after verified definition rows 3 to 0 with 20 content rows retained, tree schema rows absent, Manage supertags still retained all three test definitions. Package/ZIP and self-check passed (zero self-check warnings). Backend unchanged; its previously passing suites were not rerun for this frontend-only fix. No vault data changed, no commit/push or Android installation.

@@ -1,5 +1,6 @@
 import { api } from './api';
 import { onChange } from './events';
+import { app } from './state.svelte';
 
 export type FieldType = 'text' | 'number' | 'date' | 'datetime' | 'checkbox' | 'select' | 'multiselect' | 'node' | 'nodes' | 'url' | 'email' | 'person' | 'status';
 
@@ -33,24 +34,35 @@ export interface Supertag {
 }
 
 class Supertags {
-  list = $state<Supertag[]>([]);
+  private byWorkspace = $state<Record<string, Supertag[]>>({});
+  private sequence = new Map<string, number>();
+  get list() { return this.listFor(app.workspace); }
+  listFor(workspace: string) { return this.byWorkspace[workspace] ?? []; }
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     onChange((e) => {
-      if (e.kind === 'Reindexed' || e.path?.includes('supertags/') || e.kind === 'Updated' || e.kind === 'Created') {
+      if (e.kind === 'Reindexed' || e.path?.includes('supertags/') || e.kind === 'Updated' || e.kind === 'Created' || e.kind === 'Moved') {
         if (this.timer) clearTimeout(this.timer);
-        this.timer = setTimeout(() => this.load(), 500);
+        this.timer = setTimeout(() => {
+          for (const workspace of new Set([app.workspace, ...Object.keys(this.byWorkspace)])) void this.load(workspace);
+        }, 500);
       }
     });
   }
 
-  async load(workspace?: string) {
-    try { this.list = await api.get<Supertag[]>('supertags' + (workspace ? `?workspace=${workspace}` : '')); }
-    catch { this.list = []; }
+  async load(workspace = app.workspace) {
+    const request = (this.sequence.get(workspace) ?? 0) + 1;
+    this.sequence.set(workspace, request);
+    try {
+      const list = await api.get<Supertag[]>(`supertags?workspace=${encodeURIComponent(workspace)}`);
+      if (this.sequence.get(workspace) === request) this.byWorkspace[workspace] = list;
+    } catch {
+      if (this.sequence.get(workspace) === request) this.byWorkspace[workspace] = [];
+    }
   }
 
-  byName(name: string) { return this.list.find((t) => t.name.toLowerCase() === name.toLowerCase()); }
+  byName(name: string, workspace = app.workspace) { return this.listFor(workspace).find((t) => t.name.toLowerCase() === name.toLowerCase()); }
 
   get tree(): { tag: Supertag; depth: number; count: number }[] {
     const children = new Map<string, Supertag[]>();
