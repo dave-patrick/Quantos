@@ -550,3 +550,8 @@ Delivery: private Windows release 0.2.10 build 2026.09.11.44 packaged/ZIP verifi
 Desktop/phone Notes now excludes supertag definitions and synced blocks, including physical folder counts and the vault-owned Supertags directory. Tagged content remains visible; Files and Manage supertags unchanged. Frontend-only filter change, no vault data writes.
 
 Delivery: Windows 0.2.10 build 2026.09.11.45 installed/restarted with HTTP 200 and matching executable/managed assembly hashes. All 178 frontend tests passed; svelte-check zero errors/warnings; independent review no findings. Browser before/after verified definition rows 3 to 0 with 20 content rows retained, tree schema rows absent, Manage supertags still retained all three test definitions. Package/ZIP and self-check passed (zero self-check warnings). Backend unchanged; its previously passing suites were not rerun for this frontend-only fix. No vault data changed, no commit/push or Android installation.
+
+## Branch review and local build (2026-11-10)
+
+Reviewed code-improvements independently in two rounds. Fixed encoded plugin queries being rejected while retaining endpoint and traversal restrictions; added a message-bridge regression test. Release remains 0.2.11; private build 2026.10.11.47. Full validation and staging in progress.
+

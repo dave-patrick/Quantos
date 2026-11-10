@@ -67,9 +67,10 @@ class Plugins {
       if (method === 'api') {
         const rawPath = String(args?.path ?? '').replace(/^\/+/, '');
         let decoded = '';
-        try { decoded = decodeURIComponent(rawPath); } catch { reply({ error: 'Invalid path.' }); return; }
+        try { decoded = decodeURIComponent(rawPath.split('?')[0]); } catch { reply({ error: 'Invalid path.' }); return; }
         if (
-          !/^[\w\-/?=&.,:]*$/.test(rawPath) ||
+          !/^[\w\-/?=&%.,:]*$/.test(rawPath) ||
+          !/^[\w\-/.,:]*$/.test(decoded) ||
           decoded.includes('..') ||
           decoded.startsWith('.') ||
           decoded.includes('//') ||
