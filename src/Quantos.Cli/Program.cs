@@ -198,11 +198,9 @@ public static class Program
     {
         var id = await Resolve(c, Arg(o, 1, "note"), o.Workspace);
         var text = o.Positional.Count > 2 ? string.Join(' ', o.Positional.Skip(2)) : await Console.In.ReadToEndAsync();
-        var node = await c.Get($"nodes/{id}");
-        var body = node!["body"]!.ToString().TrimEnd() + "\n\n" + text.Trim() + "\n";
-        var result = await c.Patch($"nodes/{id}", new { baseHash = node["hash"]!.ToString(), body });
+        var result = await c.Post($"nodes/{Uri.EscapeDataString(id)}/append", new { text });
         if (o.Json) return Print(result);
-        Console.WriteLine($"Appended to {node["title"]}.");
+        Console.WriteLine($"Appended to {result?["title"] ?? id}.");
         return 0;
     }
 

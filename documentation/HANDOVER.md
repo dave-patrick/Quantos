@@ -1,5 +1,14 @@
 # Handover: working on Quantos with its owner
 
+## Code improvements pass (2026-11-10)
+
+Comprehensive improvements reviewed and implemented on the dedicated branch `code-improvements`.
+Includes editor widget DOM position stability, single-dispatch block conversions, one-time heading fold indexing,
+active tab migration & pane flush handling, 3-way typing merge on raw saves, plugin proxy directory traversal defense,
+nested batch scopes in `CacheIndex`, single-query graph resolution (`AllResolvedLinks`), directory separator boundary checks
+on workspace moves/creates, thread-safe permission lookups, atomic append adoption in CLI and MCP, and non-blocking PDF print pipes.
+Frontend tests (178/178), typecheck (0 errors, 0 warnings), and backend tests (343/343) all pass.
+
 ## Code scan and five rebuilds (2026-11-06/07)
 
 The owner asked for a code scan, then "fix everything", then all five proposed rebuilds. Committed and pushed to

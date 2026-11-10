@@ -24,6 +24,7 @@ public static class ReplaceEndpoints
 
         api.MapPost("/undo/{id}", (VaultHost host, HttpContext ctx, string id) =>
         {
+            if (ctx.Actor().Kind is not (ActorKind.User or ActorKind.Cli)) throw new QuantosException("Only you can replace across notes.", 403);
             var (restored, kept) = host.Require().Replace.Undo(id, ctx.Actor());
             return new { restored, kept };
         });

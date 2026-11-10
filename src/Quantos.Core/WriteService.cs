@@ -139,8 +139,12 @@ public sealed partial class WriteService
             else
             {
                 var folder = request.Folder is { Length: > 0 } f ? Vault.Absolute(f) : Vault.FolderFor(workspace, request.Type);
-                if (workspace.Length > 0 && !folder.StartsWith(Vault.WorkspaceDir(workspace), StringComparison.OrdinalIgnoreCase) && request.Folder is not null)
-                    throw new QuantosException("The folder must be inside the workspace.");
+                if (workspace.Length > 0)
+                {
+                    var wsDir = Vault.WorkspaceDir(workspace).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                    if (!(folder + Path.DirectorySeparatorChar).StartsWith(wsDir, StringComparison.OrdinalIgnoreCase) && request.Folder is not null)
+                        throw new QuantosException("The folder must be inside the workspace.");
+                }
                 abs = Vault.UniquePath(folder, Vault.Slug(request.Title));
             }
 
@@ -351,10 +355,14 @@ public sealed partial class WriteService
             var node = Require(id);
             var abs = Vault.Absolute(node.Path);
             var folder = Vault.Absolute(folderRelative);
-            if (node.Workspace.Length > 0 && !folder.StartsWith(Vault.WorkspaceDir(node.Workspace), StringComparison.OrdinalIgnoreCase))
-                throw new QuantosException(Vault.LinkedFolderOf(node.Path) is not null
-                    ? "A note in a linked folder can only be moved inside that folder."
-                    : "Use a workspace move to move between workspaces.");
+            if (node.Workspace.Length > 0)
+            {
+                var wsDir = Vault.WorkspaceDir(node.Workspace).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                if (!(folder + Path.DirectorySeparatorChar).StartsWith(wsDir, StringComparison.OrdinalIgnoreCase))
+                    throw new QuantosException(Vault.LinkedFolderOf(node.Path) is not null
+                        ? "A note in a linked folder can only be moved inside that folder."
+                        : "Use a workspace move to move between workspaces.");
+            }
             if (Vault.PathEquals(Path.GetDirectoryName(abs), folder)) return node;
             if (!allowRename && File.Exists(Path.Combine(folder, Path.GetFileName(abs))))
                 throw new QuantosException($"A file named {Path.GetFileName(abs)} already exists in {folderRelative}.", 409);

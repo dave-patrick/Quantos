@@ -55,8 +55,10 @@ public sealed class ApprovalRequiredException(Approval approval)
 public sealed class PermissionService
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
+    private readonly object _gate = new();
     private readonly string _file;
     private Grants _grants;
+    private bool _safeMode;
 
     public PermissionService(string grantsFile, ApprovalService approvals)
     {
@@ -66,7 +68,11 @@ public sealed class PermissionService
     }
 
     public ApprovalService Approvals { get; }
-    public bool SafeMode { get; set; }
+    public bool SafeMode
+    {
+        get { lock (_gate) return _safeMode; }
+        set { lock (_gate) _safeMode = value; }
+    }
 
     public static readonly Permission[] AlwaysApprove = [Permission.PermanentDelete, Permission.RunCommands, Permission.ManagePermissions];
 
@@ -98,37 +104,57 @@ public sealed class PermissionService
 
     private HashSet<Permission> Lookup(Actor actor)
     {
-        var table = actor.Kind switch
+        lock (_gate)
         {
-            ActorKind.Agent => _grants.Agents,
-            ActorKind.Plugin => _grants.Plugins,
-            ActorKind.Automation => _grants.Automations,
-            _ => null
-        };
-        if (table is not null && table.TryGetValue(actor.Name, out var granted)) return granted;
-        // Defaults: agents may read; automations may edit content; plugins get nothing until granted.
-        return actor.Kind switch
-        {
-            ActorKind.Agent => [Permission.Read],
-            ActorKind.Automation => [Permission.Read, Permission.CreateEdit],
-            _ => []
-        };
+            var table = actor.Kind switch
+            {
+                ActorKind.Agent => _grants.Agents,
+                ActorKind.Plugin => _grants.Plugins,
+                ActorKind.Automation => _grants.Automations,
+                _ => null
+            };
+            if (table is not null && table.TryGetValue(actor.Name, out var granted)) return [.. granted];
+            // Defaults: agents may read; automations may edit content; plugins get nothing until granted.
+            return actor.Kind switch
+            {
+                ActorKind.Agent => [Permission.Read],
+                ActorKind.Automation => [Permission.Read, Permission.CreateEdit],
+                _ => []
+            };
+        }
     }
 
-    public Grants Current => _grants;
+    public Grants Current
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return new Grants
+                {
+                    Agents = new Dictionary<string, HashSet<Permission>>(_grants.Agents),
+                    Plugins = new Dictionary<string, HashSet<Permission>>(_grants.Plugins),
+                    Automations = new Dictionary<string, HashSet<Permission>>(_grants.Automations)
+                };
+            }
+        }
+    }
 
     public void Set(ActorKind kind, string name, IEnumerable<Permission> permissions)
     {
-        var table = kind switch
+        lock (_gate)
         {
-            ActorKind.Agent => _grants.Agents,
-            ActorKind.Plugin => _grants.Plugins,
-            ActorKind.Automation => _grants.Automations,
-            _ => throw new ArgumentException("Only agents, plugins and automations have configurable grants.")
-        };
-        table[name] = [.. permissions];
-        Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
-        Storage.AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(_grants, Json));
+            var table = kind switch
+            {
+                ActorKind.Agent => _grants.Agents,
+                ActorKind.Plugin => _grants.Plugins,
+                ActorKind.Automation => _grants.Automations,
+                _ => throw new ArgumentException("Only agents, plugins and automations have configurable grants.")
+            };
+            table[name] = [.. permissions];
+            Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
+            Storage.AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(_grants, Json));
+        }
     }
 
     private Grants Load()

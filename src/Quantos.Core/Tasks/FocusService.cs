@@ -68,7 +68,7 @@ public sealed partial class FocusService(WriteService writes)
         }
         var byTask = list.SelectMany(d => d.Sessions)
             .GroupBy(x => x.TaskId ?? "label:" + x.Label)
-            .Select(g => new FocusTotal(g.First().TaskId, g.First().TaskId is { } id ? writes.Get(id)?.Title ?? g.First().Label : g.First().Label, g.Sum(x => x.Minutes), g.Count()))
+            .Select(g => new FocusTotal(g.First().TaskId, g.First().TaskId is { } id ? writes.Cache.Get(id)?.Title ?? g.First().Label : g.First().Label, g.Sum(x => x.Minutes), g.Count()))
             .OrderByDescending(t => t.Minutes).ToList();
         return new FocusSummary(list, byTask, list.Sum(d => d.Minutes));
     }

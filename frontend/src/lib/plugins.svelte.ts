@@ -65,12 +65,20 @@ class Plugins {
         return;
       }
       if (method === 'api') {
-        const path = String(args?.path ?? '').replace(/^\/+/, '');
-        if (!/^[\w\-/?=&%.,:]*$/.test(path) || path.startsWith('auth') || path.startsWith('system') || path.startsWith('plugins') || path.startsWith('approvals') || path.startsWith('setup')) {
+        const rawPath = String(args?.path ?? '').replace(/^\/+/, '');
+        let decoded = '';
+        try { decoded = decodeURIComponent(rawPath); } catch { reply({ error: 'Invalid path.' }); return; }
+        if (
+          !/^[\w\-/?=&.,:]*$/.test(rawPath) ||
+          decoded.includes('..') ||
+          decoded.startsWith('.') ||
+          decoded.includes('//') ||
+          !/^(nodes|tasks|search|query|tags|daily|tree|workspaces|habits|focus|calendar)(\/|\?|$)/i.test(decoded)
+        ) {
           reply({ error: 'That endpoint is not available to plugins.' });
           return;
         }
-        const res = await fetch('/api/' + path, {
+        const res = await fetch('/api/' + rawPath, {
           method: String(args?.method ?? 'GET').toUpperCase(), credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json', 'X-Quantos-Request': '1', 'X-Quantos-Plugin': name, 'X-Quantos-Instance': instanceId },
           body: args?.body === undefined ? undefined : JSON.stringify(args.body)

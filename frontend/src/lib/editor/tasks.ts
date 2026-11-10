@@ -14,7 +14,7 @@ const TASK_LINE = /^(\s*[-*+]\s+)\[([ xX])\](\s+|$)(.*?)(\s*<!--task:([0-9A-HJKM
 
 class CheckWidget extends WidgetType {
   constructor(readonly checked: boolean, readonly pos: number, readonly taskId: string | null) { super(); }
-  eq(o: CheckWidget) { return o.checked === this.checked && o.pos === this.pos && o.taskId === this.taskId; }
+  eq(o: CheckWidget) { return o.checked === this.checked && o.taskId === this.taskId; }
   toDOM() {
     const box = document.createElement('input');
     box.type = 'checkbox';
@@ -89,7 +89,7 @@ export function taskLines(hooks: TaskHooks): Extension {
       const target = event.target as HTMLElement;
       if (target.classList.contains('cm-task-check')) {
         event.preventDefault();
-        const pos = Number(target.dataset.pos);
+        const pos = view.posAtDOM(target);
         const current = view.state.sliceDoc(pos, pos + 3);
         const checked = current !== '[ ]';
         const taskId = target.dataset.task;

@@ -7,13 +7,13 @@ import QueryBlock from '../../components/QueryBlock.svelte';
 /** A ```query fence shows live, editable results unless the cursor is inside it (BUILD-PLAN 8C.10). */
 class QueryWidget extends WidgetType {
   constructor(readonly text: string, readonly from: number) { super(); }
-  eq(other: QueryWidget) { return other.text === this.text && other.from === this.from; }
+  eq(other: QueryWidget) { return other.text === this.text; }
   toDOM(view: EditorView) {
     const host = document.createElement('div');
     host.className = 'cm-query-block';
     const component = mount(QueryBlock, {
       target: host,
-      props: { text: this.text, onedit: () => { view.dispatch({ selection: { anchor: this.from + 9 } }); view.focus(); } }
+      props: { text: this.text, onedit: () => { const pos = view.posAtDOM(host); view.dispatch({ selection: { anchor: pos + 9 } }); view.focus(); } }
     });
     (host as HTMLElement & { cmp?: unknown }).cmp = component;
     return host;

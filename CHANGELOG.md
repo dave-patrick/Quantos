@@ -7,6 +7,33 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
 ## Unreleased
 
+- **Editor and UI:**
+  - Resolved dynamic DOM position lookups in editor widgets (`QueryWidget`, `EmbedWidget`, `ColumnsWidget`, `MathWidget`, `DiagramWidget`, `CheckWidget`) to avoid widget state thrashing during rapid typing.
+  - Batched multi-block conversions (`turnInto`) in `BlockMenu` into a single dispatch transaction.
+  - Initialised heading fold markers once on document load to eliminate keystroke re-scans.
+  - Updated wikilink decorations on horizontal cursor movement so moving across a link cleanly expands its raw text.
+  - Corrected active tab tracking when moving tabs between pane locations, and flushed tab state prior to pane closure.
+  - Added 3-way typing merge handling and dirty-state guards in note raw saves.
+  - Disregarded comment hashes inside fenced code blocks when zooming note outlines.
+  - Reactive title index updates in UI state.
+- **Security and permissions:**
+  - Hardened plugin API proxy against path traversal (`..`, `.`, `//`) and restricted requests to permitted endpoints.
+  - Blocked non-person actors (plugins and automations) from MCP endpoints and folder bridges.
+  - Enforced actor permission checks on replace undo endpoints.
+  - Guarded folder moves and node creations against sibling workspace prefix collisions.
+  - Thread-synchronised permission grants and lookups.
+- **Core, Backend and CLI:**
+  - Added nested batch support in `CacheIndex.Batch()` and wrapped transaction scopes with try-finally cleanup.
+  - Replaced N+1 graph link queries with single-query link loading (`AllResolvedLinks`).
+  - Protected supertag renames with write serialization to prevent concurrent write races.
+  - Read task titles from cache in `FocusSummary` and pre-indexed trash manifests during integrity checks.
+  - Synchronised Google Tasks engine operations with gate locking.
+  - Configured headless PDF print process pipes to prevent pipe deadlocks.
+  - Targeted folder bridge sync cancellation to the matching active mapping ID.
+  - Trimmed bearer tokens, guarded response status after headers started, and exposed dynamic assembly version in `/health`.
+  - Switched CLI and MCP note append operations to use the atomic backend endpoint.
+  - Hardened updater file replacement against in-use backup locks.
+
 Standalone shared-server and external folder-bridge binaries remain separately deployed from source.
 
 ## 0.2.11 (2026-11-09)

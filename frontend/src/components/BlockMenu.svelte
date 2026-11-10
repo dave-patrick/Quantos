@@ -105,7 +105,13 @@
   }
 
   function turnInto(v: EditorView, list: BlockInfo[], marker: string) {
-    for (const b of list) setMarker(v, b, marker);
+    v.dispatch({
+      changes: list.map((b) => ({
+        from: b.lineFrom,
+        to: b.lineFrom + b.marker.length,
+        insert: marker
+      }))
+    });
   }
 
   function status(taskId: string, next: TaskStatus) {

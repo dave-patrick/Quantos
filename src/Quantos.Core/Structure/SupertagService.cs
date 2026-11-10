@@ -370,37 +370,40 @@ public sealed partial class SupertagService(WriteService writes)
         if (Get(newName) is { } clash && clash.Id != id) throw new QuantosException($"#{newName} already exists.", 409);
         writes.Permissions.Demand(actor, Permission.CreateEdit, $"Rename #{tag.Name} to #{newName}");
 
-        var op = new JournalOperation { Description = $"Rename #{tag.Name} to #{newName}" };
-        var touched = new List<string>();
-        foreach (var n in Cache.List(includeArchived: true))
+        return writes.Exclusive(() =>
         {
-            var usesTag = n.Tags.Any(t => t.Equals(tag.Name, StringComparison.OrdinalIgnoreCase));
-            var isChild = n.Type == NodeTypes.Supertag && string.Equals(Props.Str(n.Properties, "parent"), tag.Name, StringComparison.OrdinalIgnoreCase);
-            var node = writes.Get(n.Id);
-            if (node is null || node.ReadOnly) continue;
-            var doc = FrontmatterDocument.Parse(node.Content);
-            var changed = false;
-            if (usesTag)
+            var op = new JournalOperation { Description = $"Rename #{tag.Name} to #{newName}" };
+            var touched = new List<string>();
+            foreach (var n in Cache.List(includeArchived: true))
             {
-                doc.Set(NodeKeys.Tags, doc.GetStringList(NodeKeys.Tags).Select(t => t.TrimStart('#').Equals(tag.Name, StringComparison.OrdinalIgnoreCase) ? newName : t).ToList());
-                changed = true;
+                var usesTag = n.Tags.Any(t => t.Equals(tag.Name, StringComparison.OrdinalIgnoreCase));
+                var isChild = n.Type == NodeTypes.Supertag && string.Equals(Props.Str(n.Properties, "parent"), tag.Name, StringComparison.OrdinalIgnoreCase);
+                var node = writes.Get(n.Id);
+                if (node is null || node.ReadOnly) continue;
+                var doc = FrontmatterDocument.Parse(node.Content);
+                var changed = false;
+                if (usesTag)
+                {
+                    doc.Set(NodeKeys.Tags, doc.GetStringList(NodeKeys.Tags).Select(t => t.TrimStart('#').Equals(tag.Name, StringComparison.OrdinalIgnoreCase) ? newName : t).ToList());
+                    changed = true;
+                }
+                if (isChild) { doc.Set("parent", newName); changed = true; }
+                if (n.Id == id) { doc.Set(NodeKeys.Title, newName); changed = true; }
+                var body = ReplaceHashtag(doc.Body, tag.Name, newName);
+                if (body != doc.Body) { doc.SetBody(body); changed = true; }
+                if (!changed) continue;
+                doc.Set(NodeKeys.Modified, writes.Clock.Stamp());
+                op.Steps.Add(JournalStep.Write(node.Path, node.Content, doc.ToString()));
+                touched.Add(node.Path);
             }
-            if (isChild) { doc.Set("parent", newName); changed = true; }
-            if (n.Id == id) { doc.Set(NodeKeys.Title, newName); changed = true; }
-            var body = ReplaceHashtag(doc.Body, tag.Name, newName);
-            if (body != doc.Body) { doc.SetBody(body); changed = true; }
-            if (!changed) continue;
-            doc.Set(NodeKeys.Modified, writes.Clock.Stamp());
-            op.Steps.Add(JournalStep.Write(node.Path, node.Content, doc.ToString()));
-            touched.Add(node.Path);
-        }
-        if (op.Steps.Count > 0) writes.Exclusive(() => { writes.Journal.Execute(op); return 0; });
-        foreach (var path in touched)
-        {
-            var updated = writes.Index(writes.Vault.Absolute(path));
-            writes.Changes.Publish(new ChangeEvent(ChangeKind.Updated, updated.Id, path, Hash: updated.Hash, Origin: actor.ToString()));
-        }
-        return Get(id) ?? throw new QuantosException("Supertag not found.", 404);
+            if (op.Steps.Count > 0) writes.Journal.Execute(op);
+            foreach (var path in touched)
+            {
+                var updated = writes.Index(writes.Vault.Absolute(path));
+                writes.Changes.Publish(new ChangeEvent(ChangeKind.Updated, updated.Id, path, Hash: updated.Hash, Origin: actor.ToString()));
+            }
+            return Get(id) ?? throw new QuantosException("Supertag not found.", 404);
+        });
     }
 
     private static string ReplaceHashtag(string body, string from, string to)

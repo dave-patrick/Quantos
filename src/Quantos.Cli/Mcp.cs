@@ -68,23 +68,26 @@ public static class Mcp
             if (id is null) continue; // notifications need no reply
             try
             {
+                var v = typeof(Mcp).Assembly.GetName().Version;
+                var ver = v is null ? "0.2.11" : v.Revision > 0 ? v.ToString(4) : v.ToString(3);
                 var result = method switch
                 {
                     "initialize" => new JsonObject
                     {
                         ["protocolVersion"] = request?["params"]?["protocolVersion"]?.ToString() ?? "2025-06-18",
                         ["capabilities"] = new JsonObject { ["tools"] = new JsonObject() },
-                        ["serverInfo"] = new JsonObject { ["name"] = "quantos", ["version"] = "0.2.11" },
+                        ["serverInfo"] = new JsonObject { ["name"] = "quantos", ["version"] = ver },
                         ["instructions"] = "Quantos is the user's personal knowledge vault of Markdown notes and tasks. Notes link with [[id|Title]]. Prefer reading before writing; keep the user's formatting."
                     },
                     "ping" => new JsonObject(),
                     "tools/list" => new JsonObject { ["tools"] = Tools.DeepClone() },
-                    "tools/call" => await Call(client, options, request!["params"]!),
+                    "tools/call" => await Call(client, options, request?["params"] ?? new JsonObject()),
                     _ => throw new McpError(-32601, $"Method not found: {method}")
                 };
                 Write(new JsonObject { ["jsonrpc"] = "2.0", ["id"] = id, ["result"] = result });
             }
             catch (McpError e) { Write(Error(id, e.Code, e.Message)); }
+            catch (Exception e) { Write(Error(id, -32603, e.Message)); }
         }
         return 0;
     }
@@ -129,10 +132,8 @@ public static class Mcp
     private static async Task<string> AppendNote(Client c, string note, string text)
     {
         var id = await Program.Resolve(c, note, null);
-        var node = await c.Get($"nodes/{id}");
-        var body = node!["body"]!.ToString().TrimEnd() + "\n\n" + text.Trim() + "\n";
-        await c.Patch($"nodes/{id}", new { baseHash = node["hash"]!.ToString(), body });
-        return $"Appended to {node["title"]}.";
+        var res = await c.Post($"nodes/{Uri.EscapeDataString(id)}/append", new { text });
+        return $"Appended to {res?["title"] ?? id}.";
     }
 
     // Compact: tool results go into an agent's context, where indentation only costs tokens.

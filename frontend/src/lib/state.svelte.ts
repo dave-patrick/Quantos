@@ -114,8 +114,8 @@ class AppState {
     });
   }
 
-  /** Plain map for hot paths (editor decorations); rebuilt whenever titles reload. */
-  titleIndex = new Map<string, NodeSummary>();
+  /** Fast raw reactive map for hot paths; rebuilt whenever titles reload. */
+  titleIndex = $state.raw(new Map<string, NodeSummary>());
 
   async refreshStatus() {
     this.status = await api.get<Status>('status');

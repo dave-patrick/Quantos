@@ -33,6 +33,7 @@ public sealed class FolderBridgeCoordinator : BackgroundService
     private readonly Lock settingsGate = new();
     private readonly Dictionary<string, FolderBridgeState> states = [];
     private CancellationTokenSource? active;
+    private string? activeMappingId;
     private string Config => Path.Combine(host.Paths.Settings, "folder-bridges.json");
     private string Root => Path.Combine(host.Paths.ClientData, "folder-bridges");
     public FolderBridgeCoordinator(VaultHost host, FolderBridgeRemoteFactory? remotes = null)
@@ -198,7 +199,7 @@ public sealed class FolderBridgeCoordinator : BackgroundService
             {
                 var mappings = Load(); if (id is not null) Find(mappings, id);
                 Save(mappings.Select(m => id is null || m.Id == id ? m with { Enabled = false } : m).ToList());
-                active?.Cancel();
+                if (id is null || activeMappingId == id) active?.Cancel();
             }
             // Once disabled is durable, complete the drain even if the HTTP caller goes away.
             await cycle.WaitAsync(CancellationToken.None);
@@ -231,6 +232,7 @@ public sealed class FolderBridgeCoordinator : BackgroundService
                 {
                     if (!Load().Any(m => m.Id == mapping.Id && m.Enabled && !m.Archived)) continue;
                     active = cancel;
+                    activeMappingId = mapping.Id;
                     states[mapping.Id] = new(mapping.Id, mapping.Folder, mapping.Workspace, true, true, states.GetValueOrDefault(mapping.Id)?.LastSynced, null, null);
                 }
                 try
@@ -258,7 +260,7 @@ public sealed class FolderBridgeCoordinator : BackgroundService
                 }
                 catch (OperationCanceledException) when (cancel.IsCancellationRequested) { }
                 catch (Exception ex) { lock (settingsGate) states[mapping.Id] = states[mapping.Id] with { Error = ex.Message }; }
-                finally { lock (settingsGate) { active = null; states[mapping.Id] = states[mapping.Id] with { Busy = false }; } }
+                finally { lock (settingsGate) { active = null; activeMappingId = null; states[mapping.Id] = states[mapping.Id] with { Busy = false }; } }
             }
         }
         finally { cycle.Release(); }
