@@ -3,9 +3,9 @@
 ### Code improvement pass (2026-11-10, branch code-improvements)
 
 Audited and improved core library, backend, hosts, and frontend:
-- **Frontend / Editor:** Dynamic widget DOM position resolution instead of static range binding on equality; single-dispatch block conversion; single-scan heading fold markers; horizontal wikilink cursor expansions; active tab migration and pre-close flushing in layout; 3-way typing merge on raw saves; code-block comment isolation in node outline zoom; reactive title indexing; hardened plugin proxy path sanitization.
+- **Frontend / Editor & Theming:** Granular interface element theming in *Settings › Appearance* supporting individual colour selection for 21 UI elements (sidebar, header, status bar, editor, cards, inputs, hover, active item, selection, focus rings, borders, text tiers, feedback colours); interactive live miniature preview widget; CSS export and element-level auto resets; dynamic widget DOM position resolution instead of static range binding on equality; single-dispatch block conversion; single-scan heading fold markers; horizontal wikilink cursor expansions; active tab migration and pre-close flushing in layout; 3-way typing merge on raw saves; code-block comment isolation in node outline zoom; reactive title indexing; hardened plugin proxy path sanitization.
 - **Core / Backend:** Nested batching support and safe rollback in `CacheIndex`; single-query graph resolution (`AllResolvedLinks`); atomic workspace directory prefix validation; thread-safe permission operations; serialized supertag renaming; cached task focus titles; pre-indexed trash manifests; semaphore gating on Google Tasks sync operations; unblocked PDF printing pipes; restricted non-person actor endpoints; targeted folder bridge pause cancellation; atomic append endpoint adoption in CLI and MCP; and robust updater backup locking handling.
-- **Verification:** 178 frontend vitest tests passed; svelte-check passed (0 errors, 0 warnings); frontend production bundle built; 343 backend/core tests passed; CLI and Server builds succeeded with 0 warnings.
+- **Verification:** 179 frontend vitest tests passed; svelte-check passed (0 errors, 0 warnings); frontend production bundle built; 343 backend/core tests passed; CLI and Server builds succeeded with 0 warnings.
 
 ### Frontend tooling upgrade (2026-11-07, not yet released)
 

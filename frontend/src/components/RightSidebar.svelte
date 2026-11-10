@@ -147,9 +147,9 @@
 
 <style>
   .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; padding: 0 8px 8px 0; background: transparent; }
-  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-panel); }
+  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--sidebar-bg, var(--bg-panel)); }
   .part.dragging { opacity: .6; }
-  .head { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid var(--line); flex: none; background: var(--bg-panel); cursor: grab; user-select: none; }
+  .head { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid var(--line); flex: none; background: var(--sidebar-bg, var(--bg-panel)); cursor: grab; user-select: none; }
   .head:active { cursor: grabbing; }
   .grip { color: var(--text-faint); font-size: 10px; letter-spacing: -1px; margin-right: 2px; }
   .title { font: 600 12.5px var(--font-body); color: var(--text-soft); }

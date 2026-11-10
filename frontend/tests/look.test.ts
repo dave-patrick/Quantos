@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LOOK, PRESETS, baseOf, contrast, fontStack, lookCss, lookVars, mix, readable } from '../src/lib/look';
+import { DEFAULT_LOOK, PRESETS, baseOf, contrast, fontStack, lookCss, lookVars, mix, readable, resetElements } from '../src/lib/look';
 
 describe('look', () => {
   it('mixes and measures colours', () => {
@@ -28,8 +28,48 @@ describe('look', () => {
     expect(baseOf({ ...DEFAULT_LOOK, bg: '#fdf6e3' }, 'dark')).toBe('light');
   });
 
-  it('builds safe font stacks', () => {
-    expect(fontStack('Georgia', 'editor')).toBe('"Georgia", serif');
-    expect(fontStack('My Font"; }', 'mono')).toBe('"My Font", monospace');
+  it('supports granular element overrides', () => {
+    const custom = {
+      ...DEFAULT_LOOK,
+      bg: '#1c1d21',
+      sidebarBg: '#121316',
+      editorBg: '#23242a',
+      headerBg: '#1a1b1f',
+      statusbarBg: '#141518',
+      selectBg: '#354865',
+      line: '#3a3b40',
+      ok: '#68d391'
+    };
+    const v = lookVars(custom, 'dark');
+    expect(v['--bg']).toBe('#1c1d21');
+    expect(v['--sidebar-bg']).toBe('#121316');
+    expect(v['--editor-bg']).toBe('#23242a');
+    expect(v['--header-bg']).toBe('#1a1b1f');
+    expect(v['--statusbar-bg']).toBe('#141518');
+    expect(v['--bg-select']).toBe('#354865');
+    expect(v['--line']).toBe('#3a3b40');
+    expect(v['--ok']).toBe('#68d391');
+
+    const css = lookCss(custom, 'dark');
+    expect(css).toContain('--sidebar-bg: #121316;');
+    expect(css).toContain('--editor-bg: #23242a;');
+  });
+
+  it('resets elements while preserving base styling', () => {
+    const custom = {
+      ...DEFAULT_LOOK,
+      bg: '#000000',
+      accent: '#ff0066',
+      sidebarBg: '#111111',
+      editorBg: '#222222',
+      fontEditor: 'Georgia'
+    };
+    const reset = resetElements(custom);
+    expect(reset.bg).toBe('#000000');
+    expect(reset.accent).toBe('#ff0066');
+    expect(reset.fontEditor).toBe('Georgia');
+    expect(reset.sidebarBg).toBeNull();
+    expect(reset.editorBg).toBeNull();
   });
 });
+

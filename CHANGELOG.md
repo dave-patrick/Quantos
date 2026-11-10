@@ -8,6 +8,9 @@ Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 ## Unreleased
 
 - **Editor and UI:**
+  - Granular interface element theming in *Settings › Appearance*: custom colour pickers and hex inputs for 21 interface elements across surfaces (sidebar, header, status bar, editor, panels, cards), interactive states (inputs, hover, active item, selection highlight), borders (subtle, strong, focus ring), text hierarchy (soft, muted, faint), and feedback colours (accent ink/wash, danger, warning, success).
+  - Miniature live theme preview in *Settings › Appearance* reflecting customisations in real time across simulated headers, sidebars, editor content, wikilinks, tags, and status bar.
+  - Theme utility actions: "Copy CSS" export, per-element "Auto" reset, and one-click "Reset elements to auto".
   - Resolved dynamic DOM position lookups in editor widgets (`QueryWidget`, `EmbedWidget`, `ColumnsWidget`, `MathWidget`, `DiagramWidget`, `CheckWidget`) to avoid widget state thrashing during rapid typing.
   - Batched multi-block conversions (`turnInto`) in `BlockMenu` into a single dispatch transaction.
   - Initialised heading fold markers once on document load to eliminate keystroke re-scans.
