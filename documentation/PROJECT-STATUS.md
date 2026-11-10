@@ -1,5 +1,12 @@
 # Quantos project status and handoff
 
+### Code improvement pass (2026-11-10, branch code-improvements)
+
+Audited and improved core library, backend, hosts, and frontend:
+- **Frontend / Editor:** Dynamic widget DOM position resolution instead of static range binding on equality; single-dispatch block conversion; single-scan heading fold markers; horizontal wikilink cursor expansions; active tab migration and pre-close flushing in layout; 3-way typing merge on raw saves; code-block comment isolation in node outline zoom; reactive title indexing; hardened plugin proxy path sanitization.
+- **Core / Backend:** Nested batching support and safe rollback in `CacheIndex`; single-query graph resolution (`AllResolvedLinks`); atomic workspace directory prefix validation; thread-safe permission operations; serialized supertag renaming; cached task focus titles; pre-indexed trash manifests; semaphore gating on Google Tasks sync operations; unblocked PDF printing pipes; restricted non-person actor endpoints; targeted folder bridge pause cancellation; atomic append endpoint adoption in CLI and MCP; and robust updater backup locking handling.
+- **Verification:** 178 frontend vitest tests passed; svelte-check passed (0 errors, 0 warnings); frontend production bundle built; 343 backend/core tests passed; CLI and Server builds succeeded with 0 warnings.
+
 ### Frontend tooling upgrade (2026-11-07, not yet released)
 
 Vite 8, Vitest 5, @sveltejs/vite-plugin-svelte 7, happy-dom 21, TypeScript 6.0.3 (lockfile regenerated).
@@ -543,3 +550,8 @@ Delivery: private Windows release 0.2.10 build 2026.09.11.44 packaged/ZIP verifi
 Desktop/phone Notes now excludes supertag definitions and synced blocks, including physical folder counts and the vault-owned Supertags directory. Tagged content remains visible; Files and Manage supertags unchanged. Frontend-only filter change, no vault data writes.
 
 Delivery: Windows 0.2.10 build 2026.09.11.45 installed/restarted with HTTP 200 and matching executable/managed assembly hashes. All 178 frontend tests passed; svelte-check zero errors/warnings; independent review no findings. Browser before/after verified definition rows 3 to 0 with 20 content rows retained, tree schema rows absent, Manage supertags still retained all three test definitions. Package/ZIP and self-check passed (zero self-check warnings). Backend unchanged; its previously passing suites were not rerun for this frontend-only fix. No vault data changed, no commit/push or Android installation.
+
+## Branch review and local build (2026-11-10)
+
+Reviewed code-improvements independently in two rounds. Fixed encoded plugin queries being rejected while retaining endpoint and traversal restrictions; added a message-bridge regression test. Release remains 0.2.11; private build 2026.10.11.47. Full validation and staging in progress.
+

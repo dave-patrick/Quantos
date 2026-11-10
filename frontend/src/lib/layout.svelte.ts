@@ -193,6 +193,9 @@ class Layout {
     const ti = src.tabs.findIndex((t) => t.key === tabKey);
     if (ti < 0) return;
     const [moved] = src.tabs.splice(ti, 1);
+    if (src.active === moved.key) {
+      src.active = src.tabs[Math.min(ti, src.tabs.length - 1)]?.key ?? null;
+    }
     const dst = this.panes[targetIndex];
     if (!dst.tabs.some((t) => t.key === moved.key)) dst.tabs.push(moved);
     this.activePane = targetIndex;
@@ -202,6 +205,8 @@ class Layout {
 
   closePane(index: number) {
     if (this.panes.length === 1) return;
+    const closing = this.panes[index];
+    if (closing) for (const t of closing.tabs) void flushTab(t);
     this.panes = this.panes.filter((_, i) => i !== index);
     this.split = 'none';
     this.activePane = 0;

@@ -9,7 +9,14 @@ public static class Updater
 {
     public static string UpdatesFolder(ClientPaths paths) => Path.Combine(paths.ClientData, "updates");
 
-    public static string CurrentVersion => typeof(Updater).Assembly.GetName().Version?.ToString(4) ?? "0.0.0";
+    public static string CurrentVersion
+    {
+        get
+        {
+            var v = typeof(Updater).Assembly.GetName().Version;
+            return v is null ? "0.0.0" : v.Revision > 0 ? v.ToString(4) : v.ToString(3);
+        }
+    }
 
     /// <summary>The newest verified download newer than this build, or null.</summary>
     public static (string Version, string Folder)? Staged(ClientPaths paths)
@@ -38,7 +45,15 @@ public static class Updater
             {
                 var dest = Path.Combine(appDir, Path.GetFileName(file));
                 var old = dest + ".old";
-                if (File.Exists(old)) File.Delete(old);
+                if (File.Exists(old))
+                {
+                    try { File.Delete(old); }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        var uniqueOld = old + "." + DateTime.UtcNow.Ticks;
+                        File.Move(old, uniqueOld);
+                    }
+                }
                 if (File.Exists(dest)) { File.Move(dest, old); moved.Add((dest, old)); }
                 File.Copy(file, dest);
                 copied.Add(dest);
@@ -55,7 +70,7 @@ public static class Updater
     /// <summary>After a successful start: the replaced files and installed downloads go.</summary>
     public static void CleanUp(ClientPaths paths)
     {
-        foreach (var old in Directory.EnumerateFiles(ClientPaths.AppDirectory, "*.old"))
+        foreach (var old in Directory.EnumerateFiles(ClientPaths.AppDirectory, "*.old*"))
             try { File.Delete(old); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         var root = UpdatesFolder(paths);
         if (!Directory.Exists(root) || !Version.TryParse(CurrentVersion, out var current)) return;

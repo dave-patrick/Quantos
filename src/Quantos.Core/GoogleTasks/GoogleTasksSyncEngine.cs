@@ -43,26 +43,33 @@ public sealed class GoogleTasksSyncEngine(WriteService writes, TaskService tasks
         public Node N { get; set; } = n;
     }
 
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
     // ---- public surface ---------------------------------------------------------------------
 
     public async Task<GoogleSyncReport> Run(IReadOnlyList<GoogleListMapping> confirmedMappings, CancellationToken ct)
     {
-        var s = store.Load();
-        var ctx = new Ctx(s, Trashed());
+        await _gate.WaitAsync(ct);
         try
         {
-            foreach (var m in confirmedMappings)
+            var s = store.Load();
+            var ctx = new Ctx(s, Trashed());
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                try { await SyncMapping(ctx, m, ct); }
-                catch (GoogleApiException ex) when (ex.Status == 404 && ex.Reason is null or "notFound") { ctx.Problems.Add(new(m.Workspace, "List missing: " + m.ListTitle)); }
-                // A local failure (for example a workspace that was renamed) stops only that mapping.
-                catch (QuantosException ex) { ctx.Problems.Add(new(m.Workspace, ex.Message)); }
+                foreach (var m in confirmedMappings)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    try { await SyncMapping(ctx, m, ct); }
+                    catch (GoogleApiException ex) when (ex.Status == 404 && ex.Reason is null or "notFound") { ctx.Problems.Add(new(m.Workspace, "List missing: " + m.ListTitle)); }
+                    // A local failure (for example a workspace that was renamed) stops only that mapping.
+                    catch (QuantosException ex) { ctx.Problems.Add(new(m.Workspace, ex.Message)); }
+                }
+                await ProcessDeletes(ctx, confirmedMappings, ct);
             }
-            await ProcessDeletes(ctx, confirmedMappings, ct);
+            finally { store.Save(s); } // everything is idempotent, so a partial run's progress is kept
+            return Report(ctx);
         }
-        finally { store.Save(s); } // everything is idempotent, so a partial run's progress is kept
-        return Report(ctx);
+        finally { _gate.Release(); }
     }
 
     /// <summary>Counts only; no local writes, no Google changes, no state changes.</summary>
@@ -105,38 +112,52 @@ public sealed class GoogleTasksSyncEngine(WriteService writes, TaskService tasks
 
     public async Task<GoogleSyncReport> ApplyPendingDeletes(CancellationToken ct)
     {
-        var s = store.Load();
-        var ctx = new Ctx(s, Trashed());
-        // Entries leave the held list one at a time as they are handled, so a failure part-way keeps the rest.
-        try { await ExecuteDeletes(ctx, s.PendingDeletes.ToList(), ct); }
-        finally { store.Save(s); }
-        return Report(ctx);
+        await _gate.WaitAsync(ct);
+        try
+        {
+            var s = store.Load();
+            var ctx = new Ctx(s, Trashed());
+            // Entries leave the held list one at a time as they are handled, so a failure part-way keeps the rest.
+            try { await ExecuteDeletes(ctx, s.PendingDeletes.ToList(), ct); }
+            finally { store.Save(s); }
+            return Report(ctx);
+        }
+        finally { _gate.Release(); }
     }
 
-    public Task CancelPendingDeletes(CancellationToken ct)
+    public async Task CancelPendingDeletes(CancellationToken ct)
     {
-        var s = store.Load();
-        foreach (var d in s.PendingDeletes)
+        await _gate.WaitAsync(ct);
+        try
         {
-            s.Links.Remove(d.TaskId);
-            if (d.Direction == DeleteDirection.ToGoogle) s.Cursors[d.ListId] = null;
-            else if (writes.Get(d.TaskId) is not null) WriteHints(d.TaskId, null, null);
+            var s = store.Load();
+            foreach (var d in s.PendingDeletes)
+            {
+                s.Links.Remove(d.TaskId);
+                if (d.Direction == DeleteDirection.ToGoogle) s.Cursors[d.ListId] = null;
+                else if (writes.Get(d.TaskId) is not null) WriteHints(d.TaskId, null, null);
+            }
+            s.PendingDeletes.Clear();
+            store.Save(s);
         }
-        s.PendingDeletes.Clear();
-        store.Save(s);
-        return Task.CompletedTask;
+        finally { _gate.Release(); }
     }
 
     /// <summary>Forgets the links, cursor, in-flight inserts and held deletions for one workspace/list pair.</summary>
     public void ResetMapping(string workspace, string listId)
     {
-        var s = store.Load();
-        foreach (var id in s.Links.Where(kv => kv.Value.ListId == listId).Select(kv => kv.Key).ToList()) s.Links.Remove(id);
-        s.Cursors.Remove(listId);
-        s.Intents.RemoveAll(i => i.ListId == listId);
-        s.PendingDeletes.RemoveAll(d => d.ListId == listId);
-        foreach (var key in s.HoldSince.Keys.Where(k => k.StartsWith(listId + "|", StringComparison.Ordinal)).ToList()) s.HoldSince.Remove(key);
-        store.Save(s);
+        _gate.Wait();
+        try
+        {
+            var s = store.Load();
+            foreach (var id in s.Links.Where(kv => kv.Value.ListId == listId).Select(kv => kv.Key).ToList()) s.Links.Remove(id);
+            s.Cursors.Remove(listId);
+            s.Intents.RemoveAll(i => i.ListId == listId);
+            s.PendingDeletes.RemoveAll(d => d.ListId == listId);
+            foreach (var key in s.HoldSince.Keys.Where(k => k.StartsWith(listId + "|", StringComparison.Ordinal)).ToList()) s.HoldSince.Remove(key);
+            store.Save(s);
+        }
+        finally { _gate.Release(); }
     }
 
     private GoogleSyncReport Report(Ctx c) =>

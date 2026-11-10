@@ -24,9 +24,9 @@ public sealed class GraphService(WriteService writes)
             .ToDictionary(n => n.Id);
 
         var edges = new HashSet<GraphEdge>();
-        foreach (var id in all.Keys)
-            foreach (var o in cache.OutLinks(id))
-                if (o.Target != id && all.ContainsKey(o.Target)) edges.Add(new GraphEdge(id, o.Target, o.Kind));
+        foreach (var (src, target, kind) in cache.AllResolvedLinks())
+            if (all.ContainsKey(src) && all.ContainsKey(target))
+                edges.Add(new GraphEdge(src, target, kind));
 
         if (tags)
             foreach (var n in all.Values)

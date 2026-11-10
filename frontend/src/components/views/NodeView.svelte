@@ -174,7 +174,10 @@
     const start = zoom.line - 1;
     const level = /^(#+)/.exec(lines[start] ?? '')?.[1].length ?? 1;
     let end = lines.length;
+    let inFence = false;
     for (let i = start + 1; i < lines.length; i++) {
+      if (/^\s*(```|~~~)/.test(lines[i])) { inFence = !inFence; continue; }
+      if (inFence) continue;
       const m = /^(#+)\s/.exec(lines[i]);
       if (m && m[1].length <= level) { end = i; break; }
     }

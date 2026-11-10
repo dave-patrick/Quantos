@@ -169,13 +169,23 @@ public sealed partial class CacheIndex : IDisposable
     /// <summary>True while a start-up scan or rebuild is writing in one batch.</summary>
     public bool InBatch => _batch is not null;
     private int _batchOwner; // managed thread id of the thread that opened the batch
+    private int _batchDepth;
 
     /// <summary>Groups many index writes into one transaction (start-up scans and rebuilds).</summary>
     public IDisposable Batch()
     {
         lock (_gate)
         {
-            if (_batch is null) { _batch = _db.BeginTransaction(); _batchOwner = Environment.CurrentManagedThreadId; }
+            if (_batch is null)
+            {
+                _batch = _db.BeginTransaction();
+                _batchOwner = Environment.CurrentManagedThreadId;
+                _batchDepth = 1;
+            }
+            else if (_batchOwner == Environment.CurrentManagedThreadId)
+            {
+                _batchDepth++;
+            }
         }
         return new BatchScope(this);
     }
@@ -186,11 +196,19 @@ public sealed partial class CacheIndex : IDisposable
         {
             lock (owner._gate)
             {
-                owner._batch?.Commit();
-                owner._batch?.Dispose();
-                owner._batch = null;
-                owner._batchOwner = 0;
-                owner.Changed();
+                if (owner._batch is not null && owner._batchOwner == Environment.CurrentManagedThreadId)
+                {
+                    owner._batchDepth--;
+                    if (owner._batchDepth <= 0)
+                    {
+                        owner._batch.Commit();
+                        owner._batch.Dispose();
+                        owner._batch = null;
+                        owner._batchOwner = 0;
+                        owner._batchDepth = 0;
+                        owner.Changed();
+                    }
+                }
             }
         }
     }
@@ -202,40 +220,46 @@ public sealed partial class CacheIndex : IDisposable
             Changed();
             using var tx = _batch is null ? _db.BeginTransaction() : null;
             _local = tx;
-            RemoveInternal(node.Path, node.Id);
-            Run("INSERT INTO files(path, id, hash, mtime, size) VALUES($p, $id, $h, $m, $s)",
-                ("$p", node.Path), ("$id", node.Id), ("$h", node.Hash), ("$m", mtime), ("$s", size));
-            if (!string.IsNullOrEmpty(node.Id))
+            try
             {
-                Run("INSERT OR REPLACE INTO nodes VALUES($id, $p, $t, $type, $ws, $tags, $c, $mod, $a, $ro, $props, $parent)",
-                    ("$id", node.Id), ("$p", node.Path), ("$t", node.Title), ("$type", node.Type), ("$ws", node.Workspace),
-                    ("$tags", JsonSerializer.Serialize(node.Tags, Json)), ("$c", node.Created), ("$mod", node.Modified),
-                    ("$a", node.Archived ? 1 : 0), ("$ro", node.ReadOnly ? 1 : 0), ("$props", JsonSerializer.Serialize(node.Properties, Json)),
-                    ("$parent", Tasks.Props.LinkId(Tasks.Props.Str(node.Properties, Tasks.TaskKeys.Parent))));
-                foreach (var tag in node.Tags.Select(t => t.ToLowerInvariant()).Distinct())
-                    Run("INSERT INTO node_tags VALUES($id, $tag)", ("$id", node.Id), ("$tag", tag));
-                foreach (var alias in node.Aliases)
-                    Run("INSERT INTO aliases VALUES($a, $id)", ("$a", alias), ("$id", node.Id));
-                foreach (var link in Links.Find(node.Body))
-                    Run("INSERT INTO links VALUES($s, $t, $k, $f, $c)", ("$s", node.Id),
-                        ("$t", link.IsResolved ? link.Target : "?" + link.Target), ("$k", link.Kind == LinkKind.Embed ? "embed" : "link"),
-                        ("$f", link.Fragment), ("$c", ContextLine(node.Body, link.Start)));
-                // Links held in properties (an owner, attendees) count as links too: backlinks, graph, renames.
-                foreach (var (key, value) in node.Properties)
-                    foreach (var text in PropertyStrings(value))
-                        foreach (var link in Links.Find(text).Where(l => l.IsResolved))
-                            Run("INSERT INTO links VALUES($s, $t, 'link', $f, $c)", ("$s", node.Id), ("$t", link.Target), ("$f", link.Fragment), ("$c", $"{key}: {text}"));
-                foreach (var region in Links.SyncRegions(node.Body))
-                    Run("INSERT INTO links VALUES($s, $t, $k, NULL, $c)", ("$s", node.Id), ("$t", region.Id), ("$k", "sync"), ("$c", ContextLine(region.Content, 0)));
-                foreach (var task in Links.InlineTasks(node.Body))
-                    Run("INSERT INTO inline_tasks VALUES($n, $t, $c, $x)", ("$n", node.Id), ("$t", task.Id), ("$c", task.Checked ? 1 : 0), ("$x", task.Text));
-                foreach (var attachment in Attachments.Find(node.Body))
-                    Run("INSERT INTO attachment_refs VALUES($n, $p)", ("$n", node.Id), ("$p", attachment));
-                Run("INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", Links.PlainText(node.Body)));
-                Run("INSERT OR REPLACE INTO search_map(id, rid) VALUES($id, last_insert_rowid())", ("$id", node.Id));
+                RemoveInternal(node.Path, node.Id);
+                Run("INSERT INTO files(path, id, hash, mtime, size) VALUES($p, $id, $h, $m, $s)",
+                    ("$p", node.Path), ("$id", node.Id), ("$h", node.Hash), ("$m", mtime), ("$s", size));
+                if (!string.IsNullOrEmpty(node.Id))
+                {
+                    Run("INSERT OR REPLACE INTO nodes VALUES($id, $p, $t, $type, $ws, $tags, $c, $mod, $a, $ro, $props, $parent)",
+                        ("$id", node.Id), ("$p", node.Path), ("$t", node.Title), ("$type", node.Type), ("$ws", node.Workspace),
+                        ("$tags", JsonSerializer.Serialize(node.Tags, Json)), ("$c", node.Created), ("$mod", node.Modified),
+                        ("$a", node.Archived ? 1 : 0), ("$ro", node.ReadOnly ? 1 : 0), ("$props", JsonSerializer.Serialize(node.Properties, Json)),
+                        ("$parent", Tasks.Props.LinkId(Tasks.Props.Str(node.Properties, Tasks.TaskKeys.Parent))));
+                    foreach (var tag in node.Tags.Select(t => t.ToLowerInvariant()).Distinct())
+                        Run("INSERT INTO node_tags VALUES($id, $tag)", ("$id", node.Id), ("$tag", tag));
+                    foreach (var alias in node.Aliases)
+                        Run("INSERT INTO aliases VALUES($a, $id)", ("$a", alias), ("$id", node.Id));
+                    foreach (var link in Links.Find(node.Body))
+                        Run("INSERT INTO links VALUES($s, $t, $k, $f, $c)", ("$s", node.Id),
+                            ("$t", link.IsResolved ? link.Target : "?" + link.Target), ("$k", link.Kind == LinkKind.Embed ? "embed" : "link"),
+                            ("$f", link.Fragment), ("$c", ContextLine(node.Body, link.Start)));
+                    // Links held in properties (an owner, attendees) count as links too: backlinks, graph, renames.
+                    foreach (var (key, value) in node.Properties)
+                        foreach (var text in PropertyStrings(value))
+                            foreach (var link in Links.Find(text).Where(l => l.IsResolved))
+                                Run("INSERT INTO links VALUES($s, $t, 'link', $f, $c)", ("$s", node.Id), ("$t", link.Target), ("$f", link.Fragment), ("$c", $"{key}: {text}"));
+                    foreach (var region in Links.SyncRegions(node.Body))
+                        Run("INSERT INTO links VALUES($s, $t, $k, NULL, $c)", ("$s", node.Id), ("$t", region.Id), ("$k", "sync"), ("$c", ContextLine(region.Content, 0)));
+                    foreach (var task in Links.InlineTasks(node.Body))
+                        Run("INSERT INTO inline_tasks VALUES($n, $t, $c, $x)", ("$n", node.Id), ("$t", task.Id), ("$c", task.Checked ? 1 : 0), ("$x", task.Text));
+                    foreach (var attachment in Attachments.Find(node.Body))
+                        Run("INSERT INTO attachment_refs VALUES($n, $p)", ("$n", node.Id), ("$p", attachment));
+                    Run("INSERT INTO search(id, title, body) VALUES($id, $t, $b)", ("$id", node.Id), ("$t", node.Title), ("$b", Links.PlainText(node.Body)));
+                    Run("INSERT OR REPLACE INTO search_map(id, rid) VALUES($id, last_insert_rowid())", ("$id", node.Id));
+                }
+                tx?.Commit();
             }
-            tx?.Commit();
-            _local = null;
+            finally
+            {
+                _local = null;
+            }
         }
     }
 
@@ -246,9 +270,15 @@ public sealed partial class CacheIndex : IDisposable
             Changed();
             using var tx = _batch is null ? _db.BeginTransaction() : null;
             _local = tx;
-            RemoveInternal(path, null);
-            tx?.Commit();
-            _local = null;
+            try
+            {
+                RemoveInternal(path, null);
+                tx?.Commit();
+            }
+            finally
+            {
+                _local = null;
+            }
         }
     }
 
@@ -517,6 +547,16 @@ public sealed partial class CacheIndex : IDisposable
             FROM links l LEFT JOIN nodes n ON n.id = l.target WHERE l.src = $id
             """, ("$id", id));
         return ReadLinks(cmd);
+    });
+
+    /// <summary>All resolved links across the vault in one query (used by global knowledge graph).</summary>
+    public IReadOnlyList<(string Src, string Target, string Kind)> AllResolvedLinks() => Read(db =>
+    {
+        using var cmd = Command(db, "SELECT src, target, kind FROM links WHERE target NOT LIKE '?%' AND src != target");
+        using var r = cmd.ExecuteReader();
+        var list = new List<(string, string, string)>();
+        while (r.Read()) list.Add((r.GetString(0), r.GetString(1), r.GetString(2)));
+        return list;
     });
 
     /// <summary>Ids of nodes containing a link or embed to <paramref name="id"/>.</summary>

@@ -48,15 +48,17 @@ app.Use(async (ctx, next) =>
     var expectedHash = isMcp ? mcpHash : secretHash;
     var auth = ctx.Request.Headers.Authorization.ToString();
     if (expectedHash is null || !auth.StartsWith("Bearer ", StringComparison.Ordinal) ||
-        !CryptographicOperations.FixedTimeEquals(expectedHash, SHA256.HashData(Encoding.UTF8.GetBytes(auth[7..]))))
+        !CryptographicOperations.FixedTimeEquals(expectedHash, SHA256.HashData(Encoding.UTF8.GetBytes(auth[7..].Trim()))))
     { ctx.Response.StatusCode = 401; return; }
     // Browser cross-origin access is intentionally absent. Only authenticated device backends sync.
     if (ctx.Request.Headers.Origin.Count > 0) { ctx.Response.StatusCode = 403; return; }
     try { await next(); }
-    catch (QuantosException ex) { ctx.Response.StatusCode = ex.Status; await ctx.Response.WriteAsJsonAsync(new { error = ex.Message }); }
-    catch (IOException) { ctx.Response.StatusCode = 503; await ctx.Response.WriteAsJsonAsync(new { error = "The vault is busy. Retry sync." }); }
+    catch (QuantosException ex) when (!ctx.Response.HasStarted) { ctx.Response.StatusCode = ex.Status; await ctx.Response.WriteAsJsonAsync(new { error = ex.Message }); }
+    catch (IOException) when (!ctx.Response.HasStarted) { ctx.Response.StatusCode = 503; await ctx.Response.WriteAsJsonAsync(new { error = "The vault is busy. Retry sync." }); }
 });
-app.MapGet("/health", () => new { ok = true, version = "0.2.0", timeZone = vault.Clock.ZoneName });
+var srvVer = typeof(Program).Assembly.GetName().Version;
+var srvVerString = srvVer is null ? "0.2.11" : srvVer.Revision > 0 ? srvVer.ToString(4) : srvVer.ToString(3);
+app.MapGet("/health", () => new { ok = true, version = srvVerString, timeZone = vault.Clock.ZoneName });
 app.MapMcp("/mcp");
 app.MapGet("/sync/mcp", () => new { enabled = mcpHash is not null, endpoint = "/mcp", agent = SharedVaultTools.AgentName,
     writeAccess = vault.Permissions.IsGranted(new Actor(ActorKind.Agent, SharedVaultTools.AgentName), Permission.CreateEdit) });

@@ -105,8 +105,9 @@ public sealed class RequestSecurity(RequestDelegate next, AccessTokens tokens, C
             if (!bootstrap && actor.Kind is ActorKind.Agent or ActorKind.Plugin or ActorKind.Automation)
             {
                 var path = request.Path;
-                if (path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/system") || path.StartsWithSegments("/api/auth") && path != "/api/auth/whoami"
-                    || path.StartsWithSegments("/api/plugins") || path.StartsWithSegments("/api/approvals") || path.StartsWithSegments("/api/google-tasks"))
+                if (path.StartsWithSegments("/api/setup") || path.StartsWithSegments("/api/system") || (path.StartsWithSegments("/api/auth") && path != "/api/auth/whoami")
+                    || path.StartsWithSegments("/api/plugins") || path.StartsWithSegments("/api/approvals") || path.StartsWithSegments("/api/google-tasks")
+                    || path.StartsWithSegments("/api/mcp") || path.StartsWithSegments("/api/mcp-http") || path.StartsWithSegments("/api/folder-bridge"))
                 {
                     await Reject(ctx, StatusCodes.Status403Forbidden, "Only you can do that, not an agent or plugin.");
                     return;

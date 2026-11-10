@@ -210,12 +210,21 @@ export class Doc {
   private async doSaveRaw() {
     if (this.rawText === this.node?.content) { this.status = 'saved'; return; }
     this.status = 'saving';
+    const sent = this.rawText;
     try {
-      const result = await api.put<SaveResult>(`nodes/${this.id}`, { content: this.rawText, baseHash: this.rawBaseHash });
+      const result = await api.put<SaveResult>(`nodes/${this.id}`, { content: sent, baseHash: this.rawBaseHash });
       if (result.node) {
         this.accept(result.node, true);
         this.rawBaseHash = result.node.hash;
-        if (result.node.content !== this.rawText) this.rawText = result.node.content;
+        if (this.rawText !== sent) {
+          const merged = merge3(sent, this.rawText, result.node.content);
+          if (merged !== null) this.rawText = merged;
+          this.status = 'dirty';
+          this.schedule();
+          return;
+        } else if (result.node.content !== this.rawText) {
+          this.rawText = result.node.content;
+        }
         this.externalVersion++;
       }
       this.status = 'saved';
@@ -327,13 +336,18 @@ export class Doc {
     if (raw === this.raw) return;
     if (raw) {
       this.flush().then(() => {
+        if (this.dirty || this.conflict !== null || this.status === 'error') return;
         this.rawText = this.node?.content ?? '';
         this.rawBaseHash = this.hash;
         this.raw = true;
       });
     } else {
       if (this.node?.readOnly) return;
-      this.flush().then(() => { this.raw = false; this.externalVersion++; });
+      this.flush().then(() => {
+        if (this.conflict !== null || this.status === 'error') return;
+        this.raw = false;
+        this.externalVersion++;
+      });
     }
   }
 }

@@ -429,7 +429,7 @@ public sealed partial class ExportService(WriteService writes, QueryService quer
         }.FirstOrDefault(File.Exists);
         if (edge is null) return "PDF export needs Microsoft Edge, which wasn't found.";
         var profile = Path.Combine(Path.GetTempPath(), "quantos-pdf-" + Guid.NewGuid().ToString("N"));
-        var psi = new ProcessStartInfo(edge) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true, RedirectStandardOutput = true };
+        var psi = new ProcessStartInfo(edge) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = false, RedirectStandardOutput = false };
         foreach (var a in new[] { "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--disable-extensions", "--no-pdf-header-footer", $"--user-data-dir={profile}", $"--print-to-pdf={pdf}", new Uri(html).AbsoluteUri })
             psi.ArgumentList.Add(a);
         try

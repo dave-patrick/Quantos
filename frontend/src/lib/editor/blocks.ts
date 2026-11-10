@@ -14,7 +14,7 @@ const EMBED_LINE = new RegExp(`^\\s*!\\[\\[(${ULID})(#[^\\]|]+)?(?:\\|[^\\]]+)?\
 /** Embedded notes, blocks and headings (BUILD-PLAN 8C.12, 8A.14 document cards). Read-only; click to open. */
 class EmbedWidget extends WidgetType {
   constructor(readonly id: string, readonly fragment: string | null, readonly from: number) { super(); }
-  eq(o: EmbedWidget) { return o.id === this.id && o.fragment === this.fragment && o.from === this.from; }
+  eq(o: EmbedWidget) { return o.id === this.id && o.fragment === this.fragment; }
   toDOM(view: EditorView) {
     const box = document.createElement('div');
     box.className = 'cm-embed';
@@ -26,7 +26,7 @@ class EmbedWidget extends WidgetType {
     const edit = document.createElement('button');
     edit.className = 'cm-embed-edit';
     edit.textContent = 'Edit link';
-    edit.onclick = (e) => { e.stopPropagation(); view.dispatch({ selection: { anchor: this.from + 3 } }); view.focus(); };
+    edit.onclick = (e) => { e.stopPropagation(); const pos = view.posAtDOM(box); view.dispatch({ selection: { anchor: pos + 3 } }); view.focus(); };
     head.appendChild(edit);
     const body = document.createElement('div');
     body.className = 'cm-embed-body';
@@ -46,7 +46,7 @@ class EmbedWidget extends WidgetType {
 /** :::columns … +++ … ::: renders side by side (BUILD-PLAN 8A.4). */
 class ColumnsWidget extends WidgetType {
   constructor(readonly parts: string[], readonly from: number) { super(); }
-  eq(o: ColumnsWidget) { return o.parts.join('\u0000') === this.parts.join('\u0000') && o.from === this.from; }
+  eq(o: ColumnsWidget) { return o.parts.join('\u0000') === this.parts.join('\u0000'); }
   toDOM(view: EditorView) {
     const box = document.createElement('div');
     box.className = 'cm-columns';

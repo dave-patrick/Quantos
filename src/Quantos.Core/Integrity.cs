@@ -13,6 +13,7 @@ public static class Integrity
         var known = writes.Cache.List(includeArchived: true).ToDictionary(n => n.Id);
         var checkedFiles = 0;
         var ids = new Dictionary<string, string>();
+        var trashedById = writes.TrashBin.List().GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First());
 
         CheckLinkedFolders(writes, list);
 
@@ -38,14 +39,14 @@ public static class Integrity
             foreach (var taskId in TaskMarkers(node.Body))
             {
                 if (known.ContainsKey(taskId)) continue;
-                if (writes.TrashBin.FindById(taskId) is not null) continue;
+                if (trashedById.ContainsKey(taskId)) continue;
                 list.Add(new Diagnostic("warning", "task-missing", "This line is bound to a task that no longer exists. Delete the line, or the task will come back when it is restored.", rel, node.Id));
             }
 
             var propertyLinks = node.Properties.Values.SelectMany(Cache.CacheIndex.PropertyStrings).SelectMany(Links.Find);
             foreach (var link in Links.Find(node.Body).Concat(propertyLinks).Where(l => l.IsResolved && !known.ContainsKey(l.Target)).DistinctBy(l => l.Target))
             {
-                var trashed = writes.TrashBin.FindById(link.Target);
+                var trashed = trashedById.GetValueOrDefault(link.Target);
                 list.Add(new Diagnostic(trashed is null ? "warning" : "info", "broken-link",
                     trashed is null ? $"Links to {link.Display ?? link.Target}, which no longer exists." : $"Links to “{trashed.Title}”, which is in the trash.", rel, node.Id));
             }

@@ -9,13 +9,13 @@ import { drawDiagram, drawMath, findMath } from '../diagrams';
  */
 class MathWidget extends WidgetType {
   constructor(readonly tex: string, readonly display: boolean, readonly from: number) { super(); }
-  eq(o: MathWidget) { return o.tex === this.tex && o.display === this.display && o.from === this.from; }
+  eq(o: MathWidget) { return o.tex === this.tex && o.display === this.display; }
   toDOM(view: EditorView) {
     const el = document.createElement(this.display ? 'div' : 'span');
     el.className = 'cm-math';
     el.title = 'Click to edit';
     drawMath(el, this.tex, this.display);
-    el.onmousedown = (e) => { e.preventDefault(); view.dispatch({ selection: { anchor: this.from + (this.display ? 2 : 1) } }); view.focus(); };
+    el.onmousedown = (e) => { e.preventDefault(); const pos = view.posAtDOM(el); view.dispatch({ selection: { anchor: pos + (this.display ? 2 : 1) } }); view.focus(); };
     return el;
   }
   ignoreEvent() { return true; }
@@ -23,13 +23,13 @@ class MathWidget extends WidgetType {
 
 class DiagramWidget extends WidgetType {
   constructor(readonly source: string, readonly from: number) { super(); }
-  eq(o: DiagramWidget) { return o.source === this.source && o.from === this.from; }
+  eq(o: DiagramWidget) { return o.source === this.source; }
   toDOM(view: EditorView) {
     const el = document.createElement('div');
     el.className = 'cm-diagram';
     el.title = 'Click to edit';
     drawDiagram(el, this.source);
-    el.onmousedown = (e) => { e.preventDefault(); view.dispatch({ selection: { anchor: view.state.doc.lineAt(this.from).to } }); view.focus(); };
+    el.onmousedown = (e) => { e.preventDefault(); const pos = view.posAtDOM(el); view.dispatch({ selection: { anchor: view.state.doc.lineAt(pos).to } }); view.focus(); };
     return el;
   }
   ignoreEvent() { return true; }
