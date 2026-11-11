@@ -504,7 +504,7 @@ Delivery: Windows 0.2.10 build 2026.09.11.45 installed/restarted with HTTP 200 a
 
 ## Branch review and local build (2026-11-10)
 
-Reviewed code-improvements independently in two rounds. Fixed encoded plugin queries being rejected while retaining endpoint and traversal restrictions; added a message-bridge regression test. Release remains 0.2.11; private build 2026.10.11.47. Full validation and staging in progress.
+Reviewed code-improvements independently in two rounds. Fixed encoded plugin queries being rejected while retaining endpoint and traversal restrictions; added a message-bridge regression test. Release remains 0.2.11; private build 2026.10.11.47. Merged through PR #4 (0e27aea). All GitHub Windows/Linux tests and Windows package checks passed. Local: 179 frontend and 7 native tests passed; svelte-check zero errors/warnings; package/ZIP checks and self-check passed (zero warnings). Initial local backend run: 371/373 passed; discovery and Edge PDF checks failed under severe memory pressure; extended sequential retry was interrupted after stalling, so those local failures remain unresolved. Claude CI review action failed during execution; two local independent review rounds completed clean after the plugin fix. Staged/restarted the owner copy with matching executable/assembly hashes and Page loaded HTTP 200 at 12:02:28. No public release or Android install. Broader interactive editor acceptance was not repeated.
 
 
 ## Antigravity theme preview test build (2026-11-10)
