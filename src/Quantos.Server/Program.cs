@@ -57,7 +57,7 @@ app.Use(async (ctx, next) =>
     catch (IOException) when (!ctx.Response.HasStarted) { ctx.Response.StatusCode = 503; await ctx.Response.WriteAsJsonAsync(new { error = "The vault is busy. Retry sync." }); }
 });
 var srvVer = typeof(Program).Assembly.GetName().Version;
-var srvVerString = srvVer is null ? "0.2.11" : srvVer.Revision > 0 ? srvVer.ToString(4) : srvVer.ToString(3);
+var srvVerString = srvVer is null ? "0.3.1" : srvVer.Revision > 0 ? srvVer.ToString(4) : srvVer.ToString(3);
 app.MapGet("/health", () => new { ok = true, version = srvVerString, timeZone = vault.Clock.ZoneName });
 app.MapMcp("/mcp");
 app.MapGet("/sync/mcp", () => new { enabled = mcpHash is not null, endpoint = "/mcp", agent = SharedVaultTools.AgentName,

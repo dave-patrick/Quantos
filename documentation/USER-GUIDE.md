@@ -668,3 +668,10 @@ On Windows, **Settings › Shared vault › Link an original folder** lets you b
 ### Notes browser content
 
 Notes lists, trees and mobile folder counts exclude supertag definitions and synced blocks. Manage definitions in **Manage supertags**; their files remain available in the **Files** panel. Notes carrying supertags remain normal visible notes.
+
+### Primary text colour
+
+In Settings > Appearance > Theme colours, elements and fonts > Base palette, choose **Main text** for content and primary labels, and **Secondary text** for metadata, hints and placeholders. Pick a colour or enter its hex value; both controls use your exact colour without fading, on built-in or custom backgrounds. Choose Automatic to restore that group's automatic colours. Older saved shades remain until you change the corresponding group. The bottom status bar uses rounded corners matching the editor panes.
+
+
+The desktop workspace uses compact, aligned outer gutters and a consistent gap above the rounded status bar. Closing either sidebar returns that space to the workspace. Header, note-title and settings padding are reduced without changing text size or reading width.

@@ -56,6 +56,12 @@
   :root[data-platform='android'] .header .tool span,
   :root[data-platform='android'] .header .search span { display: none; }
 }
+@media (min-width: 701px) {
+  :root[data-platform='android'] .shell,
+  :root[data-platform='android'] .shell.left,
+  :root[data-platform='android'] .shell.right,
+  :root[data-platform='android'] .shell.left.right { grid-template-rows: 60px minmax(0, 1fr) var(--statusbar-h); }
+}
 @media (max-width: 700px) {
   :root[data-platform='android'] .shell,
   :root[data-platform='android'] .shell.left,
@@ -71,7 +77,7 @@
   :root[data-platform='android'] .header .search span { display: none; }
   :root[data-platform='android'] .header .current .label { display: none; }
   :root[data-platform='android'] .shell.left .sidebar,
-  :root[data-platform='android'] .shell.right .rightbar { top: 120px; }
+  :root[data-platform='android'] .shell.right .rightbar { top: 128px; }
   :root[data-platform='android'] .settings,
   :root[data-platform='android'] .settings.nav-right { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   :root[data-platform='android'] .settings nav { display: flex; flex-wrap: nowrap; overflow-x: auto; border: 0; padding: 4px 8px; order: 0; }

@@ -180,7 +180,7 @@
   nav button { text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 12px; border-radius: 7px; }
   nav button:hover { background: var(--bg-hover); }
   nav button.on { background: var(--bg-active); color: var(--accent-strong); }
-  .body { padding: 24px 32px 80px; max-width: 860px; }
+  .body { padding: 16px 20px 24px; max-width: 860px; }
   .body > h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
   .body > h3 { font: 700 16px/1.3 var(--font-display); margin: 26px 0 6px; padding: 10px 14px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; }
   .field { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 12px 0; min-width: 0; }
@@ -202,6 +202,6 @@
     .settings { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     nav { display: flex; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--line); padding: 8px; }
     nav button { width: auto; padding: 6px 10px; }
-    .body { padding: 18px 18px 60px; }
+    .body { padding: 12px 12px 24px; }
   }
 </style>

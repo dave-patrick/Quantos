@@ -66,7 +66,7 @@
 
 <style>
   .header { grid-area: header; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 0 8px;
-    border: 1px solid var(--line); border-radius: 12px; background: var(--header-bg); min-width: 0; margin: 4px 8px 0; box-shadow: 0 4px 12px rgb(0 0 0 / 0.2), 0 1px 3px rgb(0 0 0 / 0.15); }
+    border: 1px solid var(--line); border-radius: 12px; background: var(--header-bg); min-width: 0; box-shadow: 0 4px 12px rgb(0 0 0 / 0.2), 0 1px 3px rgb(0 0 0 / 0.15); }
   .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .brand > .icon-btn, .right > .icon-btn { width: 32px; height: 32px; border-radius: 8px; }
   .header .brand > .icon-btn, .header .right > .icon-btn { background: transparent; }

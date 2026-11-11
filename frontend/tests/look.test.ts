@@ -2,6 +2,42 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOOK, PRESETS, baseOf, contrast, fontStack, lookCss, lookVars, mix, readable, resetElements } from '../src/lib/look';
 
 describe('look', () => {
+  it('groups main labels and secondary text without fading explicit colours', () => {
+    for (const base of ['dark', 'light'] as const) {
+      const vars = lookVars({ ...DEFAULT_LOOK, text: '#123456', secondaryText: '#987654', textMuted: '#ffffff', textFaint: '#000000' }, base);
+      expect(vars['--text']).toBe('#123456');
+      expect(vars['--text-soft']).toBe('#123456');
+      expect(vars['--text-muted']).toBe('#987654');
+      expect(vars['--text-faint']).toBe('#987654');
+    }
+  });
+
+  it('preserves legacy text shades until their replacement is selected', () => {
+    const vars = lookVars({ ...DEFAULT_LOOK, text: '#123456', textSoft: '#abcdef', textMuted: '#135790', textFaint: '#246802' }, 'dark');
+    expect(vars['--text-soft']).toBe('#abcdef');
+    expect(vars['--text-muted']).toBe('#135790');
+    expect(vars['--text-faint']).toBe('#246802');
+    const reset = resetElements({ ...DEFAULT_LOOK, text: '#123456', secondaryText: '#987654', textSoft: '#abcdef', textMuted: '#135790', textFaint: '#246802' });
+    expect(reset.text).toBe('#123456');
+    expect(reset.secondaryText).toBeNull();
+    expect(reset.textSoft).toBeNull();
+    expect(reset.textMuted).toBeNull();
+    expect(reset.textFaint).toBeNull();
+  });
+  it('uses the selected primary text colour on built-in light and dark backgrounds', () => {
+    for (const base of ['dark', 'light'] as const) {
+      const vars = lookVars({ ...DEFAULT_LOOK, text: '#e75480' }, base);
+      expect(vars['--text']).toBe('#e75480');
+      expect(vars['--text-soft']).toBeDefined();
+      expect(vars['--bg']).toBeUndefined();
+    }
+  });
+
+  it('keeps the picked colour exactly instead of silently changing its contrast', () => {
+    const vars = lookVars({ ...DEFAULT_LOOK, bg: '#2a2b2d', text: '#222222', textMuted: '#abcdef' }, 'dark');
+    expect(vars['--text']).toBe('#222222');
+    expect(vars['--text-muted']).toBe('#abcdef');
+  });
   it('mixes and measures colours', () => {
     expect(mix('#000000', '#ffffff', 0.5)).toBe('#808080');
     expect(contrast('#000000', '#ffffff')).toBeCloseTo(21, 0);

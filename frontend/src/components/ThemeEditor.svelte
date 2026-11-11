@@ -28,7 +28,7 @@
 
   const activePreset = $derived(
     PRESETS.find((p) =>
-      (['bg', 'text', 'accent', 'fontUi', 'fontHeading', 'fontEditor', 'fontMono'] as const).every(
+      (['bg', 'text', 'secondaryText', 'accent', 'fontUi', 'fontHeading', 'fontEditor', 'fontMono'] as const).every(
         (k) => (p.look[k] ?? null) === (look[k] ?? null)
       ) && (!p.base || p.base === app.theme)
     )?.key ?? null
@@ -48,7 +48,7 @@
 
   function colour(key: keyof Look, value: string) {
     const rgb = parseHex(value);
-    if (rgb) set({ [key]: toHex(rgb) });
+    if (rgb) set({ [key]: toHex(rgb), ...(key === 'text' ? { textSoft: null } : key === 'secondaryText' ? { textMuted: null, textFaint: null } : {}) });
   }
 
   function clearElement(key: keyof Look) {
@@ -68,7 +68,6 @@
     { id: 'surfaces', label: 'Surfaces' },
     { id: 'interactive', label: 'Interactive' },
     { id: 'borders', label: 'Borders' },
-    { id: 'text', label: 'Text' },
     { id: 'feedback', label: 'Feedback' }
   ];
 
@@ -310,32 +309,46 @@
   </div>
 
   <div class="field">
-    <span>Text</span>
+    <span>Main text</span>
     <input
       type="color"
-      aria-label="Text colour"
+      aria-label="Main text colour"
       value={shown('text')}
-      disabled={!look.bg}
       oninput={(e) => colour('text', (e.target as HTMLInputElement).value)}
     />
     <input
       class="input hex"
-      aria-label="Text hex"
+      aria-label="Main text hex"
       value={look.text ?? ''}
       placeholder="Automatic"
-      disabled={!look.bg}
       onchange={(e) => {
         const v = (e.target as HTMLInputElement).value.trim();
-        if (!v) set({ text: null });
+        if (!v) set({ text: null, textSoft: null });
         else colour('text', v);
       }}
     />
-    {#if look.text}
-      <button class="btn ghost small-btn" onclick={() => set({ text: null })}>Automatic</button>
+    {#if look.text || look.textSoft}
+      <button class="btn ghost small-btn" onclick={() => set({ text: null, textSoft: null })}>Automatic</button>
     {/if}
-    {#if !look.bg}
-      <span class="faint small">Choose a custom background to override primary text colour.</span>
+    <span class="faint small">Content and primary labels use your exact colour.</span>
+  </div>
+
+  <div class="field">
+    <span>Secondary text</span>
+    <input type="color" aria-label="Secondary text colour"
+      value={look.secondaryText ?? look.textMuted ?? look.textFaint ?? effectiveColor('--text-muted', look, base)}
+      oninput={(e) => colour('secondaryText', (e.target as HTMLInputElement).value)} />
+    <input class="input hex" aria-label="Secondary text hex" placeholder="Automatic"
+      value={look.secondaryText ?? look.textMuted ?? look.textFaint ?? ''}
+      onchange={(e) => {
+        const v = (e.target as HTMLInputElement).value.trim();
+        if (!v) set({ secondaryText: null, textMuted: null, textFaint: null });
+        else colour('secondaryText', v);
+      }} />
+    {#if look.secondaryText || look.textMuted || look.textFaint}
+      <button class="btn ghost small-btn" onclick={() => set({ secondaryText: null, textMuted: null, textFaint: null })}>Automatic</button>
     {/if}
+    <span class="faint small">Metadata, hints and placeholders use this colour without fading.</span>
   </div>
 
   <div class="field">

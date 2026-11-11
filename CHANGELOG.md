@@ -5,10 +5,12 @@ The plan these releases implement is [BUILD-PLAN.md](BUILD-PLAN.md); the current
 and how to work on it is [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md).
 Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
-## Unreleased
+## 0.3.1 — 2026-11-11 (build 2026.11.11.54)
 
 - **Editor and UI:**
-  - Granular interface element theming in *Settings › Appearance*: custom colour pickers and hex inputs for 21 interface elements across surfaces (sidebar, header, status bar, editor, panels, cards), interactive states (inputs, hover, active item, selection highlight), borders (subtle, strong, focus ring), text hierarchy (soft, muted, faint), and feedback colours (accent ink/wash, danger, warning, success).
+  - Main and Secondary text controls apply exact selected colours, with legacy override compatibility.
+  - Consistent 8px shell spacing, tighter settings/editor padding and a rounded status bar.
+  - Granular interface element theming in *Settings › Appearance*: custom colour pickers and hex inputs for interface elements across surfaces (sidebar, header, status bar, editor, panels, cards), interactive states (inputs, hover, active item, selection highlight), borders (subtle, strong, focus ring), main and secondary text, and feedback colours (accent ink/wash, danger, warning, success).
   - Miniature live theme preview in *Settings › Appearance* reflecting customisations in real time across simulated headers, sidebars, editor content, wikilinks, tags, and status bar.
   - Theme utility actions: "Copy CSS" export, per-element "Auto" reset, and one-click "Reset elements to auto".
   - Resolved dynamic DOM position lookups in editor widgets (`QueryWidget`, `EmbedWidget`, `ColumnsWidget`, `MathWidget`, `DiagramWidget`, `CheckWidget`) to avoid widget state thrashing during rapid typing.

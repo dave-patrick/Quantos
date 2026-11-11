@@ -1,0 +1,33 @@
+<!doctype html><html data-theme="dark"><head><meta charset="utf-8"><title>Interface spacing</title>
+<link rel="stylesheet" href="/src/styles/tokens.css"><link rel="stylesheet" href="/src/styles/base.css"></head><body><div id="app"></div>
+<script type="module">
+window.fetch=async(url)=>{
+ const path=String(url).replace('/api/','');
+ if(path.startsWith('tree'))return Response.json({name:'default',path:'',folders:[],notes:[]});
+ if(path.startsWith('config/'))return Response.json({});
+ return Response.json([]);
+};
+try{
+ const {mount,tick}=await import('svelte');
+ const {app}=await import('/src/lib/state.svelte.ts');
+ const {layout}=await import('/src/lib/layout.svelte.ts');
+ app.workspace='default';app.workspaces=['default'];app.status={version:'0.2.11',vault:'Fixture/Vault'};app.connected=true;app.leftOpen=true;app.rightOpen=true;app.rightPanels=['inspector'];
+ layout.open({kind:'settings',title:'Settings',arg:'general'},'current');
+ mount((await import('/src/components/Shell.svelte')).default,{target:document.querySelector('#app')});await tick();
+ window.spacingCheck=async()=>{
+  await tick();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  const rect=s=>document.querySelector(s).getBoundingClientRect();
+  const status=rect('footer.status'),center=rect('main.center'),header=rect('.shell > header'),left=rect('.sidebar');
+  const checks={statusLeft:status.left,statusRight:innerWidth-status.right,statusBottom:innerHeight-status.bottom,panelGap:status.top-center.bottom,headerHeight:header.height,headerLeft:header.left,sidebarGap:status.top-left.bottom,overflow:document.documentElement.scrollWidth>innerWidth};
+  if(innerWidth>900)checks.rightGap=status.top-rect('.rightbar .part').bottom;
+  for(const key of ['statusLeft','statusRight','statusBottom','panelGap','headerLeft','sidebarGap'])if(Math.abs(checks[key]-8)>1)throw Error(key+': '+checks[key]);
+  if(checks.headerHeight!==48||checks.overflow)throw Error(JSON.stringify(checks));
+  if('rightGap' in checks && Math.abs(checks.rightGap-8)>1)throw Error('rightGap');
+  app.leftOpen=false;app.rightOpen=false;await tick();await new Promise(r=>requestAnimationFrame(r));
+  if(Math.abs(rect('main.center').left-8)>1||Math.abs(innerWidth-rect('main.center').right-8)>1)throw Error('hidden sidebar gutters');
+  app.leftOpen=true;app.rightOpen=true;await tick();
+  return checks;
+ };
+ window.spacingReady=true;
+}catch(error){window.spacingError=String(error);}
+</script></body></html>

@@ -98,6 +98,10 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 
 ## Interface navigation and Appearance
 
+The expanded shell owns 8px outer padding/gaps; child panels must not add duplicate outer margins. Grid tracks follow visible sidebars. Desktop header is48px; expanded Android retains60px (112px narrow two-row header). Fixed narrow panels account for shell padding and statusbar inset. Right-sidebar resize math excludes only its actual divider heights.
+
+Text appearance uses two controls: Main text (`look.text`, covering primary content and labels) and Secondary text (`look.secondaryText`, covering metadata/hints/placeholders). Explicit colours are exact. Legacy textSoft/textMuted/textFaint preferences remain readable until the corresponding group is edited; group edits and Automatic clear those legacy overrides.
+
 Default desktop/tablet sidebar destinations are grouped into Everyday, Planning, and Explore and tools. Preserve saved custom ordering and hidden items; choosing a destination from another panel reveals its group. Appearance starts with a native theme picker and interface scale, with previews/colours/fonts behind Theme colours and fonts. Keep settings rows and task controls responsive to their pane width, and preserve the compact Android shell.
 
 - Task priority uses numeric ordering 1 Critical through 4 Low; effort levels are low/medium/high strings. Legacy numeric effort remains minutes for compatibility and planning until replaced.

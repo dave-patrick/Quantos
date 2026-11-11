@@ -7,6 +7,7 @@
 export interface Look {
   bg: string | null;          // null: the built-in dark or light palette
   text: string | null;        // null: chosen for contrast with the background
+  secondaryText?: string | null; // metadata, hints and placeholders; null: automatic
   accent: string | null;      // null: the accent preset (prefs.accent)
   fontUi: string | null;
   fontHeading: string | null;
@@ -41,6 +42,7 @@ export interface Look {
 export const DEFAULT_LOOK: Look = {
   bg: null,
   text: null,
+  secondaryText: null,
   accent: null,
   fontUi: null,
   fontHeading: null,
@@ -144,7 +146,7 @@ export const BUILTIN_LIGHT: Record<string, string> = {
   '--ok': '#17774a'
 };
 
-export type ElementCategory = 'surfaces' | 'interactive' | 'borders' | 'text' | 'feedback';
+export type ElementCategory = 'surfaces' | 'interactive' | 'borders' | 'feedback';
 
 export interface ElementDef {
   key: keyof Look;
@@ -175,11 +177,6 @@ export const THEME_ELEMENTS: ElementDef[] = [
   // Borders & Dividers
   { key: 'line', cssVar: '--line', label: 'Subtle borders', category: 'borders', description: 'Standard borders and divider lines' },
   { key: 'lineStrong', cssVar: '--line-strong', label: 'Strong borders', category: 'borders', description: 'Focused pane borders and dialog boundaries' },
-
-  // Text Hierarchy
-  { key: 'textSoft', cssVar: '--text-soft', label: 'Soft text', category: 'text', description: 'Secondary titles and group subheadings' },
-  { key: 'textMuted', cssVar: '--text-muted', label: 'Muted text', category: 'text', description: 'Timestamps, metadata and hotkeys' },
-  { key: 'textFaint', cssVar: '--text-faint', label: 'Faint text', category: 'text', description: 'Placeholders, fold icons and subtle hints' },
 
   // Status & Feedback
   { key: 'ok', cssVar: '--ok', label: 'Success / OK', category: 'feedback', description: 'Completed tasks and online connection' },
@@ -247,9 +244,10 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
   const v: Record<string, string> = {};
   const bg = look.bg && parseHex(look.bg) ? toHex(parseHex(look.bg)!) : null;
   const surface = bg ?? (base === 'light' ? '#f5f7fb' : '#2a2b2d');
+  const selectedText = look.text && parseHex(look.text) ? toHex(parseHex(look.text)!) : null;
   if (bg) {
     const light = isLight(bg);
-    const text = look.text && parseHex(look.text) ? readable(look.text, bg, 7) : light ? '#141b24' : '#edf2fa';
+    const text = selectedText ?? (light ? '#141b24' : '#edf2fa');
     v['--bg'] = bg;
     v['--bg-raised'] = light ? mix(bg, '#ffffff', 0.55) : mix(bg, text, 0.035);
     v['--bg-panel'] = mix(bg, text, light ? 0.04 : 0.055);
@@ -263,6 +261,12 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
     v['--text-muted'] = readable(mix(text, bg, 0.3), bg, 4.8);
     v['--text-faint'] = readable(mix(text, bg, 0.42), bg, 4.6);
     v['--shadow'] = light ? '0 12px 32px rgb(0 0 0 / 0.14)' : '0 12px 36px rgb(0 0 0 / 0.45)';
+  }
+  if (selectedText && !bg) {
+    v['--text'] = selectedText;
+    v['--text-soft'] = readable(mix(selectedText, surface, 0.15), surface, 7);
+    v['--text-muted'] = readable(mix(selectedText, surface, 0.3), surface, 4.8);
+    v['--text-faint'] = readable(mix(selectedText, surface, 0.42), surface, 4.6);
   }
   if (look.accent && parseHex(look.accent)) {
     const raw = toHex(parseHex(look.accent)!);
@@ -279,6 +283,7 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
   }
 
   // Detailed interface element overrides
+  if (selectedText) v['--text-soft'] = selectedText;
   const setOverride = (cssVar: string, hex?: string | null) => {
     if (hex && parseHex(hex)) v[cssVar] = toHex(parseHex(hex)!);
   };
@@ -298,6 +303,11 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
   setOverride('--text-soft', look.textSoft);
   setOverride('--text-muted', look.textMuted);
   setOverride('--text-faint', look.textFaint);
+  if (look.secondaryText && parseHex(look.secondaryText)) {
+    const secondary = toHex(parseHex(look.secondaryText)!);
+    v['--text-muted'] = secondary;
+    v['--text-faint'] = secondary;
+  }
   setOverride('--accent-ink', look.accentInk);
   setOverride('--accent-wash', look.accentWash);
   if (look.danger && parseHex(look.danger)) {
@@ -334,6 +344,7 @@ export function resetElements(look: Look): Look {
   return {
     bg: look.bg,
     text: look.text,
+    secondaryText: null,
     accent: look.accent,
     fontUi: look.fontUi,
     fontHeading: look.fontHeading,
