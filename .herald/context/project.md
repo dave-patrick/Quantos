@@ -17,6 +17,7 @@ Svelte interface in a Windows client (WebView2) and in the browser. Published by
 - `documentation/SERVER.md`: optional shared vault, offline sync, server MCP permissions and migration.
 
 ## Status
+- Public release 0.3.1, build 2026.11.11.54 (2026-11-11), merges the appearance/text/spacing work; Windows x64 and release-signed Android ARM64 artifacts are on GitHub. Current verification details are at the top of PROJECT-STATUS.md; older build notes below are historical.
 - Local, unreleased: optional two-way Google Tasks sync (Settings › Google Tasks; design in
   `documentation/GOOGLE-TASKS-SYNC-DESIGN.md`). Core `GoogleTasks/`, Backend `GoogleTasksCoordinator`, callback route handled
   in `RequestSecurity` before the Origin/Sec-Fetch-Site checks. Not tried against a real Google account or the Android phone yet.

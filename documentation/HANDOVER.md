@@ -1,5 +1,9 @@
 # Handover: working on Quantos with its owner
 
+## Published 0.3.1 (2026-11-11)
+
+Release 0.3.1, build 2026.11.11.54, is merged into main through PR #5 (7261c8c) and published at https://github.com/dave-patrick/Quantos/releases/tag/v0.3.1. Windows x64 ZIP, public release-signed Android ARM64 APK (versionCode 301), and SHA256SUMS.txt are uploaded; GitHub asset digests match local files. Android build: zero warnings/errors, signature and non-debug metadata verified. Public Windows package/self-check passed with zero self-check warnings. Private Google Tasks client configuration was excluded from public binaries and restored with unchanged hash. PR and merged-main Windows/Linux/package CI passed. Optional Claude review action failed before completing; independent local pending-change review returned no findings. Frontend 184 tests and seven native tests passed locally; backend 372/373 initially, discovery health-check passed isolated retry, and the full Windows suite passed CI. Browser colour fixture passed 38 checks; spacing checks passed desktop/800px (dynamic narrow-page harness was not recertified). Owner private Windows build 0.3.1 / 2026.11.11.54 was packaged, staged and restarted; startup Page loaded succeeded with HTTP 200 at 10:53:22. Installed executable and managed assembly hashes match the private package. No Android installation was requested or performed.
+
 ## Code improvements pass (2026-11-10)
 
 Comprehensive improvements reviewed and implemented on the dedicated branch `code-improvements`.
