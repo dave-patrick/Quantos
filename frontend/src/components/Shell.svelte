@@ -76,26 +76,27 @@
 <style>
   .shell {
     height: 100%;
+    padding: 8px;
     display: grid;
-    grid-template-columns: 0 minmax(0, 1fr) 0;
-    grid-template-rows: 60px minmax(0, 1fr) var(--statusbar-h);
-    grid-template-areas: 'header header header' 'left center right' 'status status status';
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 48px minmax(0, 1fr) var(--statusbar-h);
+    grid-template-areas: 'header' 'center' 'status';
     gap: 8px;
   }
-  .shell.left { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0; }
-  .shell.right { grid-template-columns: 0 minmax(0, 1fr) var(--rightbar-w); }
-  .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--rightbar-w); }
-  .center { grid-area: center; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: transparent; margin: 0 0 8px; overflow: visible; }
+  .shell.left { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); grid-template-areas: 'header header' 'left center' 'status status'; }
+  .shell.right { grid-template-columns: minmax(0, 1fr) var(--rightbar-w); grid-template-areas: 'header header' 'center right' 'status status'; }
+  .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--rightbar-w); grid-template-areas: 'header header header' 'left center right' 'status status status'; }
+  .center { grid-area: center; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: transparent; overflow: visible; }
   @media (max-width: 700px) {
-    .shell, .shell.left, .shell.right, .shell.left.right { grid-template-columns: 0 minmax(0, 1fr) 0; grid-template-rows: 60px minmax(0, 1fr) var(--statusbar-h); }
+    .shell, .shell.left, .shell.right, .shell.left.right { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'header' 'center' 'status'; grid-template-rows: 48px minmax(0, 1fr) var(--statusbar-h); }
     .shell.left :global(.sidebar), .shell.right :global(.rightbar) {
-      position: fixed; top: 68px; bottom: var(--statusbar-h); width: min(300px, 86vw); z-index: 50; box-shadow: var(--shadow); display: flex;
+      position: fixed; top: 64px; bottom: calc(var(--statusbar-h) + 16px); width: min(300px, 86vw); z-index: 50; box-shadow: var(--shadow); display: flex;
     }
-    .shell.left :global(.sidebar) { left: 0; }
-    .shell.right :global(.rightbar) { right: 0; }
+    .shell.left :global(.sidebar) { left: 8px; }
+    .shell.right :global(.rightbar) { right: 8px; }
   }
   @media (min-width: 701px) and (max-width: 900px) {
-    .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0; }
+    .shell.left.right { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); grid-template-areas: 'header header' 'left center' 'status status'; }
     .shell.left.right :global(.rightbar) { display: none; }
   }
 </style>

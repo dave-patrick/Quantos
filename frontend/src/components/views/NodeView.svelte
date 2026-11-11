@@ -333,10 +333,10 @@
   .save-state { font: 11px var(--font-mono); color: var(--text-faint); margin-right: 6px; min-width: 52px; text-align: right; }
   .save-state.saving, .save-state.dirty { color: var(--text-muted); }
   .save-state.conflict, .save-state.error { color: var(--danger); }
-  .body { flex: 1; padding: 6px 28px 0; }
+  .body { flex: 1; padding: 4px 20px 0; }
   .page { max-width: calc(var(--editor-width) + 4px); margin: 0 auto; }
   .title-heading { margin: 0; font: inherit; }
-  .title { width: 100%; border: 0; background: transparent; color: var(--text); font: 700 32px/1.25 var(--font-display); letter-spacing: .005em; padding: 18px 0 4px; }
+  .title { width: 100%; border: 0; background: transparent; color: var(--text); font: 700 32px/1.25 var(--font-display); letter-spacing: .005em; padding: 12px 0 4px; }
   .title:focus { outline: none; box-shadow: none; }
   .ns { display: flex; gap: 4px; font: 12.5px var(--font-mono); color: var(--text-faint); margin-top: 14px; }
   .ns button { border: 0; background: none; color: var(--accent); padding: 0; font: inherit; }

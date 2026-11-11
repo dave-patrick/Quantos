@@ -69,7 +69,7 @@ public static class Mcp
             try
             {
                 var v = typeof(Mcp).Assembly.GetName().Version;
-                var ver = v is null ? "0.2.11" : v.Revision > 0 ? v.ToString(4) : v.ToString(3);
+                var ver = v is null ? "0.3.1" : v.Revision > 0 ? v.ToString(4) : v.ToString(3);
                 var result = method switch
                 {
                     "initialize" => new JsonObject

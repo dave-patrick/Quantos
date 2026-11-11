@@ -1,20 +1,76 @@
 /**
- * Theming: any background, text and accent colour, and fonts for the interface, headings, editor and
- * code. From a background colour the rest of the palette (panels, hover, lines, softer text) is worked
- * out, light or dark, keeping text readable. Per device; a look can also be saved as a vault theme file.
+ * Theming: background, text, accent, fonts, and granular interface element colours.
+ * From a background colour the rest of the palette (panels, hover, lines, softer text)
+ * is automatically calculated, light or dark, keeping text readable. Every specific element
+ * can also be individually customised with full precision and saved as a vault theme file.
  */
 export interface Look {
   bg: string | null;          // null: the built-in dark or light palette
   text: string | null;        // null: chosen for contrast with the background
+  secondaryText?: string | null; // metadata, hints and placeholders; null: automatic
   accent: string | null;      // null: the accent preset (prefs.accent)
   fontUi: string | null;
   fontHeading: string | null;
   fontEditor: string | null;  // null: the Writing typeface setting
   fontMono: string | null;
   scale: number;              // interface text size, 0.9–1.25
+
+  // Detailed interface element colours (null: auto-calculated or inherited)
+  sidebarBg?: string | null;
+  headerBg?: string | null;
+  statusbarBg?: string | null;
+  editorBg?: string | null;
+  panelBg?: string | null;
+  raisedBg?: string | null;
+  inputBg?: string | null;
+  hoverBg?: string | null;
+  activeBg?: string | null;
+  selectBg?: string | null;
+  line?: string | null;
+  lineStrong?: string | null;
+  lineFocus?: string | null;
+  textSoft?: string | null;
+  textMuted?: string | null;
+  textFaint?: string | null;
+  accentInk?: string | null;
+  accentWash?: string | null;
+  danger?: string | null;
+  warn?: string | null;
+  ok?: string | null;
 }
 
-export const DEFAULT_LOOK: Look = { bg: null, text: null, accent: null, fontUi: null, fontHeading: null, fontEditor: null, fontMono: null, scale: 1 };
+export const DEFAULT_LOOK: Look = {
+  bg: null,
+  text: null,
+  secondaryText: null,
+  accent: null,
+  fontUi: null,
+  fontHeading: null,
+  fontEditor: null,
+  fontMono: null,
+  scale: 1,
+  sidebarBg: null,
+  headerBg: null,
+  statusbarBg: null,
+  editorBg: null,
+  panelBg: null,
+  raisedBg: null,
+  inputBg: null,
+  hoverBg: null,
+  activeBg: null,
+  selectBg: null,
+  line: null,
+  lineStrong: null,
+  lineFocus: null,
+  textSoft: null,
+  textMuted: null,
+  textFaint: null,
+  accentInk: null,
+  accentWash: null,
+  danger: null,
+  warn: null,
+  ok: null
+};
 
 export interface Preset { key: string; label: string; look: Partial<Look>; base?: 'dark' | 'light' }
 
@@ -22,16 +78,110 @@ export interface Preset { key: string; label: string; look: Partial<Look>; base?
 export const PRESETS: Preset[] = [
   { key: 'quantos-dark', label: 'Quantos Dark', look: {}, base: 'dark' },
   { key: 'quantos-light', label: 'Quantos Light', look: {}, base: 'light' },
-  { key: 'midnight', label: 'Midnight', look: { bg: '#0b0b12', accent: '#b6a2ff' } },
-  { key: 'graphite', label: 'Graphite', look: { bg: '#1c1d21', text: '#e8e6e3', accent: '#f4c46a' } },
-  { key: 'nord', label: 'Nord', look: { bg: '#2e3440', text: '#eceff4', accent: '#88c0d0' } },
-  { key: 'forest', label: 'Forest', look: { bg: '#0f1a14', text: '#e3efe7', accent: '#7fd8a6' } },
-  { key: 'rose-pine', label: 'Rosé', look: { bg: '#191724', text: '#e0def4', accent: '#ebbcba' } },
-  { key: 'solarized-dark', label: 'Solarized Dark', look: { bg: '#002b36', text: '#eee8d5', accent: '#2aa1e8' } },
-  { key: 'solarized-light', label: 'Solarized Light', look: { bg: '#fdf6e3', text: '#073642', accent: '#1e6fb5' } },
-  { key: 'paper', label: 'Paper', look: { bg: '#f7f3ea', text: '#2b2620', accent: '#a64a17', fontHeading: 'Georgia', fontEditor: 'Georgia' } },
-  { key: 'sky', label: 'Sky', look: { bg: '#eef5ff', text: '#10233d', accent: '#1d5fd6' } },
-  { key: 'contrast', label: 'High contrast', look: { bg: '#000000', text: '#ffffff', accent: '#ffd400' } }
+  { key: 'midnight', label: 'Midnight', look: { bg: '#0b0b12', sidebarBg: '#08080e', editorBg: '#0e0e18', accent: '#b6a2ff' } },
+  { key: 'graphite', label: 'Graphite', look: { bg: '#1c1d21', sidebarBg: '#16171a', editorBg: '#212227', text: '#e8e6e3', accent: '#f4c46a' } },
+  { key: 'nord', label: 'Nord', look: { bg: '#2e3440', sidebarBg: '#272c36', editorBg: '#3b4252', text: '#eceff4', accent: '#88c0d0' } },
+  { key: 'forest', label: 'Forest', look: { bg: '#0f1a14', sidebarBg: '#0a120e', editorBg: '#14221b', text: '#e3efe7', accent: '#7fd8a6' } },
+  { key: 'rose-pine', label: 'Rosé', look: { bg: '#191724', sidebarBg: '#13111c', editorBg: '#1f1d2e', text: '#e0def4', accent: '#ebbcba' } },
+  { key: 'solarized-dark', label: 'Solarized Dark', look: { bg: '#002b36', sidebarBg: '#00212b', editorBg: '#073642', text: '#eee8d5', accent: '#2aa1e8' } },
+  { key: 'solarized-light', label: 'Solarized Light', look: { bg: '#fdf6e3', sidebarBg: '#eee8d5', editorBg: '#fdf6e3', text: '#073642', accent: '#1e6fb5' } },
+  { key: 'paper', label: 'Paper', look: { bg: '#f7f3ea', sidebarBg: '#ede7db', editorBg: '#fbf9f4', text: '#2b2620', accent: '#a64a17', fontHeading: 'Georgia', fontEditor: 'Georgia' } },
+  { key: 'sky', label: 'Sky', look: { bg: '#eef5ff', sidebarBg: '#e1edff', editorBg: '#f6faff', text: '#10233d', accent: '#1d5fd6' } },
+  { key: 'contrast', label: 'High contrast', look: { bg: '#000000', sidebarBg: '#0a0a0a', editorBg: '#000000', text: '#ffffff', accent: '#ffd400', line: '#444444', lineStrong: '#ffffff' } }
+];
+
+export const BUILTIN_DARK: Record<string, string> = {
+  '--bg': '#2a2b2d',
+  '--sidebar-bg': '#202123',
+  '--header-bg': '#252628',
+  '--statusbar-bg': '#252628',
+  '--editor-bg': '#202123',
+  '--bg-raised': '#252628',
+  '--bg-panel': '#202123',
+  '--bg-hover': '#303133',
+  '--bg-active': '#393a3c',
+  '--bg-select': '#254a70',
+  '--bg-input': '#1b1c1e',
+  '--line': '#414244',
+  '--line-strong': '#505153',
+  '--line-focus': '#78b6ff',
+  '--text': '#edf2fa',
+  '--text-soft': '#c5d0df',
+  '--text-muted': '#9fb0c6',
+  '--text-faint': '#8b9bb2',
+  '--accent': '#78b6ff',
+  '--accent-strong': '#a3ccff',
+  '--accent-ink': '#091321',
+  '--accent-wash': '#142338',
+  '--danger': '#ff8a8a',
+  '--warn': '#f4c46a',
+  '--ok': '#7fd8a6'
+};
+
+export const BUILTIN_LIGHT: Record<string, string> = {
+  '--bg': '#f5f7fb',
+  '--sidebar-bg': '#eef2f8',
+  '--header-bg': '#ffffff',
+  '--statusbar-bg': '#ffffff',
+  '--editor-bg': '#eef2f8',
+  '--bg-raised': '#ffffff',
+  '--bg-panel': '#eef2f8',
+  '--bg-hover': '#e4eaf3',
+  '--bg-active': '#d9e4f2',
+  '--bg-select': '#bcd6f5',
+  '--bg-input': '#ffffff',
+  '--line': '#d6dde8',
+  '--line-strong': '#c3cddc',
+  '--line-focus': '#1a66c4',
+  '--text': '#0c131d',
+  '--text-soft': '#26364a',
+  '--text-muted': '#4f6078',
+  '--text-faint': '#5e6c80',
+  '--accent': '#1a66c4',
+  '--accent-strong': '#1559ad',
+  '--accent-ink': '#ffffff',
+  '--accent-wash': '#e3eefc',
+  '--danger': '#c43a3a',
+  '--warn': '#865a00',
+  '--ok': '#17774a'
+};
+
+export type ElementCategory = 'surfaces' | 'interactive' | 'borders' | 'feedback';
+
+export interface ElementDef {
+  key: keyof Look;
+  cssVar: string;
+  label: string;
+  category: ElementCategory;
+  description: string;
+}
+
+export const THEME_ELEMENTS: ElementDef[] = [
+  // Surfaces & Layout
+  { key: 'sidebarBg', cssVar: '--sidebar-bg', label: 'Sidebar', category: 'surfaces', description: 'Left and right navigation sidebars' },
+  { key: 'editorBg', cssVar: '--editor-bg', label: 'Editor canvas', category: 'surfaces', description: 'Main note writing area and tab panes' },
+  { key: 'panelBg', cssVar: '--bg-panel', label: 'Panels & views', category: 'surfaces', description: 'Data tables, file tree and sub-panels' },
+  { key: 'raisedBg', cssVar: '--bg-raised', label: 'Cards & dialogs', category: 'surfaces', description: 'Modals, popups, floating cards and toolbars' },
+  { key: 'headerBg', cssVar: '--header-bg', label: 'Header bar', category: 'surfaces', description: 'Top brand bar and main toolbar' },
+  { key: 'statusbarBg', cssVar: '--statusbar-bg', label: 'Status bar', category: 'surfaces', description: 'Bottom application status bar' },
+  { key: 'inputBg', cssVar: '--bg-input', label: 'Input fields', category: 'surfaces', description: 'Search inputs and text fields' },
+
+  // Interactive & Selections
+  { key: 'selectBg', cssVar: '--bg-select', label: 'Selection highlight', category: 'interactive', description: 'Text selection and active table rows' },
+  { key: 'hoverBg', cssVar: '--bg-hover', label: 'Hover highlight', category: 'interactive', description: 'Buttons and list items on hover' },
+  { key: 'activeBg', cssVar: '--bg-active', label: 'Active item', category: 'interactive', description: 'Pressed buttons and active segments' },
+  { key: 'lineFocus', cssVar: '--line-focus', label: 'Focus ring', category: 'interactive', description: 'Keyboard focus and active input borders' },
+  { key: 'accentWash', cssVar: '--accent-wash', label: 'Accent wash', category: 'interactive', description: 'Subtle accent background for badges and chips' },
+  { key: 'accentInk', cssVar: '--accent-ink', label: 'Accent text / ink', category: 'interactive', description: 'Text colour inside filled accent buttons' },
+
+  // Borders & Dividers
+  { key: 'line', cssVar: '--line', label: 'Subtle borders', category: 'borders', description: 'Standard borders and divider lines' },
+  { key: 'lineStrong', cssVar: '--line-strong', label: 'Strong borders', category: 'borders', description: 'Focused pane borders and dialog boundaries' },
+
+  // Status & Feedback
+  { key: 'ok', cssVar: '--ok', label: 'Success / OK', category: 'feedback', description: 'Completed tasks and online connection' },
+  { key: 'warn', cssVar: '--warn', label: 'Warning', category: 'feedback', description: 'Caution notices and sync conflict alerts' },
+  { key: 'danger', cssVar: '--danger', label: 'Danger / Error', category: 'feedback', description: 'Deleted items and error notices' }
 ];
 
 /** Fonts that ship with Quantos, then ones found on most Windows PCs. Any installed font can be typed in. */
@@ -89,14 +239,15 @@ export function readable(color: string, bg: string, min: number): string {
   return target;
 }
 
-/** CSS variables for a look, or only the parts it changes (accent alone, say). */
+/** CSS variables for a look, including calculated palette and any explicit element overrides. */
 export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, string> {
   const v: Record<string, string> = {};
   const bg = look.bg && parseHex(look.bg) ? toHex(parseHex(look.bg)!) : null;
   const surface = bg ?? (base === 'light' ? '#f5f7fb' : '#2a2b2d');
+  const selectedText = look.text && parseHex(look.text) ? toHex(parseHex(look.text)!) : null;
   if (bg) {
     const light = isLight(bg);
-    const text = look.text && parseHex(look.text) ? readable(look.text, bg, 7) : light ? '#141b24' : '#edf2fa';
+    const text = selectedText ?? (light ? '#141b24' : '#edf2fa');
     v['--bg'] = bg;
     v['--bg-raised'] = light ? mix(bg, '#ffffff', 0.55) : mix(bg, text, 0.035);
     v['--bg-panel'] = mix(bg, text, light ? 0.04 : 0.055);
@@ -111,6 +262,12 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
     v['--text-faint'] = readable(mix(text, bg, 0.42), bg, 4.6);
     v['--shadow'] = light ? '0 12px 32px rgb(0 0 0 / 0.14)' : '0 12px 36px rgb(0 0 0 / 0.45)';
   }
+  if (selectedText && !bg) {
+    v['--text'] = selectedText;
+    v['--text-soft'] = readable(mix(selectedText, surface, 0.15), surface, 7);
+    v['--text-muted'] = readable(mix(selectedText, surface, 0.3), surface, 4.8);
+    v['--text-faint'] = readable(mix(selectedText, surface, 0.42), surface, 4.6);
+  }
   if (look.accent && parseHex(look.accent)) {
     const raw = toHex(parseHex(look.accent)!);
     // Readable on the background and on its own tint (selected buttons, chips), so check against the tint.
@@ -124,11 +281,98 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
     v['--accent-ink'] = contrast(accent, '#000000') >= contrast(accent, '#ffffff') ? '#0b0f14' : '#ffffff';
     v['--bg-select'] = mix(surface, accent, isLight(surface) ? 0.28 : 0.32);
   }
+
+  // Detailed interface element overrides
+  if (selectedText) v['--text-soft'] = selectedText;
+  const setOverride = (cssVar: string, hex?: string | null) => {
+    if (hex && parseHex(hex)) v[cssVar] = toHex(parseHex(hex)!);
+  };
+  setOverride('--sidebar-bg', look.sidebarBg);
+  setOverride('--header-bg', look.headerBg);
+  setOverride('--statusbar-bg', look.statusbarBg);
+  setOverride('--editor-bg', look.editorBg);
+  setOverride('--bg-panel', look.panelBg);
+  setOverride('--bg-raised', look.raisedBg);
+  setOverride('--bg-input', look.inputBg);
+  setOverride('--bg-hover', look.hoverBg);
+  setOverride('--bg-active', look.activeBg);
+  setOverride('--bg-select', look.selectBg);
+  setOverride('--line', look.line);
+  setOverride('--line-strong', look.lineStrong);
+  setOverride('--line-focus', look.lineFocus);
+  setOverride('--text-soft', look.textSoft);
+  setOverride('--text-muted', look.textMuted);
+  setOverride('--text-faint', look.textFaint);
+  if (look.secondaryText && parseHex(look.secondaryText)) {
+    const secondary = toHex(parseHex(look.secondaryText)!);
+    v['--text-muted'] = secondary;
+    v['--text-faint'] = secondary;
+  }
+  setOverride('--accent-ink', look.accentInk);
+  setOverride('--accent-wash', look.accentWash);
+  if (look.danger && parseHex(look.danger)) {
+    v['--danger'] = toHex(parseHex(look.danger)!);
+    v['--danger-wash'] = mix(surface, v['--danger'], isLight(surface) ? 0.12 : 0.14);
+  }
+  if (look.warn && parseHex(look.warn)) {
+    v['--warn'] = toHex(parseHex(look.warn)!);
+    v['--warn-wash'] = mix(surface, v['--warn'], isLight(surface) ? 0.12 : 0.14);
+  }
+  if (look.ok && parseHex(look.ok)) {
+    v['--ok'] = toHex(parseHex(look.ok)!);
+    v['--ok-wash'] = mix(surface, v['--ok'], isLight(surface) ? 0.12 : 0.14);
+  }
+
   if (look.fontUi) v['--font-body'] = fontStack(look.fontUi, 'ui');
   if (look.fontHeading) v['--font-display'] = fontStack(look.fontHeading, 'heading');
   if (look.fontEditor) v['--font-editor'] = fontStack(look.fontEditor, 'editor');
   if (look.fontMono) v['--font-mono'] = fontStack(look.fontMono, 'mono');
   return v;
+}
+
+/** Resolves the effective color value for an element, whether custom or automatic. */
+export function effectiveColor(cssVar: string, look: Look, base: 'dark' | 'light', accentFallback = '#78b6ff'): string {
+  const vars = lookVars(look, base);
+  if (vars[cssVar]) return vars[cssVar];
+  if (cssVar === '--accent' || cssVar === '--line-focus') return vars['--accent'] ?? accentFallback;
+  const builtIn = base === 'light' ? BUILTIN_LIGHT : BUILTIN_DARK;
+  return builtIn[cssVar] ?? '#808080';
+}
+
+/** Resets all detailed element overrides back to automatic while preserving base bg, text, accent, fonts, and scale. */
+export function resetElements(look: Look): Look {
+  return {
+    bg: look.bg,
+    text: look.text,
+    secondaryText: null,
+    accent: look.accent,
+    fontUi: look.fontUi,
+    fontHeading: look.fontHeading,
+    fontEditor: look.fontEditor,
+    fontMono: look.fontMono,
+    scale: look.scale,
+    sidebarBg: null,
+    headerBg: null,
+    statusbarBg: null,
+    editorBg: null,
+    panelBg: null,
+    raisedBg: null,
+    inputBg: null,
+    hoverBg: null,
+    activeBg: null,
+    selectBg: null,
+    line: null,
+    lineStrong: null,
+    lineFocus: null,
+    textSoft: null,
+    textMuted: null,
+    textFaint: null,
+    accentInk: null,
+    accentWash: null,
+    danger: null,
+    warn: null,
+    ok: null
+  };
 }
 
 /** The look as a stylesheet; it outranks the built-in light and dark blocks. */
@@ -140,3 +384,4 @@ export function lookCss(look: Look, base: 'dark' | 'light'): string {
 
 /** The base a look runs on: its background decides, otherwise the light/dark switch. */
 export const baseOf = (look: Look, fallback: 'dark' | 'light'): 'dark' | 'light' => (look.bg && parseHex(look.bg) ? (isLight(look.bg) ? 'light' : 'dark') : fallback);
+

@@ -1,0 +1,58 @@
+<!doctype html><html data-theme="dark"><head><meta charset="utf-8"><title>Text colour and status corners</title>
+<link rel="stylesheet" href="/src/styles/tokens.css"><link rel="stylesheet" href="/src/styles/base.css">
+<style>body{overflow:auto;padding:16px}#status{height:26px}#result{white-space:pre-wrap}</style></head>
+<body><pre id="result">Running…</pre><div id="status"></div><div id="editor"></div>
+<script type="module">
+window.fetch=async()=>Response.json([]);
+const results=[];const check=(ok,label)=>{if(!ok)throw Error(label);results.push(label)};
+try {
+  const {mount,tick}=await import('svelte');
+  const {prefs}=await import('/src/lib/prefs.svelte.ts');
+  const {DEFAULT_LOOK}=await import('/src/lib/look.ts');
+  const {applyLook}=await import('/src/lib/appearance.svelte.ts');
+  prefs.look={...DEFAULT_LOOK};
+  mount((await import('/src/components/ThemeEditor.svelte')).default,{target:document.querySelector('#editor')});
+  mount((await import('/src/components/StatusBar.svelte')).default,{target:document.querySelector('#status')});
+  await tick();
+  const input=document.querySelector('[aria-label="Main text colour"]');
+  check(!input.disabled,'Text picker enabled with built-in background');
+  for (const base of ['dark','light']) {
+    document.documentElement.dataset.theme=base;
+    prefs.look={...DEFAULT_LOOK};
+    await tick();
+    for(const colour of ['#e75480','#222222','#1278ab']) {
+      input.value=colour;input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+      applyLook(prefs.look,base);
+      check(prefs.look.text===colour,`${base}: input event saves ${colour}`);
+      const probe=document.createElement('span');probe.style.color='var(--text)';document.body.appendChild(probe);
+      const expected=colour.slice(1).match(/../g).map(x=>parseInt(x,16));
+      check(getComputedStyle(probe).color===`rgb(${expected.join(', ')})`,`${base}: browser renders exact ${colour}`);probe.remove();
+    }
+  }
+  for (const base of ['dark','light']) {
+    document.documentElement.dataset.theme=base;
+    prefs.look={...DEFAULT_LOOK,textSoft:'#999999',textMuted:'#777777',textFaint:'#555555'};await tick();
+    input.value='#aabbcc';input.dispatchEvent(new Event('input',{bubbles:true}));await tick();
+    check(prefs.look.textSoft===null,'Main control clears legacy shade');
+    const secondary=document.querySelector('[aria-label="Secondary text colour"]');
+    secondary.value='#446688';secondary.dispatchEvent(new Event('input',{bubbles:true}));await tick();applyLook(prefs.look,base);
+    check(prefs.look.textMuted===null && prefs.look.textFaint===null,'Secondary control clears legacy shades');
+    check(getComputedStyle(document.querySelector('.section-title')).color==='rgb(170, 187, 204)','Main heading uses main colour');
+    check(getComputedStyle(input.closest('.field').querySelector('span')).color==='rgb(170, 187, 204)','Primary label uses main colour');
+    check(getComputedStyle(document.querySelector('footer .version')).color==='rgb(68, 102, 136)','Status metadata uses secondary colour');
+    secondary.value='#557799';secondary.dispatchEvent(new Event('input',{bubbles:true}));await tick();applyLook(prefs.look,base);
+    check(getComputedStyle(document.querySelector('footer .version')).color==='rgb(85, 119, 153)','Repeated secondary input updates metadata');
+    secondary.value='#446688';secondary.dispatchEvent(new Event('input',{bubbles:true}));await tick();applyLook(prefs.look,base);
+    for (const token of ['--text','--text-soft','--text-muted','--text-faint']) {
+      const probe=document.createElement('span');probe.style.color=`var(${token})`;document.body.appendChild(probe);
+      check(getComputedStyle(probe).color===(token.includes('muted')||token.includes('faint')?'rgb(68, 102, 136)':'rgb(170, 187, 204)'),`${base}: exact grouped ${token}`);probe.remove();
+    }
+    const row=secondary.closest('.field');row.querySelector('button').click();await tick();
+    check(prefs.look.secondaryText===null && prefs.look.textMuted===null && prefs.look.textFaint===null,'Automatic resets entire secondary group');
+    input.closest('.field').querySelector('button').click();await tick();
+    check(prefs.look.text===null && prefs.look.textSoft===null,'Automatic resets entire main group');
+  }
+  check(getComputedStyle(document.querySelector('footer')).borderTopLeftRadius==='12px','Status bar has rounded corners');
+  window.textColourResults={passed:results};document.querySelector('#result').textContent='PASS\n'+results.join('\n');
+} catch(error) {window.textColourResults={passed:results,error:String(error)};document.querySelector('#result').textContent='FAIL\n'+error.stack;}
+</script></body></html>

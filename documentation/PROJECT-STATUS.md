@@ -3,9 +3,9 @@
 ### Code improvement pass (2026-11-10, branch code-improvements)
 
 Audited and improved core library, backend, hosts, and frontend:
-- **Frontend / Editor:** Dynamic widget DOM position resolution instead of static range binding on equality; single-dispatch block conversion; single-scan heading fold markers; horizontal wikilink cursor expansions; active tab migration and pre-close flushing in layout; 3-way typing merge on raw saves; code-block comment isolation in node outline zoom; reactive title indexing; hardened plugin proxy path sanitization.
+- **Frontend / Editor & Theming:** Granular interface element theming in *Settings › Appearance* supporting individual colour selection for 21 UI elements (sidebar, header, status bar, editor, cards, inputs, hover, active item, selection, focus rings, borders, text tiers, feedback colours); interactive live miniature preview widget; CSS export and element-level auto resets; dynamic widget DOM position resolution instead of static range binding on equality; single-dispatch block conversion; single-scan heading fold markers; horizontal wikilink cursor expansions; active tab migration and pre-close flushing in layout; 3-way typing merge on raw saves; code-block comment isolation in node outline zoom; reactive title indexing; hardened plugin proxy path sanitization.
 - **Core / Backend:** Nested batching support and safe rollback in `CacheIndex`; single-query graph resolution (`AllResolvedLinks`); atomic workspace directory prefix validation; thread-safe permission operations; serialized supertag renaming; cached task focus titles; pre-indexed trash manifests; semaphore gating on Google Tasks sync operations; unblocked PDF printing pipes; restricted non-person actor endpoints; targeted folder bridge pause cancellation; atomic append endpoint adoption in CLI and MCP; and robust updater backup locking handling.
-- **Verification:** 178 frontend vitest tests passed; svelte-check passed (0 errors, 0 warnings); frontend production bundle built; 343 backend/core tests passed; CLI and Server builds succeeded with 0 warnings.
+- **Verification:** 179 frontend vitest tests passed; svelte-check passed (0 errors, 0 warnings); frontend production bundle built; 343 backend/core tests passed; CLI and Server builds succeeded with 0 warnings.
 
 ### Frontend tooling upgrade (2026-11-07, not yet released)
 
@@ -555,3 +555,26 @@ Delivery: Windows 0.2.10 build 2026.09.11.45 installed/restarted with HTTP 200 a
 
 Reviewed code-improvements independently in two rounds. Fixed encoded plugin queries being rejected while retaining endpoint and traversal restrictions; added a message-bridge regression test. Release remains 0.2.11; private build 2026.10.11.47. Merged through PR #4 (0e27aea). All GitHub Windows/Linux tests and Windows package checks passed. Local: 179 frontend and 7 native tests passed; svelte-check zero errors/warnings; package/ZIP checks and self-check passed (zero warnings). Initial local backend run: 371/373 passed; discovery and Edge PDF checks failed under severe memory pressure; extended sequential retry was interrupted after stalling, so those local failures remain unresolved. Claude CI review action failed during execution; two local independent review rounds completed clean after the plugin fix. Staged/restarted the owner copy with matching executable/assembly hashes and Page loaded HTTP 200 at 12:02:28. No public release or Android install. Broader interactive editor acceptance was not repeated.
 
+
+## Antigravity theme preview test build (2026-11-10)
+
+Built origin/code-improvements commit 5402b4c into private Windows release 0.2.11 build 2026.10.11.48. All 180 frontend tests passed; svelte-check zero errors/warnings; package/ZIP checks and packaged self-check passed (zero warnings). Staged/restarted the owner's usual copy; executable and managed assembly hashes match and current Page loaded reports HTTP 200. Backend code unchanged; backend/native suites and broader interactive theme acceptance were not repeated. No merge, push, public release or Android install for this build.
+
+## Primary text picker and rounded status bar (2026-11-10)
+
+Private Windows 0.2.11 build 2026.10.11.50 fixes primary text overrides being ignored without a custom background and silently contrast-adjusted with one. Exact selected text colours now apply independently; explicit secondary overrides retain precedence. StatusBar has a full rounded 12px border. Two regression tests failed before and pass after. Browser fixture textColour.html verifies live input events and exact computed text on light/dark bases plus rounded corners. Independent diagnosis agreed; review no findings. Delivery verified: 182 frontend tests passed, svelte-check zero errors/warnings, browser fixture 14 checks passed. Package and self-check passed with zero self-check warnings. Installed hashes match; restarted owner copy Page loaded HTTP 200 at 13:58:48. Backend/native suites not rerun for this frontend-only change. No commit, push, merge, public release or Android install.
+
+
+## Main and secondary text groups (2026-11-10)
+
+Private Windows 0.2.11 build 2026.10.11.52 replaces Soft/Muted/Faint text controls with Main text (content and primary labels) and Secondary text (metadata, hints, placeholders). Selected colours are exact; legacy shades remain until group editing. Automatic resets the group. Design gates and independent review clear. All 184 frontend tests passed after retrying an unrelated spellcheck timeout; svelte-check zero errors/warnings. Browser fixture verified 38 checks including actual labels/metadata, repeated input, legacy clearing and both group resets on light/dark bases. No backend/native suites rerun. Package/ZIP checks passed; self-check zero warnings. Staged/restarted owner copy with matching executable/managed assembly hashes and Page loaded HTTP 200 at 14:20:18. No commit, push, merge, public release or Android install.
+
+
+## Interface spacing pass (2026-11-10)
+
+Private Windows 0.2.11 build 2026.10.11.53 tightens shell/header, removes doubled panel-to-status margins and phantom sidebar grid gutters, aligns outer insets/gaps at8px, and reduces settings/editor padding. Android expanded header touch height retained; narrow overlays account for shell insets; right-panel resizing matches new padding. Browser spacing fixture passed1440/800/640px widths (outer/status gaps8px, no document overflow, both-sidebars-closed gutters removed). Actual appearance screenshot checked. Independent layout review no findings. All184 frontend tests pass; typecheck0 errors/warnings; Impeccable scans clean; Herald valid. Native CUA window inspection aborted; Android device not tested. Package/ZIP checks and self-check passed (zero self-check warnings). Staged/restarted owner copy with matching executable/managed assembly hashes and startup HTTP200 at14:38:06. No commit/push/public release or Android install.
+
+
+## Version update and GitHub push (2026-11-11)
+
+Owner requested release version 0.3.1; separate build ID is 2026.11.11.54. Includes the pending main/secondary text controls, exact text colours, rounded status bar and interface spacing work. Android versionCode is 301. Independent pending-change review: no findings; typecheck zero errors/warnings; browser text fixture 38 checks and desktop spacing fixture passed. Windows build and staging validation recorded below when complete. Owner subsequently requested merging all work to main and publishing v0.3.1 with Windows and release-signed Android artifacts. Validation: 184 frontend tests and seven native tests passed; backend suite 372/373 initially, discovery health-check passed on isolated retry.

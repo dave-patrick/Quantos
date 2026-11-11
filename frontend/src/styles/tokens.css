@@ -33,6 +33,11 @@
   --ok: #7fd8a6;
   --ok-wash: #16302a;
 
+  --sidebar-bg: var(--bg-panel);
+  --header-bg: linear-gradient(180deg, var(--bg-raised), color-mix(in srgb, var(--bg-raised) 85%, black 5%));
+  --statusbar-bg: var(--bg-raised);
+  --editor-bg: var(--bg-panel);
+
   --p1: #e5484d; --p2: #f4b35e; --p3: #38a169; --p4: #4f8ddb;
 
   --radius: 7px;
@@ -71,5 +76,9 @@
   --danger: #c43a3a; --danger-wash: #fbe7e7;
   --warn: #865a00; --warn-wash: #fbf1dc;
   --ok: #17774a; --ok-wash: #e2f5eb;
+  --sidebar-bg: var(--bg-panel);
+  --header-bg: linear-gradient(180deg, var(--bg-raised), color-mix(in srgb, var(--bg-raised) 92%, black 4%));
+  --statusbar-bg: var(--bg-raised);
+  --editor-bg: var(--bg-panel);
   --shadow: 0 12px 32px rgb(12 19 29 / 0.16);
 }
