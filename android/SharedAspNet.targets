@@ -4,8 +4,10 @@
        FrameworkReference. No Windows native libraries are included. -->
   <PropertyGroup>
     <AspNetRuntimeVersion>10.0.14</AspNetRuntimeVersion>
-    <AspNetRuntimePackage Condition="'$(RuntimeIdentifier)' == 'android-arm64'">microsoft.aspnetcore.app.runtime.win-arm64</AspNetRuntimePackage>
-    <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == '' and '$(AspNetRuntimePackage)' != ''">$(NuGetPackageRoot)$(AspNetRuntimePackage)/$(AspNetRuntimeVersion)/runtimes/win-arm64/lib/net10.0</AspNetRuntimeDirectory>
+    <AspNetRuntimeRid Condition="'$(RuntimeIdentifier)' == 'android-arm64'">win-arm64</AspNetRuntimeRid>
+    <AspNetRuntimeRid Condition="'$(RuntimeIdentifier)' == 'android-x64'">win-x64</AspNetRuntimeRid>
+    <AspNetRuntimePackage Condition="'$(AspNetRuntimePackage)' == '' and '$(AspNetRuntimeRid)' != ''">microsoft.aspnetcore.app.runtime.$(AspNetRuntimeRid)</AspNetRuntimePackage>
+    <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == '' and '$(AspNetRuntimePackage)' != '' and '$(AspNetRuntimeRid)' != ''">$(NuGetPackageRoot)$(AspNetRuntimePackage)/$(AspNetRuntimeVersion)/runtimes/$(AspNetRuntimeRid)/lib/net10.0</AspNetRuntimeDirectory>
     <AspNetRuntimeDirectory Condition="'$(AspNetRuntimeDirectory)' == ''">$(NetCoreRoot)shared/Microsoft.AspNetCore.App/$(AspNetRuntimeVersion)</AspNetRuntimeDirectory>
   </PropertyGroup>
   <ItemGroup Condition="'$(AspNetRuntimePackage)' != ''">

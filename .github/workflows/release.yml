@@ -99,14 +99,11 @@ jobs:
           BUILD_ID="$(tr -d '\r\n' < build/build-id.txt)"
           VER="$(sed -n 's/.*<ApplicationDisplayVersion>\([^<]*\)<\/ApplicationDisplayVersion>.*/\1/p' android/Quantos.Android.csproj | head -n1)"
           mkdir -p publish/android
-          dotnet restore android/Backend/Quantos.Android.Backend.csproj -p:RuntimeIdentifier=android-arm64 --nologo
-          ASPNET_DIR="$HOME/.nuget/packages/microsoft.aspnetcore.app.runtime.win-arm64/10.0.14/runtimes/win-arm64/lib/net10.0"
           if [[ -n "${ANDROID_KEYSTORE_BASE64:-}" ]]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/quantos-release.keystore
             dotnet build android/Quantos.Android.csproj -c Release \
               -p:RuntimeIdentifier=android-arm64 \
               -p:AndroidSdkDirectory="$ANDROID_HOME" \
-              -p:AspNetRuntimeDirectory="$ASPNET_DIR" \
               -p:AndroidKeyStore=true \
               -p:AndroidSigningKeyStore=/tmp/quantos-release.keystore \
               -p:AndroidSigningKeyAlias="${ANDROID_KEY_ALIAS:-quantos-release}" \
@@ -120,7 +117,6 @@ jobs:
             dotnet build android/Quantos.Android.csproj -c Debug \
               -p:RuntimeIdentifier=android-arm64 \
               -p:AndroidSdkDirectory="$ANDROID_HOME" \
-              -p:AspNetRuntimeDirectory="$ASPNET_DIR" \
               --nologo
             SRC="android/bin/Debug/net10.0-android/android-arm64/com.atomic22.quantos-Signed.apk"
             OUT="publish/android/Quantos-${VER}-build-${BUILD_ID}-android-arm64-Debug.apk"
