@@ -23,6 +23,6 @@
     <Compile Include="AndroidKeyProtector.cs" />
     <Compile Include="AndroidTerminal.cs" />
     <Compile Include="AndroidPdf.cs" />
-    <ProjectReference Include="Backend/Quantos.Android.Backend.csproj" AdditionalProperties="AspNetRuntimePackage=$(AspNetRuntimePackage);AspNetRuntimeDirectory=$(AspNetRuntimeDirectory)" />
+    <ProjectReference Include="Backend/Quantos.Android.Backend.csproj" />
   </ItemGroup>
 </Project>
