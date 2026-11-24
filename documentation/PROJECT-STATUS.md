@@ -1,11 +1,12 @@
 # Quantos project status and handoff
 
-### Real recurrence settings (2026-11-24, unreleased)
+### Version 0.3.2 (2026-11-24, build 2026.24.11.55)
 
 - **Core (`src/Quantos.Core/Tasks/`):** Extended `Recurrence.cs` (`BYDAY` ordinals such as `1MO`/`-1FR`, `BYSETPOS`, `BYMONTHDAY=-1`, `BYMONTH`, `UNTIL`, `COUNT`, and `annually`/`anually` alias), `TaskService.cs` (`UNTIL`/`COUNT` enforcement in `GenerateNext`, initial series anchor sync when dates are updated on an uncompleted first occurrence, and series cleanup when recurrence is cleared), `QuickAdd.cs` (`every N years`), and `SupertagService.cs` (updated `#task` recurrence description).
 - **Frontend (`frontend/src/`):** Added `lib/recurrence.ts`, `lib/recurrenceDialog.svelte.ts`, `components/RecurrencePicker.svelte`, and `components/RecurrenceDialog.svelte`; wired into `Properties.svelte`, `FormDialog.svelte`, `TaskRow.svelte` (*Set recurrence…* context menu and human-readable tooltip), `QuickAdd.svelte` (human-readable preview and `every N years`), `TaskPopup.svelte`, `Shell.svelte`, and `App.svelte` (including Android Back).
-- **Documentation:** Updated `STORAGE-SPEC.md` and `USER-GUIDE.md`.
-- **Verification (Linux):** 189/189 frontend Vitest tests (including 5 new recurrence tests and `every 2 years` quick-add test), `svelte-check` (0 errors, 0 warnings), frontend production build, 344/344 Linux-filtered .NET tests (`Quantos.Tests`), and headless Chrome + axe-core checks (`TaskPopup`, `RecurrencePicker`, `RecurrenceDialog`, `TaskRow` context menu, 390px narrow layout). Not verified on Linux: Windows credential-store/client tests, Windows staging, or Android device/emulator build.
+- **Release & CI (`.github/workflows/release.yml`):** Bumped version to `0.3.2` (`302` on Android) and build ID to `2026.24.11.55`; added release workflow building the Windows x64 package (via `build/build.ps1` + smoke check) and Android ARM64 APK, and publishing the Windows x64 ZIP + `SHA256SUMS.txt` (and signed Release APK if signing secrets are present) to GitHub Releases on `v*` tags.
+- **Documentation:** Updated `STORAGE-SPEC.md`, `USER-GUIDE.md`, and `CHANGELOG.md`.
+- **Verification:** 189/189 frontend Vitest tests, `svelte-check` (0 errors, 0 warnings), frontend production build, 344/344 Linux-filtered .NET tests (`Quantos.Tests`), headless Chrome + axe-core checks (`TaskPopup`, `RecurrencePicker`, `RecurrenceDialog`, `TaskRow` context menu, 390px narrow layout), and GitHub Actions CI (`ubuntu-latest`, `windows-latest`, `package`). Physical Android phone installation and private Release APK signing stay on the owner's Windows PC unless signing secrets are configured.
 
 ## Published 0.3.1 (2026-11-11)
 

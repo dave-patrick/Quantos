@@ -1,0 +1,171 @@
+name: Release
+# Builds Windows x64 and Android ARM64 packages on tag pushes (v*) or manual runs,
+# and publishes the Windows release ZIP (plus a Release-signed APK when signing secrets exist) to GitHub Releases.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build and test Windows package
+        shell: pwsh
+        run: ./build/build.ps1
+
+      - name: Smoke test packaged binaries
+        shell: pwsh
+        run: |
+          $app = Resolve-Path publish/Quantos/application
+          $data = Join-Path $env:RUNNER_TEMP 'quantos-release-smoke'
+          New-Item -ItemType Directory -Force (Join-Path $data 'vault') | Out-Null
+
+          $client = Start-Process (Join-Path $app 'Quantos.exe') -ArgumentList '--selfcheck', '--quiet', '--client-data', (Join-Path $data 'client') -PassThru
+          if (-not $client.WaitForExit(120000)) { $client.Kill(); throw 'The client self-check did not finish.' }
+          if ($client.ExitCode -ne 0) { throw "The client self-check failed (exit $($client.ExitCode))." }
+
+          $backend = Start-Process (Join-Path $app 'Quantos.Backend.exe') -ArgumentList '--vault', (Join-Path $data 'vault'), '--port', '48124', '--client-data', (Join-Path $data 'backend') -PassThru
+          $ok = $false
+          for ($i = 0; $i -lt 60 -and -not $ok; $i++) {
+            Start-Sleep -Seconds 1
+            try { $ok = (Invoke-WebRequest 'http://127.0.0.1:48124/' -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } catch { }
+          }
+          Stop-Process -Id $backend.Id -Force -ErrorAction SilentlyContinue
+          if (-not $ok) { throw 'The backend did not answer from the package.' }
+
+          $help = & (Join-Path $app 'quantos-cli.exe') --help
+          if ($LASTEXITCODE -ne 0) { throw "quantos-cli failed (exit $LASTEXITCODE)." }
+
+      - name: Upload Windows package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-x64-package
+          path: publish/Quantos-*-win-x64.zip
+          if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Install .NET Android workload and SDK dependencies
+        run: |
+          dotnet workload install android
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          dotnet build android/Quantos.Android.csproj -t:InstallAndroidDependencies -p:AcceptAndroidSDKLicenses=true -p:RuntimeIdentifier=android-arm64 -p:AndroidSdkDirectory="$ANDROID_HOME" --nologo
+
+      - name: Build Android ARM64 APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_STORE_PASS: ${{ secrets.ANDROID_STORE_PASS }}
+          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+        run: |
+          set -euo pipefail
+          BUILD_ID="$(tr -d '\r\n' < build/build-id.txt)"
+          VER="$(sed -n 's/.*<ApplicationDisplayVersion>\([^<]*\)<\/ApplicationDisplayVersion>.*/\1/p' android/Quantos.Android.csproj | head -n1)"
+          mkdir -p publish/android
+          if [[ -n "${ANDROID_KEYSTORE_BASE64:-}" ]]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/quantos-release.keystore
+            dotnet build android/Quantos.Android.csproj -c Release \
+              -p:RuntimeIdentifier=android-arm64 \
+              -p:AndroidSdkDirectory="$ANDROID_HOME" \
+              -p:AndroidKeyStore=true \
+              -p:AndroidSigningKeyStore=/tmp/quantos-release.keystore \
+              -p:AndroidSigningKeyAlias="${ANDROID_KEY_ALIAS:-quantos-release}" \
+              -p:AndroidSigningStorePass="$ANDROID_STORE_PASS" \
+              -p:AndroidSigningKeyPass="$ANDROID_KEY_PASS" \
+              --nologo
+            rm -f /tmp/quantos-release.keystore
+            SRC="android/bin/Release/net10.0-android/android-arm64/com.atomic22.quantos-Signed.apk"
+            OUT="publish/android/Quantos-${VER}-build-${BUILD_ID}-android-arm64-Release.apk"
+          else
+            dotnet build android/Quantos.Android.csproj -c Debug \
+              -p:RuntimeIdentifier=android-arm64 \
+              -p:AndroidSdkDirectory="$ANDROID_HOME" \
+              --nologo
+            SRC="android/bin/Debug/net10.0-android/android-arm64/com.atomic22.quantos-Signed.apk"
+            OUT="publish/android/Quantos-${VER}-build-${BUILD_ID}-android-arm64-Debug.apk"
+          fi
+          cp "$SRC" "$OUT"
+          (cd publish/android && sha256sum "$(basename "$OUT")" > "$(basename "$OUT").sha256")
+          ls -lh publish/android/
+
+      - name: Upload Android APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: |
+            publish/android/*.apk
+            publish/android/*.sha256
+          if-no-files-found: error
+
+  release:
+    needs: [windows, android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: win-x64-package
+          path: release-assets
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: android-assets
+
+      - name: Prepare checksums and publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VER="${TAG#v}"
+          BUILD_ID="$(tr -d '\r\n' < build/build-id.txt)"
+          if compgen -G "android-assets/*-Release.apk" > /dev/null; then
+            cp android-assets/*-Release.apk release-assets/
+          fi
+          (cd release-assets && sha256sum * > SHA256SUMS.txt)
+          ls -lh release-assets/
+          cat release-assets/SHA256SUMS.txt
+          NOTES="Quantos ${VER} (build ${BUILD_ID})"$'\n\n'"Includes real recurrence settings (Daily, Weekdays, Weekly, Monthly, Annually, and Custom rules with intervals, weekday toggles, monthly day/weekday options, annual date/weekday options, and end limits)."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-assets/* --clobber
+          else
+            gh release create "$TAG" release-assets/* --title "Quantos ${VER} - build ${BUILD_ID}" --notes "$NOTES"
+          fi

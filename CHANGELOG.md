@@ -5,7 +5,7 @@ The plan these releases implement is [BUILD-PLAN.md](BUILD-PLAN.md); the current
 and how to work on it is [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md).
 Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
-## Unreleased
+## 0.3.2 — 2026-11-24 (build 2026.24.11.55)
 
 - **Tasks and recurrence:**
   - Real recurrence settings selector (**Does not repeat**, **Daily**, **Weekdays (Mon–Fri)**, **Weekly**, **Monthly**, **Annually**, and **Custom…**) in task properties, new `#task` forms, and the task row context menu (*Set recurrence…*).
