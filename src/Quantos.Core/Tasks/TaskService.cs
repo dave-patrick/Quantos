@@ -271,23 +271,41 @@ public sealed partial class TaskService : ITaskHooks
                 TaskKeys.Effort => NormalizeEffort(value),
                 TaskKeys.Parent => ValidateParent(id, Props.LinkId(Props.Str(value)) ?? Props.Str(value)),
                 TaskKeys.DependsOn => ValidateDependencies(id, value),
-                TaskKeys.Recurrence => Props.Str(value) is { } rule && Recurrence.Parse(rule) is null ? throw new QuantosException("Recurrence isn't recognised. Try daily, weekly, weekdays, monthly or an RRULE.") : value,
+                TaskKeys.Recurrence => Props.Str(value) is { } rule && Recurrence.Parse(rule) is null ? throw new QuantosException("Recurrence isn't recognised. Try daily, weekdays, weekly, monthly, annually or an RRULE.") : value,
                 _ => value
             };
         }
+        var clearingRecurrence = remove.Contains(TaskKeys.Recurrence)
+            || (clean.TryGetValue(TaskKeys.Recurrence, out var recVal) && Props.Str(recVal) is null);
         // A newly recurring task starts a series anchored on its scheduled date.
-        if (clean.ContainsKey(TaskKeys.Recurrence) && Props.Str(clean[TaskKeys.Recurrence]) is not null && current.Series is null)
+        if (!clearingRecurrence && clean.ContainsKey(TaskKeys.Recurrence) && Props.Str(clean[TaskKeys.Recurrence]) is not null && current.Series is null)
         {
             clean[TaskKeys.Series] = Ulid.New();
-            var first = Props.Date(current.Planned) ?? Props.Date(current.Due) ?? _writes.Clock.Today;
+            var nextPlanned = remove.Contains(TaskKeys.Planned) ? null : clean.TryGetValue(TaskKeys.Planned, out var np) ? Props.Str(np) : current.Planned;
+            var nextDue = remove.Contains(TaskKeys.Due) ? null : clean.TryGetValue(TaskKeys.Due, out var nd) ? Props.Str(nd) : current.Due;
+            var first = Props.Date(nextPlanned) ?? Props.Date(nextDue) ?? _writes.Clock.Today;
             clean[TaskKeys.Occurrence] = first.ToString("yyyy-MM-dd");
             clean[TaskKeys.SeriesDay] = first.Day;
         }
+        else if (!clearingRecurrence && current.Series is not null && current.Recurrence is not null && current.RolledOver == 0
+            && (clean.ContainsKey(TaskKeys.Planned) || clean.ContainsKey(TaskKeys.Due) || remove.Contains(TaskKeys.Planned) || remove.Contains(TaskKeys.Due)))
+        {
+            var seriesCount = Cache.Query("WHERE type='task' AND json_extract(props, '$.series') = $s", ("$s", current.Series)).Count;
+            if (seriesCount <= 1)
+            {
+                var nextPlanned = remove.Contains(TaskKeys.Planned) ? null : clean.TryGetValue(TaskKeys.Planned, out var cp) ? Props.Str(cp) : current.Planned;
+                var nextDue = remove.Contains(TaskKeys.Due) ? null : clean.TryGetValue(TaskKeys.Due, out var cd) ? Props.Str(cd) : current.Due;
+                var first = Props.Date(nextPlanned) ?? Props.Date(nextDue) ?? _writes.Clock.Today;
+                clean[TaskKeys.Occurrence] = first.ToString("yyyy-MM-dd");
+                clean[TaskKeys.SeriesDay] = first.Day;
+            }
+        }
+        var extraRemove = clearingRecurrence ? new[] { TaskKeys.Series, TaskKeys.Occurrence, TaskKeys.SeriesDay } : Array.Empty<string>();
         var nulls = clean.Where(kv => kv.Value is null).Select(kv => kv.Key).ToList();
         foreach (var k in nulls) clean.Remove(k);
-        if (clean.Count > 0 || nulls.Count > 0 || remove.Count > 0)
+        if (clean.Count > 0 || nulls.Count > 0 || remove.Count > 0 || extraRemove.Length > 0)
         {
-            var result = _writes.UpdateFields(id, null, clean, [.. remove, .. nulls], actor);
+            var result = _writes.UpdateFields(id, null, clean, [.. remove, .. nulls, .. extraRemove], actor);
             if (result.Status is SaveStatus.Conflict or SaveStatus.Invalid or SaveStatus.NotFound) throw new QuantosException(result.Message ?? "Couldn't update the task.", 409);
         }
         return Require(id);
@@ -342,6 +360,12 @@ public sealed partial class TaskService : ITaskHooks
         // 30th or 28th in shorter months and goes back to the 31st after, instead of drifting earlier.
         var anchorDay = int.TryParse(Props.Str(_writes.Require(task.Id).Properties.GetValueOrDefault(TaskKeys.SeriesDay)), out var ad) && ad is >= 1 and <= 31 ? ad : scheduled.Day;
         var next = rule.Next(scheduled, anchorDay);
+        if (rule.Until is { } until && next > until) return null;
+        if (rule.Count is { } count)
+        {
+            var seriesTasks = Cache.Query("WHERE type='task' AND json_extract(props, '$.series') = $s", ("$s", series));
+            if (seriesTasks.Count >= count) return null;
+        }
         var nextKey = next.ToString("yyyy-MM-dd");
         var existing = Cache.Query("WHERE type='task' AND json_extract(props, '$.series') = $s AND json_extract(props, '$.occurrence') = $o",
             ("$s", series), ("$o", nextKey));

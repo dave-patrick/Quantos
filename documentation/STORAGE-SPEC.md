@@ -101,7 +101,7 @@ Tasks are nodes with `type: task` stored in `workspaces/<ws>/tasks/`.
 | `waiting_on` | free text or node link |
 | `parent` | task id |
 | `depends_on` | list of task ids |
-| `recurrence` | RRULE subset: `FREQ=DAILY\|WEEKLY\|MONTHLY\|YEARLY;INTERVAL=n;BYDAY=MO,TU…` |
+| `recurrence` | `daily`, `weekdays`, `weekly`, `monthly`, `yearly`/`annually`, or RRULE (`FREQ=DAILY\|WEEKLY\|MONTHLY\|YEARLY;INTERVAL=n;BYDAY=[n]MO,TU…;BYMONTHDAY=n\|-1;BYMONTH=1..12;UNTIL=YYYY-MM-DD;COUNT=n`) |
 | `series` | ULID shared by every occurrence of a recurring task |
 | `occurrence` | the scheduled date this occurrence belongs to (with `series`, unique) |
 | `reminders` | list of `{at: datetime, snoozed_until: datetime?, fired: datetime?}` |

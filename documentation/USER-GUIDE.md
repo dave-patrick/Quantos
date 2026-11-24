@@ -298,7 +298,7 @@ workspace remembers its own tabs, splits and scroll positions.
 
 - **Quick add:** `Call Sam due:fri !2 ~30m #client every week`
   - `!1` to `!4` priority (red, orange, green, blue), `due:` deadline, `@tomorrow` or `plan:` planned day,
-    `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month`,
+    `~45m`/`~2h` effort, `#tag`, `+project` (links to the note with that title), `every day|weekday|week|month|year` (or `every 2 weeks`, `every 2 years`),
     `!myday`. The same words work in task lines in notes and in quick capture to a task.
 - **Gantt:** *Gantt* in the sidebar shows tasks on a timeline, grouped by project. A bar runs from a
   task's planned day (or time block) to its due day; with only one of them, the effort estimate sets
@@ -334,9 +334,13 @@ workspace remembers its own tabs, splits and scroll positions.
   one click. This changes the **planned** date only; due dates never move by themselves.
 - **Subtasks:** marking a task done also marks its open subtasks done (and theirs). Reopening it
   leaves them as they are.
-- **Recurring tasks:** each occurrence is a separate task with its own history. The next one is
-  calculated from the scheduled date, not from when you finished. A monthly task on the 31st falls on
-  the last day of shorter months and goes back to the 31st after.
+- **Recurring tasks:** choose **Daily**, **Weekdays**, **Weekly**, **Monthly**, **Annually**, or **Custom**
+  in a task's *Recurrence* property (or right-click a task and choose *Set recurrence…*). Custom
+  settings support any interval (every N days, weeks, months, or years), specific weekdays, day of
+  month, last day of the month, Nth weekday (such as the 1st Monday or last Friday), annual month/day
+  rules, and optional end dates or occurrence counts. Each occurrence is a separate task with its own
+  history. The next one is calculated from the scheduled date, not from when you finished. A monthly
+  task on the 31st falls on the last day of shorter months and goes back to the 31st after.
 - **Subtasks, dependencies, effort:** in a task's panel. Effort rolls up from subtasks; a task
   waiting on unfinished dependencies shows *blocked*.
 - **Reminders:** add a date and time in the task panel. The Windows client shows a notification

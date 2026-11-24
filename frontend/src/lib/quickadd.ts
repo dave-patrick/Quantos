@@ -45,11 +45,12 @@ export function parseDate(word: string, today = isoDate()): string | undefined {
 export function parseQuickAdd(text: string, today = isoDate()): QuickTask {
   const result: QuickTask = { title: '', tags: [] };
   let rest = text;
-  const every = /\bevery\s+(day|weekday|week|month|year|\d+\s+(?:days|weeks|months))\b/i.exec(rest);
+  const every = /\bevery\s+(day|weekday|week|month|year|\d+\s+(?:days|weeks|months|years))\b/i.exec(rest);
   if (every) {
     const what = every[1].toLowerCase();
-    const n = /^(\d+)\s+(days|weeks|months)$/.exec(what);
-    result.recurrence = n ? `FREQ=${({ days: 'DAILY', weeks: 'WEEKLY', months: 'MONTHLY' } as const)[n[2] as 'days']};INTERVAL=${n[1]}` : what === 'day' ? 'daily' : what === 'weekday' ? 'weekdays' : what + 'ly';
+    const n = /^(\d+)\s+(days|weeks|months|years)$/.exec(what);
+    const freqMap: Record<string, string> = { days: 'DAILY', weeks: 'WEEKLY', months: 'MONTHLY', years: 'YEARLY' };
+    result.recurrence = n ? `FREQ=${freqMap[n[2]]};INTERVAL=${n[1]}` : what === 'day' ? 'daily' : what === 'weekday' ? 'weekdays' : what + 'ly';
     rest = rest.replace(every[0], ' ');
   }
   const words: string[] = [];

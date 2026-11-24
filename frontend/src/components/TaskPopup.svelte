@@ -5,6 +5,7 @@
   import { layout, tabKey, type Tab } from '../lib/layout.svelte';
   import { app } from '../lib/state.svelte';
   import { modal } from '../lib/modal';
+  import { recurrenceDialog } from '../lib/recurrenceDialog.svelte';
   import NodeView from './views/NodeView.svelte';
   import Icon from './Icon.svelte';
   let { id }: { id: string } = $props();
@@ -12,10 +13,10 @@
   let closeButton: HTMLButtonElement;
   onMount(() => closeButton.focus({ preventScroll: true }));
   function onkeydown(event: KeyboardEvent) {
-    if (event.key === 'Tab' && !event.defaultPrevented && !app.asking && !app.dialog && !(document.activeElement instanceof HTMLElement && document.activeElement.closest('.task-popup'))) {
+    if (event.key === 'Tab' && !event.defaultPrevented && !app.asking && !app.dialog && !recurrenceDialog.request && !(document.activeElement instanceof HTMLElement && document.activeElement.closest('.task-popup'))) {
       event.preventDefault(); closeButton.focus(); return;
     }
-    if (event.key !== 'Escape' || event.defaultPrevented || app.asking || app.dialog) return;
+    if (event.key !== 'Escape' || event.defaultPrevented || app.asking || app.dialog || recurrenceDialog.request) return;
     event.preventDefault();
     void closeTaskPopup();
   }
@@ -23,7 +24,7 @@
 <svelte:window {onkeydown} />
 <div class="scrim">
   <div class="task-popup" role="dialog" aria-modal="true" aria-labelledby="task-popup-title"
-    inert={!!app.asking || !!app.dialog} aria-busy={taskPopup.busy} use:modal={{ onclose: () => { void closeTaskPopup(); } }}>
+    inert={!!app.asking || !!app.dialog || !!recurrenceDialog.request} aria-busy={taskPopup.busy} use:modal={{ onclose: () => { void closeTaskPopup(); } }}>
     <header>
       <h2 id="task-popup-title">{docs.peek(id)?.node?.type === 'note' ? 'Edit note' : 'Edit task'}</h2>
       <button class="icon-btn close" bind:this={closeButton} aria-label="Close task" disabled={taskPopup.busy} onclick={() => closeTaskPopup()}><Icon name="x" /></button>

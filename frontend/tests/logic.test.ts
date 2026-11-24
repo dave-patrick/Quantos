@@ -59,8 +59,9 @@ describe('quick add', () => {
   it('leaves unrecognised tokens in the title', () => {
     expect(parseQuickAdd('Fix bug #12a due:never', today).title).toBe('Fix bug due:never');
   });
-  it('turns "every 2 weeks" into an RRULE', () => {
+  it('turns "every 2 weeks" and "every 2 years" into RRULEs', () => {
     expect(parseQuickAdd('Payroll every 2 weeks', today).recurrence).toBe('FREQ=WEEKLY;INTERVAL=2');
+    expect(parseQuickAdd('Renew licence every 2 years', today).recurrence).toBe('FREQ=YEARLY;INTERVAL=2');
   });
 });
 

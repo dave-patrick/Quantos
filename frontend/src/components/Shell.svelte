@@ -27,6 +27,7 @@
   import TaskPopup from './TaskPopup.svelte';
   import { taskPopup } from '../lib/taskPopup.svelte';
   import { syncedBlockPicker } from '../lib/syncedBlockPicker.svelte';
+  import { recurrenceDialog } from '../lib/recurrenceDialog.svelte';
 
   let today = $state('');
   onMount(() => watchDate((d) => (today = d)));
@@ -38,7 +39,7 @@
   });
 
   function onkeydown(e: KeyboardEvent) {
-    if (taskPopup.id || taskPopup.busy || app.dialog || app.asking || aiJob.open || syncedBlockPicker.request) return;
+    if (taskPopup.id || taskPopup.busy || app.dialog || app.asking || aiJob.open || syncedBlockPicker.request || recurrenceDialog.request) return;
     handleGlobalKey(e);
   }
 </script>

@@ -56,7 +56,7 @@ public static partial class QuickAdd
         {
             var what = every.Groups[1].Value.ToLowerInvariant();
             recurrence = Interval().Match(what) is { Success: true } n
-                ? $"FREQ={n.Groups[2].Value switch { "days" => "DAILY", "weeks" => "WEEKLY", _ => "MONTHLY" }};INTERVAL={n.Groups[1].Value}"
+                ? $"FREQ={n.Groups[2].Value switch { "days" => "DAILY", "weeks" => "WEEKLY", "months" => "MONTHLY", _ => "YEARLY" }};INTERVAL={n.Groups[1].Value}"
                 : what switch { "day" => "daily", "weekday" => "weekdays", _ => what + "ly" };
             rest = rest.Remove(every.Index, every.Length).Insert(every.Index, " ");
         }
@@ -87,8 +87,8 @@ public static partial class QuickAdd
 
     [GeneratedRegex(@"^\+(\d+)([dw])$")] private static partial Regex Relative();
     [GeneratedRegex(@"^(\d{1,2})/(\d{1,2})$")] private static partial Regex DayMonth();
-    [GeneratedRegex(@"\bevery\s+(day|weekday|week|month|year|\d+\s+(?:days|weeks|months))\b", RegexOptions.IgnoreCase)] private static partial Regex Every();
-    [GeneratedRegex(@"^(\d+)\s+(days|weeks|months)$")] private static partial Regex Interval();
+    [GeneratedRegex(@"\bevery\s+(day|weekday|week|month|year|\d+\s+(?:days|weeks|months|years))\b", RegexOptions.IgnoreCase)] private static partial Regex Every();
+    [GeneratedRegex(@"^(\d+)\s+(days|weeks|months|years)$")] private static partial Regex Interval();
     [GeneratedRegex(@"^![1-4]$")] private static partial Regex PriorityToken();
     [GeneratedRegex(@"^due:(.+)$", RegexOptions.IgnoreCase)] private static partial Regex DueToken();
     [GeneratedRegex(@"^(?:plan:|@)(.+)$", RegexOptions.IgnoreCase)] private static partial Regex PlanToken();

@@ -57,7 +57,7 @@ public sealed partial class SupertagService(WriteService writes)
         new("Stage", "stage", "text", null, false, null, null, null),
         new("Assignees", "assignees", "nodes", null, false, null, null, null),
         new("Waiting on", "waiting_on", "text", null, false, null, null, null),
-        new("Recurrence", "recurrence", "text", null, false, null, "daily, weekdays, weekly, monthly, yearly or RRULE", null)
+        new("Recurrence", "recurrence", "text", null, false, null, "daily, weekdays, weekly, monthly, annually or RRULE", null)
     ];
 
     public static string FieldKey(string name) => Regex.Replace(name.Trim().ToLowerInvariant(), @"[^\p{L}\p{N}]+", "_").Trim('_');

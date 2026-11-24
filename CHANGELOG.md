@@ -5,6 +5,13 @@ The plan these releases implement is [BUILD-PLAN.md](BUILD-PLAN.md); the current
 and how to work on it is [documentation/PROJECT-STATUS.md](documentation/PROJECT-STATUS.md).
 Release downloads: <https://github.com/dave-patrick/Quantos/releases>.
 
+## Unreleased
+
+- **Tasks and recurrence:**
+  - Real recurrence settings selector (**Does not repeat**, **Daily**, **Weekdays (Mon–Fri)**, **Weekly**, **Monthly**, **Annually**, and **Custom…**) in task properties, new `#task` forms, and the task row context menu (*Set recurrence…*).
+  - Custom recurrence dialog supporting any interval (every N days, weeks, months, or years), weekday selection, monthly day / last day / Nth weekday rules, annual scheduled / specific month-day / Nth weekday rules, optional end date (`UNTIL`) or occurrence count (`COUNT`), and live next-occurrence preview.
+  - Human-readable recurrence tooltips and quick-add previews, plus `every N years` in quick add.
+
 ## 0.3.1 — 2026-11-11 (build 2026.11.11.54)
 
 - **Editor and UI:**

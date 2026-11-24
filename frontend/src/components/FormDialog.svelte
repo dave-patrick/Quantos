@@ -7,6 +7,7 @@
   import type { Supertag, FieldDef } from '../lib/supertags.svelte';
   import type { NodeDto } from '../lib/types';
   import { modal } from '../lib/modal';
+  import RecurrencePicker from './RecurrencePicker.svelte';
 
   /** Forms validate strictly: nothing is created until every required field is valid (BUILD-PLAN 8C.4). */
   let { tag, onclose }: { tag: Supertag; onclose: () => void } = $props();
@@ -53,6 +54,8 @@
       {@const p = tried ? problem(f) : null}
       <label class:bad={!!p}>{f.name}{f.required ? ' *' : ''}
         {#if f.type === 'checkbox'}<input type="checkbox" bind:checked={values[f.key] as boolean} />
+        {:else if tag.name.toLowerCase() === 'task' && f.key === 'recurrence'}
+          <RecurrencePicker value={String(values[f.key] ?? '')} scheduled={String(values['planned'] || values['due'] || '')} ariaLabel={f.name} variant="input" onchange={(next) => (values[f.key] = next ?? '')} />
         {:else if (f.type === 'select' || f.type === 'status') && f.options?.length}
           <select class="input" bind:value={values[f.key]}><option value=""></option>{#each f.options as o (o)}<option value={o}>{o}</option>{/each}</select>
         {:else}

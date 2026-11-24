@@ -77,6 +77,54 @@ public class TaskAcceptanceTests
         }
         Assert.Equal(["2027-02-28", "2027-03-31", "2027-04-30"], dues);
     }
+
+    [Fact]
+    public void Custom_recurrence_rules_calculate_next_dates_and_end_limits()
+    {
+        // Annually + interval
+        var annually = Recurrence.Parse("annually")!;
+        Assert.Equal(new DateOnly(2027, 11, 24), annually.Next(new DateOnly(2026, 11, 24)));
+        Assert.Equal(new DateOnly(2028, 11, 24), Recurrence.Parse("FREQ=YEARLY;INTERVAL=2")!.Next(new DateOnly(2026, 11, 24)));
+
+        // Monthly last day & Nth weekday
+        Assert.Equal(new DateOnly(2027, 2, 28), Recurrence.Parse("FREQ=MONTHLY;BYMONTHDAY=-1")!.Next(new DateOnly(2027, 1, 31)));
+        Assert.Equal(new DateOnly(2027, 3, 31), Recurrence.Parse("FREQ=MONTHLY;BYMONTHDAY=-1")!.Next(new DateOnly(2027, 2, 28)));
+        Assert.Equal(new DateOnly(2026, 12, 7), Recurrence.Parse("FREQ=MONTHLY;BYDAY=1MO")!.Next(new DateOnly(2026, 11, 2)));
+        Assert.Equal(new DateOnly(2026, 12, 25), Recurrence.Parse("FREQ=MONTHLY;BYDAY=-1FR")!.Next(new DateOnly(2026, 11, 27)));
+        // 5th Monday skips December 2026 (4 Mondays) and January 2027 (4 Mondays) to find March 29, 2027
+        Assert.Equal(new DateOnly(2027, 3, 29), Recurrence.Parse("FREQ=MONTHLY;BYDAY=5MO")!.Next(new DateOnly(2026, 11, 30)));
+
+        // Yearly specific month + ordinal weekday (4th Thursday of November)
+        Assert.Equal(new DateOnly(2027, 11, 25), Recurrence.Parse("FREQ=YEARLY;BYMONTH=11;BYDAY=4TH")!.Next(new DateOnly(2026, 11, 26)));
+
+        // UNTIL stops generating after end date
+        using var v = new TestVault();
+        var untilTask = T(v).Create(new CreateTaskRequest { Title = "Short run", Due = "2026-11-24", Recurrence = "FREQ=DAILY;INTERVAL=2;UNTIL=2026-11-26" }, Actor.User);
+        T(v).SetStatus(untilTask.Id, TaskStatus.Done, Actor.User);
+        var second = T(v).List().Single(t => t.Id != untilTask.Id);
+        Assert.Equal("2026-11-26", second.Due);
+        T(v).SetStatus(second.Id, TaskStatus.Done, Actor.User);
+        Assert.Equal(2, T(v).List().Count);
+
+        // COUNT caps total occurrences
+        var countTask = T(v).Create(new CreateTaskRequest { Title = "Three times", Due = "2026-12-01", Recurrence = "FREQ=WEEKLY;COUNT=2" }, Actor.User);
+        T(v).SetStatus(countTask.Id, TaskStatus.Done, Actor.User);
+        var nextCount = T(v).List().Single(t => t.Series == T(v).Require(countTask.Id).Series && t.Id != countTask.Id);
+        Assert.Equal("2026-12-08", nextCount.Due);
+        T(v).SetStatus(nextCount.Id, TaskStatus.Done, Actor.User);
+        Assert.Equal(2, T(v).List().Count(t => t.Series == nextCount.Series));
+
+        // Setting recurrence before choosing due date updates the series anchor when due is later set
+        var anchor = T(v).Create(new CreateTaskRequest { Title = "Rent", Recurrence = "monthly" }, Actor.User);
+        T(v).Update(anchor.Id, new Dictionary<string, object?> { ["due"] = "2027-01-31" }, [], Actor.User);
+        Assert.Equal("2027-01-31", T(v).Require(anchor.Id).Occurrence);
+        T(v).SetStatus(anchor.Id, TaskStatus.Done, Actor.User);
+        var rentNext = T(v).List().Single(t => t.Series == T(v).Require(anchor.Id).Series && t.Id != anchor.Id);
+        Assert.Equal("2027-02-28", rentNext.Due);
+
+        // QuickAdd every N years
+        Assert.Equal("FREQ=YEARLY;INTERVAL=2", QuickAdd.Parse("Renew licence every 2 years", new DateOnly(2026, 11, 24)).Recurrence);
+    }
     [Fact] // 13 tasks.2
     public void Complete_snooze_trash_and_restore_a_task()
     {

@@ -30,6 +30,8 @@
   import ScratchpadWindow from './components/ScratchpadWindow.svelte';
   import SyncedBlockPicker from './components/SyncedBlockPicker.svelte';
   import { syncedBlockPicker } from './lib/syncedBlockPicker.svelte';
+  import RecurrenceDialog from './components/RecurrenceDialog.svelte';
+  import { recurrenceDialog } from './lib/recurrenceDialog.svelte';
 
   const route = location.pathname;
   let phase = $state<'loading' | 'auth' | 'setup' | 'ready' | 'error'>('loading');
@@ -89,7 +91,8 @@
         const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
         (document.activeElement ?? document.body).dispatchEvent(escape);
         if (escape.defaultPrevented) return;
-        if (syncedBlockPicker.request) syncedBlockPicker.request.done(null);
+        if (recurrenceDialog.request) recurrenceDialog.request.done(undefined);
+        else if (syncedBlockPicker.request) syncedBlockPicker.request.done(null);
         else if (presenter.active) presenter.close();
         else if (aiJob.open) aiJob.close();
         else if (app.asking) app.asking.done(null);
@@ -121,6 +124,7 @@
 </script>
 
 <SyncedBlockPicker />
+<RecurrenceDialog />
 
 {#if phase === 'ready' && route === '/capture'}
   <CaptureWindow />

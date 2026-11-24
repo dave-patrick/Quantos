@@ -5,6 +5,7 @@
   import { app } from '../lib/state.svelte';
   import { isoDate } from '../lib/dates';
   import { docs } from '../lib/docs.svelte';
+  import { describeRecurrence } from '../lib/recurrence';
   import Icon from './Icon.svelte';
 
   let { defaults = {}, placeholder = 'Add a task: Call Sam due:fri !2 ~medium #client every week' }:
@@ -54,7 +55,7 @@
       {#if preview.due}<span>due {preview.due}</span>{/if}
       {#if preview.planned}<span>plan {preview.planned}</span>{/if}
       {#if preview.effort}<span>{effortLabel(preview.effort)}</span>{/if}
-      {#if preview.recurrence}<span>↻ {preview.recurrence}</span>{/if}
+      {#if preview.recurrence}<span>↻ {describeRecurrence(preview.recurrence)}</span>{/if}
       {#each preview.tags as t (t)}<span>#{t}</span>{/each}
     </span>
   {/if}

@@ -7,6 +7,8 @@
   import { api } from '../lib/api';
   import ContextMenu, { type ContextMenuItem } from './ContextMenu.svelte';
   import Icon from './Icon.svelte';
+  import { describeRecurrence } from '../lib/recurrence';
+  import { editRecurrence } from '../lib/recurrenceDialog.svelte';
 
   let { task, showMyDay = true, draggable = false, ondragstart, compact = false, dense = false, stacked = false }:
     { task: TaskDto; showMyDay?: boolean; draggable?: boolean; ondragstart?: (e: DragEvent) => void; compact?: boolean; dense?: boolean; stacked?: boolean } = $props();
@@ -48,6 +50,12 @@
     try { await tasks.update(task.id, n !== null ? { priority: n } : {}, n !== null ? [] : ['priority']); } catch (e) { app.error(e); }
   }
 
+  async function setRecurrence() {
+    const value = await editRecurrence({ value: task.recurrence, scheduled: task.planned ?? task.due, showPresets: true });
+    if (value === undefined) return;
+    try { await tasks.update(task.id, value ? { recurrence: value } : {}, value ? [] : ['recurrence']); } catch (e) { app.error(e); }
+  }
+
   /** A task is a note, so it goes to the trash like any other note, and can be brought back. */
   async function trash() {
     try {
@@ -67,6 +75,7 @@
     { label: 'Set to waiting', icon: 'clock', run: () => setStatus('waiting') },
     { label: 'Set a due date…', icon: 'calendar', run: setDue },
     { label: 'Set a priority…', icon: 'flag', run: setPriority },
+    { label: 'Set recurrence…', icon: 'repeat', run: setRecurrence },
     { separator: true },
     { label: 'Open the task', icon: 'file-text', run: () => openNode(task.id, 'current', task.title) },
     { separator: true },
@@ -98,7 +107,7 @@
     {#if task.blocked}<span class="chip warn" title="Waiting on another task"><Icon name="lock" size={11} /> blocked</span>{/if}
     {#if task.status === 'doing'}<span class="chip accent">doing</span>{/if}
     {#if task.status === 'waiting' || task.waitingOn}<span class="chip" title="Waiting on">⏳ {task.waitingOn ?? 'waiting'}</span>{/if}
-    {#if !dense && task.recurrence}<span class="chip" title={task.recurrence}><Icon name="repeat" size={11} /></span>{/if}
+    {#if !dense && task.recurrence}<span class="chip" title={describeRecurrence(task.recurrence)}><Icon name="repeat" size={11} /></span>{/if}
     {#if !dense && task.subtaskCount}<span class="chip" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
     {#if !dense && task.effort}<span class="chip" title="Effort">{effortLabel(task.effort)}</span>{/if}
     {#if projectName && !compact && !dense}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}

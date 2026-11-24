@@ -11,6 +11,9 @@
   import { api, ApiError } from '../lib/api';
   import { vaultSettings } from '../lib/vaultSettings.svelte';
   import { newTagScope } from '../lib/tagScope';
+  import { prefs } from '../lib/prefs.svelte';
+  import { parseRecurrence } from '../lib/recurrence';
+  import RecurrencePicker from './RecurrencePicker.svelte';
 
   let { doc, compact = false, editSchema = true }: { doc: Doc; compact?: boolean; editSchema?: boolean } = $props();
 
@@ -139,7 +142,9 @@
       <dl class="grid">
         {#each fields as field (field.key)}
           {@const value = node.properties[field.key]}
-          {@const problem = node.type === 'task' && (field.key === 'priority' || field.key === 'effort') ? null : validate(field, value)}
+          {@const problem = node.type === 'task' && (field.key === 'priority' || field.key === 'effort') ? null
+            : node.type === 'task' && field.key === 'recurrence' ? (display(value) && !parseRecurrence(display(value)) ? 'Recurrence rule not recognised' : null)
+            : validate(field, value)}
           <dt title={field.description ?? (field.inherited ? `From #${field.inherited}` : '')}>{field.name}{field.required ? ' *' : ''}</dt>
           <dd class:invalid={!!problem}>
             {#if node.type === 'task' && field.key === 'priority'}
@@ -152,6 +157,13 @@
                 {#if value != null && !['low', 'medium', 'high'].includes(String(value))}<option value={display(value)} disabled>{effortLabel(typeof value === 'number' ? value : String(value))}</option>{/if}
                 {#each ['low', 'medium', 'high'] as level}<option value={level}>{effortLabel(level)}</option>{/each}
               </select>
+            {:else if node.type === 'task' && field.key === 'recurrence'}
+              <RecurrencePicker
+                value={display(value)}
+                scheduled={display(node.properties['planned'] || node.properties['due'])}
+                ariaLabel={field.name}
+                disabled={!!node.locked || prefs.reading}
+                onchange={(next) => setValue(field.key, next ?? '')} />
             {:else if field.type === 'checkbox'}
               <input type="checkbox" aria-label={field.name} checked={value === true || value === 'true'} onchange={(e) => setValue(field.key, (e.target as HTMLInputElement).checked)} />
             {:else if field.type === 'select' || field.type === 'status'}
