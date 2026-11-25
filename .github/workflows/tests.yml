@@ -17,8 +17,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+        runs_on:
+          - [self-hosted, Windows, X64]
+          - [self-hosted, Linux, X64]
+    runs-on: ${{ matrix.runs_on }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +64,7 @@ jobs:
   # Builds the Windows package the way a release is built and starts each program from it: the three
   # programs share one runtime folder, so a missing or mismatched file shows up here, not on a PC.
   package:
-    runs-on: windows-latest
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
