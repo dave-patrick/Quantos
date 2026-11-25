@@ -116,8 +116,8 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; background: rgb(4 8 14 / .6); display: grid; place-items: center; z-index: 80; padding: 16px; }
-  .dialog { width: min(480px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: var(--shadow); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .scrim { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 80; padding: 16px; }
+  .dialog { width: min(480px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
   h2 { font: 700 18px/1.3 var(--font-display); }
   p { color: var(--text-soft); white-space: pre-wrap; }
   .input { width: 100%; }
@@ -125,10 +125,10 @@
   .path-entry .input { min-width: 0; flex: 1; }
   .browse { flex-shrink: 0; }
   .matches { display: flex; flex-direction: column; max-height: 280px; overflow: auto; margin: -4px 0; }
-  .matches button { display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 6px 8px; border-radius: 6px; }
+  .matches button { display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 6px 8px; border-radius: var(--radius-md); }
   .matches button.on { background: var(--accent-wash); }
   .t { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .w { font-size: 12px; white-space: nowrap; }
-  .none { font-size: 13px; padding: 6px 8px; }
+  .w { font-size: var(--fs-sm); white-space: nowrap; }
+  .none { font-size: var(--fs-base); padding: 6px 8px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
 </style>

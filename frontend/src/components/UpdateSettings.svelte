@@ -60,15 +60,15 @@
 
 <style>
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 8px; }
-  h3 { font: 700 17px/1.3 var(--font-display); margin: 0 0 4px; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 0 0 4px; }
   .intro { margin: 6px 0 12px; }
-  .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--text-soft); }
-  .small { font-size: 12.5px; max-width: 680px; }
-  .warn { color: var(--warn); font-size: 13.5px; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-soft); }
+  .small { font-size: var(--fs-sm); max-width: 680px; }
+  .warn { color: var(--warn); font-size: var(--fs-base); }
   .ok { color: var(--ok); }
-  .release { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--bg-raised); max-width: 760px; }
-  .notes { margin: 10px 0 14px; max-height: 320px; overflow: auto; font-size: 14px; }
-  .progress { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; max-width: 360px; margin-top: 6px; }
-  .progress span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+  .release { margin-top: 16px; padding: 12px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-raised); max-width: 760px; }
+  .notes { margin: 10px 0 12px; max-height: 320px; overflow: auto; font-size: var(--fs-md); }
+  .progress { height: 8px; border-radius: var(--radius-sm); background: var(--line); overflow: hidden; max-width: 360px; margin-top: 6px; }
+  .progress span { display: block; height: 100%; background: var(--accent); transition: width var(--dur-base); }
 </style>

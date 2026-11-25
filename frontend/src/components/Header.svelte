@@ -66,9 +66,9 @@
 
 <style>
   .header { grid-area: header; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 0 8px;
-    border: 1px solid var(--line); border-radius: 12px; background: var(--header-bg); min-width: 0; box-shadow: 0 4px 12px rgb(0 0 0 / 0.2), 0 1px 3px rgb(0 0 0 / 0.15); }
+    border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--header-bg); min-width: 0; box-shadow: var(--shadow-md); }
   .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .brand > .icon-btn, .right > .icon-btn { width: 32px; height: 32px; border-radius: 8px; }
+  .brand > .icon-btn, .right > .icon-btn { width: 32px; height: 32px; border-radius: var(--radius); }
   .header .brand > .icon-btn, .header .right > .icon-btn { background: transparent; }
   .header .brand > .icon-btn:hover, .header .right > .icon-btn:hover { background: transparent; color: var(--text); }
   .header .icon-btn[aria-pressed='true'] { background: transparent; color: var(--accent-strong); }
@@ -78,11 +78,11 @@
   .toolbar { display: flex; align-items: center; justify-content: center; gap: 2px; min-width: 0; overflow: hidden; }
   .toolbar .icon-btn:disabled { opacity: .35; cursor: default; background: none; }
   .sep { width: 1px; height: 18px; background: var(--line); margin: 0 6px; }
-  .tool { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 9px; border: 0; border-radius: 6px; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .tool { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 10px; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-muted); font-size: var(--fs-base); font-weight: 600; white-space: nowrap; }
   .tool.icon-only { width: 32px; padding: 0; }
   .tool:hover { background: var(--bg-hover); color: var(--text); }
   .right { display: flex; align-items: center; gap: 4px; min-width: max-content; }
-  .search { display: flex; align-items: center; justify-content: center; gap: 6px; width: 32px; height: 30px; padding: 0; border: 0; border-radius: 7px;
+  .search { display: flex; align-items: center; justify-content: center; gap: 6px; width: 32px; height: 30px; padding: 0; border: 0; border-radius: var(--radius);
     background: transparent; color: var(--text-muted); cursor: pointer; }
   .search.labelled { width: auto; padding: 0 8px; }
   .search:hover { background: transparent; color: var(--text); }

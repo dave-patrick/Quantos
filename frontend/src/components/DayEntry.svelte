@@ -97,18 +97,18 @@
   .day { border-top: 1px solid var(--line); padding: 6px 0 10px; }
   .day.collapsed { padding: 2px 0; }
   header { display: flex; align-items: center; justify-content: space-between; }
-  .toggle { display: flex; align-items: baseline; gap: 10px; border: 0; background: none; padding: 8px 4px; color: var(--text-soft); text-align: left; flex: 1; border-radius: 6px; }
+  .toggle { display: flex; align-items: baseline; gap: 10px; border: 0; background: none; padding: 8px 4px; color: var(--text-soft); text-align: left; flex: 1; border-radius: var(--radius-md); }
   .toggle:hover { color: var(--text); }
   .toggle :global(.icon) { align-self: center; color: var(--text-faint); }
-  .when { font: 700 17px/1.2 var(--font-display); letter-spacing: .01em; }
+  .when { font: 700 var(--fs-lg)/1.2 var(--font-display); letter-spacing: .01em; }
   .today .when { color: var(--accent-strong); }
-  .collapsed .when { font-size: 14px; color: var(--text-muted); }
-  .date { font-size: 12.5px; }
-  .empty { font-size: 12px; font-family: var(--font-mono); }
-  .has { display: inline-flex; align-items: center; gap: 6px; font: 12px var(--font-mono); color: var(--text-muted); }
+  .collapsed .when { font-size: var(--fs-md); color: var(--text-muted); }
+  .date { font-size: var(--fs-sm); }
+  .empty { font-size: var(--fs-sm); font-family: var(--font-mono); }
+  .has { display: inline-flex; align-items: center; gap: 6px; font: var(--fs-sm) var(--font-mono); color: var(--text-muted); }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
   .body { padding-left: 4px; }
   /* Entries stack in one scrolling stream, so the note editor's scroll-past-end space would leave gaps. */
-  .body :global(.cm-content) { padding-bottom: 14px; }
-  .warn { color: var(--warn); font-size: 13.5px; display: flex; gap: 10px; align-items: center; }
+  .body :global(.cm-content) { padding-bottom: 12px; }
+  .warn { color: var(--warn); font-size: var(--fs-base); display: flex; gap: 10px; align-items: center; }
 </style>

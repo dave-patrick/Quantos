@@ -109,34 +109,34 @@
 
 <style>
   .focus { flex: 1; }
-  .inner { max-width: 760px; margin: 0 auto; padding: 24px 28px 40px; }
+  .inner { max-width: 760px; margin: 0 auto; padding: 24px 24px 40px; }
   h1 { display: flex; align-items: center; gap: 10px; font: 700 28px/1.2 var(--font-display); margin-bottom: 16px; }
-  h2 { display: flex; align-items: center; gap: 8px; font: 700 16px/1.3 var(--font-display); margin: 26px 0 10px; }
-  .timer { text-align: center; padding: 20px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--bg-raised); }
+  h2 { display: flex; align-items: center; gap: 8px; font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 10px; }
+  .timer { text-align: center; padding: 20px; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--bg-raised); }
   .timer.brk .big { color: var(--ok); }
   .big { font: 700 64px/1 var(--font-mono); color: var(--accent-strong); letter-spacing: .02em; }
-  .what { margin: 10px 0 14px; color: var(--text-soft); font-size: 16px; }
-  .setup { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-raised); }
+  .what { margin: 10px 0 12px; color: var(--text-soft); font-size: var(--fs-lg); }
+  .setup { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-raised); }
   .field { display: flex; align-items: center; gap: 10px; }
   .field > span { width: 60px; color: var(--text-soft); flex: none; }
   .field .input { flex: 1; }
   .lengths { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .lengths button { border: 1px solid var(--line-strong); background: none; color: var(--text-soft); border-radius: 7px; padding: 5px 10px; font: 13px var(--font-body); cursor: pointer; }
+  .lengths button { border: 1px solid var(--line-strong); background: none; color: var(--text-soft); border-radius: var(--radius); padding: 6px 10px; font: var(--fs-base) var(--font-body); cursor: pointer; }
   .lengths button.on { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
   .lengths .mins { width: 80px; flex: none; }
   .row { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
-  .setup .row { justify-content: flex-start; font-size: 13px; }
+  .setup .row { justify-content: flex-start; font-size: var(--fs-base); }
   .sessions { list-style: none; padding: 0; margin: 0; }
-  .sessions li { display: flex; gap: 14px; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
-  .mono { font: 12.5px var(--font-mono); }
+  .sessions li { display: flex; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-md); }
+  .mono { font: var(--fs-sm) var(--font-mono); }
   .link { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-align: left; }
   .link:hover { text-decoration: underline; }
-  .span { width: auto; padding: 2px 6px; font-size: 14px; }
-  .chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .span { width: auto; padding: 2px 6px; font-size: var(--fs-md); }
+  .chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
   .bar { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
-  .fill { background: var(--accent); border-radius: 3px 3px 0 0; min-height: 1px; opacity: .85; }
-  .d { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center; font: 10.5px var(--font-mono); color: var(--text-faint); white-space: nowrap; }
-  .totals { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  .fill { background: var(--accent); border-radius: 4px 4px 0 0; min-height: 1px; opacity: .85; }
+  .d { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center; font: var(--fs-xs) var(--font-mono); color: var(--text-faint); white-space: nowrap; }
+  .totals { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: var(--fs-md); }
   .totals th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 4px 6px; border-bottom: 1px solid var(--line); }
-  .totals td { padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  .totals td { padding: 6px 6px; border-bottom: 1px solid var(--line); }
 </style>

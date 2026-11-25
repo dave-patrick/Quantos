@@ -77,16 +77,16 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 18px 24px; overflow: auto; }
+  .view { flex: 1; padding: 16px 24px; overflow: auto; }
   header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   h1 { font: 700 28px/1.2 var(--font-display); }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
-  .seg button { border: 0; background: none; color: var(--text-muted); padding: 5px 10px; font: 13px var(--font-body); cursor: pointer; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; font: var(--fs-base) var(--font-body); cursor: pointer; }
   .seg button + button { border-left: 1px solid var(--line-strong); }
   .seg button.on { background: var(--accent-wash); color: var(--accent); }
   .tools { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
   .tools .input { width: auto; height: 30px; }
-  .filters { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; }
-  .check { display: inline-flex; gap: 5px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  p { margin: 6px 0 12px; font-size: 13px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
+  p { margin: 6px 0 12px; font-size: var(--fs-base); }
 </style>

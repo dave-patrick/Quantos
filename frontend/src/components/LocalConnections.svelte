@@ -65,12 +65,12 @@
 <style>
   section { margin: 24px 0; }
   .heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-  h3 { font: 700 15px/1.3 var(--font-display); margin: 0; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 0; }
   p { line-height: 1.55; max-width: 70ch; margin: 12px 0; }
   ul { list-style: none; margin: 0; padding: 0; }
   li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .identity { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
-  .identity span { font-size: 13px; }
-  .btn { min-height: 44px; }
+  .identity span { font-size: var(--fs-base); }
+  .btn { min-height: var(--touch-min); }
   .error { color: var(--danger); }
 </style>

@@ -38,9 +38,9 @@
 
 <style>
   .inspector { flex: 1; padding: 12px; }
-  .title { font: 700 16px/1.3 var(--font-display); margin-bottom: 10px; }
-  .facts { display: grid; grid-template-columns: 80px 1fr; gap: 4px 10px; font-size: 12.5px; margin: 0 0 14px; }
+  .title { font: 700 var(--fs-lg)/1.3 var(--font-display); margin-bottom: 10px; }
+  .facts { display: grid; grid-template-columns: 80px 1fr; gap: 4px 10px; font-size: var(--fs-sm); margin: 0 0 12px; }
   dt { color: var(--text-faint); }
   dd { margin: 0; color: var(--text-soft); overflow-wrap: anywhere; }
-  .mono { font: 11px var(--font-mono); }
+  .mono { font: var(--fs-xs) var(--font-mono); }
 </style>

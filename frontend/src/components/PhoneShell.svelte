@@ -147,7 +147,7 @@
   .phone-workspace { flex: 1; }
   .phone-workspace[hidden] { display: none; }
   .phone-nav { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; padding: 4px 8px; border-top: 1px solid var(--line); background: var(--bg-raised); }
-  .phone-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--text-muted); font: 600 12px/1.3 var(--font-body); }
+  .phone-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--text-muted); font: 600 var(--fs-sm)/1.3 var(--font-body); }
   .phone-nav button > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-icon { display: flex; justify-content: center; align-items: center; width: 56px; height: 30px; border-radius: 18px; }
   .phone-nav button[aria-current='page'] { color: var(--accent-strong); }
@@ -156,7 +156,7 @@
   .workspace-row { display: flex; align-items: center; justify-content: space-between; min-height: 56px; gap: 16px; color: var(--text-muted); }
   section { padding: 12px 0; border-bottom: 1px solid var(--line); }
   h2 { font: 700 18px/1.4 var(--font-display); margin: 8px 0 12px; }
-  .more-row { display: flex; align-items: center; gap: 16px; min-height: 52px; width: 100%; text-align: left; border: 0; border-radius: 8px; padding: 8px; color: var(--text); background: transparent; font: 400 16px/1.4 var(--font-body); }
+  .more-row { display: flex; align-items: center; gap: 16px; min-height: 52px; width: 100%; text-align: left; border: 0; border-radius: var(--radius); padding: 8px; color: var(--text); background: transparent; font: 400 var(--fs-lg)/1.4 var(--font-body); }
   .more-row:hover { background: var(--bg-hover); }
   .more-row :global(.icon:last-child) { margin-left: auto; color: var(--text-faint); flex-shrink: 0; }
   .open-pages summary { min-height: 48px; padding: 12px 8px; cursor: pointer; }

@@ -39,8 +39,8 @@
 
 <style>
   .qblock { margin: 6px 0; font-family: var(--font-body); }
-  .head { display: flex; align-items: center; gap: 8px; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--text-faint); margin-bottom: 4px; }
+  .head { display: flex; align-items: center; gap: 8px; font: 600 var(--fs-xs) var(--font-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--text-faint); margin-bottom: 4px; }
   .edit { margin-left: auto; display: inline-flex; gap: 4px; align-items: center; border: 0; background: none; color: var(--text-faint); font: inherit; cursor: pointer; }
   .edit:hover { color: var(--accent); }
-  .error { color: var(--warn); font-size: 13px; margin: 4px 0; }
+  .error { color: var(--warn); font-size: var(--fs-base); margin: 4px 0; }
 </style>

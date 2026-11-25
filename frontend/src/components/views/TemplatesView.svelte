@@ -54,12 +54,12 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .inner { max-width: 860px; margin: 0 auto; padding: 24px 0 80px; }
   h1 { font: 700 28px/1.2 var(--font-display); }
-  code { color: var(--accent); font-size: 12.5px; }
+  code { color: var(--accent); font-size: var(--fs-sm); }
   .new { display: flex; gap: 8px; margin: 16px 0; }
   .row { display: flex; align-items: center; gap: 10px; padding: 10px 6px; border-bottom: 1px solid var(--line); color: var(--text-muted); }
-  .title { flex: 1; text-align: left; border: 0; background: none; color: var(--text); font-weight: 600; font-size: 15px; }
+  .title { flex: 1; text-align: left; border: 0; background: none; color: var(--text); font-weight: 600; font-size: var(--fs-lg); }
   .title:hover { color: var(--accent); }
 </style>

@@ -113,22 +113,22 @@
 
 <style>
   .setup { height: 100%; overflow: auto; display: grid; place-items: center; padding: 32px 16px;
-    background: radial-gradient(1000px 520px at 85% -5%, #15263c 0%, transparent 60%), var(--bg); }
-  .panel { width: min(640px, 100%); display: grid; gap: 14px; }
-  h1 { font: 700 30px/1.2 var(--font-display); margin-top: 18px; }
+    background: radial-gradient(1000px 520px at 85% -5%, var(--bg-glow) 0%, transparent 60%), var(--bg); }
+  .panel { width: min(640px, 100%); display: grid; gap: 12px; }
+  h1 { font: 700 30px/1.2 var(--font-display); margin-top: 16px; }
   .lead { color: var(--text-soft); margin: 0 0 8px; max-width: 60ch; }
   .row { display: flex; gap: 8px; }
-  .check { display: flex; gap: 8px; align-items: flex-start; color: var(--ok); font-size: 14px; }
+  .check { display: flex; gap: 8px; align-items: flex-start; color: var(--ok); font-size: var(--fs-md); }
   .check.bad { color: var(--danger); }
-  .warning { display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--radius); background: var(--warn-wash);
+  .warning { display: flex; gap: 12px; padding: 12px 16px; border-radius: var(--radius); background: var(--warn-wash);
     border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); color: var(--warn); }
-  .warning p { margin: 4px 0 10px; color: var(--text-soft); font-size: 14px; }
+  .warning p { margin: 4px 0 10px; color: var(--text-soft); font-size: var(--fs-md); }
   .warning strong { color: var(--text); }
-  .accept { display: flex; gap: 8px; align-items: center; color: var(--text); font-size: 14px; cursor: pointer; }
+  .accept { display: flex; gap: 8px; align-items: center; color: var(--text); font-size: var(--fs-md); cursor: pointer; }
   .error { color: var(--danger); margin: 0; }
   .actions { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
   .recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-  .link { display: flex; gap: 8px; align-items: center; background: none; border: 0; color: var(--text-soft); padding: 6px 8px; border-radius: 6px; width: 100%; text-align: left; font-size: 13px; }
+  .link { display: flex; gap: 8px; align-items: center; background: none; border: 0; color: var(--text-soft); padding: 6px 8px; border-radius: var(--radius-md); width: 100%; text-align: left; font-size: var(--fs-base); }
   .link:hover { background: var(--bg-hover); color: var(--text); }
-  h2.label { margin-top: 18px; }
+  h2.label { margin-top: 16px; }
 </style>

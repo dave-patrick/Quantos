@@ -4,6 +4,7 @@
   import { app } from '../../lib/state.svelte';
   import { openNode, whereFrom } from '../../lib/links.svelte';
   import { onChange } from '../../lib/events';
+  import { nodeTypeColors as colors } from '../../lib/nodeColors';
   import { WORLD, cluster, formatCoord, project, ringsToPath, topoRings, unproject } from '../../lib/geo';
   import Icon from '../Icon.svelte';
 
@@ -117,7 +118,6 @@
     try { await api.patch(`nodes/${p.id}`, { remove: ['location', 'coordinates', 'geo', 'latlng', 'lat', 'lng', 'lon', 'latitude', 'longitude'] }); chosen = null; await load(); } catch (e) { app.error(e); }
   }
 
-  const colors: Record<string, string> = { task: 'var(--warn)', person: 'var(--ok)', project: '#c49bff', event: '#78d3e8', daily: 'var(--text-muted)' };
   const pos = (x: number, y: number) => `left:${view.x + x * view.k}px;top:${view.y + y * view.k}px`;
 </script>
 
@@ -182,14 +182,14 @@
 </div>
 
 <style>
-  .map-view { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 14px 18px 10px; gap: 8px; }
+  .map-view { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 12px 16px 10px; gap: 8px; }
   .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   h1 { display: flex; align-items: center; gap: 8px; font: 700 22px/1.2 var(--font-display); margin-right: 6px; }
   .top .input { width: auto; }
   .grow { flex: 1; }
-  .placing { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--accent); font-size: 13px; }
+  .placing { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--accent); font-size: var(--fs-base); }
   .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 240px; gap: 10px; }
-  .stage { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); cursor: grab; touch-action: none; outline: none; }
+  .stage { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); cursor: grab; touch-action: none; outline: none; }
   .stage:focus-visible { border-color: var(--accent); }
   .stage.placing { cursor: crosshair; }
   svg { position: absolute; inset: 0; display: block; }
@@ -197,20 +197,20 @@
   .land { fill: color-mix(in srgb, var(--text) 10%, var(--bg-raised)); stroke: var(--line-strong); stroke-linejoin: round; }
   .pin { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--c); border: 2px solid var(--bg); box-shadow: 0 1px 4px rgb(0 0 0 / .5); padding: 0; cursor: pointer; }
   .pin.on, .pin:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
-  .cluster { position: absolute; min-width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 13px; background: var(--accent); color: var(--accent-ink); font: 700 12px var(--font-mono); border: 2px solid var(--bg); cursor: pointer; padding: 0 6px; }
-  .card { position: absolute; transform: translate(-50%, calc(-100% - 14px)); background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: 9px; padding: 8px 10px; box-shadow: var(--shadow); min-width: 180px; max-width: 260px; z-index: 2; }
-  .card .title { border: 0; background: none; padding: 0; color: var(--text); font: 600 14px var(--font-body); cursor: pointer; text-align: left; }
+  .cluster { position: absolute; min-width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 13px; background: var(--accent); color: var(--accent-ink); font: 700 var(--fs-sm) var(--font-mono); border: 2px solid var(--bg); cursor: pointer; padding: 0 6px; }
+  .card { position: absolute; transform: translate(-50%, calc(-100% - 14px)); background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 8px 10px; box-shadow: var(--shadow); min-width: 180px; max-width: 260px; z-index: 2; }
+  .card .title { border: 0; background: none; padding: 0; color: var(--text); font: 600 var(--fs-md) var(--font-body); cursor: pointer; text-align: left; }
   .card .title:hover { color: var(--accent); text-decoration: underline; }
   .row { margin-top: 6px; }
-  .small { font-size: 12px; }
+  .small { font-size: var(--fs-sm); }
   .loading { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
-  .credit { position: absolute; right: 8px; bottom: 6px; font-size: 10.5px; pointer-events: none; }
-  .list { border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px; background: var(--bg-raised); }
+  .credit { position: absolute; right: 8px; bottom: 6px; font-size: var(--fs-xs); pointer-events: none; }
+  .list { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 8px; background: var(--bg-raised); }
   .list h2 { margin: 0 6px 6px; }
-  .place { display: grid; grid-template-columns: 10px 1fr; column-gap: 8px; width: 100%; text-align: left; border: 0; background: none; color: var(--text-soft); padding: 6px; border-radius: 6px; cursor: pointer; font-size: 13.5px; }
+  .place { display: grid; grid-template-columns: 10px 1fr; column-gap: 8px; width: 100%; text-align: left; border: 0; background: none; color: var(--text-soft); padding: 6px; border-radius: var(--radius-md); cursor: pointer; font-size: var(--fs-base); }
   .place .small { grid-column: 2; }
   .place:hover, .place.on { background: var(--bg-hover); color: var(--text); }
-  .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; }
   .pt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   @container pane (max-width: 760px) {
     .body { grid-template-columns: 1fr; grid-template-rows: 1fr 160px; }

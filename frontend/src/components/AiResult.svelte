@@ -42,9 +42,9 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; background: rgb(4 8 14 / .6); display: grid; place-items: center; z-index: 80; padding: 16px; }
-  .dialog { width: min(680px, 100%); max-height: 80vh; display: flex; flex-direction: column; gap: 12px; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: var(--shadow); padding: 20px 22px; }
+  .scrim { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 80; padding: 16px; }
+  .dialog { width: min(680px, 100%); max-height: 80vh; display: flex; flex-direction: column; gap: 12px; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; }
   h2 { display: flex; align-items: center; gap: 8px; font: 700 18px/1.3 var(--font-display); }
-  .result { overflow: auto; color: var(--text-soft); line-height: 1.6; border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: var(--bg); min-height: 80px; }
+  .result { overflow: auto; color: var(--text-soft); line-height: 1.6; border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; background: var(--bg); min-height: 80px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 </style>

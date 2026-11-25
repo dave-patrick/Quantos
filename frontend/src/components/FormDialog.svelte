@@ -72,11 +72,11 @@
 </div>
 
 <style>
-  .scrim { position: fixed; inset: 0; z-index: 80; background: rgb(4 8 14 / .6); display: grid; place-items: center; padding: 16px; }
-  .dialog { width: min(520px, 100%); max-height: 86vh; overflow: auto; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; box-shadow: var(--shadow); }
+  .scrim { position: fixed; inset: 0; z-index: 80; background: var(--scrim); display: grid; place-items: center; padding: 16px; }
+  .dialog { width: min(520px, 100%); max-height: 86vh; overflow: auto; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); padding: 16px 20px; display: grid; gap: 10px; box-shadow: var(--shadow); }
   h2 { font: 700 19px/1.3 var(--font-display); }
-  label { display: grid; gap: 4px; font-size: 13px; color: var(--text-muted); }
+  label { display: grid; gap: 4px; font-size: var(--fs-base); color: var(--text-muted); }
   label.bad .input { border-color: var(--danger); }
-  .problem { color: var(--danger); font-size: 12px; }
+  .problem { color: var(--danger); font-size: var(--fs-sm); }
   .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 </style>

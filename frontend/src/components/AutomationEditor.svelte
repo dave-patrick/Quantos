@@ -120,18 +120,18 @@
 
 <style>
   .rules { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
-  .rule { width: 100%; border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; margin: 0; }
+  .rule { width: 100%; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; margin: 0; }
   .rule.off { opacity: .65; }
   .head, .when, .then li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .rule .input { width: auto; }
-  select.input { padding-right: 26px; }
+  select.input { padding-right: 24px; }
   .name { flex: 1; min-width: 14em; font-weight: 600; }
   .rule .short { width: 8.5em; }
   .rule .wide { flex: 1; min-width: 6em; }
   .then li { flex-wrap: nowrap; }
   .then { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-  .then li::before { content: 'then'; color: var(--text-faint); font-size: 12.5px; margin-right: 2px; }
-  .small { height: 26px; font-size: 12.5px; }
-  .hint { font-size: 12.5px; }
-  .check { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; }
+  .then li::before { content: 'then'; color: var(--text-faint); font-size: var(--fs-sm); margin-right: 2px; }
+  .small { height: 26px; font-size: var(--fs-sm); }
+  .hint { font-size: var(--fs-sm); }
+  .check { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-base); }
 </style>

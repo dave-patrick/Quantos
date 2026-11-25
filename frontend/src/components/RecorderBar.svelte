@@ -16,11 +16,11 @@
 {/if}
 
 <style>
-  .rec { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 900; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow); }
+  .rec { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 900; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-faint); }
   .dot.live { background: var(--danger); animation: pulse 1.2s infinite alternate; }
   @keyframes pulse { to { opacity: .35; } }
-  .time { font: 600 14px var(--font-mono); min-width: 52px; }
-  .meter { width: 70px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
-  .meter span { display: block; height: 100%; background: var(--ok); transition: width .08s; }
+  .time { font: 600 var(--fs-md) var(--font-mono); min-width: 52px; }
+  .meter { width: 70px; height: 6px; background: var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+  .meter span { display: block; height: 100%; background: var(--ok); transition: width var(--dur-fast); }
 </style>

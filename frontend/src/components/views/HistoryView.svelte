@@ -165,31 +165,31 @@
 
 <style>
   .history { flex: 1; display: grid; grid-template-columns: 280px 1fr; min-height: 0; }
-  .list { border-right: 1px solid var(--line); padding: 14px 10px; }
+  .list { border-right: 1px solid var(--line); padding: 12px 10px; }
   .list h2 { margin: 0 6px 8px; }
-  .ver { display: grid; gap: 2px; width: 100%; text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 10px; border-radius: 7px; font-size: 13.5px; }
+  .ver { display: grid; gap: 2px; width: 100%; text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 10px; border-radius: var(--radius); font-size: var(--fs-base); }
   .ver:hover { background: var(--bg-hover); }
   .ver.on { background: var(--bg-active); color: var(--text); }
-  .ver .faint { font-size: 12px; }
+  .ver .faint { font-size: var(--fs-sm); }
   .preview { padding: 0 20px 40px; }
-  .bar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 12px 0; position: sticky; top: 0; background: var(--bg); z-index: 1; }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
-  .seg button { border: 0; background: none; color: var(--text-muted); padding: 5px 10px; font: 13px var(--font-body); cursor: pointer; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; padding: 12px 0; position: sticky; top: 0; background: var(--bg); z-index: 1; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; font: var(--fs-base) var(--font-body); cursor: pointer; }
   .seg button + button { border-left: 1px solid var(--line-strong); }
   .seg button.on { background: var(--accent-wash); color: var(--accent); }
   .seg button:disabled { opacity: .4; cursor: default; }
-  .check { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-soft); }
+  .check { display: flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-soft); }
   .nav { display: inline-flex; gap: 2px; }
   .restore { margin-left: auto; }
-  .summary { font-size: 13px; margin: 0 0 10px; }
+  .summary { font-size: var(--fs-base); margin: 0 0 10px; }
   .plus { color: var(--ok); font-family: var(--font-mono); }
   .minus { color: var(--danger); font-family: var(--font-mono); }
-  .props { border-collapse: collapse; margin: 0 0 14px; font-size: 13px; width: 100%; }
+  .props { border-collapse: collapse; margin: 0 0 12px; font-size: var(--fs-base); width: 100%; }
   .props th { text-align: left; font-weight: 600; color: var(--text-muted); padding: 4px 8px; border-bottom: 1px solid var(--line); }
-  .props td { padding: 4px 8px; border-bottom: 1px solid var(--line); white-space: pre-wrap; font-family: var(--font-mono); font-size: 12.5px; vertical-align: top; }
+  .props td { padding: 4px 8px; border-bottom: 1px solid var(--line); white-space: pre-wrap; font-family: var(--font-mono); font-size: var(--fs-sm); vertical-align: top; }
   .props td.gone { color: var(--danger); }
   .props td.came { color: var(--ok); }
-  .diff { font: 13px/1.6 var(--font-mono); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .diff { font: var(--fs-base)/1.6 var(--font-mono); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
   .block.here { outline: 2px solid var(--accent); outline-offset: -2px; }
   .row { display: grid; grid-template-columns: 42px 1fr; }
   .sbs .row { grid-template-columns: 42px 1fr 42px 1fr; }
@@ -198,13 +198,13 @@
   .sbs .cell.old { border-right: 1px solid var(--line); }
   .row.del .cell, .sbs .row.mod .cell.old, .sbs .row.del .cell.old { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--text); }
   .row.add .cell, .sbs .row.mod .cell.new, .sbs .row.add .cell.new { background: color-mix(in srgb, var(--ok) 10%, transparent); color: var(--text); }
-  .cell .del { background: color-mix(in srgb, var(--danger) 35%, transparent); border-radius: 2px; }
-  .cell .add { background: color-mix(in srgb, var(--ok) 32%, transparent); border-radius: 2px; }
+  .cell .del { background: color-mix(in srgb, var(--danger) 35%, transparent); border-radius: var(--radius-sm); }
+  .cell .add { background: color-mix(in srgb, var(--ok) 32%, transparent); border-radius: var(--radius-sm); }
   .row.del .cell .del:only-child, .row.add .cell .add:only-child { background: none; }
-  .fold { display: block; width: 100%; text-align: left; border: 0; border-block: 1px solid var(--line); background: var(--bg-raised); color: var(--text-faint); font: 12px var(--font-mono); padding: 3px 50px; cursor: pointer; }
+  .fold { display: block; width: 100%; text-align: left; border: 0; border-block: 1px solid var(--line); background: var(--bg-raised); color: var(--text-faint); font: var(--fs-sm) var(--font-mono); padding: 4px 50px; cursor: pointer; }
   .fold:hover { color: var(--accent); }
-  .plain { margin: 0; font: 13px/1.6 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-soft); padding: 8px; }
-  .warn { color: var(--warn); font-size: 13px; padding: 0 6px; }
+  .plain { margin: 0; font: var(--fs-base)/1.6 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-soft); padding: 8px; }
+  .warn { color: var(--warn); font-size: var(--fs-base); padding: 0 6px; }
   @container pane (max-width: 760px) {
     .history { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     .list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 200px; }

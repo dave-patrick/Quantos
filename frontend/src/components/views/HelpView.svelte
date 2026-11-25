@@ -151,28 +151,28 @@
   .side { border-right: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; }
   h1 { display: flex; align-items: center; gap: 8px; font: 700 24px/1.2 var(--font-display); }
   nav { display: grid; gap: 2px; }
-  .doc { display: flex; align-items: center; gap: 8px; border: 0; background: none; color: var(--text-soft); font: 600 14px var(--font-body); padding: 7px 8px; border-radius: 6px; text-align: left; cursor: pointer; }
+  .doc { display: flex; align-items: center; gap: 8px; border: 0; background: none; color: var(--text-soft); font: 600 var(--fs-md) var(--font-body); padding: 8px 8px; border-radius: var(--radius-md); text-align: left; cursor: pointer; }
   .doc:hover { background: var(--bg-hover); }
   .doc.on { background: var(--bg-active); color: var(--accent-strong); }
   .toc { display: grid; margin: 2px 0 8px 12px; border-left: 1px solid var(--line); }
-  .toc button { border: 0; background: none; color: var(--text-muted); font: 13px var(--font-body); text-align: left; padding: 3px 10px; cursor: pointer; }
-  .toc button.h3 { padding-left: 22px; font-size: 12.5px; }
+  .toc button { border: 0; background: none; color: var(--text-muted); font: var(--fs-base) var(--font-body); text-align: left; padding: 4px 10px; cursor: pointer; }
+  .toc button.h3 { padding-left: 24px; font-size: var(--fs-sm); }
   .toc button:hover { color: var(--accent); }
-  .content { padding: 22px 36px 60px; }
-  .md { max-width: 820px; font-size: 15px; line-height: 1.65; }
-  .md :global(h1) { font: 700 30px/1.2 var(--font-display); margin: 0 0 14px; }
-  .md :global(h2) { font: 700 21px/1.25 var(--font-display); margin: 30px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+  .content { padding: 24px 36px 60px; }
+  .md { max-width: 820px; font-size: var(--fs-lg); line-height: 1.65; }
+  .md :global(h1) { font: 700 30px/1.2 var(--font-display); margin: 0 0 12px; }
+  .md :global(h2) { font: 700 21px/1.25 var(--font-display); margin: 32px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
   .md :global(h3) { font: 700 16.5px/1.3 var(--font-display); margin: 20px 0 8px; }
-  .md :global(table) { border-collapse: collapse; margin: 10px 0 16px; font-size: 14px; }
-  .md :global(th), .md :global(td) { border-bottom: 1px solid var(--line); padding: 5px 12px 5px 0; text-align: left; }
-  .md :global(code) { font: 0.88em var(--font-mono); background: var(--bg-raised); padding: 0.05em 0.35em; border-radius: 4px; }
-  .md :global(pre) { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow: auto; }
+  .md :global(table) { border-collapse: collapse; margin: 10px 0 16px; font-size: var(--fs-md); }
+  .md :global(th), .md :global(td) { border-bottom: 1px solid var(--line); padding: 6px 12px 6px 0; text-align: left; }
+  .md :global(code) { font: 0.88em var(--font-mono); background: var(--bg-raised); padding: 0.05em 0.35em; border-radius: var(--radius-sm); }
+  .md :global(pre) { background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; overflow: auto; }
   .md :global(pre code) { background: none; padding: 0; }
   .md :global(hr) { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
-  .count { font-size: 13px; }
+  .count { font-size: var(--fs-base); }
   .hit { border-bottom: 1px solid var(--line); padding: 10px 0; max-width: 820px; }
   .hit .md :global(h2), .hit .md :global(h3) { border: 0; margin-top: 0; padding-top: 0; }
-  .where { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--accent); font: 600 13px var(--font-body); padding: 0; margin-bottom: 4px; cursor: pointer; }
+  .where { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--accent); font: 600 var(--fs-base) var(--font-body); padding: 0; margin-bottom: 4px; cursor: pointer; }
   @container pane (max-width: 760px) {
     .help { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     .side { border-right: 0; border-bottom: 1px solid var(--line); max-height: 220px; }

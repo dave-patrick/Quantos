@@ -95,16 +95,16 @@
   .slide :global(p), .slide :global(ul), .slide :global(ol), .slide :global(pre), .slide :global(table), .slide :global(blockquote) { margin: 0 0 .6em; }
   .slide :global(ul), .slide :global(ol) { padding-left: 1.2em; }
   .slide :global(li) { margin: .2em 0; }
-  .slide :global(code) { font-family: var(--font-mono); font-size: .85em; background: var(--bg-raised); padding: .05em .3em; border-radius: 4px; }
-  .slide :global(pre) { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; padding: .6em .9em; overflow: auto; font-size: .7em; }
+  .slide :global(code) { font-family: var(--font-mono); font-size: .85em; background: var(--bg-raised); padding: .05em .3em; border-radius: var(--radius-sm); }
+  .slide :global(pre) { background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: .6em .9em; overflow: auto; font-size: .7em; }
   .slide :global(pre code) { background: none; padding: 0; }
-  .slide :global(img) { max-width: 100%; max-height: 60vh; border-radius: 6px; }
+  .slide :global(img) { max-width: 100%; max-height: 60vh; border-radius: var(--radius-md); }
   .slide :global(a) { color: var(--accent); }
   .slide :global(table) { border-collapse: collapse; font-size: .8em; }
   .slide :global(th), .slide :global(td) { border-bottom: 1px solid var(--line); padding: .3em .7em; text-align: left; }
   .slide :global(.q-diagram svg) { max-height: 62vh; }
-  .notes { position: absolute; right: 16px; bottom: 56px; width: min(420px, 40vw); max-height: 40vh; overflow: auto; background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: 10px; padding: 12px 14px; font-size: 15px; line-height: 1.5; box-shadow: var(--shadow); }
-  .progress { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); transition: width .25s; }
-  .controls { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 0 12px; transition: opacity .3s; }
-  .count { font: 12px var(--font-mono); color: var(--text-faint); min-width: 64px; text-align: center; }
+  .notes { position: absolute; right: 16px; bottom: 56px; width: min(420px, 40vw); max-height: 40vh; overflow: auto; background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 12px 12px; font-size: var(--fs-lg); line-height: 1.5; box-shadow: var(--shadow); }
+  .progress { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); transition: width var(--dur-base); }
+  .controls { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 0 12px; transition: opacity var(--dur-base); }
+  .count { font: var(--fs-sm) var(--font-mono); color: var(--text-faint); min-width: 64px; text-align: center; }
 </style>

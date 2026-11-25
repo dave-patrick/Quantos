@@ -62,9 +62,9 @@
 </form>
 
 <style>
-  .quick { display: flex; align-items: center; gap: 10px; padding: 0 12px; border: 1px dashed var(--line-strong); border-radius: 8px; color: var(--text-faint); margin: 8px 0; }
+  .quick { display: flex; align-items: center; gap: 10px; padding: 0 12px; border: 1px dashed var(--line-strong); border-radius: var(--radius); color: var(--text-faint); margin: 8px 0; }
   .quick:focus-within { border-style: solid; border-color: var(--accent); }
-  input { flex: 1; height: 38px; border: 0; background: transparent; font-size: 14.5px; }
+  input { flex: 1; height: 38px; border: 0; background: transparent; font-size: var(--fs-md); }
   input:focus { outline: none; }
-  .preview { display: flex; gap: 6px; font: 11px var(--font-mono); color: var(--accent); }
+  .preview { display: flex; gap: 6px; font: var(--fs-xs) var(--font-mono); color: var(--accent); }
 </style>

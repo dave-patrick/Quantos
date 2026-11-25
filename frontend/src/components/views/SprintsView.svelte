@@ -207,49 +207,49 @@
 
 <style>
   .sprints { flex: 1; display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
-  .list { border-right: 1px solid var(--line); padding: 14px 10px; }
+  .list { border-right: 1px solid var(--line); padding: 12px 10px; }
   .head { display: flex; align-items: center; justify-content: space-between; margin: 0 6px 8px; }
-  .sp { display: grid; gap: 3px; width: 100%; text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 10px; border-radius: 7px; font-size: 13.5px; cursor: pointer; }
+  .sp { display: grid; gap: 4px; width: 100%; text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 10px; border-radius: var(--radius); font-size: var(--fs-base); cursor: pointer; }
   .sp:hover { background: var(--bg-hover); }
   .sp.on { background: var(--bg-active); color: var(--text); }
   .sp .t { font-weight: 600; display: flex; gap: 6px; align-items: center; }
-  .sp .faint { font-size: 12px; color: var(--text-muted); }
-  .bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .sp .faint { font-size: var(--fs-sm); color: var(--text-muted); }
+  .bar { height: 4px; background: var(--line); border-radius: var(--radius-sm); overflow: hidden; }
   .bar span { display: block; height: 100%; background: var(--accent); }
-  .state { font: 600 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line-strong); color: var(--text-muted); }
+  .state { font: 600 var(--fs-xs)/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); color: var(--text-muted); }
   .state.active { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
   .state.planned { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
-  .main { padding: 22px 28px 40px; }
+  .main { padding: 24px 24px 40px; }
   h1 { display: flex; align-items: center; gap: 10px; font: 700 26px/1.2 var(--font-display); margin: 0 0 4px; }
-  h3 { font: 700 14px/1.3 var(--font-display); margin: 18px 0 6px; }
+  h3 { font: 700 var(--fs-md)/1.3 var(--font-display); margin: 16px 0 6px; }
   .link { border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
   .link:hover { color: var(--accent); }
   .cards { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
-  .card { display: grid; gap: 2px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); min-width: 140px; }
+  .card { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); min-width: 140px; }
   .card b { font: 700 18px var(--font-mono); }
-  .card span { font-size: 12px; color: var(--text-muted); }
+  .card span { font-size: var(--fs-sm); color: var(--text-muted); }
   .card.over b { color: var(--warn); }
-  .burn { margin: 0 0 14px; max-width: 620px; }
+  .burn { margin: 0 0 12px; max-width: 620px; }
   .burn svg { width: 100%; height: auto; }
   .axis { stroke: var(--line-strong); }
   .ideal { fill: none; stroke: var(--text-faint); stroke-dasharray: 4 4; }
   .actual { fill: none; stroke: var(--accent); stroke-width: 2; }
   .dot { fill: var(--accent); }
-  .lbl { fill: var(--text-faint); font: 10px var(--font-mono); }
-  figcaption { font-size: 12px; }
+  .lbl { fill: var(--text-faint); font: var(--fs-xs) var(--font-mono); }
+  figcaption { font-size: var(--fs-sm); }
   .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }
   .carry { display: inline-flex; gap: 6px; margin-left: auto; }
   .carry .input { width: auto; }
-  .backlog { border: 1px dashed var(--line-strong); border-radius: 10px; padding: 6px 10px; margin: 8px 0 14px; max-height: 280px; overflow: auto; }
-  .task { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; border-bottom: 1px solid var(--line); }
+  .backlog { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 6px 10px; margin: 8px 0 12px; max-height: 280px; overflow: auto; }
+  .task { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: var(--fs-md); border-bottom: 1px solid var(--line); }
   .task .tt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .task.done .tt { color: var(--text-faint); text-decoration: line-through; }
   .task .rm { opacity: 0; }
   .task:hover .rm, .task .rm:focus-visible { opacity: 1; }
-  .mono { font: 12px var(--font-mono); }
-  .chip.warn { font: 600 10.5px var(--font-mono); color: var(--warn); }
+  .mono { font: var(--fs-sm) var(--font-mono); }
+  .chip.warn { font: 600 var(--fs-xs) var(--font-mono); color: var(--warn); }
   .create { display: grid; gap: 10px; max-width: 460px; }
-  .create label { display: grid; gap: 4px; font-size: 13px; color: var(--text-soft); }
+  .create label { display: grid; gap: 4px; font-size: var(--fs-base); color: var(--text-soft); }
   .row { display: flex; gap: 6px; }
   @container pane (max-width: 760px) {
     .sprints { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }

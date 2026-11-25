@@ -48,12 +48,12 @@
 
 <style>
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 8px; }
-  .labels { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
-  .labels legend { padding: 0 4px; color: var(--text-soft); font-size: 12.5px; font-weight: 600; }
-  .labels label { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; }
+  .labels { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); }
+  .labels legend { padding: 0 4px; color: var(--text-soft); font-size: var(--fs-sm); font-weight: 600; }
+  .labels label { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: var(--fs-base); }
   .row { display: flex; gap: 8px; align-items: center; padding: 4px 0; }
   .row .input { width: 160px; height: 30px; }
-  .row .faint { flex: 1; font-size: 13px; }
-  .add { display: flex; gap: 8px; margin-top: 14px; }
+  .row .faint { flex: 1; font-size: var(--fs-base); }
+  .add { display: flex; gap: 8px; margin-top: 12px; }
   .add .input { width: auto; }
 </style>

@@ -106,16 +106,16 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .view.docked { padding: 0 10px; }
-  .inner { max-width: 820px; margin: 0 auto; padding: 26px 0 80px; }
+  .inner { max-width: 820px; margin: 0 auto; padding: 24px 0 80px; }
   .docked .inner { padding: 12px 0 24px; }
   h1 { font: 700 28px/1.2 var(--font-display); display: flex; gap: 10px; align-items: center; }
   h1 :global(.icon) { color: var(--warn); }
   header p { margin: 4px 0 10px; }
-  .banner { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--accent-wash); color: var(--accent-strong); margin: 8px 0; font-size: 14px; }
+  .banner { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--accent-wash); color: var(--accent-strong); margin: 8px 0; font-size: var(--fs-md); }
   .banner span { flex: 1; }
   section { margin-top: 12px; }
-  .suggest { margin-top: 26px; }
+  .suggest { margin-top: 24px; }
   .row { display: flex; justify-content: space-between; align-items: center; }
 </style>

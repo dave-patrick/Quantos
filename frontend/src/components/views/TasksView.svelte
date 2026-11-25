@@ -154,29 +154,29 @@
 
 <style>
   .phone-task-options { display: none; }
-  .view { flex: 1; padding: 0 28px; }
-  .inner { max-width: 920px; margin: 0 auto; padding: 22px 0 80px; }
+  .view { flex: 1; padding: 0 24px; }
+  .inner { max-width: 920px; margin: 0 auto; padding: 24px 0 80px; }
   .inner.wide { max-width: none; }
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   h1 { font: 700 28px/1.2 var(--font-display); }
   .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; max-width: 100%; }
-  .controls .input { height: 30px; width: auto; max-width: 100%; min-width: 0; font-size: 13px; }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
-  .seg button { border: 0; background: none; color: var(--text-muted); padding: 5px 9px; display: grid; }
+  .controls .input { height: 30px; width: auto; max-width: 100%; min-width: 0; font-size: var(--fs-base); }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; display: grid; }
   .seg button.on { background: var(--accent-wash); color: var(--accent); }
-  section { margin-top: 18px; }
+  section { margin-top: 16px; }
   h2 { margin: 0 0 4px 4px; }
   h2.danger { color: var(--danger); }
-  .sub { margin-left: 26px; }
-  .drawer { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 30px; }
+  .sub { margin-left: 24px; }
+  .drawer { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 32px; }
   .drawer-toggle { display: flex; gap: 6px; align-items: center; border: 0; background: none; color: var(--text-muted); font-weight: 600; padding: 4px; }
-  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 1fr); gap: 12px; margin-top: 14px; overflow-x: auto; align-items: start; }
-  .column { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-height: 200px; }
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 1fr); gap: 12px; margin-top: 12px; overflow-x: auto; align-items: start; }
+  .column { background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; min-height: 200px; }
   .column h2 { text-transform: uppercase; }
   /* Board cards are narrow: the title gets the whole first line and the chips move below it. */
   .card :global(.task) { flex-wrap: wrap; row-gap: 4px; }
   .card :global(.task .title) { flex: 1 1 0; white-space: normal; }
-  .card :global(.task .chips) { order: 1; flex-basis: 100%; flex-wrap: wrap; padding-left: 26px; }
-  .card { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; }
+  .card :global(.task .chips) { order: 1; flex-basis: 100%; flex-wrap: wrap; padding-left: 24px; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 6px; }
   code { color: var(--accent); }
 </style>

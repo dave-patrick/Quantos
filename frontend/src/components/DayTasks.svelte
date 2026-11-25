@@ -21,5 +21,5 @@
 {/if}
 
 <style>
-  .day-tasks { margin: 2px 0 8px; padding: 4px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line); }
+  .day-tasks { margin: 2px 0 8px; padding: 4px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line); }
 </style>

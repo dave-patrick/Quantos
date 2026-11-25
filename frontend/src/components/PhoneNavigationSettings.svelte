@@ -54,5 +54,5 @@
   .reorder button { width: 48px; height: 48px; }
   .add-shortcut { display: grid; gap: 8px; }
   select { width: 100%; min-height: 48px; }
-  .btn { min-height: 48px; white-space: normal; }
+  .btn { min-height: var(--touch-min); white-space: normal; }
 </style>

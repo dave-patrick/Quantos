@@ -54,17 +54,17 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; z-index: 90; background: rgb(4 8 14 / .6); display: grid; place-items: center; padding: 16px; }
-  .picker { width: min(540px, 100%); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 12px; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 10px; padding: 20px; box-shadow: var(--shadow); }
+  .scrim { position: fixed; inset: 0; z-index: 90; background: var(--scrim); display: grid; place-items: center; padding: 16px; }
+  .picker { width: min(540px, 100%); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 12px; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
   h2 { font: 700 18px/1.3 var(--font-display); }
   p, .uses { color: var(--text-soft); }
   .input { width: 100%; }
-  .count, .uses { font-size: 12px; }
+  .count, .uses { font-size: var(--fs-sm); }
   .matches { overflow-y: auto; min-height: 0; max-height: 360px; }
-  .matches button { display: grid; grid-template-columns: minmax(0, 1fr) auto; width: 100%; gap: 4px 12px; text-align: left; padding: 8px; border-radius: 6px; }
+  .matches button { display: grid; grid-template-columns: minmax(0, 1fr) auto; width: 100%; gap: 4px 12px; text-align: left; padding: 8px; border-radius: var(--radius-md); }
   .matches button.active { background: var(--accent-wash); }
   .title { overflow-wrap: anywhere; }
-  .preview { grid-column: 1 / -1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-muted); font-size: 12px; }
+  .preview { grid-column: 1 / -1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-muted); font-size: var(--fs-sm); }
   .empty { padding: 8px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
 </style>

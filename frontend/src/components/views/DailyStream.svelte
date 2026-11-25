@@ -96,10 +96,10 @@
 </div>
 
 <style>
-  .stream { flex: 1; padding: 0 28px; }
+  .stream { flex: 1; padding: 0 24px; }
   .inner { max-width: calc(var(--editor-width) + 40px); margin: 0 auto; padding-bottom: 30vh; }
-  .head { display: flex; align-items: baseline; gap: 12px; padding: 26px 0 10px; }
+  .head { display: flex; align-items: baseline; gap: 12px; padding: 24px 0 10px; }
   h1 { font: 700 30px/1.2 var(--font-display); }
-  .hide { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .sentinel { height: 40px; text-align: center; color: var(--text-faint); font-size: 13px; }
+  .hide { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
+  .sentinel { height: 40px; text-align: center; color: var(--text-faint); font-size: var(--fs-base); }
 </style>

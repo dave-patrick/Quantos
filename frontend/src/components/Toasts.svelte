@@ -17,10 +17,10 @@
 
 <style>
   .toasts { position: fixed; right: 16px; bottom: calc(var(--statusbar-h) + 14px); display: grid; gap: 8px; z-index: 60; width: min(420px, calc(100vw - 32px)); }
-  .toast { display: flex; align-items: flex-start; gap: 10px; padding: 10px 10px 10px 14px; border-radius: var(--radius);
-    background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); font-size: 14px; animation: rise .2s var(--ease); }
+  .toast { display: flex; align-items: flex-start; gap: 10px; padding: 10px 10px 10px 12px; border-radius: var(--radius);
+    background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); font-size: var(--fs-md); animation: rise .2s var(--ease); }
   .toast > span { flex: 1; padding-top: 1px; }
-  .toast :global(.icon) { margin-top: 3px; }
+  .toast :global(.icon) { margin-top: 4px; }
   .toast.ok :global(.icon) { color: var(--ok); }
   .toast.warn { border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
   .toast.warn :global(.icon) { color: var(--warn); }

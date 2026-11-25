@@ -128,19 +128,19 @@
 
 <style>
   .switcher { position: relative; }
-  .current { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px; border: 1px solid transparent; border-radius: 7px; background: transparent; }
+  .current { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px; border: 1px solid transparent; border-radius: var(--radius); background: transparent; }
   .current:hover { background: var(--bg-hover); }
-  .label { font: 600 10px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
-  .name { font: 700 14px/1 var(--font-display); letter-spacing: .02em; color: var(--text); }
+  .label { font: 600 var(--fs-xs)/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+  .name { font: 700 var(--fs-md)/1 var(--font-display); letter-spacing: .02em; color: var(--text); }
   .backdrop { position: fixed; inset: 0; background: transparent; border: 0; z-index: 40; cursor: default; }
-  .menu { position: absolute; top: 36px; left: 0; z-index: 41; min-width: 230px; padding: 6px; border-radius: 9px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; gap: 1px; }
-  .menu > button { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; text-align: left; color: var(--text-soft); }
+  .menu { position: absolute; top: 36px; left: 0; z-index: 41; min-width: 230px; padding: 6px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; gap: 1px; }
+  .menu > button { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 0; border-radius: var(--radius-md); background: transparent; text-align: left; color: var(--text-soft); }
   .menu > button:hover { background: var(--bg-hover); color: var(--text); }
   .group { display: grid; gap: 1px; }
-  .group > button { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; text-align: left; color: var(--text-soft); }
+  .group > button { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 0; border-radius: var(--radius-md); background: transparent; text-align: left; color: var(--text-soft); }
   .group > button:hover { background: var(--bg-hover); color: var(--text); }
   .group > button.on { color: var(--accent); }
-  .faint { color: var(--text-faint); font-size: 11px; }
+  .faint { color: var(--text-faint); font-size: var(--fs-xs); }
   hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
   .new { display: flex; gap: 6px; padding: 4px; }
 </style>

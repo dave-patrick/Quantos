@@ -71,24 +71,24 @@
 
 <style>
   .about { flex: 1; }
-  .inner { max-width: 760px; margin: 0 auto; padding: 34px 28px 50px; }
+  .inner { max-width: 760px; margin: 0 auto; padding: 34px 24px 50px; }
   .mark { height: 46px; color: var(--text); }
   .mark :global(svg) { height: 100%; width: auto; }
   .tag { color: var(--text-soft); margin: 12px 0 20px; font-size: 15.5px; }
-  .facts { display: grid; grid-template-columns: 120px 1fr; gap: 8px 16px; margin: 0 0 18px; font-size: 14px; }
+  .facts { display: grid; grid-template-columns: 120px 1fr; gap: 8px 16px; margin: 0 0 16px; font-size: var(--fs-md); }
   .facts dt { color: var(--text-muted); }
-  .facts dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
-  .path { font: 12.5px var(--font-mono); word-break: break-all; }
+  .facts dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+  .path { font: var(--fs-sm) var(--font-mono); word-break: break-all; }
   .link { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; cursor: pointer; }
   .link:hover { text-decoration: underline; }
   .row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .row a { text-decoration: none; }
-  h2 { font: 700 18px/1.3 var(--font-display); margin: 28px 0 8px; }
-  .small { font-size: 13px; }
-  .parts { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  .parts th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 5px 0; border-bottom: 1px solid var(--line); }
-  .parts td { padding: 5px 12px 5px 0; border-bottom: 1px solid var(--line); }
+  h2 { font: 700 18px/1.3 var(--font-display); margin: 24px 0 8px; }
+  .small { font-size: var(--fs-base); }
+  .parts { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+  .parts th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .parts td { padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); }
   .parts a { color: var(--text); }
   .parts a:hover { color: var(--accent); }
-  .licence { font: 12px/1.55 var(--font-mono); color: var(--text-soft); white-space: pre-wrap; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .licence { font: var(--fs-sm)/1.55 var(--font-mono); color: var(--text-soft); white-space: pre-wrap; background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 12px; }
 </style>

@@ -133,10 +133,10 @@
 </div>
 
 <style>
-  .wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
-  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
-  th { text-align: left; font: 600 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); padding: 7px 10px; background: var(--bg-raised); border-bottom: 1px solid var(--line); position: sticky; top: 0; white-space: nowrap; }
-  tr.group th { text-transform: none; font: 700 13px var(--font-body); color: var(--text-soft); background: var(--bg-panel); position: static; }
+  .wrap { overflow: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  table { border-collapse: collapse; width: 100%; font-size: var(--fs-base); }
+  th { text-align: left; font: 600 var(--fs-xs) var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); padding: 8px 10px; background: var(--bg-raised); border-bottom: 1px solid var(--line); position: sticky; top: 0; white-space: nowrap; }
+  tr.group th { text-transform: none; font: 700 var(--fs-base) var(--font-body); color: var(--text-soft); background: var(--bg-panel); position: static; }
   td { padding: 0 10px; height: calc(34px * var(--d)); border-bottom: 1px solid var(--line); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; outline: none; }
   td + td { border-left: 1px solid var(--line); }
   td.active { box-shadow: inset 0 0 0 2px var(--accent); }
@@ -146,5 +146,5 @@
   .open { border: 0; background: none; padding: 0; color: var(--text); font-weight: 600; text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   .open:hover { color: var(--accent); text-decoration: underline; }
   .link { border: 0; background: none; padding: 0; color: var(--accent); }
-  .empty { padding: 14px; margin: 0; }
+  .empty { padding: 12px; margin: 0; }
 </style>

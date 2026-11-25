@@ -308,28 +308,28 @@
 
 <style>
   .nav-group + .nav-group { margin-top: 12px; }
-  .customise-link { margin-top: 10px; color: var(--text-muted); font-size: 13px; }
+  .customise-link { margin-top: 10px; color: var(--text-muted); font-size: var(--fs-base); }
   .body { flex: 1; padding: 10px 8px; }
-  section { display: grid; gap: 1px; margin-bottom: 14px; }
-  .heading { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 0; background: none; font: 600 10.5px/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); text-align: left; }
+  section { display: grid; gap: 1px; margin-bottom: 12px; }
+  .heading { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 0; background: none; font: 600 var(--fs-xs)/1.4 var(--font-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--text-faint); text-align: left; }
   .heading:hover { color: var(--text-muted); }
-  .sidebar { grid-area: left; display: flex; flex-direction: column; min-height: 0; background: var(--sidebar-bg, var(--bg-panel)); border: 1px solid var(--line); box-shadow: 0 4px 14px rgb(0 0 0 / 0.16); border-radius: 14px; overflow: hidden; }
-  .item { display: flex; align-items: center; gap: 9px; width: 100%; padding: calc(6px * var(--d)) 10px calc(6px * var(--d)) 12px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--text-soft); font-size: 14px; text-align: left; margin-bottom: 0; box-shadow: none; }
+  .sidebar { grid-area: left; display: flex; flex-direction: column; min-height: 0; background: var(--sidebar-bg, var(--bg-panel)); border: 1px solid var(--line); box-shadow: var(--shadow-md); border-radius: 14px; overflow: hidden; }
+  .item { display: flex; align-items: center; gap: 10px; width: 100%; padding: calc(6px * var(--d)) 10px calc(6px * var(--d)) 12px; border: 1px solid transparent; border-radius: var(--radius); background: transparent; color: var(--text-soft); font-size: var(--fs-md); text-align: left; margin-bottom: 0; box-shadow: none; }
   .item:hover { background: var(--bg-hover); color: var(--text); border-color: transparent; box-shadow: none; }
   .item.active { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent-strong); border-color: transparent; box-shadow: none; }
-  .item.add { color: var(--text-faint); font-size: 13px; }
+  .item.add { color: var(--text-faint); font-size: var(--fs-base); }
   .item.disabled { color: var(--text-faint); cursor: default; }
   .item.disabled:hover { background: none; }
-  .swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
-  .count { font: 11px var(--font-mono); color: var(--text-faint); }
+  .swatch { width: 9px; height: 9px; border-radius: var(--radius-sm); flex: none; }
+  .count { font: var(--fs-xs) var(--font-mono); color: var(--text-faint); }
   footer { padding: 8px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 4px; }
   .custom { gap: 2px; }
-  .hint { font-size: 12px; color: var(--text-faint); margin: 2px 8px 6px; }
-  .crow { display: flex; align-items: center; gap: 2px; padding: 0 4px 0 8px; border-radius: 6px; }
+  .hint { font-size: var(--fs-sm); color: var(--text-faint); margin: 2px 8px 6px; }
+  .crow { display: flex; align-items: center; gap: 2px; padding: 0 4px 0 8px; border-radius: var(--radius-md); }
   .crow:hover { background: var(--bg-hover); }
-  .crow label { flex: 1; display: flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--text-soft); padding: 4px 0; min-width: 0; cursor: pointer; }
+  .crow label { flex: 1; display: flex; align-items: center; gap: 8px; font-size: var(--fs-base); color: var(--text-soft); padding: 4px 0; min-width: 0; cursor: pointer; }
   .cbtns { display: flex; gap: 6px; margin: 8px 8px 0; }
   :global(.sidebar [data-drop]) { box-shadow: inset 0 2px 0 var(--accent); }
-  .sec.drop { box-shadow: inset 0 2px 0 var(--accent); border-radius: 4px; }
+  .sec.drop { box-shadow: inset 0 2px 0 var(--accent); border-radius: var(--radius-sm); }
   .heading[draggable='true'] { cursor: grab; }
 </style>

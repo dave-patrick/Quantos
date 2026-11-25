@@ -105,16 +105,16 @@
 
 <style>
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 8px; }
-  h3 { font: 700 16px/1.3 var(--font-display); margin: 22px 0 4px; }
-  .intro { max-width: 680px; font-size: 13.5px; }
-  .master { margin: 14px 0 4px; font-weight: 600; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 4px; }
+  .intro { max-width: 680px; font-size: var(--fs-base); }
+  .master { margin: 12px 0 4px; font-weight: 600; }
   section.off { opacity: .6; }
   .field { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
   .field > span:first-child { width: 110px; color: var(--text-soft); flex: none; }
   .field .input { max-width: 420px; }
-  .note { font-size: 13px; max-width: 680px; }
-  .privacy { font-size: 13px; color: var(--warn); max-width: 680px; }
+  .note { font-size: var(--fs-base); max-width: 680px; }
+  .privacy { font-size: var(--fs-base); color: var(--warn); max-width: 680px; }
   .privacy.local { color: var(--ok); }
-  .row { display: flex; gap: 10px; align-items: center; margin-top: 18px; }
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
   .check { display: flex; gap: 8px; align-items: center; }
 </style>

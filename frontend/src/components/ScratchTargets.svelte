@@ -53,8 +53,8 @@
 </div>
 
 <style>
-  h3 { font: 700 16px/1.3 var(--font-display); margin: 22px 0 6px; }
-  .small { font-size: 12.5px; max-width: 680px; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 6px; }
+  .small { font-size: var(--fs-sm); max-width: 680px; }
   .targets { display: grid; gap: 6px; margin: 8px 0; }
   .target { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .target .input { width: auto; }

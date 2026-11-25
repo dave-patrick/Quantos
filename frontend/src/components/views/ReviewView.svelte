@@ -50,12 +50,12 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .inner { max-width: 900px; margin: 0 auto; padding: 24px 0 80px; }
   h1 { font: 700 28px/1.2 var(--font-display); }
   .inline { display: inline-block; width: auto; height: 28px; }
   .item { border-bottom: 1px solid var(--line); padding: 6px 0; }
-  .actions { display: flex; gap: 4px; align-items: center; padding-left: 40px; flex-wrap: wrap; font-size: 12.5px; }
+  .actions { display: flex; gap: 4px; align-items: center; padding-left: 40px; flex-wrap: wrap; font-size: var(--fs-sm); }
   .actions .faint { margin-right: auto; }
-  .actions .btn { height: 26px; font-size: 12.5px; padding: 0 8px; }
+  .actions .btn { height: 26px; font-size: var(--fs-sm); padding: 0 8px; }
 </style>

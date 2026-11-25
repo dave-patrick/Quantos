@@ -178,8 +178,8 @@
   .wrap { position: relative; }
   .menu .phone-note-action { display: none; }
   .backdrop { position: fixed; inset: 0; border: 0; background: transparent; z-index: 30; cursor: default; }
-  .menu { position: absolute; right: 0; top: 32px; z-index: 31; min-width: 220px; padding: 5px; border-radius: 9px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
-  .menu button { display: flex; align-items: center; gap: 9px; text-align: left; padding: 7px 10px; border: 0; border-radius: 5px; background: none; color: var(--text-soft); font-size: 13.5px; }
+  .menu { position: absolute; right: 0; top: 32px; z-index: 31; min-width: 220px; padding: 6px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
+  .menu button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 10px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-soft); font-size: var(--fs-base); }
   .menu button:hover { background: var(--bg-hover); color: var(--text); }
   .menu .danger { color: var(--danger); }
   .menu .label { padding: 6px 10px 4px; }

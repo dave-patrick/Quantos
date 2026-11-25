@@ -40,8 +40,31 @@
 
   --p1: #e5484d; --p2: #f4b35e; --p3: #38a169; --p4: #4f8ddb;
 
-  --radius: 7px;
+  /* Radius scale (4 / 6 / 8 / 12 / pill). */
   --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  /* Spacing scale. Use these in new code; existing px values were snapped to the same steps. */
+  --space-0: 2px; --space-1: 4px; --space-2: 6px; --space-3: 8px; --space-4: 10px;
+  --space-5: 12px; --space-6: 16px; --space-7: 20px; --space-8: 24px; --space-9: 32px;
+  /* Type scale. */
+  --fs-xs: 11px; --fs-sm: 12px; --fs-base: 13px; --fs-md: 14px; --fs-lg: 16px;
+  /* Overlay, elevation, motion, touch target. */
+  --scrim: rgb(4 8 14 / .6);
+  --shadow-sm: 0 2px 6px rgb(0 0 0 / 0.15);
+  --shadow-md: 0 4px 14px rgb(0 0 0 / 0.16);
+  --dur-fast: .12s;
+  --dur-base: .25s;
+  --touch-min: 44px;
+  /* Surfaces that were hard-coded in components. */
+  --bg-glow: #15263c;
+  --bg-viewer: #525659;
+  --term-text: #d6e2f1;
+  /* Categorical colours for graph/map nodes and workspaces. */
+  --cat-1: #78b6ff; --cat-2: #7fd8a6; --cat-3: #f4b35e; --cat-4: #c49bff;
+  --cat-5: #ff8a8a; --cat-6: #78d3e8; --cat-7: #f4e06a; --cat-8: #b8c4d6;
   --shadow: 0 12px 36px rgb(0 0 0 / 0.45);
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
   --sidebar-w: 248px;

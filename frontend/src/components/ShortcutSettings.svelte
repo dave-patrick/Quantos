@@ -105,20 +105,20 @@
 </table>
 
 <style>
-  .small { font-size: 12.5px; }
-  h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 14px; }
-  h3 { font: 700 16px/1.3 var(--font-display); margin: 22px 0 8px; }
+  .small { font-size: var(--fs-sm); }
+  h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 12px; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 8px; }
   .global { display: grid; gap: 8px; max-width: 420px; }
-  .global label { display: grid; gap: 4px; font-size: 13px; color: var(--text-muted); }
-  .warn { color: var(--warn); font-size: 13.5px; }
+  .global label { display: grid; gap: 4px; font-size: var(--fs-base); color: var(--text-muted); }
+  .warn { color: var(--warn); font-size: var(--fs-base); }
   .filter { max-width: 320px; margin-bottom: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: var(--fs-md); }
   td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
-  .group { font: 11px var(--font-mono); width: 1%; white-space: nowrap; padding-right: 14px; }
+  .group { font: var(--fs-xs) var(--font-mono); width: 1%; white-space: nowrap; padding-right: 12px; }
   .keys, .actions { width: 1%; white-space: nowrap; }
-  .key { border: 1px solid var(--line-strong); border-bottom-width: 2px; background: var(--bg-raised); border-radius: 5px; padding: 2px 10px; font: 12px var(--font-mono); color: var(--text-soft); min-width: 60px; }
-  .rec { height: 28px; font-size: 12px; }
+  .key { border: 1px solid var(--line-strong); border-bottom-width: 2px; background: var(--bg-raised); border-radius: var(--radius-md); padding: 2px 10px; font: var(--fs-sm) var(--font-mono); color: var(--text-soft); min-width: 60px; }
+  .rec { height: 28px; font-size: var(--fs-sm); }
   tr.conflict .key { border-color: var(--warn); color: var(--warn); }
   .actions { text-align: right; }
-  .actions .btn { height: 24px; font-size: 12px; padding: 0 8px; }
+  .actions .btn { height: 24px; font-size: var(--fs-sm); padding: 0 8px; }
 </style>

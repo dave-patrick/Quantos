@@ -11,6 +11,6 @@
 <style>
   .wordmark { display: inline-flex; align-items: center; gap: 6px; color: var(--text); line-height: 0; }
   .wordmark :global(svg) { height: 100%; width: auto; display: block; }
-  .ver { font: 10px var(--font-mono); color: var(--text-faint); line-height: 1; align-self: flex-end; padding-bottom: 2px; display: inline-flex; gap: 5px; align-items: baseline; }
+  .ver { font: var(--fs-xs) var(--font-mono); color: var(--text-faint); line-height: 1; align-self: flex-end; padding-bottom: 2px; display: inline-flex; gap: 6px; align-items: baseline; }
   .build { color: var(--text-faint); opacity: .75; }
 </style>

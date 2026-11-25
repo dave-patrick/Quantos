@@ -30,16 +30,16 @@
   .body :global(.quick:focus-within) { border-color: var(--accent); }
   .body :global(.quick input) { height: 36px; }
   .list { display: flex; flex-direction: column; }
-  .empty { font-size: 12.5px; margin: 8px 0; padding: 0 2px; color: var(--text-muted); }
-  .done { font-size: 11.5px; margin: 8px 0 0; padding: 6px 2px 0; color: var(--text-muted); border-top: 1px solid var(--line); }
+  .empty { font-size: var(--fs-sm); margin: 8px 0; padding: 0 2px; color: var(--text-muted); }
+  .done { font-size: var(--fs-xs); margin: 8px 0 0; padding: 6px 2px 0; color: var(--text-muted); border-top: 1px solid var(--line); }
   /* In the narrow sidebar, tasks read as a compact list instead of nested cards. */
-  .list :global(.task.compact) { min-height: calc(38px * var(--d)); padding: calc(5px * var(--d)) 2px; border-radius: 6px; border: 0; border-bottom: 1px solid var(--line); background: transparent; box-shadow: none; }
+  .list :global(.task.compact) { min-height: calc(38px * var(--d)); padding: calc(5px * var(--d)) 2px; border-radius: var(--radius-md); border: 0; border-bottom: 1px solid var(--line); background: transparent; box-shadow: none; }
   .list :global(.task.compact:hover) { background: var(--bg-hover); box-shadow: none; }
   .list :global(.task.compact .strip) { left: 0; top: 6px; bottom: 6px; width: 2px; }
-  .list :global(.task.compact .main) { gap: 7px; flex: 1 1 0; min-width: 0; }
-  .list :global(.task.compact .title) { font-size: 13px; }
-  .list :global(.task.compact .chip) { font-size: 10px; padding: 0 5px; border-radius: 8px; }
-  .list :global(.task.compact .chip.warn), .list :global(.task.compact .chip.danger) { font-size: 10px; }
+  .list :global(.task.compact .main) { gap: 8px; flex: 1 1 0; min-width: 0; }
+  .list :global(.task.compact .title) { font-size: var(--fs-base); }
+  .list :global(.task.compact .chip) { font-size: var(--fs-xs); padding: 0 6px; border-radius: var(--radius); }
+  .list :global(.task.compact .chip.warn), .list :global(.task.compact .chip.danger) { font-size: var(--fs-xs); }
   .list :global(.task.compact .del) { opacity: 0; }
   .list :global(.task.compact:hover .del), .list :global(.task.compact .del:focus-visible) { opacity: 1; }
 </style>

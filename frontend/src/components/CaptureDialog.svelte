@@ -47,14 +47,14 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; z-index: 76; background: rgb(4 8 14 / .55); display: flex; justify-content: center; align-items: flex-start; padding: 14vh 16px 16px; }
-  .card { width: min(600px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow); padding: 14px; display: grid; gap: 10px; }
+  .scrim { position: fixed; inset: 0; z-index: 76; background: var(--scrim); display: flex; justify-content: center; align-items: flex-start; padding: 14vh 16px 16px; }
+  .card { width: min(600px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 12px; display: grid; gap: 10px; }
   header { display: flex; gap: 8px; align-items: center; color: var(--accent); }
   header strong { color: var(--text); font-family: var(--font-display); }
-  textarea { width: 100%; resize: vertical; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--bg-input); padding: 10px 12px; font-size: 15px; line-height: 1.5; }
+  textarea { width: 100%; resize: vertical; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--bg-input); padding: 10px 12px; font-size: var(--fs-lg); line-height: 1.5; }
   textarea:focus { outline: none; border-color: var(--accent); }
   .row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
-  label { display: grid; gap: 4px; font-size: 12px; color: var(--text-faint); }
+  label { display: grid; gap: 4px; font-size: var(--fs-sm); color: var(--text-faint); }
   label .input { height: 30px; width: auto; }
   .spacer { flex: 1; }
 </style>

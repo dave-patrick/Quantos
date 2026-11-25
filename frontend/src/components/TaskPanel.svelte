@@ -83,20 +83,20 @@
 {/if}
 
 <style>
-  .panel { margin: 6px 0 16px; padding: 12px 14px; border-radius: 10px; background: var(--bg-raised); border: 1px solid var(--line); }
+  .panel { margin: 6px 0 16px; padding: 12px 12px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line); }
   dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin: 0; align-items: center; }
-  dt { font: 12px var(--font-mono); color: var(--text-muted); }
+  dt { font: var(--fs-sm) var(--font-mono); color: var(--text-muted); }
   dd { margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   dd.col { flex-direction: column; align-items: stretch; gap: 4px; }
-  .cell { height: 28px; padding: 0 8px; border-radius: 5px; border: 1px solid var(--line); background: var(--bg-input); color: var(--text); font-size: 13.5px; min-width: 0; }
+  .cell { height: 28px; padding: 0 8px; border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--bg-input); color: var(--text); font-size: var(--fs-base); min-width: 0; }
   .cell:focus { outline: none; border-color: var(--accent); }
-  .hint { font-size: 12px; }
-  .reminder { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .hint { font-size: var(--fs-sm); }
+  .reminder { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-base); }
   .add { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .dep { display: flex; align-items: center; }
   .dep > :global(div) { flex: 1; }
-  .x { border: 0; background: none; color: var(--text-faint); font-size: 16px; padding: 0 4px; }
+  .x { border: 0; background: none; color: var(--text-faint); font-size: var(--fs-lg); padding: 0 4px; }
   .x:hover { color: var(--danger); }
   .link { border: 0; background: none; color: var(--accent); padding: 0; text-decoration: underline; text-underline-offset: 3px; }
-  h3 { margin: 14px 0 4px; display: flex; gap: 6px; }
+  h3 { margin: 12px 0 4px; display: flex; gap: 6px; }
 </style>

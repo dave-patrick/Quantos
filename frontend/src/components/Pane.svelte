@@ -108,21 +108,21 @@
 {/if}
 
 <style>
-  .pane { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--editor-bg, var(--bg-panel)); }
+  .pane { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--editor-bg, var(--bg-panel)); }
   .pane.focused { border-color: var(--line-strong); background: color-mix(in srgb, var(--editor-bg, var(--bg-panel)) 94%, var(--bg-raised) 6%); }
   .tabs-accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
   .strip { display: flex; align-items: center; min-width: 0; gap: 4px; }
   .tab { display: flex; align-items: center; }
   .tab-button { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: var(--text); font: inherit; cursor: default; }
-  .tab-button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 3px; }
+  .tab-button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius-sm); }
   .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .close-active { position: absolute; top: 6px; right: 7px; z-index: 5; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--text-faint); font-size: 17px; line-height: 1; opacity: .7; cursor: pointer; }
+  .close-active { position: absolute; top: 6px; right: 7px; z-index: 5; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-faint); font-size: var(--fs-lg); line-height: 1; opacity: .7; cursor: pointer; }
   .close-active:hover, .close-active:focus-visible { opacity: 1; background: var(--bg-hover); color: var(--text); outline: none; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
   /* Views size themselves to the pane, not the window: a split pane is often half as wide. */  
   .content { flex: 1; min-height: 0; display: flex; flex-direction: column; container: pane / inline-size; }
   .backdrop { position: fixed; inset: 0; border: 0; background: transparent; z-index: 45; cursor: default; }
-  .menu { position: fixed; z-index: 46; min-width: 190px; padding: 5px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
-  .menu button { text-align: left; padding: 7px 10px; border: 0; border-radius: 5px; background: none; color: var(--text-soft); font-size: 13.5px; }
+  .menu { position: fixed; z-index: 46; min-width: 190px; padding: 6px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
+  .menu button { text-align: left; padding: 8px 10px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-soft); font-size: var(--fs-base); }
   .menu button:hover { background: var(--bg-hover); color: var(--text); }
 </style>

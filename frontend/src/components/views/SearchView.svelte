@@ -76,19 +76,19 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
-  .inner { max-width: 860px; margin: 0 auto; padding: 22px 0 80px; }
-  .box { display: flex; align-items: center; gap: 10px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--bg-input); margin-bottom: 20px; }
+  .view { flex: 1; padding: 0 24px; }
+  .inner { max-width: 860px; margin: 0 auto; padding: 24px 0 80px; }
+  .box { display: flex; align-items: center; gap: 10px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-input); margin-bottom: 20px; }
   .box:focus-within { border-color: var(--accent); }
-  .q { flex: 1; height: 46px; border: 0; background: transparent; font-size: 17px; }
+  .q { flex: 1; height: 46px; border: 0; background: transparent; font-size: var(--fs-lg); }
   .q:focus { outline: none; }
   .scope { width: auto; height: 30px; }
-  section { margin-bottom: 22px; }
+  section { margin-bottom: 24px; }
   h2 { margin-bottom: 6px; }
-  .hit { display: grid; gap: 3px; width: 100%; text-align: left; padding: 10px 12px; border: 0; border-radius: 8px; background: none; color: var(--text-soft); }
+  .hit { display: grid; gap: 4px; width: 100%; text-align: left; padding: 10px 12px; border: 0; border-radius: var(--radius); background: none; color: var(--text-soft); }
   .hit:hover { background: var(--bg-hover); }
   .title { display: flex; align-items: center; gap: 8px; font-weight: 650; color: var(--text); }
-  .snippet { font-size: 14px; }
-  .snippet :global(mark) { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); border-radius: 2px; padding: 0 1px; }
-  .path { font-size: 11px; }
+  .snippet { font-size: var(--fs-md); }
+  .snippet :global(mark) { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); border-radius: var(--radius-sm); padding: 0 1px; }
+  .path { font-size: var(--fs-xs); }
 </style>

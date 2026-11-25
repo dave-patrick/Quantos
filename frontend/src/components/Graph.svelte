@@ -2,6 +2,7 @@
   import { api } from '../lib/api';
   import { onChange, isContentChange } from '../lib/events';
   import { openNode } from '../lib/links.svelte';
+  import { workspacePalette as palette, nodeTypeColors as colors } from '../lib/nodeColors';
   import { onMount } from 'svelte';
 
   interface GNode { id: string; title: string; type: string; workspace: string; depth: number; degree?: number; x: number; y: number; vx: number; vy: number }
@@ -98,7 +99,6 @@
   const neighbours = $derived(hovered ? new Set(edges.filter((e) => e.from === hovered || e.to === hovered).flatMap((e) => [e.from, e.to])) : null);
   const matches = $derived(highlight.trim() ? new Set(nodes.filter((n) => n.title.toLowerCase().includes(highlight.trim().toLowerCase())).map((n) => n.id)) : null);
   // Workspaces get colours in turn, so the same workspace keeps its colour while the view is open.
-  const palette = ['#78b6ff', '#7fd8a6', '#f4b35e', '#c49bff', '#ff8a8a', '#78d3e8', '#f4e06a', '#b8c4d6'];
   const wsColor = $derived(new Map([...new Set(nodes.map((n) => n.workspace))].sort().map((w, i) => [w, palette[i % palette.length]])));
   const maxDegree = $derived(Math.max(1, ...nodes.map((n) => n.degree ?? 0)));
   const radius = (n: GNode) => (n.degree !== undefined && !centerId ? 3.5 + 7 * Math.sqrt(n.degree / maxDegree) : n.id === centerId ? 9 : n.depth === 1 ? 6 : 4.5);
@@ -108,7 +108,6 @@
   function wheel(e: WheelEvent) { e.preventDefault(); view.k = Math.max(0.3, Math.min(3, view.k * (e.deltaY < 0 ? 1.1 : 0.9))); }
   function down(e: PointerEvent) { drag = { x: e.clientX - view.x, y: e.clientY - view.y }; }
   function move(e: PointerEvent) { if (drag) { view.x = e.clientX - drag.x; view.y = e.clientY - drag.y; } }
-  const colors: Record<string, string> = { task: 'var(--warn)', daily: 'var(--text-muted)', person: 'var(--ok)', project: '#c49bff', supertag: '#f4b35e', synced_block: 'var(--ok)' };
 </script>
 
 <div class="graph" bind:this={box} style="height:{height}px">
@@ -141,7 +140,7 @@
 </div>
 
 <style>
-  .graph { position: relative; overflow: hidden; border-radius: 10px; background: radial-gradient(circle at 50% 50%, var(--bg-raised), var(--bg)); }
+  .graph { position: relative; overflow: hidden; border-radius: var(--radius); background: radial-gradient(circle at 50% 50%, var(--bg-raised), var(--bg)); }
   svg { display: block; cursor: grab; }
   svg:active { cursor: grabbing; }
   .edge { stroke: var(--line-strong); stroke-width: 1.2; }
@@ -156,5 +155,5 @@
   .node.center circle { stroke: var(--text); stroke-width: 2; }
   .node:hover circle, .node:focus circle { stroke: var(--text); stroke-width: 2; }
   .dim { opacity: .18; }
-  .empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font-size: 13px; pointer-events: none; }
+  .empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font-size: var(--fs-base); pointer-events: none; }
 </style>

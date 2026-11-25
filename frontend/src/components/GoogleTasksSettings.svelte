@@ -228,12 +228,12 @@
   input, select { width: 100%; min-height: 44px; }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
   .actions .btn, .rows .btn { min-height: 44px; }
-  .muted { color: var(--text-muted); font-size: 14px; }
+  .muted { color: var(--text-muted); font-size: var(--fs-md); }
   .error { color: var(--danger); }
   .status { font-weight: 600; }
   details { margin: 16px 0; }
   summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
-  ol { padding-left: 22px; line-height: 1.6; }
+  ol { padding-left: 24px; line-height: 1.6; }
   h3 { margin-top: 32px; }
   .rows { list-style: none; padding: 0; display: grid; gap: 12px; }
   .rows li { display: grid; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }

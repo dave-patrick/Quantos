@@ -151,9 +151,9 @@
 
 <style>
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 8px; }
-  h3 { font: 700 16px/1.3 var(--font-display); margin: 24px 0 8px; }
-  .intro { max-width: 680px; font-size: 13.5px; }
-  .state { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 8px; }
+  .intro { max-width: 680px; font-size: var(--fs-base); }
+  .state { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
   .state .btn { margin-left: auto; }
   .field { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
   .field > span:first-child { width: 110px; color: var(--text-soft); flex: none; }
@@ -164,12 +164,12 @@
   .list { list-style: none; padding: 0; margin: 0; }
   .list li { border-bottom: 1px solid var(--line); padding: 6px 0; }
   .line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .linked { margin-top: 18px; }
+  .linked { margin-top: 16px; }
   .linked .list { margin-top: 6px; }
-  .mono { font: 12px var(--font-mono); }
+  .mono { font: var(--fs-sm) var(--font-mono); }
   .when { font-weight: 600; }
   .actions { margin-left: auto; display: flex; gap: 4px; }
   .notes { margin: 8px 0 4px 12px; display: grid; gap: 4px; max-height: 320px; overflow: auto; }
-  .note { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+  .note { display: flex; align-items: center; gap: 10px; font-size: var(--fs-base); }
   .note span:first-child { flex: 1; }
 </style>

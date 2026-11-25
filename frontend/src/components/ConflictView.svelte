@@ -49,13 +49,13 @@
 
 <style>
   .conflict { max-width: 1200px; margin: 16px auto; }
-  header { display: flex; gap: 12px; padding: 14px 16px; border-radius: 10px; background: var(--warn-wash); color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent); margin-bottom: 14px; }
-  h2 { font: 700 17px/1.3 var(--font-display); color: var(--text); }
-  header p { margin: 4px 0 0; color: var(--text-soft); font-size: 14px; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; }
+  header { display: flex; gap: 12px; padding: 12px 16px; border-radius: var(--radius); background: var(--warn-wash); color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent); margin-bottom: 12px; }
+  h2 { font: 700 var(--fs-lg)/1.3 var(--font-display); color: var(--text); }
+  header p { margin: 4px 0 0; color: var(--text-soft); font-size: var(--fs-md); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
   .col-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-raised); border-bottom: 1px solid var(--line-strong); position: sticky; top: 0; }
   .col-head + .col-head { border-left: 1px solid var(--line-strong); }
-  .cell { margin: 0; padding: 4px 12px; font: 13px/1.6 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-soft); min-height: 4px; }
+  .cell { margin: 0; padding: 4px 12px; font: var(--fs-base)/1.6 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-soft); min-height: 4px; }
   .cell:nth-child(even) { border-left: 1px solid var(--line-strong); }
   .cell.mine { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--text); }
   .cell.theirs { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--text); }

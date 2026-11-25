@@ -86,12 +86,12 @@
 <style>
   section { margin-top: 32px; }
   p { margin: 12px 0; line-height: 1.55; }
-  .muted { color: var(--text-muted); font-size: 14px; }
+  .muted { color: var(--text-muted); font-size: var(--fs-md); }
   .path { overflow-wrap: anywhere; }
   .error { color: var(--danger); }
   form, article { margin: 16px 0; padding: 16px 0; border-bottom: 1px solid var(--line); }
   label { display: block; font-weight: 600; margin-bottom: 8px; }
   input { width: 100%; min-height: 44px; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
-  .btn { min-height: 44px; }
+  .btn { min-height: var(--touch-min); }
 </style>

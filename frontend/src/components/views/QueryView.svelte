@@ -189,7 +189,7 @@
         <div class="row">
           <span class="label">Types</span>
           {#each types as t (t)}
-            <label class="chip"><input type="checkbox" checked={view.query.types?.includes(t)} onchange={(e) => {
+            <label class="filter-opt"><input type="checkbox" checked={view.query.types?.includes(t)} onchange={(e) => {
               const on = (e.target as HTMLInputElement).checked; view.query.types = on ? [...(view.query.types ?? []), t] : (view.query.types ?? []).filter((x) => x !== t); changed(); }} /> {t}</label>
           {/each}
         </div>
@@ -204,7 +204,7 @@
           </select>
           <span class="label">Text</span>
           <input class="input" aria-label="Text" bind:value={view.query.text} oninput={changed} placeholder="contains words" />
-          <label class="chip"><input type="checkbox" bind:checked={view.query.includeArchived} onchange={changed} /> archived</label>
+          <label class="filter-opt"><input type="checkbox" bind:checked={view.query.includeArchived} onchange={changed} /> archived</label>
         </div>
         {#each view.query.filters ?? [] as f, i (i)}
           <div class="row">
@@ -306,43 +306,43 @@
 <style>
   .query { flex: 1; padding: 0 24px; }
   .query.embedded { padding: 0; }
-  .inner { padding: 18px 0 60px; }
+  .inner { padding: 16px 0 60px; }
   .embedded .inner { padding: 0; }
   header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
   .name { flex: 1; min-width: 200px; border: 0; background: transparent; font: 700 26px/1.2 var(--font-display); color: var(--text); }
   .name:focus { outline: none; box-shadow: none; }
   .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
-  .seg button { border: 0; background: none; color: var(--text-muted); padding: 5px 9px; display: grid; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; display: grid; }
   .seg button.on { background: var(--accent-wash); color: var(--accent); }
-  .pin { display: flex; gap: 4px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .spec, .paste { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); margin-bottom: 12px; display: grid; gap: 8px; }
+  .pin { display: flex; gap: 4px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
+  .spec, .paste { padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); margin-bottom: 12px; display: grid; gap: 8px; }
   .file { justify-self: start; cursor: pointer; }
   .file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
   .file:focus-within { box-shadow: var(--focus-ring); }
   .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .row .input { width: auto; min-width: 120px; height: 28px; font-size: 13px; }
+  .row .input { width: auto; min-width: 120px; height: 28px; font-size: var(--fs-base); }
   .row .input.small { min-width: 90px; }
-  .chip { display: inline-flex; gap: 4px; align-items: center; font-size: 13px; color: var(--text-soft); }
-  textarea { width: 100%; font: 13px var(--font-mono); background: var(--bg-input); border: 1px solid var(--line-strong); border-radius: 7px; padding: 8px; color: var(--text); }
+  .filter-opt { display: inline-flex; gap: 4px; align-items: center; font-size: var(--fs-base); color: var(--text-soft); }
+  textarea { width: 100%; font: var(--fs-base) var(--font-mono); background: var(--bg-input); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 8px; color: var(--text); }
   .error { color: var(--danger); }
-  .count { font-size: 12px; margin: 4px 0 8px; }
-  .group { margin: 14px 0 4px; }
-  .list-row { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 7px 8px; border-radius: 6px; color: var(--text-soft); }
+  .count { font-size: var(--fs-sm); margin: 4px 0 8px; }
+  .group { margin: 12px 0 4px; }
+  .list-row { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 8px 8px; border-radius: var(--radius-md); color: var(--text-soft); }
   .list-row:hover { background: var(--bg-hover); }
   .list-row .t { color: var(--text); font-weight: 600; }
   .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: 10px; overflow-x: auto; align-items: start; }
-  .col { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 8px; min-height: 160px; }
+  .col { background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; min-height: 160px; }
   .col.over { border-color: var(--accent); background: var(--accent-wash); }
-  .card { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; display: grid; gap: 2px; cursor: grab; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; display: grid; gap: 2px; cursor: grab; }
   .card .t { border: 0; background: none; text-align: left; padding: 0; color: var(--text); font-weight: 600; }
-  .meta { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta { font-size: var(--fs-sm); color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-  .doc-card { display: grid; gap: 4px; align-content: start; text-align: left; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); padding: 12px; color: var(--text-soft); min-height: 110px; }
+  .doc-card { display: grid; gap: 4px; align-content: start; text-align: left; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); padding: 12px; color: var(--text-soft); min-height: 110px; }
   .doc-card:hover { border-color: var(--accent); }
-  .doc-card strong { color: var(--text); font-size: 15px; }
+  .doc-card strong { color: var(--text); font-size: var(--fs-lg); }
   .gallery .doc-card { padding: 0 0 12px; overflow: hidden; }
   .gallery .doc-card > :not(img):not(.cover-placeholder) { margin: 0 12px; }
   .doc-card img, .cover-placeholder { width: 100%; height: 130px; object-fit: cover; background: var(--bg-panel); display: grid; place-items: center; color: var(--text-faint); margin-bottom: 6px; }
-  .tag { font: 11px var(--font-mono); color: var(--accent); }
+  .tag { font: var(--fs-xs) var(--font-mono); color: var(--accent); }
 </style>

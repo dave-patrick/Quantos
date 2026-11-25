@@ -34,12 +34,12 @@
   </div>
 </div>
 <style>
-  .scrim { position: fixed; inset: 0; padding: 16px; display: grid; place-items: center; background: rgb(4 8 14 / .6); z-index: 70; }
-  .task-popup { width: min(920px, 100%); height: min(860px, calc(100dvh - 32px)); min-width: 0; display: flex; flex-direction: column; background: var(--bg-panel); color: var(--text); border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .scrim { position: fixed; inset: 0; padding: 16px; display: grid; place-items: center; background: var(--scrim); z-index: 70; }
+  .task-popup { width: min(920px, 100%); height: min(860px, calc(100dvh - 32px)); min-width: 0; display: flex; flex-direction: column; background: var(--bg-panel); color: var(--text); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
   header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 12px; border-bottom: 1px solid var(--line); flex: none; }
-  h2 { font: 600 16px var(--font-body); }
+  h2 { font: 600 var(--fs-lg) var(--font-body); }
   .close { min-width: 48px; min-height: 48px; }
   .editor { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  .error { margin: 8px 16px; color: var(--danger); font-size: 14px; }
+  .error { margin: 8px 16px; color: var(--danger); font-size: var(--fs-md); }
   @media (max-width: 600px) { .scrim { padding: 0; } .task-popup { height: 100dvh; border-radius: 0; } }
 </style>

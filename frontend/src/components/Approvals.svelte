@@ -42,9 +42,9 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; background: rgb(4 8 14 / .6); display: grid; place-items: center; z-index: 85; padding: 16px; }
-  .card { display: flex; gap: 14px; width: min(480px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); color: var(--accent); }
+  .scrim { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 85; padding: 16px; }
+  .card { display: flex; gap: 12px; width: min(480px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow); color: var(--accent); }
   h2 { font: 700 18px/1.3 var(--font-display); color: var(--text); }
   p { color: var(--text-soft); margin: 8px 0; }
-  .muted { font-size: 14px; }
+  .muted { font-size: var(--fs-md); }
 </style>

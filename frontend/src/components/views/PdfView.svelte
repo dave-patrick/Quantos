@@ -77,12 +77,12 @@
 
 <style>
   .pdf { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  .bar { display: flex; gap: 12px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); }
-  .bar .name { flex: 1; font-size: 13.5px; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar label { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+  .bar { display: flex; gap: 12px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .bar .name { flex: 1; font-size: var(--fs-base); color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar label { display: flex; gap: 6px; align-items: center; font-size: var(--fs-base); }
   .bar .input { width: 70px; height: 28px; }
-  iframe { flex: 1; border: 0; background: #525659; }
-  .native-page { flex: 1; min-height: 0; overflow: auto; background: #525659; padding: 8px; }
+  iframe { flex: 1; border: 0; background: var(--bg-viewer); }
+  .native-page { flex: 1; min-height: 0; overflow: auto; background: var(--bg-viewer); padding: 8px; }
   .native-page img { width: 100%; height: auto; display: block; }
   .page-actions { display: flex; justify-content: space-between; gap: 12px; padding: 8px; }
   @media (max-width: 700px) { .bar { flex-wrap: wrap; gap: 8px; } .bar .name { flex-basis: 100%; } }

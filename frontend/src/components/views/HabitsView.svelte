@@ -174,40 +174,40 @@
 
 <style>
   .habits { flex: 1; }
-  .inner { max-width: 1100px; margin: 0 auto; padding: 24px 28px 40px; }
+  .inner { max-width: 1100px; margin: 0 auto; padding: 24px 24px 40px; }
   header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   h1 { display: flex; align-items: center; gap: 10px; font: 700 28px/1.2 var(--font-display); margin-right: auto; }
   .span { width: auto; }
-  .intro { font-size: 13.5px; margin: 6px 0 16px; }
-  .form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); margin-bottom: 16px; }
+  .intro { font-size: var(--fs-base); margin: 6px 0 16px; }
+  .form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); margin-bottom: 16px; }
   .form > .input:first-child { flex: 1 1 260px; }
   .small { width: 140px; }
-  .kinds { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
-  .kinds button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; font: 13px var(--font-body); cursor: pointer; }
+  .kinds { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .kinds button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; font: var(--fs-base) var(--font-body); cursor: pointer; }
   .kinds button + button { border-left: 1px solid var(--line-strong); }
   .kinds button.on { background: var(--accent-wash); color: var(--accent); }
-  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
   .row { display: flex; gap: 6px; width: 100%; }
   .danger { color: var(--danger); margin-left: auto; }
   .grid-wrap { overflow-x: auto; }
   .grid { border-collapse: separate; border-spacing: 3px; }
   .grid th { font-weight: 500; }
-  .daylink { display: grid; border: 0; background: none; color: var(--text-faint); font: 11px/1.3 var(--font-mono); padding: 2px 0; width: 30px; cursor: pointer; }
+  .daylink { display: grid; border: 0; background: none; color: var(--text-faint); font: var(--fs-xs)/1.3 var(--font-mono); padding: 2px 0; width: 30px; cursor: pointer; }
   .daylink:hover { color: var(--accent); }
   th.today .daylink { color: var(--accent); font-weight: 700; }
   .name { text-align: left; white-space: nowrap; padding-right: 10px; position: sticky; left: 0; background: var(--bg); z-index: 1; }
-  .tname { border: 0; background: none; color: var(--text); font: 600 14px var(--font-body); padding: 0; cursor: pointer; }
+  .tname { border: 0; background: none; color: var(--text); font: 600 var(--fs-md) var(--font-body); padding: 0; cursor: pointer; }
   .tname:hover { color: var(--accent); }
-  .goal { font: 11px var(--font-mono); margin-left: 6px; }
+  .goal { font: var(--fs-xs) var(--font-mono); margin-left: 6px; }
   .order { display: inline-flex; opacity: 0; margin-left: 4px; }
   tr:hover .order, .order:focus-within { opacity: 1; }
   td { padding: 0; }
-  .cell { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-input); color: var(--text); font: 600 11px var(--font-mono); cursor: pointer; padding: 0; overflow: hidden; }
+  .cell { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg-input); color: var(--text); font: 600 var(--fs-xs) var(--font-mono); cursor: pointer; padding: 0; overflow: hidden; }
   .cell:hover { border-color: var(--accent); }
   .cell.hit { background: color-mix(in srgb, var(--accent) 70%, transparent); border-color: var(--accent); color: var(--accent-ink); }
   .cell.some { background: var(--accent-wash); }
   td.today .cell { box-shadow: 0 0 0 1px var(--accent); }
-  .numin { width: 44px; height: 30px; border: 1px solid var(--accent); border-radius: 6px; background: var(--bg-input); color: var(--text); font: 12px var(--font-mono); text-align: center; }
-  .stat { padding: 0 8px; font-size: 12.5px; color: var(--text-soft); white-space: nowrap; text-align: right; }
+  .numin { width: 44px; height: 30px; border: 1px solid var(--accent); border-radius: var(--radius-md); background: var(--bg-input); color: var(--text); font: var(--fs-sm) var(--font-mono); text-align: center; }
+  .stat { padding: 0 8px; font-size: var(--fs-sm); color: var(--text-soft); white-space: nowrap; text-align: right; }
   .mono { font-family: var(--font-mono); }
 </style>

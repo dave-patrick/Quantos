@@ -87,15 +87,15 @@
 
 <style>
   .links { flex: 1; padding: 10px; }
-  section { margin-bottom: 18px; }
+  section { margin-bottom: 16px; }
   h3 { display: flex; gap: 6px; margin: 0 0 8px; }
   .filters { display: grid; gap: 4px; margin-bottom: 8px; }
-  .filters .input { height: 28px; font-size: 12.5px; }
+  .filters .input { height: 28px; font-size: var(--fs-sm); }
   .ref { padding: 6px 0; border-bottom: 1px solid var(--line); }
-  .count { margin-left: auto; font: 11px var(--font-mono); }
-  .src { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; border: 0; background: none; color: var(--accent); padding: 4px 6px; border-radius: 5px; font-size: 13.5px; }
+  .count { margin-left: auto; font: var(--fs-xs) var(--font-mono); }
+  .src { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; border: 0; background: none; color: var(--accent); padding: 4px 6px; border-radius: var(--radius-md); font-size: var(--fs-base); }
   .src:hover { background: var(--bg-hover); }
   .src.dashed { color: var(--text-muted); }
-  .ctx { margin: 2px 6px 4px 25px; font-size: 12.5px; color: var(--text-muted); overflow-wrap: anywhere; }
+  .ctx { margin: 2px 6px 4px 24px; font-size: var(--fs-sm); color: var(--text-muted); overflow-wrap: anywhere; }
   .pad { padding: 8px; }
 </style>

@@ -34,7 +34,7 @@
 <style>
   .notes { flex: 1; padding: 10px; }
   .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .note { display: grid; gap: 2px; width: 100%; text-align: left; border: 0; background: none; padding: 8px; border-radius: 7px; color: var(--text-soft); font-size: 13px; border-left: 2px solid transparent; }
+  .note { display: grid; gap: 2px; width: 100%; text-align: left; border: 0; background: none; padding: 8px; border-radius: var(--radius); color: var(--text-soft); font-size: var(--fs-base); border-left: 2px solid transparent; }
   .note:hover { background: var(--bg-hover); }
   .note.unread { border-left-color: var(--accent); background: var(--accent-wash); }
   strong { color: var(--text); }

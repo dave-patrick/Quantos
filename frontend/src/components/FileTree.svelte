@@ -202,18 +202,18 @@
 <style>
   .files { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .tools { display: flex; gap: 2px; align-items: center; padding: 8px; }
-  .filter { height: 28px; font-size: 13px; }
-  .batch { display: flex; align-items: center; gap: 4px; padding: 4px 8px; margin: 0 8px 6px; border-radius: 7px; background: var(--accent-wash); color: var(--accent-strong); font-size: 12.5px; }
+  .filter { height: 28px; font-size: var(--fs-base); }
+  .batch { display: flex; align-items: center; gap: 4px; padding: 4px 8px; margin: 0 8px 6px; border-radius: var(--radius); background: var(--accent-wash); color: var(--accent-strong); font-size: var(--fs-sm); }
   .batch span { flex: 1; }
-  .batch .btn { height: 24px; padding: 0 8px; font-size: 12px; }
+  .batch .btn { height: 24px; padding: 0 8px; font-size: var(--fs-sm); }
   .list { flex: 1; padding: 0 4px 20px; }
-  .row { display: flex; align-items: center; gap: 7px; width: 100%; padding: calc(4px * var(--d)) 8px; border: 1px solid var(--line); background: var(--bg-raised); border-radius: 6px; color: var(--text-soft); font-size: 13.5px; text-align: left; margin: 1px 4px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
-  .row:hover { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: 0 2px 4px rgb(0 0 0 / 0.12); }
-  .row.on { background: var(--bg-active); color: var(--text); border-color: var(--accent); box-shadow: 0 2px 6px rgb(0 0 0 / 0.15); }
+  .row { display: flex; align-items: center; gap: 8px; width: 100%; padding: calc(4px * var(--d)) 8px; border: 1px solid var(--line); background: var(--bg-raised); border-radius: var(--radius-md); color: var(--text-soft); font-size: var(--fs-base); text-align: left; margin: 1px 4px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+  .row:hover { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
+  .row.on { background: var(--bg-active); color: var(--text); border-color: var(--accent); box-shadow: var(--shadow-sm); }
   .row.sel { background: color-mix(in srgb, var(--accent) 22%, transparent); }
   .row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row:hover { background: var(--bg-hover); }
   .row.on { background: var(--bg-active); color: var(--text); }
   .row.sel { background: color-mix(in srgb, var(--accent) 22%, transparent); }
-  .pad { padding: 8px; font-size: 13px; }
+  .pad { padding: 8px; font-size: var(--fs-base); }
 </style>

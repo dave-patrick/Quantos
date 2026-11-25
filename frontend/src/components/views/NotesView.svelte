@@ -363,42 +363,42 @@
 </div>
 
 <style>
-  .browser { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 14px 18px 10px; gap: 10px; }
+  .browser { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 12px 16px 10px; gap: 10px; }
   .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   h1 { display: flex; align-items: center; gap: 8px; font: 700 22px/1.2 var(--font-display); margin-right: 6px; }
   .tools .input { width: auto; }
   .tools .q { flex: 1 1 220px; }
-  .check { display: inline-flex; gap: 5px; align-items: center; font-size: 13px; color: var(--text-muted); }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
   .panes { flex: 1; min-height: 0; display: flex; gap: 0; }
   .panes > section.left { flex: 0 0 var(--left-w); min-width: 200px; }
   .panes > section.right { flex: 1 1 0; min-width: 200px; background: var(--bg); }
   .panes.no-preview > section.left { flex: 1 1 0; min-width: 0; }
-  .left { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+  .left { display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); box-shadow: var(--shadow-sm); }
   .divider { width: 14px; cursor: col-resize; touch-action: none; user-select: none; background: transparent; margin: 0; border: 0; padding: 0; display: block; flex: 0 0 14px; }
   .divider:hover { background: var(--accent); opacity: 0.3; }
-  .right { border: 1px solid var(--line); border-radius: 10px; padding: 16px 22px; background: var(--bg); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); }
+  .right { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 24px; background: var(--bg); box-shadow: var(--shadow-sm); }
   .bar { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; min-height: 38px; }
-  .sel { font-size: 12.5px; color: var(--accent); margin-left: auto; }
+  .sel { font-size: var(--fs-sm); color: var(--accent); margin-left: auto; }
   .list { flex: 1; list-style: none; margin: 0; padding: 0; }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; margin-left: auto; }
-  .seg button { border: 0; background: none; color: var(--text-muted); padding: 2px 9px; font: 12.5px var(--font-body); cursor: pointer; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius-md); overflow: hidden; margin-left: auto; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 2px 10px; font: var(--fs-sm) var(--font-body); cursor: pointer; }
   .seg button + button { border-left: 1px solid var(--line-strong); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
   .tree { padding: 4px 0; }
   .sub { list-style: none; margin: 0; padding: 0; }
   .folder.drop > .fold { background: var(--accent-wash); outline: 1px dashed var(--accent); }
-  .fold { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; background: none; color: var(--text-soft); font: 600 13.5px var(--font-body); padding: 5px 8px; cursor: pointer; text-align: left; }
+  .fold { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; background: none; color: var(--text-soft); font: 600 var(--fs-base) var(--font-body); padding: 6px 8px; cursor: pointer; text-align: left; }
   .fold:hover { background: var(--bg-hover); }
-  .n { font: 11px var(--font-mono); margin-left: auto; }
+  .n { font: var(--fs-xs) var(--font-mono); margin-left: auto; }
   .leaf { display: flex; align-items: center; gap: 6px; padding-right: 8px; }
   .leaf:hover { background: var(--bg-hover); }
   .leaf.on { background: var(--bg-active); }
-  .lname { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: 13.5px var(--font-body); padding: 4px 0; cursor: pointer; text-align: left; }
+  .lname { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: var(--fs-base) var(--font-body); padding: 4px 0; cursor: pointer; text-align: left; }
   .lname span:first-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lname .when { margin-left: auto; font: 11px var(--font-mono); white-space: nowrap; }
-  .row { display: flex; gap: 8px; align-items: center; min-width: 0; padding: 5px 10px; border-bottom: 1px solid var(--line); }
+  .lname .when { margin-left: auto; font: var(--fs-xs) var(--font-mono); white-space: nowrap; }
+  .row { display: flex; gap: 8px; align-items: center; min-width: 0; padding: 6px 10px; border-bottom: 1px solid var(--line); }
   .pick { display: flex; align-items: center; gap: 8px; flex: 1; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; min-width: 0; overflow: hidden; }
-  .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-sm); }
   .row :global(.icon) { flex: none; color: var(--text-faint); }
   .row input { flex: none; }
   .row:hover { background: var(--bg-hover); }
@@ -406,20 +406,20 @@
   .row.arch .t { color: var(--text-faint); }
   .txt { display: flex; align-items: baseline; gap: 12px; flex: 1; min-width: 0; overflow: hidden; }
   .t, .x { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .t { flex: 0 1 32%; min-width: 5em; font-weight: 600; font-size: 14px; }
-  .x { flex: 1 1 8em; min-width: 0; font-size: 12.5px; color: var(--text-muted); }
-  .pick .meta { display: flex; flex: 0 1 auto; flex-wrap: nowrap; gap: 4px 10px; max-width: 38%; overflow: hidden; white-space: nowrap; font: 11px var(--font-mono); color: var(--text-faint); }
+  .t { flex: 0 1 32%; min-width: 5em; font-weight: 600; font-size: var(--fs-md); }
+  .x { flex: 1 1 8em; min-width: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+  .pick .meta { display: flex; flex: 0 1 auto; flex-wrap: nowrap; gap: 4px 10px; max-width: 38%; overflow: hidden; white-space: nowrap; font: var(--fs-xs) var(--font-mono); color: var(--text-faint); }
   .tag { color: var(--accent); }
-  .empty { padding: 16px; font-size: 13px; }
-  .right { border: 1px solid var(--line); border-radius: 10px; padding: 16px 22px; background: var(--bg); }
+  .empty { padding: 16px; font-size: var(--fs-base); }
+  .right { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 24px; background: var(--bg); }
   .right header { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
   h2 { font: 700 24px/1.2 var(--font-display); }
-  .path { font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
-  .props { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; font-size: 13px; margin: 0 0 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+  .path { font-size: var(--fs-sm); margin: 4px 0 10px; word-break: break-all; }
+  .props { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: var(--fs-base); margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); }
   .props dt { color: var(--text-muted); }
   .props dd { margin: 0; overflow-wrap: anywhere; }
-  .md { font-size: 15px; line-height: 1.6; }
-  .right > .pick { margin-top: 30px; text-align: center; font-size: 13.5px; }
+  .md { font-size: var(--fs-lg); line-height: 1.6; }
+  .right > .pick { margin-top: 32px; text-align: center; font-size: var(--fs-base); }
   @container pane (max-width: 820px) {
     .panes { flex-direction: column; }
     .panes > section.left { flex: 0 0 var(--upper-h); min-height: 120px; }
@@ -428,7 +428,7 @@
     .divider { width: auto; height: 14px; flex: 0 0 14px; cursor: row-resize; }
   }
   @container pane (max-width: 520px) {
-    .txt { gap: 7px; }
+    .txt { gap: 8px; }
     .t { flex-basis: 42%; min-width: 4em; }
     .x { display: none; }
     .pick .meta { max-width: 48%; gap: 4px 6px; }

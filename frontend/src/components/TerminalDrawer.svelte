@@ -78,14 +78,14 @@
 <style>
   .drawer { position: relative; flex: none; display: flex; flex-direction: column; border-top: 1px solid var(--line-strong); background: #070c13; }
   .grip { position: absolute; top: -3px; left: 0; right: 0; height: 6px; cursor: ns-resize; }
-  header { display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-bottom: 1px solid var(--line); color: var(--text-faint); }
-  .tab { border: 0; background: none; color: var(--text-muted); font: 12px var(--font-mono); padding: 3px 8px; border-radius: 4px; }
+  header { display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-bottom: 1px solid var(--line); color: var(--text-faint); }
+  .tab { border: 0; background: none; color: var(--text-muted); font: var(--fs-sm) var(--font-mono); padding: 4px 8px; border-radius: var(--radius-sm); }
   .tab.on { background: var(--bg-active); color: var(--text); }
   .spacer { flex: 1; }
-  .out { flex: 1; margin: 0; padding: 8px 12px; overflow: auto; font: 12.5px/1.45 var(--font-mono); color: #d6e2f1; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .line { display: flex; align-items: center; gap: 6px; padding: 4px 12px 8px; font: 12.5px var(--font-mono); }
+  .out { flex: 1; margin: 0; padding: 8px 12px; overflow: auto; font: var(--fs-sm)/1.45 var(--font-mono); color: var(--term-text); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .line { display: flex; align-items: center; gap: 6px; padding: 4px 12px 8px; font: var(--fs-sm) var(--font-mono); }
   .prompt { color: var(--accent); white-space: nowrap; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
   .line input { flex: 1; border: 0; background: transparent; color: var(--text); font: inherit; }
   .line input:focus { outline: none; box-shadow: none; }
-  .empty { padding: 16px; color: var(--text-faint); font-size: 13px; margin: 0; }
+  .empty { padding: 16px; color: var(--text-faint); font-size: var(--fs-base); margin: 0; }
 </style>

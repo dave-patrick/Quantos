@@ -96,20 +96,19 @@
 
 <style>
   .ask { flex: 1; }
-  .inner { max-width: 780px; margin: 0 auto; padding: 24px 28px 40px; }
-  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .inner { max-width: 780px; margin: 0 auto; padding: 24px 24px 40px; }
+  header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   h1 { display: flex; align-items: center; gap: 10px; font: 700 28px/1.2 var(--font-display); }
-  .turn { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .turn { border-bottom: 1px solid var(--line); padding: 12px 0; }
   .q { font-weight: 600; color: var(--text); margin-bottom: 8px; }
   .answer { color: var(--text-soft); line-height: 1.6; }
-  .sources { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; font-size: 13px; }
-  .chip { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--line-strong); border-radius: 12px; padding: 2px 10px; background: none; color: var(--text-soft); font-size: 12.5px; }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
-  .composer { margin-top: 18px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--bg-input); padding: 8px; }
+  .sources { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; font-size: var(--fs-base); }
+  .chip:hover { color: var(--accent); }
+  .composer { margin-top: 16px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-input); padding: 8px; }
   textarea { width: 100%; border: 0; background: none; resize: vertical; font: inherit; color: var(--text); padding: 4px; }
   textarea:focus { outline: none; }
   .composer:focus-within { border-color: var(--accent); }
   .tools { display: flex; justify-content: space-between; align-items: center; }
-  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .hint { font-size: 14px; }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
+  .hint { font-size: var(--fs-md); }
 </style>

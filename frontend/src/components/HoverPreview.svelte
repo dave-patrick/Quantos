@@ -33,11 +33,11 @@
 {/if}
 
 <style>
-  .preview { position: fixed; z-index: 70; width: 420px; max-height: 320px; overflow: hidden; border-radius: 10px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); padding: 12px 14px; }
-  .title { display: block; border: 0; background: none; padding: 0; font: 700 15px/1.3 var(--font-display); color: var(--accent); margin-bottom: 6px; text-align: left; }
-  .body { font-size: 13.5px; color: var(--text-soft); max-height: 260px; overflow: hidden; mask-image: linear-gradient(#000 80%, transparent); }
-  .body :global(h1), .body :global(h2), .body :global(h3) { font-size: 14px; margin: 8px 0 4px; }
+  .preview { position: fixed; z-index: 70; width: 420px; max-height: 320px; overflow: hidden; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); padding: 12px 12px; }
+  .title { display: block; border: 0; background: none; padding: 0; font: 700 var(--fs-lg)/1.3 var(--font-display); color: var(--accent); margin-bottom: 6px; text-align: left; }
+  .body { font-size: var(--fs-base); color: var(--text-soft); max-height: 260px; overflow: hidden; mask-image: linear-gradient(#000 80%, transparent); }
+  .body :global(h1), .body :global(h2), .body :global(h3) { font-size: var(--fs-md); margin: 8px 0 4px; }
   .body :global(p) { margin: 4px 0; }
-  .body :global(ul) { padding-left: 18px; margin: 4px 0; }
-  .body :global(code) { font-size: 12px; }
+  .body :global(ul) { padding-left: 16px; margin: 4px 0; }
+  .body :global(code) { font-size: var(--fs-sm); }
 </style>

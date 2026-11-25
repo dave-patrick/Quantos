@@ -96,7 +96,7 @@
   input { width: 100%; min-height: 44px; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .actions .btn { min-height: 44px; }
-  .muted { color: var(--text-muted); font-size: 14px; }
+  .muted { color: var(--text-muted); font-size: var(--fs-md); }
   .error { color: var(--danger); }
   h3 { margin-top: 32px; }
   .conflicts { list-style: none; padding: 0; }

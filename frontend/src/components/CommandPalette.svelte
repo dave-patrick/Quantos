@@ -109,17 +109,17 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; background: rgb(4 8 14 / .55); z-index: 75; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; }
-  .palette { width: min(640px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
-  .field { display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--line); color: var(--text-faint); }
-  .field input { flex: 1; height: 50px; border: 0; background: transparent; font-size: 17px; }
+  .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 75; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; }
+  .palette { width: min(640px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .field { display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: 1px solid var(--line); color: var(--text-faint); }
+  .field input { flex: 1; height: 50px; border: 0; background: transparent; font-size: var(--fs-lg); }
   .field input:focus { outline: none; }
   ul { list-style: none; margin: 0; padding: 6px; max-height: 50vh; overflow: auto; }
-  li[role='option'] { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 7px; color: var(--text-soft); cursor: pointer; }
+  li[role='option'] { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: var(--radius); color: var(--text-soft); cursor: pointer; }
   li.on { background: var(--bg-select); color: var(--text); }
   li.on .detail { color: var(--text-soft); }
   .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .detail { font: 11.5px var(--font-mono); color: var(--text-faint); }
-  .none { padding: 14px; color: var(--text-faint); text-align: center; }
-  .hint { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12px; }
+  .detail { font: var(--fs-xs) var(--font-mono); color: var(--text-faint); }
+  .none { padding: 12px; color: var(--text-faint); text-align: center; }
+  .hint { display: flex; gap: 12px; padding: 8px 12px; border-top: 1px solid var(--line); font-size: var(--fs-sm); }
 </style>

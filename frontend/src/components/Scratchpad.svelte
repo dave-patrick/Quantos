@@ -92,16 +92,16 @@
 <style>
   .pad { height: 100vh; display: flex; flex-direction: column; background: var(--bg-raised); --editor-size: 15px; }
   .pad.docked { height: auto; flex: 1; min-height: 0; --editor-size: 14.5px; }
-  .body { flex: 1; min-height: 0; overflow: auto; padding: 6px 14px 10px; }
+  .body { flex: 1; min-height: 0; overflow: auto; padding: 6px 12px 10px; }
   .docked .body { padding: 6px 8px 10px; }
-  .pad :global(.cm-content) { padding-bottom: 30px; }
-  footer { flex: none; display: flex; align-items: center; padding: 3px 10px; font: 11px var(--font-mono); color: var(--text-faint); background: var(--bg-raised); border-top: 1px solid var(--line); }
+  .pad :global(.cm-content) { padding-bottom: 32px; }
+  footer { flex: none; display: flex; align-items: center; padding: 4px 10px; font: var(--fs-xs) var(--font-mono); color: var(--text-faint); background: var(--bg-raised); border-top: 1px solid var(--line); }
   .state { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .send { position: relative; }
-  .sendbtn { border: 0; background: none; color: var(--accent); font: 11px var(--font-mono); cursor: pointer; padding: 0 2px; }
-  .menu { position: absolute; right: 0; bottom: 20px; display: grid; min-width: 220px; background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: 8px; padding: 4px; box-shadow: var(--shadow); }
-  .menu button { display: flex; justify-content: space-between; gap: 10px; border: 0; background: none; color: var(--text); font: 13px var(--font-body); padding: 6px 8px; border-radius: 5px; text-align: left; cursor: pointer; }
+  .sendbtn { border: 0; background: none; color: var(--accent); font: var(--fs-xs) var(--font-mono); cursor: pointer; padding: 0 2px; }
+  .menu { position: absolute; right: 0; bottom: 20px; display: grid; min-width: 220px; background: var(--bg-panel); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 4px; box-shadow: var(--shadow); }
+  .menu button { display: flex; justify-content: space-between; gap: 10px; border: 0; background: none; color: var(--text); font: var(--fs-base) var(--font-body); padding: 6px 8px; border-radius: var(--radius-md); text-align: left; cursor: pointer; }
   .menu button:hover, .menu button:focus-visible { background: var(--bg-hover); }
-  kbd { font: 11px var(--font-mono); color: var(--text-faint); }
+  kbd { font: var(--fs-xs) var(--font-mono); color: var(--text-faint); }
   .err { color: var(--danger); }
 </style>

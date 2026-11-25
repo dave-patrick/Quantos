@@ -177,27 +177,27 @@
   .settings.nav-right { grid-template-columns: 1fr 210px; }
   .settings.nav-right nav { border-right: 0; border-left: 1px solid var(--line); order: 1; }
   nav { border-right: 1px solid var(--line); padding: 16px 8px; display: grid; align-content: start; gap: 2px; }
-  nav button { text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 12px; border-radius: 7px; }
+  nav button { text-align: left; border: 0; background: none; color: var(--text-soft); padding: 8px 12px; border-radius: var(--radius); }
   nav button:hover { background: var(--bg-hover); }
   nav button.on { background: var(--bg-active); color: var(--accent-strong); }
   .body { padding: 16px 20px 24px; max-width: 860px; }
-  .body > h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-  .body > h3 { font: 700 16px/1.3 var(--font-display); margin: 26px 0 6px; padding: 10px 14px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; }
-  .field { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 12px 0; min-width: 0; }
+  .body > h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .body > h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 6px; padding: 10px 12px; background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); }
+  .field { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 12px 0; min-width: 0; }
   .field > span:first-child { width: 160px; max-width: 100%; color: var(--text-soft); }
   .field .input, .field input[type='range'] { min-width: 0; max-width: 100%; }
-  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
-  .seg button { border: 0; background: none; padding: 6px 14px; color: var(--text-muted); }
+  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: 0; background: none; padding: 6px 12px; color: var(--text-muted); }
   .seg button.on { background: var(--accent-wash); color: var(--accent-strong); }
   /* The custom styles: one applied at a time, so they can't fight each other. */
   .styles { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-  .styles button { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg-raised); color: var(--text-soft); font: 600 13.5px var(--font-body); cursor: pointer; }
+  .styles button { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-raised); color: var(--text-soft); font: 600 var(--fs-base) var(--font-body); cursor: pointer; }
   .styles button:hover { background: var(--bg-hover); color: var(--text); }
   .styles button.on { background: var(--accent-wash); color: var(--accent-strong); border-color: var(--accent); }
-  .note { font-size: 13px; max-width: 640px; }
+  .note { font-size: var(--fs-base); max-width: 640px; }
   .check { display: flex; gap: 8px; align-items: center; margin: 10px 0; color: var(--text-soft); }
   .narrow { width: auto; }
-  .mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+  .mono { font-family: var(--font-mono); font-size: var(--fs-base); color: var(--text-muted); }
   @container pane (max-width: 760px) {
     .settings { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     nav { display: flex; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--line); padding: 8px; }

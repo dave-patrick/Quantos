@@ -206,17 +206,17 @@
 
 <style>
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 8px; }
-  h3 { font: 700 16px/1.3 var(--font-display); margin: 22px 0 6px; }
-  section { margin-bottom: 18px; }
-  .card { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin: 8px 0; background: var(--bg-raised); }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 6px; }
+  section { margin-bottom: 16px; }
+  .card { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; margin: 8px 0; background: var(--bg-raised); }
   .head { display: flex; gap: 8px; align-items: center; }
   .right { margin-left: auto; }
   .perms { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2px 10px; margin-top: 6px; }
-  .check { display: flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--text-soft); }
-  .warn { color: var(--warn); font-size: 13px; }
+  .check { display: flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-soft); }
+  .warn { color: var(--warn); font-size: var(--fs-base); }
   .row { display: flex; gap: 8px; margin-top: 8px; }
   .row .input { max-width: 260px; }
-  textarea { width: 100%; font: 12.5px var(--font-mono); background: var(--bg-input); border: 1px solid var(--line-strong); border-radius: 8px; padding: 10px; color: var(--text); }
+  textarea { width: 100%; font: var(--fs-sm) var(--font-mono); background: var(--bg-input); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 10px; color: var(--text); }
   code { color: var(--accent); }
-  .run { font-size: 13px; margin: 2px 0; }
+  .run { font-size: var(--fs-base); margin: 2px 0; }
 </style>

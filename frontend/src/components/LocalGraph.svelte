@@ -14,5 +14,5 @@
 <style>
   .local { padding: 10px; }
   .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .bar .input { width: auto; height: 26px; font-size: 12px; }
+  .bar .input { width: auto; height: 26px; font-size: var(--fs-sm); }
 </style>

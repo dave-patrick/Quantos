@@ -120,44 +120,44 @@
 
 <style>
   .goals { flex: 1; }
-  .inner { max-width: 1000px; margin: 0 auto; padding: 24px 28px 40px; }
-  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .inner { max-width: 1000px; margin: 0 auto; padding: 24px 24px 40px; }
+  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   h1 { display: flex; align-items: center; gap: 10px; font: 700 28px/1.2 var(--font-display); margin-right: auto; }
-  h2 { font: 700 16px/1.3 var(--font-display); margin: 24px 0 10px; }
-  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
-  .card { display: grid; gap: 2px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); }
+  h2 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 10px; }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+  .card { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); }
   .card b { font: 700 20px var(--font-mono); }
-  .card span { font-size: 12px; color: var(--text-muted); }
+  .card span { font-size: var(--fs-sm); color: var(--text-muted); }
   .card.bad b, .bad { color: var(--danger); }
   .card.warn b { color: var(--warn); }
   .weeks { margin: 0; }
-  .cols { display: flex; align-items: stretch; gap: 8px; height: 130px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .cols { display: flex; align-items: stretch; gap: 8px; height: 130px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
   .col { flex: 1; display: flex; flex-direction: column; position: relative; }
   .pair { flex: 1; display: flex; align-items: flex-end; gap: 2px; justify-content: center; }
-  .pair span { width: 40%; max-width: 18px; min-height: 1px; border-radius: 2px 2px 0 0; }
+  .pair span { width: 40%; max-width: 18px; min-height: 1px; border-radius: 4px 4px 0 0; }
   .c, .key.c { background: var(--text-faint); }
   .d, .key.d { background: var(--accent); }
-  .wk { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center; font: 10.5px var(--font-mono); color: var(--text-faint); white-space: nowrap; }
-  figcaption { font-size: 12px; margin-top: 22px; display: flex; align-items: center; gap: 6px; }
-  .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+  .wk { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center; font: var(--fs-xs) var(--font-mono); color: var(--text-faint); white-space: nowrap; }
+  figcaption { font-size: var(--fs-sm); margin-top: 24px; display: flex; align-items: center; gap: 6px; }
+  .key { display: inline-block; width: 10px; height: 10px; border-radius: var(--radius-sm); }
   .tree { display: grid; }
-  .goal { display: flex; align-items: center; gap: 10px; padding-block: 7px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .goal { display: flex; align-items: center; gap: 10px; padding-block: 8px; border-bottom: 1px solid var(--line); font-size: var(--fs-md); }
   .twist { width: 16px; border: 0; background: none; color: var(--text-faint); padding: 0; cursor: pointer; flex: none; }
-  .kind { font: 600 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); width: 54px; flex: none; }
+  .kind { font: 600 var(--fs-xs)/1 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--text-faint); width: 54px; flex: none; }
   .kind.goal { color: var(--accent); }
-  .title { flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: 600 14px var(--font-body); text-align: left; padding: 0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .title { flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: 600 var(--fs-md) var(--font-body); text-align: left; padding: 0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .title:hover { color: var(--accent); }
-  .progress { position: relative; width: 160px; height: 8px; background: var(--line); border-radius: 4px; flex: none; }
-  .progress .fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px; }
+  .progress { position: relative; width: 160px; height: 8px; background: var(--line); border-radius: var(--radius-sm); flex: none; }
+  .progress .fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: var(--radius-sm); }
   .progress .exp { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); opacity: .7; }
-  .mono { font: 12px var(--font-mono); flex: none; }
+  .mono { font: var(--fs-sm) var(--font-mono); flex: none; }
   .target { width: 80px; }
-  .health { font: 600 11px var(--font-mono); padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--text-muted); flex: none; width: 72px; text-align: center; }
+  .health { font: 600 var(--fs-xs) var(--font-mono); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--text-muted); flex: none; width: 72px; text-align: center; }
   .h-on-track, .h-done { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
   .h-at-risk { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
   .h-off-track { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
-  .hint { font-size: 12.5px; margin-top: 10px; }
+  .hint { font-size: var(--fs-sm); margin-top: 10px; }
   @container pane (max-width: 760px) {
     .progress { width: 80px; }
     .target { display: none; }

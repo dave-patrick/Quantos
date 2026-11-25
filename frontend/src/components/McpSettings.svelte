@@ -140,19 +140,19 @@
 
 <style>
   h2 { font: 700 24px/1.2 var(--font-display); margin-bottom: 8px; }
-  h3 { font: 700 15px/1.3 var(--font-display); margin: 22px 0 6px; }
-  .intro { max-width: 60ch; margin-bottom: 14px; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 6px; }
+  .intro { max-width: 60ch; margin-bottom: 12px; }
   .field { display: flex; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
-  .field > span:first-child { min-width: 96px; color: var(--text-soft); font-size: 13px; }
+  .field > span:first-child { min-width: 96px; color: var(--text-soft); font-size: var(--fs-base); }
   .field .input { flex: 1; min-width: 220px; }
   .row { display: flex; gap: 8px; align-items: center; margin: 8px 0 12px; }
   .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 6px 0 10px; }
-  .tabs button { padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--text-soft); font-size: 13px; }
+  .tabs button { padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--text-soft); font-size: var(--fs-base); }
   .tabs button.on { border-color: var(--accent); color: var(--accent); }
-  .code { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line); font: 12px/1.5 var(--font-mono); color: var(--text-soft); overflow-x: auto; white-space: pre; }
+  .code { margin: 0; padding: 10px 12px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line); font: var(--fs-sm)/1.5 var(--font-mono); color: var(--text-soft); overflow-x: auto; white-space: pre; }
   .tools { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .tools li { display: grid; grid-template-columns: 190px 1fr; gap: 10px; align-items: baseline; }
-  .tools code { font: 12px var(--font-mono); color: var(--accent); }
-  .tools span { font-size: 13px; }
+  .tools code { font: var(--fs-sm) var(--font-mono); color: var(--accent); }
+  .tools span { font-size: var(--fs-base); }
   .link { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
 </style>

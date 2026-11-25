@@ -63,10 +63,10 @@
 {/if}
 
 <style>
-  .scrim { position: fixed; inset: 0; background: rgb(4 8 14 / .6); display: grid; place-items: center; z-index: 80; padding: 16px; }
-  .dialog { width: min(460px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: var(--shadow); padding: 20px 22px; }
+  .scrim { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 80; padding: 16px; }
+  .dialog { width: min(460px, 100%); background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; }
   h2 { font: 700 18px/1.3 var(--font-display); }
-  p { color: var(--text-soft); margin: 10px 0 18px; white-space: pre-wrap; }
+  p { color: var(--text-soft); margin: 10px 0 16px; white-space: pre-wrap; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
   .actions.stacked { flex-direction: column; align-items: stretch; }
   .actions.stacked .btn { justify-content: flex-start; height: auto; padding: 8px 12px; }

@@ -83,15 +83,15 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .inner { max-width: 1100px; margin: 0 auto; padding: 24px 0 80px; }
-  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
   h1 { font: 700 28px/1.2 var(--font-display); }
   header p { margin: 0; flex: 1; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th { text-align: left; font: 600 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--fs-md); }
+  th { text-align: left; font: 600 var(--fs-xs) var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); padding: 6px 8px; border-bottom: 1px solid var(--line); }
   td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
   td :global(.icon) { display: inline-block; vertical-align: -2px; margin-right: 6px; color: var(--text-muted); }
-  .mono { font-size: 12px; }
+  .mono { font-size: var(--fs-sm); }
   .actions { display: flex; gap: 6px; justify-content: flex-end; }
 </style>

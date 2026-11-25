@@ -124,31 +124,31 @@
 </div>
 
 <style>
-  .mm { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 14px 18px 10px; gap: 6px; }
+  .mm { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 12px 16px 10px; gap: 6px; }
   .tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   h1 { display: flex; align-items: center; gap: 8px; font: 700 22px/1.2 var(--font-display); margin-right: 10px; }
   .grow { flex: 1; }
-  .z { width: 44px; text-align: center; font-size: 12px; color: var(--text-muted); }
+  .z { width: 44px; text-align: center; font-size: var(--fs-sm); color: var(--text-muted); }
   .mono { font-family: var(--font-mono); }
-  .hint { font-size: 12.5px; margin: 0; }
-  .stage { flex: 1; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); position: relative; }
+  .hint { font-size: var(--fs-sm); margin: 0; }
+  .stage { flex: 1; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); position: relative; }
   .tree { position: relative; }
   .inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
   svg { position: absolute; left: 0; top: 0; }
   path { fill: none; stroke: var(--line-strong); stroke-width: 1.6; }
-  .branch { position: absolute; border-radius: 9px; background: var(--bg-raised); border: 1px solid var(--line-strong); padding: 0 8px; cursor: pointer; outline: none; }
+  .branch { position: absolute; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line-strong); padding: 0 8px; cursor: pointer; outline: none; }
   .branch.root { background: var(--accent-wash); border-color: var(--accent); }
-  .branch.root .text { font: 700 15px var(--font-display); color: var(--accent-strong); }
+  .branch.root .text { font: 700 var(--fs-lg) var(--font-display); color: var(--accent-strong); }
   .branch.heading .text { font-weight: 700; }
   .branch.on, .branch:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
   .branch.done .text { color: var(--text-faint); text-decoration: line-through; }
   .row { display: flex; align-items: center; gap: 6px; height: 38px; }
-  .text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; color: var(--text); }
-  .box { width: 12px; height: 12px; border: 1.5px solid var(--text-faint); border-radius: 3px; flex: none; }
+  .text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-base); color: var(--text); }
+  .box { width: 12px; height: 12px; border: 1.5px solid var(--text-faint); border-radius: var(--radius-sm); flex: none; }
   .box.on { background: var(--accent); border-color: var(--accent); }
-  .note-btn { border: 0; background: none; cursor: pointer; opacity: 0; font-size: 13px; padding: 2px; }
+  .note-btn { border: 0; background: none; cursor: pointer; opacity: 0; font-size: var(--fs-base); padding: 2px; }
   .branch:hover .note-btn, .branch.on .note-btn, .note-btn:focus-visible { opacity: .8; }
-  .ann { display: block; width: 100%; height: 20px; margin: 0 0 4px; text-align: left; border: 0; border-left: 3px solid var(--warn); border-radius: 3px; background: var(--warn-wash); color: var(--text-soft); font: 12px var(--font-body); padding: 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
-  .fold { position: absolute; right: -11px; top: 9px; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--bg-panel); color: var(--text-muted); font: 600 11px var(--font-mono); cursor: pointer; padding: 0; }
-  .empty { position: absolute; left: 20px; bottom: 14px; font-size: 13px; }
+  .ann { display: block; width: 100%; height: 20px; margin: 0 0 4px; text-align: left; border: 0; border-left: 3px solid var(--warn); border-radius: var(--radius-sm); background: var(--warn-wash); color: var(--text-soft); font: var(--fs-sm) var(--font-body); padding: 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .fold { position: absolute; right: -11px; top: 9px; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--bg-panel); color: var(--text-muted); font: 600 var(--fs-xs) var(--font-mono); cursor: pointer; padding: 0; }
+  .empty { position: absolute; left: 20px; bottom: 14px; font-size: var(--fs-base); }
 </style>

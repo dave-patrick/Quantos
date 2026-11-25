@@ -147,24 +147,24 @@
 
 <style>
   .rightbar { grid-area: right; display: flex; flex-direction: column; min-height: 0; background: transparent; }
-  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--sidebar-bg, var(--bg-panel)); }
+  .part { display: flex; flex-direction: column; min-height: 60px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--sidebar-bg, var(--bg-panel)); }
   .part.dragging { opacity: .6; }
   .head { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid var(--line); flex: none; background: var(--sidebar-bg, var(--bg-panel)); cursor: grab; user-select: none; }
   .head:active { cursor: grabbing; }
-  .grip { color: var(--text-faint); font-size: 10px; letter-spacing: -1px; margin-right: 2px; }
-  .title { font: 600 12.5px var(--font-body); color: var(--text-soft); }
-  .pip { min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); font: 700 9px/14px var(--font-mono); margin-left: 2px; }
-  .close { margin-left: auto; border: 0; background: none; color: var(--text-faint); padding: 2px 4px; border-radius: 4px; cursor: pointer; }
+  .grip { color: var(--text-faint); font-size: var(--fs-xs); letter-spacing: -1px; margin-right: 2px; }
+  .title { font: 600 var(--fs-sm) var(--font-body); color: var(--text-soft); }
+  .pip { min-width: 14px; height: 14px; padding: 0 4px; border-radius: var(--radius); background: var(--accent); color: var(--accent-ink); font: 700 var(--fs-xs)/14px var(--font-mono); margin-left: 2px; }
+  .close { margin-left: auto; border: 0; background: none; color: var(--text-faint); padding: 2px 4px; border-radius: var(--radius-sm); cursor: pointer; }
   .close:hover { color: var(--danger); background: var(--bg-hover); }
   .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .quick { padding: 8px; }
   .divider { flex: none; height: 8px; display: grid; place-items: center; padding: 0; border: 0; background: transparent; cursor: row-resize; touch-action: none; outline: none; }
-  .divider::after { content: ''; width: 34px; height: 2px; border-radius: 2px; background: var(--line-strong); opacity: 0; transition: opacity .12s ease; }
+  .divider::after { content: ''; width: 34px; height: 2px; border-radius: var(--radius-sm); background: var(--line-strong); opacity: 0; transition: opacity .12s ease; }
   .divider:hover::after, .divider:focus-visible::after { opacity: 1; background: var(--text-faint); }
   .addwrap { flex: none; padding: 6px; position: relative; }
-  .addbtn { width: 100%; height: 30px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px dashed var(--line-strong); border-radius: 6px; background: none; color: var(--text-faint); cursor: pointer; font-size: 12.5px; }
+  .addbtn { width: 100%; height: 30px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px dashed var(--line-strong); border-radius: var(--radius-md); background: none; color: var(--text-faint); cursor: pointer; font-size: var(--fs-sm); }
   .addbtn:hover { color: var(--text); background: var(--bg-hover); border-style: solid; }
-  .addmenu { position: absolute; bottom: 42px; left: 6px; right: 6px; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 8px; box-shadow: var(--shadow); padding: 4px; display: grid; gap: 2px; z-index: 5; }
-  .addmenu button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 7px 10px; border: 0; border-radius: 5px; background: none; color: var(--text-soft); font-size: 13px; cursor: pointer; }
+  .addmenu { position: absolute; bottom: 42px; left: 6px; right: 6px; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow); padding: 4px; display: grid; gap: 2px; z-index: 5; }
+  .addmenu button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 8px 10px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-soft); font-size: var(--fs-base); cursor: pointer; }
   .addmenu button:hover { background: var(--bg-hover); color: var(--text); }
 </style>

@@ -63,14 +63,14 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .inner { max-width: 1000px; margin: 0 auto; padding: 24px 0 80px; }
   h1 { font: 700 28px/1.2 var(--font-display); }
-  .bar { display: flex; gap: 12px; align-items: center; margin: 12px 0; font-size: 14px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th { text-align: left; font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--text-faint); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .bar { display: flex; gap: 12px; align-items: center; margin: 12px 0; font-size: var(--fs-md); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+  th { text-align: left; font: 600 var(--fs-xs) var(--font-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--text-faint); padding: 6px 8px; border-bottom: 1px solid var(--line); }
   td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  td img { width: 36px; height: 36px; object-fit: cover; border-radius: 4px; vertical-align: middle; margin-right: 8px; }
-  .mono { font: 12px var(--font-mono); }
+  td img { width: 36px; height: 36px; object-fit: cover; border-radius: var(--radius-sm); vertical-align: middle; margin-right: 8px; }
+  .mono { font: var(--fs-sm) var(--font-mono); }
   .actions { text-align: right; }
 </style>

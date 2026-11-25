@@ -247,31 +247,31 @@
 <style>
   .props { margin: 4px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
-  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 9px; border-radius: 999px; font: 600 12px/18px var(--font-mono);
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 10px; border-radius: 999px; font: 600 var(--fs-sm)/18px var(--font-mono);
     color: color-mix(in srgb, var(--tag) 70%, var(--text)); background: color-mix(in srgb, var(--tag) 14%, transparent); border: 1px solid color-mix(in srgb, var(--tag) 40%, transparent); }
   .tag button { border: 0; background: none; color: inherit; padding: 2px; border-radius: 50%; display: grid; opacity: .6; }
   .tag button:hover { opacity: 1; }
-  .add-tag, .add { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; color: var(--text-faint); font-size: 12.5px; padding: 3px 6px; border-radius: 5px; }
+  .add-tag, .add { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; color: var(--text-faint); font-size: var(--fs-sm); padding: 4px 6px; border-radius: var(--radius-md); }
   .add-tag:hover, .add:hover { color: var(--accent); background: var(--bg-hover); }
-  .tag-input { height: 24px; border-radius: 999px; border: 1px solid var(--accent); background: var(--bg-input); padding: 0 10px; font: 12px var(--font-mono); width: 140px; }
-  .aliases { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin-bottom: 6px; }
-  .aliases .cell { font-size: 13px; }
-  .grid { display: grid; grid-template-columns: minmax(110px, 180px) 1fr; gap: 2px 14px; margin: 0; align-items: center; }
-  dt { font: 12.5px/1.3 var(--font-mono); color: var(--text-muted); padding: 5px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag-input { height: 24px; border-radius: 999px; border: 1px solid var(--accent); background: var(--bg-input); padding: 0 10px; font: var(--fs-sm) var(--font-mono); width: 140px; }
+  .aliases { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); margin-bottom: 6px; }
+  .aliases .cell { font-size: var(--fs-base); }
+  .grid { display: grid; grid-template-columns: minmax(110px, 180px) 1fr; gap: 2px 12px; margin: 0; align-items: center; }
+  dt { font: var(--fs-sm)/1.3 var(--font-mono); color: var(--text-muted); padding: 6px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   dd { margin: 0; display: flex; align-items: center; gap: 6px; min-width: 0; }
   dd.invalid .cell { border-color: color-mix(in srgb, var(--warn) 60%, transparent); }
-  .cell { flex: 1; min-width: 0; height: calc(28px * var(--d)); padding: 0 8px; border-radius: 5px; border: 1px solid transparent; background: transparent; color: var(--text); font-size: 14px; }
+  .cell { flex: 1; min-width: 0; height: calc(28px * var(--d)); padding: 0 8px; border-radius: var(--radius-md); border: 1px solid transparent; background: transparent; color: var(--text); font-size: var(--fs-md); }
   .cell:hover { border-color: var(--line); }
   .cell:focus { outline: none; border-color: var(--accent); background: var(--bg-input); }
-  .cell.key { font-family: var(--font-mono); font-size: 12.5px; }
-  .clear { border: 0; background: none; color: var(--text-faint); padding: 3px; border-radius: 4px; opacity: 0; }
+  .cell.key { font-family: var(--font-mono); font-size: var(--fs-sm); }
+  .clear { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: var(--radius-sm); opacity: 0; }
   dd:hover .clear { opacity: 1; }
-  .problem { font-size: 11.5px; color: var(--warn); white-space: nowrap; }
+  .problem { font-size: var(--fs-xs); color: var(--warn); white-space: nowrap; }
   .node-link { border: 0; background: none; color: var(--accent); padding: 4px 8px; text-decoration: underline; text-underline-offset: 3px; }
   .chips { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-  .chip { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-raised); }
+  .chip { padding: 0; gap: 0; }
   .chip .node-link { padding: 2px 4px 2px 8px; }
-  .chip-text { padding: 2px 4px 2px 8px; font-size: 13.5px; }
+  .chip-text { padding: 2px 4px 2px 8px; font-size: var(--fs-base); }
   .chip-x { border: 0; background: none; color: var(--text-faint); padding: 4px 6px 4px 2px; display: grid; }
   .chip-x:hover { color: var(--text); }
   .add-item { flex: 1 1 120px; }

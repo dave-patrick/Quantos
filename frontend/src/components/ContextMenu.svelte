@@ -45,10 +45,10 @@
 
 <style>
   .backdrop { position: fixed; inset: 0; border: 0; background: transparent; z-index: 45; cursor: default; }
-  .menu { position: fixed; z-index: 46; min-width: 210px; padding: 5px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
-  .menu button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 7px 10px; border: 0; border-radius: 5px; background: none; color: var(--text-soft); font-size: 13.5px; }
+  .menu { position: fixed; z-index: 46; min-width: 210px; padding: 6px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line-strong); box-shadow: var(--shadow); display: grid; }
+  .menu button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 8px 10px; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-soft); font-size: var(--fs-base); }
   .menu button:hover { background: var(--bg-hover); color: var(--text); }
   .menu button.danger:hover { color: var(--danger); }
-  .grouplabel { padding: 6px 10px 2px; font: 600 10px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+  .grouplabel { padding: 6px 10px 2px; font: 600 var(--fs-xs)/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
   hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
 </style>

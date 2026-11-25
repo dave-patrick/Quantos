@@ -64,9 +64,9 @@
 
 <style>
   .capture { height: 100vh; display: flex; flex-direction: column; background: var(--bg-raised); padding: 10px; gap: 8px; }
-  textarea { flex: 1; resize: none; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg-input); padding: 10px 12px; font-size: 16px; line-height: 1.5; }
+  textarea { flex: 1; resize: none; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg-input); padding: 10px 12px; font-size: var(--fs-lg); line-height: 1.5; }
   textarea:focus { outline: none; border-color: var(--accent); }
   footer { display: flex; gap: 8px; align-items: center; }
-  select { height: 30px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--bg-input); padding: 0 6px; }
-  .msg { flex: 1; font-size: 13px; color: var(--ok); }
+  select { height: 30px; border-radius: var(--radius-md); border: 1px solid var(--line-strong); background: var(--bg-input); padding: 0 6px; }
+  .msg { flex: 1; font-size: var(--fs-base); color: var(--ok); }
 </style>

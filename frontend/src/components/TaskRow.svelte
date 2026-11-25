@@ -103,18 +103,18 @@
     </button>
   </span>
   <span class="chips">
-    {#if (dense || stacked) && task.priority}<span class="chip" title={'Priority ' + priorityLabel(task.priority)}><Icon name="flag" size={11} /> {priorityLabel(task.priority)}</span>{/if}
-    {#if task.blocked}<span class="chip warn" title="Waiting on another task"><Icon name="lock" size={11} /> blocked</span>{/if}
-    {#if task.status === 'doing'}<span class="chip accent">doing</span>{/if}
-    {#if task.status === 'waiting' || task.waitingOn}<span class="chip" title="Waiting on">⏳ {task.waitingOn ?? 'waiting'}</span>{/if}
-    {#if !dense && task.recurrence}<span class="chip" title={describeRecurrence(task.recurrence)}><Icon name="repeat" size={11} /></span>{/if}
-    {#if !dense && task.subtaskCount}<span class="chip" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
-    {#if !dense && task.effort}<span class="chip" title="Effort">{effortLabel(task.effort)}</span>{/if}
-    {#if projectName && !compact && !dense}<span class="chip" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
-    {#if task.assignees.length && !compact && !dense}<span class="chip"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
-    {#if task.planned && task.planned.slice(0, 10) !== dueDay}<span class="chip" title="Planned">◷ {fmt(task.planned)}</span>{/if}
-    {#if task.due}<span class="chip" class:danger={overdue} title="Due">⚑ {fmt(task.due)}</span>{/if}
-    {#if !dense && task.reminders.some((r) => !r.fired)}<span class="chip" title="Reminder set"><Icon name="bell" size={11} /></span>{/if}
+    {#if (dense || stacked) && task.priority}<span class="tag" title={'Priority ' + priorityLabel(task.priority)}><Icon name="flag" size={11} /> {priorityLabel(task.priority)}</span>{/if}
+    {#if task.blocked}<span class="tag warn" title="Waiting on another task"><Icon name="lock" size={11} /> blocked</span>{/if}
+    {#if task.status === 'doing'}<span class="tag accent">doing</span>{/if}
+    {#if task.status === 'waiting' || task.waitingOn}<span class="tag" title="Waiting on">⏳ {task.waitingOn ?? 'waiting'}</span>{/if}
+    {#if !dense && task.recurrence}<span class="tag" title={describeRecurrence(task.recurrence)}><Icon name="repeat" size={11} /></span>{/if}
+    {#if !dense && task.subtaskCount}<span class="tag" title="Subtasks done">{task.subtasksDone}/{task.subtaskCount}</span>{/if}
+    {#if !dense && task.effort}<span class="tag" title="Effort">{effortLabel(task.effort)}</span>{/if}
+    {#if projectName && !compact && !dense}<span class="tag" title="Project"><Icon name="briefcase" size={11} /> {projectName}</span>{/if}
+    {#if task.assignees.length && !compact && !dense}<span class="tag"><Icon name="user" size={11} /> {task.assignees.map((a) => /\|([^\]]+)\]\]$/.exec(a)?.[1] ?? a).join(', ')}</span>{/if}
+    {#if task.planned && task.planned.slice(0, 10) !== dueDay}<span class="tag" title="Planned">◷ {fmt(task.planned)}</span>{/if}
+    {#if task.due}<span class="tag" class:danger={overdue} title="Due">⚑ {fmt(task.due)}</span>{/if}
+    {#if !dense && task.reminders.some((r) => !r.fired)}<span class="tag" title="Reminder set"><Icon name="bell" size={11} /></span>{/if}
   </span>
   {#if showMyDay && !closed}
     <button class="myday" class:on={inMyDay} title={inMyDay ? 'Remove from My Day' : 'Add to My Day'} onclick={toggleMyDay}><Icon name="sun" size={14} /></button>
@@ -130,37 +130,37 @@
 
 <style>
   /* Narrow places (timeline, side panels): chips move under the title rather than squeezing it. */
-  .task { position: relative; display: flex; flex-wrap: wrap; align-items: center; row-gap: 2px; column-gap: 10px; padding: calc(7px * var(--d)) 10px calc(7px * var(--d)) 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-raised); min-height: calc(38px * var(--d)); box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
-  .task:hover { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: 0 2px 5px rgb(0 0 0 / 0.15); }
-  .strip { position: absolute; left: 3px; top: 7px; bottom: 7px; width: 3px; border-radius: 3px; background: transparent; }
+  .task { position: relative; display: flex; flex-wrap: wrap; align-items: center; row-gap: 2px; column-gap: 10px; padding: calc(7px * var(--d)) 10px calc(7px * var(--d)) 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--bg-raised); min-height: calc(38px * var(--d)); box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+  .task:hover { background: var(--bg-hover); border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
+  .strip { position: absolute; left: 3px; top: 7px; bottom: 7px; width: 3px; border-radius: var(--radius-sm); background: transparent; }
   .p1 .strip { background: var(--p1); } .p2 .strip { background: var(--p2); } .p3 .strip { background: var(--p3); } .p4 .strip { background: var(--p4); }
   input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--accent); flex: none; cursor: pointer; }
   .task-check { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; height: 16px; }
   .main { display: flex; align-items: center; gap: 10px; flex: 1 1 11em; min-width: 0; }
-  .title { flex: 1; min-width: 0; text-align: left; border: 0; background: none; color: var(--text); padding: 0; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .title { flex: 1; min-width: 0; text-align: left; border: 0; background: none; color: var(--text); padding: 0; font-size: var(--fs-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .title:hover { color: var(--accent-strong); }
   .closed .title { color: var(--text-faint); text-decoration: line-through; }
   .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; min-width: 0; }
-  .chip { display: inline-flex; align-items: center; gap: 3px; font: 11px/18px var(--font-mono); color: var(--text-muted); border: 1px solid var(--line); border-radius: 9px; padding: 0 6px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
-  .chip.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 60%, transparent); font-weight: 600; }
-  .chip.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
-  .chip.accent { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-  .myday { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; font: var(--fs-xs)/18px var(--font-mono); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 6px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  .tag.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 60%, transparent); font-weight: 600; }
+  .tag.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+  .tag.accent { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .myday { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: var(--radius-md); opacity: 0; }
   .task:hover .myday, .myday:focus-visible, .myday.on { opacity: 1; }
   .myday.on { color: var(--warn); }
   /* Deleting a task is one click on the row itself. It stays quiet until the row is hovered or the
      button is reached with the keyboard. */
-  .del { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: 5px; opacity: 0; flex: none; }
+  .del { border: 0; background: none; color: var(--text-faint); padding: 4px; border-radius: var(--radius-md); opacity: 0; flex: none; }
   .task:hover .del, .del:focus-visible { opacity: 1; }
   .del:hover { color: var(--danger); background: var(--bg-hover); }
   .compact { min-height: calc(32px * var(--d)); padding-top: calc(4px * var(--d)); padding-bottom: calc(4px * var(--d)); }
   .dense { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 2px 6px; min-height: 36px; padding: 4px 8px 4px 12px; }
-  .dense .main { grid-row: 1; grid-column: 1; gap: 7px; }
-  .dense .title { font-size: 13.5px; }
+  .dense .main { grid-row: 1; grid-column: 1; gap: 8px; }
+  .dense .title { font-size: var(--fs-base); }
   .dense .myday { grid-row: 1; grid-column: 2; }
   .dense .del { grid-row: 1; grid-column: 3; }
-  .dense .chips { grid-row: 2; grid-column: 1 / -1; margin: 0; padding-left: 23px; max-width: none; }
-  .dense .chips:not(:has(.chip)) { display: none; }
-  .dense .chip { font-size: 10px; line-height: 16px; padding: 0 4px; max-width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; }
+  .dense .chips { grid-row: 2; grid-column: 1 / -1; margin: 0; padding-left: 24px; max-width: none; }
+  .dense .chips:not(:has(.tag)) { display: none; }
+  .dense .tag { font-size: var(--fs-xs); line-height: 16px; padding: 0 4px; max-width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; }
   .dense .strip { top: 5px; bottom: 5px; }
 </style>

@@ -63,12 +63,12 @@
 </section>
 
 <style>
-  h3 { font: 700 15px/1.3 var(--font-display); margin: 22px 0 6px; }
+  h3 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 6px; }
   .field { display: flex; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
-  .field > span:first-child { min-width: 96px; color: var(--text-soft); font-size: 13px; }
+  .field > span:first-child { min-width: 96px; color: var(--text-soft); font-size: var(--fs-base); }
   .field .input { flex: 1; min-width: 220px; }
   .row { display: flex; gap: 8px; align-items: center; margin: 8px 0 12px; }
-  .code { margin: 8px 0; padding: 10px 12px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line); font: 12px/1.5 var(--font-mono); color: var(--text-soft); overflow-x: auto; white-space: pre; }
-  .error { color: var(--danger, #e5484d); font-size: 13px; }
+  .code { margin: 8px 0; padding: 10px 12px; border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line); font: var(--fs-sm)/1.5 var(--font-mono); color: var(--text-soft); overflow-x: auto; white-space: pre; }
+  .error { color: var(--danger); font-size: var(--fs-base); }
   .link { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
 </style>

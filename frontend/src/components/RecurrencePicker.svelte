@@ -61,9 +61,9 @@
 <style>
   .recurrence-picker { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; }
   select { flex: 1; min-width: 0; text-overflow: ellipsis; }
-  .cell { height: calc(28px * var(--d)); padding: 0 8px; border-radius: 5px; border: 1px solid transparent; background: transparent; color: var(--text); font-size: 14px; }
+  .cell { height: calc(28px * var(--d)); padding: 0 8px; border-radius: var(--radius-md); border: 1px solid transparent; background: transparent; color: var(--text); font-size: var(--fs-md); }
   .cell:hover:not(:disabled) { border-color: var(--line); }
   .cell:focus { outline: none; border-color: var(--accent); background: var(--bg-input); }
-  .edit-btn { border: 0; background: none; color: var(--text-muted); padding: 4px 6px; border-radius: 5px; display: inline-grid; place-items: center; flex: none; }
+  .edit-btn { border: 0; background: none; color: var(--text-muted); padding: 4px 6px; border-radius: var(--radius-md); display: inline-grid; place-items: center; flex: none; }
   .edit-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--accent); }
 </style>

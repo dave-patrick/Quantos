@@ -54,14 +54,14 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .inner { max-width: 1200px; margin: 0 auto; padding: 24px 0 80px; }
   h1 { font: 700 28px/1.2 var(--font-display); }
-  .bar { display: flex; gap: 8px; margin: 14px 0; }
+  .bar { display: flex; gap: 8px; margin: 12px 0; }
   .bar .input { width: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th { text-align: left; font: 600 11px var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint); padding: 6px 8px; border-bottom: 1px solid var(--line); }
-  td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .mono { font-family: var(--font-mono); font-size: 12.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+  th { text-align: left; font: 600 var(--fs-xs) var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--text-faint); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .mono { font-family: var(--font-mono); font-size: var(--fs-sm); }
   .samples { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>

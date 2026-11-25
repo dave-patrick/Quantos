@@ -390,14 +390,14 @@
   .tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
   .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
   .grow { flex: 1; }
-  .ro { display: inline-flex; gap: 5px; align-items: center; font-size: 12.5px; }
-  .zoom { width: 44px; text-align: center; font-size: 12px; color: var(--text-muted); }
+  .ro { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-sm); }
+  .zoom { width: 44px; text-align: center; font-size: var(--fs-sm); color: var(--text-muted); }
   .mono { font-family: var(--font-mono); }
-  .swatches { display: inline-flex; gap: 3px; }
+  .swatches { display: inline-flex; gap: 4px; }
   .sw { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line-strong); cursor: pointer; padding: 0; }
   .sw.none { background: linear-gradient(135deg, transparent 45%, var(--danger) 45% 55%, transparent 55%), var(--bg-raised); }
-  .warn { color: var(--warn); font-size: 13px; margin: 0; }
-  .board { position: relative; flex: 1; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; cursor: grab; touch-action: none; outline: none;
+  .warn { color: var(--warn); font-size: var(--fs-base); margin: 0; }
+  .board { position: relative; flex: 1; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); cursor: grab; touch-action: none; outline: none;
     background-color: var(--bg); background-image: radial-gradient(circle, color-mix(in srgb, var(--text) 14%, transparent) 1px, transparent 1.2px); }
   .board:focus-visible { border-color: var(--accent); }
   .board:active { cursor: grabbing; }
@@ -407,28 +407,28 @@
   .line.on { stroke: var(--accent); stroke-width: 3; }
   .line.pending { stroke: var(--accent); stroke-dasharray: 6 4; }
   .hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
-  .elabel { position: absolute; transform: translate(-50%, -50%); background: var(--bg); color: var(--text-soft); font-size: 12px; padding: 1px 6px; border-radius: 4px; white-space: nowrap; pointer-events: none; }
-  .card { position: absolute; border-radius: 10px; background: var(--bg-raised); border: 1.5px solid var(--c, var(--line-strong)); box-shadow: 0 2px 10px rgb(0 0 0 / .25); cursor: default; display: flex; flex-direction: column; overflow: visible; color: var(--text); }
+  .elabel { position: absolute; transform: translate(-50%, -50%); background: var(--bg); color: var(--text-soft); font-size: var(--fs-sm); padding: 1px 6px; border-radius: var(--radius-sm); white-space: nowrap; pointer-events: none; }
+  .card { position: absolute; border-radius: var(--radius); background: var(--bg-raised); border: 1.5px solid var(--c, var(--line-strong)); box-shadow: 0 2px 10px rgb(0 0 0 / .25); cursor: default; display: flex; flex-direction: column; overflow: visible; color: var(--text); }
   .card.on { outline: 2px solid var(--accent); outline-offset: 2px; }
   .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .card.group { background: color-mix(in srgb, var(--c, var(--text-faint)) 7%, transparent); border-style: dashed; box-shadow: none; }
   .card.text { background: color-mix(in srgb, var(--c, transparent) 12%, var(--bg-raised)); }
-  .glabel { position: absolute; top: -26px; left: 0; font: 700 14px var(--font-display); color: var(--c, var(--text-soft)); background: none; border: 0; padding: 0; }
+  .glabel { position: absolute; top: -26px; left: 0; font: 700 var(--fs-md) var(--font-display); color: var(--c, var(--text-soft)); background: none; border: 0; padding: 0; }
   input.glabel { border-bottom: 1px solid var(--accent); color: var(--text); outline: none; }
-  .md { padding: 10px 12px; overflow: hidden; font-size: 14px; line-height: 1.5; flex: 1; min-height: 0; }
+  .md { padding: 10px 12px; overflow: hidden; font-size: var(--fs-md); line-height: 1.5; flex: 1; min-height: 0; }
   .md :global(p) { margin: 0 0 .5em; }
   .md :global(h1), .md :global(h2), .md :global(h3) { font: 700 1.1em/1.25 var(--font-display); margin: 0 0 .4em; }
   .md :global(ul), .md :global(ol) { margin: 0 0 .5em; padding-left: 1.2em; }
-  .card-edit { flex: 1; width: 100%; resize: none; border: 0; background: var(--bg-input); color: var(--text); font: 14px/1.5 var(--font-body); padding: 10px 12px; border-radius: 9px; outline: none; }
-  .ftitle { display: flex; align-items: center; gap: 6px; padding: 8px 12px 0; font: 600 13.5px var(--font-body); color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file .md { font-size: 12.5px; color: var(--text-soft); -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
-  .url { padding: 4px 12px; font: 12px var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-edit { flex: 1; width: 100%; resize: none; border: 0; background: var(--bg-input); color: var(--text); font: var(--fs-md)/1.5 var(--font-body); padding: 10px 12px; border-radius: var(--radius); outline: none; }
+  .ftitle { display: flex; align-items: center; gap: 6px; padding: 8px 12px 0; font: 600 var(--fs-base) var(--font-body); color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file .md { font-size: var(--fs-sm); color: var(--text-soft); -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+  .url { padding: 4px 12px; font: var(--fs-sm) var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .handle { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); cursor: crosshair; z-index: 2; }
   .handle.top { top: -7px; left: calc(50% - 6px); }
   .handle.bottom { bottom: -7px; left: calc(50% - 6px); }
   .handle.left { left: -7px; top: calc(50% - 6px); }
   .handle.right { right: -7px; top: calc(50% - 6px); }
-  .resize { position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--accent) 50%); border-radius: 0 0 9px 0; }
+  .resize { position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--accent) 50%); border-radius: 0 0 8px 0; }
   .lasso { position: absolute; border: 1px dashed var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); pointer-events: none; }
-  .hint { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px; pointer-events: none; font-size: 14px; }
+  .hint { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px; pointer-events: none; font-size: var(--fs-md); }
 </style>

@@ -103,26 +103,26 @@
 </div>
 
 <style>
-  .view { flex: 1; padding: 0 28px; }
+  .view { flex: 1; padding: 0 24px; }
   .inner { max-width: 900px; margin: 0 auto; padding: 24px 0 80px; }
-  h1 { font: 700 28px/1.2 var(--font-display); margin-bottom: 18px; }
-  h2 { font: 700 17px/1.3 var(--font-display); margin: 26px 0 8px; }
-  .facts { display: grid; grid-template-columns: 160px 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+  h1 { font: 700 28px/1.2 var(--font-display); margin-bottom: 16px; }
+  h2 { font: 700 var(--fs-lg)/1.3 var(--font-display); margin: 24px 0 8px; }
+  .facts { display: grid; grid-template-columns: 160px 1fr; gap: 6px 16px; margin: 0; font-size: var(--fs-md); }
   dt { color: var(--text-faint); }
   dd { margin: 0; overflow-wrap: anywhere; }
-  .mono { font-family: var(--font-mono); font-size: 12.5px; }
-  .notice { display: flex; gap: 8px; padding: 10px 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+  .mono { font-family: var(--font-mono); font-size: var(--fs-sm); }
+  .notice { display: flex; gap: 8px; padding: 10px 12px; border-radius: var(--radius); margin: 10px 0; font-size: var(--fs-md); }
   .notice.warn { background: var(--warn-wash); color: var(--warn); }
   .notice.ok { background: var(--ok-wash); color: var(--ok); }
   .row { display: flex; gap: 8px; margin-top: 12px; }
-  .small { font-size: 12.5px; }
-  .diag { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .small { font-size: var(--fs-sm); }
+  .diag { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-md); }
   .diag > div { flex: 1; }
   .diag.warning :global(.icon) { color: var(--warn); }
   .diag.error :global(.icon) { color: var(--danger); }
   .diag.info :global(.icon) { color: var(--accent); }
   .linked { list-style: none; margin: 0; padding: 0; }
-  .linked li { display: flex; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .linked li { display: flex; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-md); }
   .linked .name { font-weight: 600; min-width: 120px; }
   .linked .ok { color: var(--ok); }
   .linked .warn { color: var(--warn); }

@@ -102,22 +102,22 @@
   h1 { font: 700 28px/1.2 var(--font-display); margin: 0 0 4px; }
   .heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .workspace { margin: 4px 0 10px; }
-  .folder-error { color: var(--warn); font-size: 14px; }
+  .folder-error { color: var(--warn); font-size: var(--fs-md); }
   header input { width: 100%; }
   .note-list { flex: 1; padding: 0 16px 96px; }
-  .breadcrumbs { display: flex; align-items: center; gap: 3px; min-width: 0; margin: 0 0 10px; color: var(--text-faint); overflow-x: auto; }
-  .breadcrumbs button { border: 0; background: transparent; color: var(--text-muted); padding: 4px 2px; white-space: nowrap; font: 500 13px var(--font-body); }
+  .breadcrumbs { display: flex; align-items: center; gap: 4px; min-width: 0; margin: 0 0 10px; color: var(--text-faint); overflow-x: auto; }
+  .breadcrumbs button { border: 0; background: transparent; color: var(--text-muted); padding: 4px 2px; white-space: nowrap; font: 500 var(--fs-base) var(--font-body); }
   .breadcrumbs button.current { color: var(--text); font-weight: 650; }
   .breadcrumbs :global(.icon) { flex: none; }
   .folder-row { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 4px; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); }
   .folder-row:hover, .note-row:hover { background: var(--bg-hover); }
   .folder-row :global(.icon) { flex: none; color: var(--accent-strong); }
-  .folder-title { flex: 1; min-width: 0; overflow-wrap: anywhere; font: 600 15px/1.3 var(--font-body); }
-  .folder-count { color: var(--text-faint); font: 12px var(--font-mono); }
-  .note-row { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) 24px; gap: 3px 12px; min-height: 48px; padding: 8px 4px; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); }
+  .folder-title { flex: 1; min-width: 0; overflow-wrap: anywhere; font: 600 var(--fs-lg)/1.3 var(--font-body); }
+  .folder-count { color: var(--text-faint); font: var(--fs-sm) var(--font-mono); }
+  .note-row { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) 24px; gap: 4px 12px; min-height: 48px; padding: 8px 4px; text-align: left; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); }
   .note-row:hover { background: var(--bg-hover); }
-  .note-title { font: 600 15px/1.3 var(--font-body); overflow-wrap: anywhere; }
-  .note-meta { grid-column: 1; font-size: 12px; line-height: 1.25; color: var(--text-muted); }
+  .note-title { font: 600 var(--fs-lg)/1.3 var(--font-body); overflow-wrap: anywhere; }
+  .note-meta { grid-column: 1; font-size: var(--fs-sm); line-height: 1.25; color: var(--text-muted); }
   .note-row :global(.icon) { grid-column: 2; grid-row: 1 / 3; align-self: center; color: var(--text-faint); }
-  .new-note { position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 20px; border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-ink); font: 600 16px var(--font-body); box-shadow: var(--shadow); }
+  .new-note { position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 20px; border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-ink); font: 600 var(--fs-lg) var(--font-body); box-shadow: var(--shadow); }
 </style>

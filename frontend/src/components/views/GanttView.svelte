@@ -201,35 +201,35 @@
 </div>
 
 <style>
-  .gantt-view { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 14px 18px 10px; gap: 10px; }
+  .gantt-view { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 12px 16px 10px; gap: 10px; }
   .bar-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   h1 { display: flex; align-items: center; gap: 8px; font: 700 22px/1.2 var(--font-display); margin-right: 8px; }
   .bar-top .input { width: auto; }
-  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; }
-  .seg button { border: 0; background: none; color: var(--text-muted); padding: 5px 10px; font: 13px var(--font-body); cursor: pointer; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: 0; background: none; color: var(--text-muted); padding: 6px 10px; font: var(--fs-base) var(--font-body); cursor: pointer; }
   .seg button + button { border-left: 1px solid var(--line-strong); }
   .seg button.on { background: var(--accent-wash); color: var(--accent); }
-  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .hint { font-size: 12px; }
-  .chart { flex: 1; min-height: 0; display: flex; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: var(--fs-base); color: var(--text-muted); }
+  .hint { font-size: var(--fs-sm); }
+  .chart { flex: 1; min-height: 0; display: flex; align-items: flex-start; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); }
   .names { position: sticky; left: 0; z-index: 4; width: 220px; flex: none; border-right: 1px solid var(--line); background: var(--bg-raised); }
   .corner { position: sticky; top: 0; z-index: 5; background: var(--bg-raised); border-bottom: 1px solid var(--line); }
-  .name { display: block; width: 100%; height: 30px; line-height: 30px; padding: 0 10px; border: 0; background: none; color: var(--text-soft); font: 13.5px var(--font-body); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .name { display: block; width: 100%; height: 30px; line-height: 30px; padding: 0 10px; border: 0; background: none; color: var(--text-soft); font: var(--fs-base) var(--font-body); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
   .name:hover { color: var(--accent); }
   .name.done { color: var(--text-faint); text-decoration: line-through; }
-  .name.group { font: 700 11px/30px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); cursor: default; }
+  .name.group { font: 700 var(--fs-xs)/30px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); cursor: default; }
   .timeline { position: relative; flex: none; }
   .canvas { position: relative; }
   .head { position: sticky; top: 0; z-index: 3; background: var(--bg-raised); border-bottom: 1px solid var(--line); }
-  .month { position: absolute; top: 4px; font: 600 11px var(--font-body); color: var(--text-soft); padding-left: 4px; white-space: nowrap; }
-  .tick { position: absolute; bottom: 4px; font: 10.5px var(--font-mono); color: var(--text-faint); text-align: center; white-space: nowrap; }
+  .month { position: absolute; top: 4px; font: 600 var(--fs-xs) var(--font-body); color: var(--text-soft); padding-left: 4px; white-space: nowrap; }
+  .tick { position: absolute; bottom: 4px; font: var(--fs-xs) var(--font-mono); color: var(--text-faint); text-align: center; white-space: nowrap; }
   .tick.major { color: var(--text-muted); }
   .grid { position: absolute; bottom: 0; width: 1px; background: var(--line); opacity: .35; }
   .grid.major { opacity: .8; }
   .weekend { position: absolute; bottom: 0; background: color-mix(in srgb, var(--text) 3%, transparent); }
   .today { position: absolute; bottom: 0; width: 2px; background: var(--accent); z-index: 2; opacity: .8; }
   .grouprow { position: absolute; left: 0; right: 0; height: 30px; border-top: 1px solid var(--line); }
-  .gbar { position: absolute; height: 20px; border-radius: 5px; background: color-mix(in srgb, var(--accent) 75%, transparent); border: 1px solid var(--accent); color: var(--accent-ink); font: 600 11.5px/18px var(--font-body); padding: 0 6px; cursor: grab; z-index: 2; touch-action: none; user-select: none; display: flex; align-items: center; }
+  .gbar { position: absolute; height: 20px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 75%, transparent); border: 1px solid var(--accent); color: var(--accent-ink); font: 600 var(--fs-xs)/18px var(--font-body); padding: 0 6px; cursor: grab; z-index: 2; touch-action: none; user-select: none; display: flex; align-items: center; }
   .gbar:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
   .gbar.est { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 60%, transparent) 0 6px, color-mix(in srgb, var(--accent) 40%, transparent) 6px 12px); }
   .gbar.done { background: var(--line-strong); border-color: var(--line-strong); color: var(--text-muted); }
@@ -241,9 +241,9 @@
   .edges path.late { stroke: var(--danger); stroke-width: 1.8; }
   .head-ok { fill: var(--text-muted); }
   .head-late { fill: var(--danger); }
-  .warn { display: flex; gap: 6px; align-items: center; color: var(--danger); font-size: 13px; margin: 0; }
-  .unscheduled summary { cursor: pointer; font-size: 13px; color: var(--text-muted); }
-  .un { display: flex; align-items: center; gap: 10px; padding: 3px 0; font-size: 13.5px; }
+  .warn { display: flex; gap: 6px; align-items: center; color: var(--danger); font-size: var(--fs-base); margin: 0; }
+  .unscheduled summary { cursor: pointer; font-size: var(--fs-base); color: var(--text-muted); }
+  .un { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: var(--fs-base); }
   .link { border: 0; background: none; color: var(--text); font: inherit; padding: 0; cursor: pointer; }
   .link:hover { color: var(--accent); }
   @container pane (max-width: 760px) {

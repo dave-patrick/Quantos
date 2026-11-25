@@ -61,5 +61,5 @@
   .panes.horizontal { grid-template-rows: minmax(0, 1fr) 8px minmax(0, 1fr); }
   .spacer { appearance: none; border: 0; padding: 0; background: transparent; cursor: col-resize; width: 8px; touch-action: none; }
   .panes.horizontal .spacer { cursor: row-resize; height: 8px; width: auto; }
-  .spacer:hover, .spacer.dragging, .spacer:focus-visible { background: color-mix(in srgb, var(--accent) 60%, transparent); outline: none; border-radius: 2px; }
+  .spacer:hover, .spacer.dragging, .spacer:focus-visible { background: color-mix(in srgb, var(--accent) 60%, transparent); outline: none; border-radius: var(--radius-sm); }
 </style>
