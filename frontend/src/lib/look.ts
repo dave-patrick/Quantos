@@ -331,7 +331,7 @@ export function lookVars(look: Look, base: 'dark' | 'light'): Record<string, str
 }
 
 /** Resolves the effective color value for an element, whether custom or automatic. */
-export function effectiveColor(cssVar: string, look: Look, base: 'dark' | 'light', accentFallback = '#78b6ff'): string {
+export function effectiveColor(cssVar: string, look: Look, base: 'dark' | 'light', accentFallback = base === 'light' ? '#1a66c4' : '#78b6ff'): string {
   const vars = lookVars(look, base);
   if (vars[cssVar]) return vars[cssVar];
   if (cssVar === '--accent' || cssVar === '--line-focus') return vars['--accent'] ?? accentFallback;

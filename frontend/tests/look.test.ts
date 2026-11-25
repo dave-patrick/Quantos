@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LOOK, PRESETS, baseOf, contrast, fontStack, lookCss, lookVars, mix, readable, resetElements } from '../src/lib/look';
+import { DEFAULT_LOOK, PRESETS, baseOf, contrast, effectiveColor, fontStack, lookCss, lookVars, mix, readable, resetElements } from '../src/lib/look';
 
 describe('look', () => {
+  it('previews the focus colour for either base and the selected accent', () => {
+    for (const base of ['dark', 'light'] as const) {
+      expect(effectiveColor('--line-focus', DEFAULT_LOOK, base)).toBe(base === 'light' ? '#1a66c4' : '#78b6ff');
+      expect(effectiveColor('--line-focus', DEFAULT_LOOK, base, '#123456')).toBe('#123456');
+      expect(effectiveColor('--line-focus', { ...DEFAULT_LOOK, lineFocus: '#abcdef' }, base, '#123456')).toBe('#abcdef');
+    }
+  });
   it('groups main labels and secondary text without fading explicit colours', () => {
     for (const base of ['dark', 'light'] as const) {
       const vars = lookVars({ ...DEFAULT_LOOK, text: '#123456', secondaryText: '#987654', textMuted: '#ffffff', textFaint: '#000000' }, base);

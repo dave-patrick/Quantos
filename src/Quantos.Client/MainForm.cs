@@ -59,6 +59,10 @@ public sealed class MainForm : Form
         Icon = LoadIcon();
         BackColor = Color.FromArgb(42, 43, 45);
         MinimumSize = LogicalToDeviceUnits(new Size(720, 480));
+        // Draw our own title bar and buttons. The window has no native frame; edge resizing is
+        // handled from the same hit zones below so Windows cannot add its silver sizing strip.
+        // Set before Bounds/WindowState so WinForms never records Sizable non-client insets in RestoreBounds.
+        FormBorderStyle = FormBorderStyle.None;
         if (prefs.X is null)
         {
             // First run: size relative to the screen, so high-DPI displays don't get a cramped window.
@@ -71,13 +75,20 @@ public sealed class MainForm : Form
         {
             StartPosition = FormStartPosition.Manual;
             var saved = new Rectangle(prefs.X.Value, prefs.Y ?? 100, prefs.Width, prefs.Height);
-            // A saved position on a monitor that's no longer attached falls back to the primary screen.
-            Bounds = Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)) ? saved : new Rectangle(100, 100, prefs.Width, prefs.Height);
+            // A saved position on a monitor that's no longer attached falls back inside the primary screen's work area.
+            if (Screen.AllScreens.Any(s => s.WorkingArea.IntersectsWith(saved)))
+                Bounds = saved;
+            else
+            {
+                var area = (Screen.PrimaryScreen ?? Screen.FromPoint(Cursor.Position)).WorkingArea;
+                var maxWidth = Math.Min(area.Width, Math.Max(MinimumSize.Width, (int)(area.Width * 0.88)));
+                var maxHeight = Math.Min(area.Height, Math.Max(MinimumSize.Height, (int)(area.Height * 0.88)));
+                var width = Math.Min(maxWidth, Math.Max(MinimumSize.Width, prefs.Width));
+                var height = Math.Min(maxHeight, Math.Max(MinimumSize.Height, prefs.Height));
+                Bounds = new Rectangle(area.Left + (area.Width - width) / 2, area.Top + (area.Height - height) / 2, width, height);
+            }
         }
         if (prefs.Maximized) WindowState = FormWindowState.Maximized;
-        // Draw our own title bar and buttons. The window has no native frame; edge resizing is
-        // handled from the same hit zones below so Windows cannot add its silver sizing strip.
-        FormBorderStyle = FormBorderStyle.None;
         UpdateResizeBorder();
         _icon.Image = Icon.ToBitmap();
         // Title text hidden per user preference; icon remains in the title bar.
@@ -133,6 +144,12 @@ public sealed class MainForm : Form
     {
         base.OnDpiChanged(e);
         UpdateResizeBorder();
+        if (WindowState == FormWindowState.Maximized && IsHandleCreated && TryGetMonitorInfo(Handle, out var info))
+        {
+            SetWindowPos(Handle, IntPtr.Zero, info.rcWork.Left, info.rcWork.Top,
+                info.rcWork.Right - info.rcWork.Left, info.rcWork.Bottom - info.rcWork.Top,
+                0x0004 | 0x0010 | 0x0020);
+        }
     }
 
     private void QueueWindowLayoutRefresh()
@@ -840,16 +857,42 @@ public sealed class MainForm : Form
     [DllImport("user32.dll")] private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
     [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     [DllImport("user32.dll", SetLastError = true)] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr insertAfter, int x, int y, int cx, int cy, uint flags);
+    [DllImport("user32.dll")] private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+    [DllImport("user32.dll", CharSet = CharSet.Auto)] private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo info);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Rect { public int Left, Top, Right, Bottom; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PointStruct { public int X, Y; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MinMaxInfo { public PointStruct ptReserved, ptMaxSize, ptMaxPosition, ptMinTrackSize, ptMaxTrackSize; }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MonitorInfo
+    {
+        public int cbSize;
+        public Rect rcMonitor;
+        public Rect rcWork;
+        public uint dwFlags;
+    }
 
     /// <summary>The three rectangles and WINDOWPOS pointer carried by WM_NCCALCSIZE.</summary>
     [StructLayout(LayoutKind.Sequential)]
     private struct NonClientCalcSize { public Rect Proposed, Old, Client; public IntPtr WindowPos; }
 
+    private static bool TryGetMonitorInfo(IntPtr hwnd, out MonitorInfo info)
+    {
+        const uint MONITOR_DEFAULTTONEAREST = 2;
+        info = new MonitorInfo { cbSize = Marshal.SizeOf<MonitorInfo>() };
+        var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        return monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info);
+    }
+
     protected override void WndProc(ref Message m)
     {
+        const int WM_GETMINMAXINFO = 0x0024;
         const int WM_NCCALCSIZE = 0x83;
         const int WM_NCPAINT = 0x0085;
         const int WM_NCACTIVATE = 0x0086;
@@ -863,6 +906,22 @@ public sealed class MainForm : Form
         const int WM_LBUTTONUP = 0x0202;
         const int WM_CAPTURECHANGED = 0x0215;
         const int HTLEFT = 10, HTRIGHT = 11, HTTOP = 12, HTTOPLEFT = 13, HTTOPRIGHT = 14, HTBOTTOM = 15, HTBOTTOMLEFT = 16, HTBOTTOMRIGHT = 17, HTCAPTION = 2;
+        if (m.Msg == WM_GETMINMAXINFO)
+        {
+            base.WndProc(ref m);
+            if (TryGetMonitorInfo(m.HWnd, out var info))
+            {
+                var mmi = Marshal.PtrToStructure<MinMaxInfo>(m.LParam);
+                // Because this frameless window removes WS_CAPTION and WS_THICKFRAME, Windows/WinForms
+                // otherwise leaves ptMaxPosition at the restored origin and sizes to the full monitor.
+                mmi.ptMaxPosition.X = info.rcWork.Left - info.rcMonitor.Left;
+                mmi.ptMaxPosition.Y = info.rcWork.Top - info.rcMonitor.Top;
+                mmi.ptMaxSize.X = info.rcWork.Right - info.rcWork.Left;
+                mmi.ptMaxSize.Y = info.rcWork.Bottom - info.rcWork.Top;
+                Marshal.StructureToPtr(mmi, m.LParam, false);
+            }
+            return;
+        }
         if (m.Msg == WM_NCLBUTTONDOWN && WindowState != FormWindowState.Maximized)
         {
             int hit = unchecked((int)m.WParam.ToInt64());

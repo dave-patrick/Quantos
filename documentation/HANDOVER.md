@@ -1,10 +1,24 @@
 # Handover: working on Quantos with its owner
 
+## Windows maximize fix and 0.3.2 merge (2026-11-24, build 2026.24.11.56)
+
+Merged `origin/main` (`0.3.2`, recurrence rules and release workflow) with the local Nov 12 appearance-alignment changes and the Windows frameless maximize/DPI fix in `src/Quantos.Client/MainForm.cs` (`WM_GETMINMAXINFO` work-area bounds, `OnDpiChanged` maximized re-fit, and clamped off-screen fallback bounds with `FormBorderStyle.None` set before bounds/state). Build ID incremented to `2026.24.11.56`. Verified: `svelte-check` (0 errors, 0 warnings), 190/190 frontend Vitest tests (40 files), 374/374 Release `Quantos.Tests` (sequential after one pre-existing parallel `backend-20261124.log` cleanup race in `CredentialSecurityTests`), 9/9 `Quantos.Client.Tests` (Debug and Release across both `DISPLAY1` 200% DPI and `DISPLAY2` 100% DPI), and package validation (`Quantos-0.3.2-build-2026.24.11.56-win-x64.zip`). Staged to `C:\Users\davem\Apps\Quantos\Quantos\application` and restarted cleanly (`Page loaded` HTTP 200 at 16:41:37).
+
+## Self-hosted GitHub Actions runners (2026-11-24)
+
+Registered two repository-level self-hosted runners on `dave-patrick/Quantos` (v2.338.2) and switched `.github/workflows/` (`tests.yml`, `release.yml`, `pages.yml`, `claude.yml`, `claude-code-review.yml`) to `[self-hosted, Linux, X64]` and `[self-hosted, Windows, X64]`:
+- **`h66` (Linux X64, `100.112.198.119`):** Installed in `/opt/actions-runner-quantos` as `systemd` service `actions.runner.dave-patrick-Quantos.h66.service` running as `dave`; `gh` 2.46.0 installed and Android command-line tools in `/opt/android-sdk` (`ANDROID_HOME`/`ANDROID_SDK_ROOT` in `.env`).
+- **`gb5` (Windows X64, `GALAXYBOOK5PRO`):** Installed in `C:\runners\quantos` and started windowlessly in the user session via Scheduled Task `QuantosGitHubRunner` (`AtLogOn` trigger, `run-hidden.vbs`). Both runners verified `online` via GitHub API.
+
 ## Version 0.3.2 (2026-11-24, build 2026.24.11.55)
 
 Added real recurrence settings (`Daily`, `Weekdays`, `Weekly`, `Monthly`, `Annually`, and `Custom…`) across task properties, `#task` creation forms, and the `TaskRow` context menu (*Set recurrence…*), plus extended RRULE support (`BYDAY` ordinals, `BYSETPOS`, `BYMONTHDAY=-1`, `BYMONTH`, `UNTIL`, `COUNT`, and `every N years` in quick add).
 Bumped version to `0.3.2` (`ApplicationVersion` `302`) and build ID to `2026.24.11.55`, added [`.github/workflows/release.yml`](../.github/workflows/release.yml) so tagged releases (`v*`) build the Windows x64 package (via `build/build.ps1` + smoke check) and Android ARM64 APK on GitHub Actions and publish `v0.3.2` on GitHub Releases. Note: Android release signing keystore (`C:\Users\davem\Projects\Quantos-signing`) and the owner's phone/Windows staging PC are not accessible from the remote Linux VM or GitHub Actions without signing secrets, so GitHub Actions builds a Debug-signed Android APK artifact while the Windows x64 ZIP is published to the GitHub Release for in-app updates.
 Verified on Linux: 189/189 frontend Vitest tests, `svelte-check` (0 errors, 0 warnings), frontend production build, 344/344 Linux-filtered .NET tests, and headless Chrome + axe-core checks (`TaskPopup`, `RecurrencePicker`, `RecurrenceDialog`, `TaskRow` context menu, 390px narrow layout). GitHub Actions CI run `45494829491` passed on `ubuntu-latest`, `windows-latest`, and `package`.
+
+## Appearance control alignment (2026-11-12)
+
+Local fix for mismatched colour swatch/hex heights and shifting automatic/custom columns in Settings > Appearance. Swatches now match 32px hex fields, normalize native inset borders, and reserve the same reset column. Automatic focus-colour previews follow the selected accent and light/dark base. Browser checks pass all 18 rows in both themes with mixed custom/automatic colours; independent review found no issues. Private Windows build 0.3.1 / 2026.12.11.55; see PROJECT-STATUS for final build/staging validation. On 2026-11-24, built private Android ARM64 Debug APK `0.3.1` / `2026.12.11.55` (`versionCode` 301) using the cached `10.0.14` ASP.NET runtime assemblies (`AspNetRuntimeDirectory`) and installed it via ADB (`-r`) over `0.2.4` on the owner's `SM-S948U` phone (`RFGL11TY6FK`); upgrade and launch verified.
 
 ## Published 0.3.1 (2026-11-11)
 

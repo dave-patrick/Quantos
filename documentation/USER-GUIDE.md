@@ -598,7 +598,8 @@ approval in the Windows client.
   from any device; otherwise the theme, density, editor text size, line spacing and width are per
   device.
 - **Custom styles:** `.css` files in the vault's `themes` folder, applied in *Settings ›
-  Appearance*. One style is applied at a time: press the button for the style you want, or *None*
+  Appearance*. Colour swatches and hex fields have matching heights and consistent columns in both light and dark themes, including rows with custom colours. Automatic focus-colour previews follow your selected accent.
+  One style is applied at a time: press the button for the style you want, or *None*
   to go back to Quantos's own look. Colours and sizes are CSS variables (`--accent`, `--bg`,
   `--text`…), so a few lines go a long way; the example vault includes `warm-paper.css`. Styles
   can't load anything from the internet, and safe mode turns them off.
